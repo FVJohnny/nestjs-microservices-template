@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: frontend
+    env: docker
+    dockerfilePath: frontend/Dockerfile
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /
+    # Frontend listens on port 80 inside the container
+    serviceDetails:
+      envVars: []
+
+  - type: private_service
+    name: service-1
+    env: docker
+    dockerfilePath: backend/services/service-1/Dockerfile
+    plan: starter
+    autoDeploy: true
+    # NestJS listens on 3000 in container
+    serviceDetails:
+      port: 3000
+      healthCheckPath: /
+
+  - type: private_service
+    name: service-2
+    env: docker
+    dockerfilePath: backend/services/service-2/Dockerfile
+    plan: starter
+    autoDeploy: true
+    serviceDetails:
+      port: 3000
+      healthCheckPath: /
+
+  - type: private_service
+    name: service-3
+    env: docker
+    dockerfilePath: backend/services/service-3/Dockerfile
+    plan: starter
+    autoDeploy: true
+    serviceDetails:
+      port: 8000
+      healthCheckPath: /
