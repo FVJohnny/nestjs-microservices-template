@@ -1,0 +1,51 @@
+services:
+  service-1:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ../../services/service-1:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run start:dev"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - CHOKIDAR_USEPOLLING=1
+      - WATCHPACK_POLLING=true
+    ports:
+      - "3001:3000"
+    networks:
+      - backend
+
+  service-2:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ../../services/service-2:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run start:dev"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - CHOKIDAR_USEPOLLING=1
+      - WATCHPACK_POLLING=true
+    ports:
+      - "3002:3000"
+    networks:
+      - backend
+
+  service-3:
+    image: python:3.12-slim
+    working_dir: /app
+    volumes:
+      - ../../services/service-3:/app
+    command: sh -c "pip install --upgrade pip && pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      - PORT=8000
+    ports:
+      - "3003:8000"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
