@@ -38,6 +38,16 @@ services:
     networks:
       - backend
 
+  frontend:
+    build:
+      context: ${PWD}/frontend
+      dockerfile: Dockerfile
+    image: copy-signals-frontend:latest
+    ports:
+      - "3000:80"
+    networks:
+      - backend
+
 networks:
   backend:
     driver: bridge

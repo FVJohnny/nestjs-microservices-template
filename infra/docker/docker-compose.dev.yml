@@ -46,6 +46,15 @@ services:
     networks:
       - backend
 
+  frontend:
+    image: nginx:alpine
+    volumes:
+      - ${PWD}/frontend:/usr/share/nginx/html:ro
+    ports:
+      - "3000:80"
+    networks:
+      - backend
+
 networks:
   backend:
     driver: bridge
