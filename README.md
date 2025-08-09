@@ -1,29 +1,29 @@
-# Copy Signals AI
+# Copy Signals AI ✨
 
 Multi-service backend with NestJS and FastAPI services.
 
-## Services
+## Services 🧩
 
-- **Service 1** (NestJS) - http://localhost:3001
-- **Service 2** (NestJS) - http://localhost:3002  
-- **Service 3** (FastAPI) - http://localhost:3003
+- **Service 1** (🟦 NestJS · TypeScript) - http://localhost:3001
+- **Service 2** (🟦 NestJS · TypeScript) - http://localhost:3002  
+- **Service 3** (🐍 FastAPI · Python) - http://localhost:3003
 
-## Commands
+## Commands 🛠️
 
 ```bash
-# Development (hot reload)
+# Development (hot reload) ⚡
 make dev
 make dev-down
 
-# Production
+# Production 🚀
 make prod
 make prod-down
 
-# Logs
+# Logs 📜
 make dev-logs
 make prod-logs
 ```
 
-## Prerequisites
+## Prerequisites ✅
 
-- Docker & Docker Compose
+- 🐳 Docker & Docker Compose
