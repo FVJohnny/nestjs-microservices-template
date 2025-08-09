@@ -14,9 +14,9 @@ async function ping(url){
 async function pingAll(){
   out.textContent = 'Pinging...';
   const urls = [
-    'http://localhost:3001/',
-    'http://localhost:3002/',
-    'http://localhost:3003/'
+    '/api/service-1/',
+    '/api/service-2/',
+    '/api/service-3/'
   ];
   const results = await Promise.all(urls.map(ping));
   const ts = new Date().toLocaleTimeString();
