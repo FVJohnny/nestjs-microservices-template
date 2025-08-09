@@ -4,11 +4,10 @@ FROM nginx:alpine
 # Copy site content
 COPY ./ /usr/share/nginx/html/
 
-# Use custom Nginx config (adds reverse proxy for APIs)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Provide Nginx config template (rendered by default entrypoint using envsubst)
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 # Expose default Nginx port
 EXPOSE 80
 
-# Use default nginx config (sufficient for static files)
-CMD ["nginx", "-g", "daemon off;"]
+# Use default Nginx entrypoint/CMD (renders templates and starts nginx)

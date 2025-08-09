@@ -47,6 +47,10 @@ services:
       - "3000:80"
     networks:
       - backend
+    environment:
+      - SERVICE_1_URL=http://service-1:3000/
+      - SERVICE_2_URL=http://service-2:3000/
+      - SERVICE_3_URL=http://service-3:8000/
 
 networks:
   backend:
