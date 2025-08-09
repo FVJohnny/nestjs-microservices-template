@@ -10,7 +10,7 @@ services:
     serviceDetails:
       envVars: []
 
-  - type: private_service
+  - type: pserv
     name: service-1
     env: docker
     dockerfilePath: backend/services/service-1/Dockerfile
@@ -21,7 +21,7 @@ services:
       port: 3000
       healthCheckPath: /
 
-  - type: private_service
+  - type: pserv
     name: service-2
     env: docker
     dockerfilePath: backend/services/service-2/Dockerfile
@@ -31,7 +31,7 @@ services:
       port: 3000
       healthCheckPath: /
 
-  - type: private_service
+  - type: pserv
     name: service-3
     env: docker
     dockerfilePath: backend/services/service-3/Dockerfile
