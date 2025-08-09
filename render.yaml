@@ -3,6 +3,7 @@ services:
     name: frontend
     env: docker
     dockerfilePath: frontend/Dockerfile
+    rootDir: frontend
     plan: starter
     autoDeploy: true
     healthCheckPath: /
@@ -11,6 +12,7 @@ services:
     name: service-1
     env: docker
     dockerfilePath: backend/services/service-1/Dockerfile
+    rootDir: backend/services/service-1
     plan: starter
     autoDeploy: true
 
@@ -18,6 +20,7 @@ services:
     name: service-2
     env: docker
     dockerfilePath: backend/services/service-2/Dockerfile
+    rootDir: backend/services/service-2
     plan: starter
     autoDeploy: true
 
@@ -25,5 +28,6 @@ services:
     name: service-3
     env: docker
     dockerfilePath: backend/services/service-3/Dockerfile
+    rootDir: backend/services/service-3
     plan: starter
     autoDeploy: true
