@@ -13,7 +13,7 @@ services:
       - key: SERVICE_2_URL
         value: http://service-2-liyo:10000/
       - key: SERVICE_3_URL
-        value: http://service-3-l8rf:8000/
+        value: http://service-3-l8rf:8000/ 
 
   - type: pserv
     name: service-1
