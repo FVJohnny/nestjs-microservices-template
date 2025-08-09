@@ -6,7 +6,6 @@ services:
     plan: starter
     autoDeploy: true
     healthCheckPath: /
-    # Frontend listens on port 80 inside the container (Dockerfile EXPOSE 80)
 
   - type: pserv
     name: service-1
@@ -14,7 +13,6 @@ services:
     dockerfilePath: backend/services/service-1/Dockerfile
     plan: starter
     autoDeploy: true
-    healthCheckPath: /
 
   - type: pserv
     name: service-2
@@ -22,7 +20,6 @@ services:
     dockerfilePath: backend/services/service-2/Dockerfile
     plan: starter
     autoDeploy: true
-    healthCheckPath: /
 
   - type: pserv
     name: service-3
@@ -30,4 +27,3 @@ services:
     dockerfilePath: backend/services/service-3/Dockerfile
     plan: starter
     autoDeploy: true
-    healthCheckPath: /
