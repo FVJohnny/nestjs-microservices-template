@@ -1,7 +1,7 @@
 services:
   service-1:
     build:
-      context: ../../services/service-1
+      context: ${PWD}/backend/services/service-1
       dockerfile: Dockerfile
     image: copy-signals-service-1:latest
     environment:
@@ -14,7 +14,7 @@ services:
 
   service-2:
     build:
-      context: ../../services/service-2
+      context: ${PWD}/backend/services/service-2
       dockerfile: Dockerfile
     image: copy-signals-service-2:latest
     environment:
@@ -27,7 +27,7 @@ services:
 
   service-3:
     build:
-      context: ../../services/service-3
+      context: ${PWD}/backend/services/service-3
       dockerfile: Dockerfile
     image: copy-signals-service-3:latest
     environment:
