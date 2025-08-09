@@ -5,7 +5,7 @@ FROM nginx:alpine
 COPY ./ /usr/share/nginx/html/
 
 # Use custom Nginx config (adds reverse proxy for APIs)
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose default Nginx port
 EXPOSE 80
