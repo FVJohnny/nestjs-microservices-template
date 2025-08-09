@@ -1,9 +1,10 @@
 services:
   - type: web
     name: frontend
+    region: frankfurt
     env: docker
     rootDir: frontend
-    plan: starter
+    plan: free
     autoDeploy: true
     healthCheckPath: /
     envVars:
@@ -16,21 +17,24 @@ services:
 
   - type: pserv
     name: service-1
+    region: frankfurt
     env: docker
     rootDir: backend/services/service-1
-    plan: starter
+    plan: free
     autoDeploy: true
 
   - type: pserv
     name: service-2
+    region: frankfurt
     env: docker
     rootDir: backend/services/service-2
-    plan: starter
+    plan: free
     autoDeploy: true
 
   - type: pserv
     name: service-3
+    region: frankfurt
     env: docker
     rootDir: backend/services/service-3
-    plan: starter
+    plan: free
     autoDeploy: true
