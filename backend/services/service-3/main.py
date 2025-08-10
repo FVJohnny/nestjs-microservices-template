@@ -31,19 +31,28 @@ async def root():
     return {"service": "service-3", "status": "ok"}
 
 @app.post("/publish-event")
-async def publish_event(event: GenericEvent):
+async def publish_event(event: GenericEvent = None):
     """Publish generic events to Kafka"""
     try:
-        # Use the entire event data as the message, adding metadata
-        message = event.dict()
-        message.update({
-            'timestamp': str(time.time()),
-            'source': 'service-3'
-        })
+        # Create default event data if no event provided
+        if event is None:
+            message = {
+                'type': 'USER_ACTION',
+                'action': 'frontend_trigger',
+                'timestamp': str(time.time()),
+                'source': 'service-3'
+            }
+        else:
+            # Use the entire event data as the message, adding metadata
+            message = event.dict()
+            message.update({
+                'timestamp': str(time.time()),
+                'source': 'service-3'
+            })
         
         success = kafka_service.publish_message('example-topic', message)
         if success:
-            return {"message": "Event published to Kafka", "data": event.dict()}
+            return {"message": "Event published to Kafka", "data": message}
         else:
             raise HTTPException(status_code=500, detail="Failed to publish event")
     except Exception as e:
