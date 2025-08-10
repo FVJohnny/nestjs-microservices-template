@@ -12,7 +12,7 @@ services:
       - key: KAFKA_USERNAME
         value: fvjohnny
       - key: KAFKA_PASSWORD
-        value: |h2(]YoYgWyZ]3]WNPW7iZVIAIHZBM
+        value: 1|h2(]YoYgWyZ]3]WNPW7iZVIAIHZBM
 
   - type: pserv
     name: service-2
@@ -27,7 +27,7 @@ services:
       - key: KAFKA_USERNAME
         value: fvjohnny
       - key: KAFKA_PASSWORD
-        value: |h2(]YoYgWyZ]3]WNPW7iZVIAIHZBM
+        value: 1|h2(]YoYgWyZ]3]WNPW7iZVIAIHZBM
 
   - type: pserv
     name: service-3
@@ -42,7 +42,7 @@ services:
       - key: KAFKA_USERNAME
         value: fvjohnny
       - key: KAFKA_PASSWORD
-        value: |h2(]YoYgWyZ]3]WNPW7iZVIAIHZBM
+        value: 1|h2(]YoYgWyZ]3]WNPW7iZVIAIHZBM
 
   - type: web
     name: frontend
