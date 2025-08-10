@@ -1,12 +1,30 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { AppService } from './app.service';
+import { KafkaService } from './kafka/kafka.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly kafkaService: KafkaService,
+  ) {}
 
   @Get()
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Post('/publish-event')
+  async publishEvent() {
+    await this.kafkaService.publishMessage('example-topic', {
+      type: 'USER_CREATED',
+      userId: '123',
+      email: 'test@example.com',
+      timestamp: new Date().toISOString(),
+      source: 'service-1',
+    });
+
+    return { message: 'Event published to Kafka' };
+  }
+
 }
