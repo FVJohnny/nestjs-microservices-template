@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 class KafkaService:
     def __init__(self):
         self.kafka_brokers = os.getenv('KAFKA_BROKERS', 'localhost:9092').split(',')
+        self.kafka_username = os.getenv('KAFKA_USERNAME')
+        self.kafka_password = os.getenv('KAFKA_PASSWORD')
         self.producer = None
         self.consumer = None
         self.consumer_thread = None
@@ -20,21 +22,38 @@ class KafkaService:
     def start(self):
         """Initialize Kafka producer and consumer"""
         try:
-            # Initialize producer
-            self.producer = KafkaProducer(
-                bootstrap_servers=self.kafka_brokers,
-                value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-                key_serializer=lambda k: k.encode('utf-8') if k else None
-            )
+            # Base configuration
+            producer_config = {
+                'bootstrap_servers': self.kafka_brokers,
+                'value_serializer': lambda v: json.dumps(v).encode('utf-8'),
+                'key_serializer': lambda k: k.encode('utf-8') if k else None
+            }
             
-            # Initialize consumer
-            self.consumer = KafkaConsumer(
-                'example-topic',
-                bootstrap_servers=self.kafka_brokers,
-                group_id='service-3-group',
-                value_deserializer=lambda m: json.loads(m.decode('utf-8')) if m else None,
-                auto_offset_reset='latest'
-            )
+            consumer_config = {
+                'bootstrap_servers': self.kafka_brokers,
+                'group_id': 'service-3-group',
+                'value_deserializer': lambda m: json.loads(m.decode('utf-8')) if m else None,
+                'auto_offset_reset': 'earliest',
+                'enable_auto_commit': True,
+                'max_poll_records': 100,
+                'session_timeout_ms': 30000,
+                'heartbeat_interval_ms': 3000
+            }
+            
+            # Add authentication if credentials are provided (for cloud Kafka)
+            if self.kafka_username and self.kafka_password:
+                auth_config = {
+                    'security_protocol': 'SASL_SSL',
+                    'sasl_mechanism': 'SCRAM-SHA-256',
+                    'sasl_plain_username': self.kafka_username,
+                    'sasl_plain_password': self.kafka_password
+                }
+                producer_config.update(auth_config)
+                consumer_config.update(auth_config)
+            
+            # Initialize producer and consumer
+            self.producer = KafkaProducer(**producer_config)
+            self.consumer = KafkaConsumer('example-topic', **consumer_config)
             
             self.running = True
             
@@ -66,18 +85,32 @@ class KafkaService:
     def _consume_messages(self):
         """Consumer loop running in separate thread"""
         try:
-            for message in self.consumer:
-                if not self.running:
-                    break
+            while self.running:
+                try:
+                    # Poll for messages with a short timeout
+                    message_pack = self.consumer.poll(timeout_ms=1000)
                     
-                logger.info(f"[Service-3] Received message from {message.topic}: {message.value}")
-                
-                # Process different event types
-                if message.value:
-                    self._handle_event(message.value)
+                    if message_pack:
+                        for topic_partition, messages in message_pack.items():
+                            for message in messages:
+                                if not self.running:
+                                    return
+                                    
+                                logger.info(f"[Service-3] Received message from {message.topic}: {message.value}")
+                                
+                                # Process different event types
+                                if message.value:
+                                    self._handle_event(message.value)
+                                    
+                except Exception as e:
+                    logger.error(f"[Service-3] Error polling messages: {e}")
+                    # Small delay before retrying
+                    threading.Event().wait(1)
                     
         except Exception as e:
-            logger.error(f"[Service-3] Error consuming messages: {e}")
+            logger.error(f"[Service-3] Error in consumer loop: {e}")
+        finally:
+            logger.info("[Service-3] Consumer loop ended")
     
     def _handle_event(self, event_data: Dict[str, Any]):
         """Handle events"""

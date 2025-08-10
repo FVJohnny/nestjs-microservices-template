@@ -8,10 +8,22 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
   private consumer: Consumer;
 
   constructor() {
-    this.kafka = new Kafka({
+    const kafkaConfig: any = {
       clientId: 'service-1',
       brokers: [process.env.KAFKA_BROKERS || 'localhost:9092'],
-    });
+    };
+
+    // Only add SSL and SASL if credentials are provided (for cloud Kafka)
+    if (process.env.KAFKA_USERNAME && process.env.KAFKA_PASSWORD) {
+      kafkaConfig.ssl = {};
+      kafkaConfig.sasl = {
+        mechanism: "scram-sha-256",
+        username: process.env.KAFKA_USERNAME,
+        password: process.env.KAFKA_PASSWORD
+      };
+    }
+
+    this.kafka = new Kafka(kafkaConfig);
 
     this.producer = this.kafka.producer();
     this.consumer = this.kafka.consumer({ groupId: 'service-1-group' });
