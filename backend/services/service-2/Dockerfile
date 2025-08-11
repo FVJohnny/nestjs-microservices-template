@@ -12,6 +12,10 @@ WORKDIR /app/libs/nestjs/kafka
 RUN npm install && npm run build
 WORKDIR /app/libs/nestjs/types
 RUN npm install && npm run build
+WORKDIR /app/libs/nestjs/ddd
+RUN npm install && npm run build
+WORKDIR /app/libs/nestjs/common
+RUN npm install && npm run build
 
 # Copy service package files and install dependencies
 WORKDIR /app
