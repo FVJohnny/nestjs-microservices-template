@@ -8,6 +8,8 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - KAFKA_BROKERS=kafka:9092
+      - PROXY_BASE_PATH=/api/service-1
+      - SWAGGER_ENABLED=true
     ports:
       - "3001:3000"
     networks:
