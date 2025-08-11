@@ -1,0 +1,33 @@
+{
+  "name": "@libs/nestjs-ddd",
+  "version": "1.0.0",
+  "description": "Shared Domain-Driven Design patterns and abstractions for NestJS services",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/cqrs": "^10.0.0",
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "nestjs",
+    "ddd",
+    "domain-driven-design",
+    "cqrs",
+    "messaging",
+    "aggregate-root",
+    "domain-events",
+    "repository",
+    "shared"
+  ],
+  "author": "",
+  "license": "MIT"
+}

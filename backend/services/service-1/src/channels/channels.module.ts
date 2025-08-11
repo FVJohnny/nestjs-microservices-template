@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { KafkaModule } from '../kafka/kafka.module';
+import { DDDModule } from '@libs/nestjs-ddd';
 
 // Controllers
 import { ChannelsController } from './interfaces/controllers/channels.controller';
@@ -17,7 +18,9 @@ import { MessageReceivedHandler } from './application/events/message-received.ha
 
 // Infrastructure
 import { InMemoryChannelRepository } from './infrastructure/repositories/in-memory-channel.repository';
-import { KafkaMessagePublisherImpl } from './infrastructure/messaging/kafka-message.publisher';
+
+// Shared DDD Library
+import { KafkaMessagePublisher } from '@libs/nestjs-ddd';
 
 const CommandHandlers = [RegisterChannelHandler];
 const QueryHandlers = [GetChannelsHandler];
@@ -27,26 +30,31 @@ const EventHandlers = [ChannelRegisteredHandler, MessageReceivedHandler];
   imports: [
     CqrsModule,
     KafkaModule,
+    DDDModule,
   ],
   controllers: [ChannelsController],
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
     ...EventHandlers,
-    InMemoryChannelRepository,
-    KafkaMessagePublisherImpl,
     {
       provide: 'ChannelRepository',
       useClass: InMemoryChannelRepository,
     },
+    // Map SHARED_KAFKA_SERVICE to KAFKA_SERVICE for the DDD library
     {
-      provide: 'KafkaMessagePublisher',
-      useClass: KafkaMessagePublisherImpl,
+      provide: 'KAFKA_SERVICE',
+      useExisting: 'SHARED_KAFKA_SERVICE',
+    },
+    {
+      provide: 'MessagePublisher',
+      useClass: KafkaMessagePublisher,
+      // useClass: RedisMessagePublisher,
     },
   ],
   exports: [
     'ChannelRepository',
-    'KafkaMessagePublisher',
+    'MessagePublisher',
   ],
 })
 export class ChannelsModule {}

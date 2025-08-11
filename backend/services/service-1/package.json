@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@libs/nestjs-ddd": "file:../../libs/nestjs/ddd",
     "@libs/nestjs-kafka": "file:../../libs/nestjs/kafka",
     "@libs/nestjs-types": "file:../../libs/nestjs/types",
 

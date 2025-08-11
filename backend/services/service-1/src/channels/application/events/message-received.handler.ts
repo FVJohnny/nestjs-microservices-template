@@ -1,15 +1,15 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject, Logger } from '@nestjs/common';
 import { MessageReceivedEvent } from '../../domain/events/message-received.event';
-import type { KafkaMessagePublisher } from './channel-registered.handler';
+import type { MessagePublisher } from '@libs/nestjs-ddd';
 
 @EventsHandler(MessageReceivedEvent)
 export class MessageReceivedHandler implements IEventHandler<MessageReceivedEvent> {
   private readonly logger = new Logger(MessageReceivedHandler.name);
 
   constructor(
-    @Inject('KafkaMessagePublisher')
-    private readonly kafkaPublisher: KafkaMessagePublisher,
+    @Inject('MessagePublisher')
+    private readonly messagePublisher: MessagePublisher,
   ) {}
 
   async handle(event: MessageReceivedEvent): Promise<void> {
@@ -29,8 +29,8 @@ export class MessageReceivedHandler implements IEventHandler<MessageReceivedEven
     };
 
     try {
-      await this.kafkaPublisher.publish('example-topic', message);
-      this.logger.log(`Published MessageReceivedEvent to Kafka: ${event.messageId}`);
+      await this.messagePublisher.publish('example-topic', message);
+      this.logger.log(`Published MessageReceivedEvent to message broker: ${event.messageId}`);
     } catch (error) {
       this.logger.error(`Failed to publish MessageReceivedEvent: ${error.message}`, error.stack);
       throw error;
