@@ -1,5 +1,5 @@
 import { Module, Inject, forwardRef } from '@nestjs/common';
-import { KafkaModule as SharedKafkaModule } from '@libs/nestjs-kafka';
+import { KafkaModule as SharedKafkaModule, KafkaService } from '@libs/nestjs-kafka';
 import { EventCounterService } from '../event-counter.service';
 import { AppModule } from '../app.module';
 
@@ -28,13 +28,19 @@ const messageHandler = async ({ topic, partition, message }) => {
       {
         clientId: 'service-1',
         groupId: 'service-1-group',
-        topics: ['example-topic'],
+        topics: ['example-topic', 'channel-events', 'message-events'],
       },
       messageHandler
     ),
     forwardRef(() => AppModule),
   ],
-  exports: [SharedKafkaModule],
+  providers: [
+    {
+      provide: 'SHARED_KAFKA_SERVICE',
+      useExisting: KafkaService,
+    },
+  ],
+  exports: [SharedKafkaModule, 'SHARED_KAFKA_SERVICE'],
 })
 export class KafkaModule {
   constructor(@Inject(EventCounterService) eventCounterService: EventCounterService) {

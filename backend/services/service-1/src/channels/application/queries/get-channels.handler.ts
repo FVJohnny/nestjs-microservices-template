@@ -1,0 +1,23 @@
+import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
+import { Inject } from '@nestjs/common';
+import { GetChannelsQuery } from './get-channels.query';
+import { Channel } from '../../domain/entities/channel.entity';
+import type { ChannelRepository } from '../../domain/repositories/channel.repository';
+
+@QueryHandler(GetChannelsQuery)
+export class GetChannelsHandler implements IQueryHandler<GetChannelsQuery> {
+  constructor(
+    @Inject('ChannelRepository')
+    private readonly channelRepository: ChannelRepository,
+  ) {}
+
+  async execute(query: GetChannelsQuery): Promise<Channel[]> {
+    const { userId } = query;
+
+    if (userId) {
+      return await this.channelRepository.findByUserId(userId);
+    }
+
+    return await this.channelRepository.findAll();
+  }
+}
