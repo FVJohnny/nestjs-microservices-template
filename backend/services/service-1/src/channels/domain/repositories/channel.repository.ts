@@ -1,9 +1,6 @@
 import { Channel } from '../entities/channel.entity';
+import { Repository } from '@libs/nestjs-ddd';
 
-export interface ChannelRepository {
-  save(channel: Channel): Promise<void>;
-  findById(id: string): Promise<Channel | null>;
+export interface ChannelRepository extends Repository<Channel> {
   findByUserId(userId: string): Promise<Channel[]>;
-  findAll(): Promise<Channel[]>;
-  delete(id: string): Promise<void>;
 }

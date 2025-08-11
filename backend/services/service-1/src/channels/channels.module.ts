@@ -41,7 +41,6 @@ const EventHandlers = [ChannelRegisteredHandler, MessageReceivedHandler];
       provide: 'ChannelRepository',
       useClass: InMemoryChannelRepository,
     },
-    // Map SHARED_KAFKA_SERVICE to KAFKA_SERVICE for the DDD library
     {
       provide: 'KAFKA_SERVICE',
       useExisting: 'SHARED_KAFKA_SERVICE',

@@ -9,9 +9,10 @@ export class InMemoryChannelRepository implements ChannelRepository {
   
   private channels: Map<string, Channel> = new Map();
 
-  async save(channel: Channel): Promise<void> {
+  async save(channel: Channel): Promise<Channel> {
     this.logger.log(`Saving channel: ${channel.id}`);
     this.channels.set(channel.id, channel);
+    return channel;
   }
 
   async findById(id: string): Promise<Channel | null> {
@@ -31,8 +32,12 @@ export class InMemoryChannelRepository implements ChannelRepository {
     return Array.from(this.channels.values());
   }
 
-  async delete(id: string): Promise<void> {
+  async remove(id: string): Promise<void> {
     this.logger.log(`Deleting channel: ${id}`);
     this.channels.delete(id);
+  }
+
+  async exists(id: string): Promise<boolean> {
+    return this.channels.has(id);
   }
 }
