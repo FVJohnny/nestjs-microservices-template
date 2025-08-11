@@ -5,14 +5,14 @@ import { ChannelDto } from '../dto/channel.dto';
 import { RegisterChannelCommand } from '../../application/commands/register-channel.command';
 import { GetChannelsQuery } from '../../application/queries/get-channels.query';
 import { Channel } from '../../domain/entities/channel.entity';
-import { Logger } from '@nestjs/common';
+import { CorrelationLogger } from '@libs/nestjs-common';
 import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('channels')
 @Controller('channels')
 export class ChannelsController {
 
-  private readonly logger = new Logger(ChannelsController.name);
+  private readonly logger = new CorrelationLogger(ChannelsController.name);
   
   constructor(
     private readonly commandBus: CommandBus,

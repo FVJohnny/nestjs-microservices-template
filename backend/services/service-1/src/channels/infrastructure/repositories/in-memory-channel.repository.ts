@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Channel } from '../../domain/entities/channel.entity';
 import { ChannelRepository } from '../../domain/repositories/channel.repository';
+import { CorrelationLogger } from '@libs/nestjs-common';
 
 @Injectable()
 export class InMemoryChannelRepository implements ChannelRepository {
   
-  private readonly logger = new Logger(InMemoryChannelRepository.name);
+  private readonly logger = new CorrelationLogger(InMemoryChannelRepository.name);
   
   private channels: Map<string, Channel> = new Map();
 

@@ -3,12 +3,12 @@ import { Inject } from '@nestjs/common';
 import { RegisterChannelCommand } from './register-channel.command';
 import { Channel } from '../../domain/entities/channel.entity';
 import type { ChannelRepository } from '../../domain/repositories/channel.repository';
-import { Logger } from '@nestjs/common';
+import { CorrelationLogger } from '@libs/nestjs-common';
 
 @CommandHandler(RegisterChannelCommand)
 export class RegisterChannelHandler implements ICommandHandler<RegisterChannelCommand> {
   
-  private readonly logger = new Logger(RegisterChannelHandler.name);
+  private readonly logger = new CorrelationLogger(RegisterChannelHandler.name);
 
   constructor(
     @Inject('ChannelRepository')

@@ -2,10 +2,11 @@ import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject, Logger } from '@nestjs/common';
 import { MessageReceivedEvent } from '../../domain/events/message-received.event';
 import type { MessagePublisher } from '@libs/nestjs-ddd';
+import { CorrelationLogger } from '@libs/nestjs-common';
 
 @EventsHandler(MessageReceivedEvent)
 export class MessageReceivedHandler implements IEventHandler<MessageReceivedEvent> {
-  private readonly logger = new Logger(MessageReceivedHandler.name);
+  private readonly logger = new CorrelationLogger(MessageReceivedHandler.name);
 
   constructor(
     @Inject('MessagePublisher')
