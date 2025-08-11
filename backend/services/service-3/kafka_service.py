@@ -47,14 +47,27 @@ class KafkaService:
                     'security_protocol': 'SASL_SSL',
                     'sasl_mechanism': 'SCRAM-SHA-256',
                     'sasl_plain_username': self.kafka_username,
-                    'sasl_plain_password': self.kafka_password
+                    'sasl_plain_password': self.kafka_password,
+                    # Additional connection settings for cloud Kafka
+                    'ssl_check_hostname': False,
+                    'ssl_cafile': None,
+                    'request_timeout_ms': 30000,
+                    'connections_max_idle_ms': 540000,
+                    'reconnect_backoff_ms': 50,
+                    'reconnect_backoff_max_ms': 1000
                 }
                 producer_config.update(auth_config)
                 consumer_config.update(auth_config)
             
-            # Initialize producer and consumer
+            # Initialize producer and consumer with better error handling
+            logger.info(f"[Service-3] Connecting to Kafka brokers: {self.kafka_brokers}")
+            logger.info(f"[Service-3] Using authentication: {'Yes' if self.kafka_username else 'No'}")
+            
             self.producer = KafkaProducer(**producer_config)
+            logger.info("[Service-3] Kafka producer initialized")
+            
             self.consumer = KafkaConsumer('example-topic', **consumer_config)
+            logger.info("[Service-3] Kafka consumer initialized")
             
             self.running = True
             
@@ -67,6 +80,9 @@ class KafkaService:
             
         except Exception as e:
             logger.error(f"[Service-3] Failed to initialize Kafka: {e}")
+            logger.error(f"[Service-3] Kafka config - brokers: {self.kafka_brokers}")
+            logger.error(f"[Service-3] Kafka config - auth: {'enabled' if self.kafka_username else 'disabled'}")
+            raise
             
     def stop(self):
         """Stop Kafka producer and consumer"""
