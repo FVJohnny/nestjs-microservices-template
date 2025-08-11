@@ -1,8 +1,8 @@
 services:
   service-1:
     build:
-      context: ${PWD}/backend/services/service-1
-      dockerfile: Dockerfile
+      context: ${PWD}/backend
+      dockerfile: services/service-1/Dockerfile
     image: copy-signals-service-1:latest
     environment:
       - NODE_ENV=production
@@ -18,8 +18,8 @@ services:
 
   service-2:
     build:
-      context: ${PWD}/backend/services/service-2
-      dockerfile: Dockerfile
+      context: ${PWD}/backend
+      dockerfile: services/service-2/Dockerfile
     image: copy-signals-service-2:latest
     environment:
       - NODE_ENV=production
