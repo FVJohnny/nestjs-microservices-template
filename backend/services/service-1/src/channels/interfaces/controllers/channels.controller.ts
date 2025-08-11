@@ -24,7 +24,7 @@ export class ChannelsController {
   @ApiOperation({ summary: 'Register a new channel' })
   @ApiBody({ type: RegisterChannelDto })
   async registerChannel(@Body() dto: RegisterChannelDto): Promise<{ channelId: string }> {
-    this.logger.log('[Controller - ChannelsController] Registering channel...');
+    this.logger.log('Registering channel...');
     const command = new RegisterChannelCommand(
       dto.channelType,
       dto.name,
@@ -40,7 +40,7 @@ export class ChannelsController {
   @ApiOperation({ summary: 'Get channels (optionally filtered by userId)' })
   @ApiQuery({ name: 'userId', required: false })
   async getChannels(@Query('userId') userId?: string): Promise<ChannelDto[]> {
-    this.logger.log('[Controller - ChannelsController] Getting channels...');
+    this.logger.log('Getting channels...');
     const query = new GetChannelsQuery(userId);
     const channels: Channel[] = await this.queryBus.execute(query);
 
@@ -80,7 +80,7 @@ export class ChannelsController {
       metadata?: Record<string, any>;
     },
   ): Promise<{ success: boolean }> {
-    this.logger.log('[Controller - ChannelsController] Simulating message...');
+    this.logger.log('Simulating message...');
     // This is a simplified example - in reality, messages would come from
     // external integrations (Telegram bot, Discord bot, etc.)
     // For now, we'll just return success

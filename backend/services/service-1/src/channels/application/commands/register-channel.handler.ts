@@ -17,7 +17,7 @@ export class RegisterChannelHandler implements ICommandHandler<RegisterChannelCo
   ) {}
 
   async execute(command: RegisterChannelCommand): Promise<string> {
-    this.logger.log('[Command Handler - RegisterChannelCommand] Registering channel...');
+    this.logger.log('Registering channel...');
     const { channelType, name, userId, connectionConfig } = command;
 
     // Create the channel aggregate

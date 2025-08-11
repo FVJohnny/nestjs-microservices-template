@@ -16,7 +16,7 @@ export class GetChannelsHandler implements IQueryHandler<GetChannelsQuery> {
   ) {}
 
   async execute(query: GetChannelsQuery): Promise<Channel[]> {
-    this.logger.log('[Query Handler - GetChannelsQuery] Handling GetChannelsQuery...');
+    this.logger.log('Handling GetChannelsQuery...');
     const { userId } = query;
 
     if (userId) {
