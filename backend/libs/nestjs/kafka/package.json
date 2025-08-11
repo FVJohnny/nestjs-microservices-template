@@ -1,0 +1,21 @@
+{
+  "name": "@libs/nestjs-kafka",
+  "version": "1.0.0",
+  "description": "Shared Kafka module for NestJS services",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0",
+    "kafkajs": "^2.2.4"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^11.0.1",
+    "kafkajs": "^2.2.4",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}

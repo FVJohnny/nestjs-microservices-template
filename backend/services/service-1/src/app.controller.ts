@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { AppService } from './app.service';
-import { KafkaService } from './kafka/kafka.service';
+import { KafkaService } from '@libs/nestjs-kafka';
+import { UserCreatedEvent, ApiResponse } from '@libs/nestjs-types';
 
 @Controller()
 export class AppController {

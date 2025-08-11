@@ -1,0 +1,14 @@
+{
+  "name": "@libs/nestjs-types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types and interfaces for NestJS services",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
