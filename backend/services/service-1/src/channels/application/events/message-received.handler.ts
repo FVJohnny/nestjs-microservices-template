@@ -13,7 +13,7 @@ export class MessageReceivedHandler implements IEventHandler<MessageReceivedEven
   ) {}
 
   async handle(event: MessageReceivedEvent): Promise<void> {
-    this.logger.log(`Handling MessageReceivedEvent for channel: ${event.aggregateId}`);
+    this.logger.log(`[Event Handler - MessageReceivedEvent] Handling MessageReceivedEvent for channel: ${event.aggregateId}`);
 
     const message = {
       eventId: `${event.messageId}-${Date.now()}`,

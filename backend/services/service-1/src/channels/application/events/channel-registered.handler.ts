@@ -13,7 +13,7 @@ export class ChannelRegisteredHandler implements IEventHandler<ChannelRegistered
   ) {}
 
   async handle(event: ChannelRegisteredEvent): Promise<void> {
-    this.logger.log(`Handling ChannelRegisteredEvent for channel: ${event.aggregateId}`);
+    this.logger.log('[Event Handler - ChannelRegisteredEvent] Publishing ChannelRegisteredEvent to message broker...');
 
     const message = {
       eventId: `${event.aggregateId}-${Date.now()}`,

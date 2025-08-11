@@ -3,9 +3,13 @@ import { Inject } from '@nestjs/common';
 import { RegisterChannelCommand } from './register-channel.command';
 import { Channel } from '../../domain/entities/channel.entity';
 import type { ChannelRepository } from '../../domain/repositories/channel.repository';
+import { Logger } from '@nestjs/common';
 
 @CommandHandler(RegisterChannelCommand)
 export class RegisterChannelHandler implements ICommandHandler<RegisterChannelCommand> {
+  
+  private readonly logger = new Logger(RegisterChannelHandler.name);
+
   constructor(
     @Inject('ChannelRepository')
     private readonly channelRepository: ChannelRepository,
@@ -13,6 +17,7 @@ export class RegisterChannelHandler implements ICommandHandler<RegisterChannelCo
   ) {}
 
   async execute(command: RegisterChannelCommand): Promise<string> {
+    this.logger.log('[Command Handler - RegisterChannelCommand] Registering channel...');
     const { channelType, name, userId, connectionConfig } = command;
 
     // Create the channel aggregate
