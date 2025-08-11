@@ -4,19 +4,21 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Copy shared libraries first (don't install deps - use peer deps from service)
-COPY libs ./libs
-
-# Copy service package files and install dependencies
+# Copy service package files and install dependencies first
 COPY services/service-1/package*.json ./services/service-1/
 WORKDIR /app/services/service-1
 RUN npm ci --include=dev
 
-# Copy source and configs required for build
-COPY services/service-1/nest-cli.json services/service-1/tsconfig*.json ./
-COPY services/service-1/src ./src
+# Go back to root and copy shared libraries
+WORKDIR /app
+COPY libs ./libs
 
-# Build the application (outputs to dist/)
+# Copy service source and configs
+COPY services/service-1/nest-cli.json services/service-1/tsconfig*.json ./services/service-1/
+COPY services/service-1/src ./services/service-1/src
+
+# Build from the service directory with proper lib paths
+WORKDIR /app/services/service-1
 RUN npm run build
 
 # --- Prod deps stage: install production dependencies only ---
