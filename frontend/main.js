@@ -14,8 +14,8 @@ async function updateServiceStatus(service) {
   const eventsValue = document.getElementById(`service-${service.id}-events`);
   
   try {
-    // Use stats endpoint to check both health and get event count in one request
-    const statsResponse = await fetch(`${service.baseUrl}/stats`, { 
+    // Use kafka stats endpoint to check both health and get event count in one request
+    const statsResponse = await fetch(`${service.baseUrl}/kafka/stats`, { 
       headers: { 'Accept': 'application/json' },
       timeout: 5000 
     });
@@ -65,11 +65,17 @@ async function triggerKafkaEvent(serviceNumber) {
     button.textContent = '⏳ Sending...';
     button.disabled = true;
     
-    const response = await fetch(`/api/service-${serviceNumber}/publish-event`, {
+    const response = await fetch(`/api/service-${serviceNumber}/kafka/publish-event?topic=example-topic`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-      }
+      },
+      body: JSON.stringify({
+        type: 'test.event',
+        userId: 'test-user',
+        timestamp: new Date().toISOString(),
+        data: { source: 'frontend-test' }
+      })
     });
     
     if (response.ok) {

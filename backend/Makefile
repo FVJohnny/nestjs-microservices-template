@@ -11,6 +11,8 @@ update-libs:
 	@cd libs/nestjs/ddd && npm ci && npm run build
 	@echo "🔧 Building nestjs-types library..."
 	@cd libs/nestjs/types && npm ci && npm run build
+	@echo "🔧 Building nestjs-common library..."
+	@cd libs/nestjs/common && npm ci && npm run build
 	@echo ""
 	@echo "📦 Updating service-1..."
 	@cd services/service-1 && npm install

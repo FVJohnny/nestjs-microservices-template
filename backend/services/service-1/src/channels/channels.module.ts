@@ -21,6 +21,7 @@ import { InMemoryChannelRepository } from './infrastructure/repositories/in-memo
 
 // Shared DDD Library
 import { KafkaMessagePublisher } from '@libs/nestjs-ddd';
+import { KafkaService } from '@libs/nestjs-kafka';
 
 const CommandHandlers = [RegisterChannelHandler];
 const QueryHandlers = [GetChannelsHandler];
@@ -43,7 +44,7 @@ const EventHandlers = [ChannelRegisteredHandler, MessageReceivedHandler];
     },
     {
       provide: 'KAFKA_SERVICE',
-      useExisting: 'SHARED_KAFKA_SERVICE',
+      useExisting: KafkaService,
     },
     {
       provide: 'MessagePublisher',
@@ -51,9 +52,6 @@ const EventHandlers = [ChannelRegisteredHandler, MessageReceivedHandler];
       // useClass: RedisMessagePublisher,
     },
   ],
-  exports: [
-    'ChannelRepository',
-    'MessagePublisher',
-  ],
+  exports: [],
 })
 export class ChannelsModule {}

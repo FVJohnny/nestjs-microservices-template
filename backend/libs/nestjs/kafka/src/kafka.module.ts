@@ -1,5 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { KafkaService } from './kafka.service';
+import { KafkaController } from './kafka.controller';
 import { KafkaModuleOptions, KafkaMessageHandler } from './interfaces/kafka-config.interface';
 
 @Module({})
@@ -7,6 +8,7 @@ export class KafkaModule {
   static forRoot(options: KafkaModuleOptions, messageHandler?: KafkaMessageHandler): DynamicModule {
     return {
       module: KafkaModule,
+      controllers: [KafkaController],
       providers: [
         {
           provide: 'KAFKA_OPTIONS',
@@ -30,6 +32,7 @@ export class KafkaModule {
   }): DynamicModule {
     return {
       module: KafkaModule,
+      controllers: [KafkaController],
       providers: [
         {
           provide: 'KAFKA_OPTIONS',

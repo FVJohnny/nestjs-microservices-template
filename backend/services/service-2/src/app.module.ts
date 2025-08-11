@@ -1,11 +1,10 @@
-import { Module, forwardRef } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { Module } from '@nestjs/common';
 import { KafkaModule } from './kafka/kafka.module';
+import { HeartbeatModule } from '@libs/nestjs-common';
 
 @Module({
-  imports: [forwardRef(() => KafkaModule)],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [KafkaModule, HeartbeatModule],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

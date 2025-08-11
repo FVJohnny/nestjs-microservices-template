@@ -1,19 +1,18 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { KafkaModule } from './kafka/kafka.module';
 import { ChannelsModule } from './channels/channels.module';
+import { HeartbeatModule } from '@libs/nestjs-common';
 
 @Module({
   imports: [
-    forwardRef(() => KafkaModule),
+    KafkaModule,
     ChannelsModule,
+    HeartbeatModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService, 
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,

@@ -27,16 +27,16 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-@app.get("/")
+@app.get("/health")
 async def root():
     return {"service": "service-3", "status": "ok"}
 
-@app.get("/stats")
+@app.get("/kafka/stats")
 async def get_stats():
     """Get service statistics including events processed"""
     return event_counter.get_stats()
 
-@app.post("/publish-event")
+@app.post("/kafka/publish-event")
 async def publish_event(event: GenericEvent = None):
     """Publish generic events to Kafka"""
     try:

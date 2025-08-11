@@ -1,6 +1,5 @@
-import { Module, Inject, forwardRef } from '@nestjs/common';
-import { KafkaModule as SharedKafkaModule, KafkaService } from '@libs/nestjs-kafka';
-import { AppModule } from '../app.module';
+import { Module } from '@nestjs/common';
+import { KafkaModule as SharedKafkaModule } from '@libs/nestjs-kafka';
 
 // Message handler for service-1
 const messageHandler = async ({ topic, partition, message }) => {
@@ -21,15 +20,9 @@ const messageHandler = async ({ topic, partition, message }) => {
       },
       messageHandler
     ),
-    forwardRef(() => AppModule),
   ],
-  providers: [
-    {
-      provide: 'SHARED_KAFKA_SERVICE',
-      useExisting: KafkaService,
-    },
-  ],
-  exports: [SharedKafkaModule, 'SHARED_KAFKA_SERVICE'],
+  providers: [],
+  exports: [SharedKafkaModule],
 })
 export class KafkaModule {
 }

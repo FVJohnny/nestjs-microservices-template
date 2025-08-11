@@ -1,0 +1,28 @@
+{
+  "name": "@libs/nestjs-common",
+  "version": "1.0.0",
+  "description": "Shared common utilities for NestJS services (e.g., Heartbeat module)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "typescript": "^5.7.3"
+  },
+  "keywords": [
+    "nestjs",
+    "common",
+    "heartbeat",
+    "health",
+    "shared"
+  ],
+  "author": "",
+  "license": "MIT"
+}
