@@ -29,7 +29,7 @@ export class MessageReceivedHandler implements IEventHandler<MessageReceivedEven
     };
 
     try {
-      await this.kafkaPublisher.publish('message-events', message);
+      await this.kafkaPublisher.publish('example-topic', message);
       this.logger.log(`Published MessageReceivedEvent to Kafka: ${event.messageId}`);
     } catch (error) {
       this.logger.error(`Failed to publish MessageReceivedEvent: ${error.message}`, error.stack);

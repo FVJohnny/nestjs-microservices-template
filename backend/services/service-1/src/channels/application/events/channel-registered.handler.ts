@@ -32,7 +32,7 @@ export class ChannelRegisteredHandler implements IEventHandler<ChannelRegistered
     };
 
     try {
-      await this.kafkaPublisher.publish('channel-events', message);
+      await this.kafkaPublisher.publish('example-topic', message);
       this.logger.log(`Published ChannelRegisteredEvent to Kafka: ${event.aggregateId}`);
     } catch (error) {
       this.logger.error(`Failed to publish ChannelRegisteredEvent: ${error.message}`, error.stack);

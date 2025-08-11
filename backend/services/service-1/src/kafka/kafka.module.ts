@@ -28,7 +28,7 @@ const messageHandler = async ({ topic, partition, message }) => {
       {
         clientId: 'service-1',
         groupId: 'service-1-group',
-        topics: ['example-topic', 'channel-events', 'message-events'],
+        topics: ['example-topic'],
       },
       messageHandler
     ),
