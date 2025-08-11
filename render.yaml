@@ -3,7 +3,8 @@ services:
     name: service-1
     region: frankfurt
     env: docker
-    rootDir: backend/services/service-1
+    rootDir: backend
+    dockerfilePath: services/service-1/Dockerfile
     plan: starter
     autoDeploy: true
     envVars:
@@ -18,7 +19,8 @@ services:
     name: service-2
     region: frankfurt
     env: docker
-    rootDir: backend/services/service-2
+    rootDir: backend
+    dockerfilePath: services/service-2/Dockerfile
     plan: starter
     autoDeploy: true
     envVars:
@@ -33,7 +35,8 @@ services:
     name: service-3
     region: frankfurt
     env: docker
-    rootDir: backend/services/service-3
+    rootDir: backend
+    dockerfilePath: services/service-3/Dockerfile
     plan: starter
     autoDeploy: true
     envVars:
