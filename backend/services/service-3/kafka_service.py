@@ -6,6 +6,7 @@ from typing import Dict, Any
 from kafka import KafkaProducer, KafkaConsumer
 from kafka.errors import KafkaError
 import threading
+from event_counter import event_counter
 
 logger = logging.getLogger(__name__)
 
@@ -115,6 +116,11 @@ class KafkaService:
     def _handle_event(self, event_data: Dict[str, Any]):
         """Handle events"""
         logger.info(f"[Service-3] Processing event: {event_data.get('type')}")
+        
+        # Increment the event counter
+        event_counter.increment()
+        logger.info(f"[Service-3] Event counter incremented to {event_counter.get_count()}")
+        
         # Add your business logic here
     
     def publish_message(self, topic: str, message: Dict[str, Any], key: str = None):

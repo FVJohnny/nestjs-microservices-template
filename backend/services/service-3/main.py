@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 import logging
 import time
 from kafka_service import kafka_service
+from event_counter import event_counter
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -29,6 +30,11 @@ app = FastAPI(lifespan=lifespan)
 @app.get("/")
 async def root():
     return {"service": "service-3", "status": "ok"}
+
+@app.get("/stats")
+async def get_stats():
+    """Get service statistics including events processed"""
+    return event_counter.get_stats()
 
 @app.post("/publish-event")
 async def publish_event(event: GenericEvent = None):

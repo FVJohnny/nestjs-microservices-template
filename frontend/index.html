@@ -11,27 +11,79 @@
       <h1>Copy Signals AI ✨</h1>
       <p>Ultra-minimal frontend placeholder.</p>
 
-      <section class="links">
-        <h2>Backend services</h2>
-        <ul>
-          <li>
-            <a href="/api/service-1/" target="_blank" rel="noreferrer">Service 1 (NestJS)</a>
-            <button class="kafka-btn" data-service="1">🚀 Trigger Kafka Event</button>
-          </li>
-          <li>
-            <a href="/api/service-2/" target="_blank" rel="noreferrer">Service 2 (NestJS)</a>
-            <button class="kafka-btn" data-service="2">🚀 Trigger Kafka Event</button>
-          </li>
-          <li>
-            <a href="/api/service-3/" target="_blank" rel="noreferrer">Service 3 (FastAPI)</a>
-            <button class="kafka-btn" data-service="3">🚀 Trigger Kafka Event</button>
-          </li>
-        </ul>
-      </section>
+      <section class="services-dashboard">
+        <h2>🚀 Services Dashboard</h2>
+        <div class="services-grid">
+          <div class="service-card" id="service-1-card">
+            <div class="service-header">
+              <h3>Service 1</h3>
+              <span class="service-type">NestJS</span>
+            </div>
+            <div class="service-status">
+              <div class="status-indicator" id="service-1-status">
+                <span class="status-dot"></span>
+                <span class="status-text">Checking...</span>
+              </div>
+            </div>
+            <div class="service-metrics">
+              <div class="metric">
+                <span class="metric-label">Events Processed</span>
+                <span class="metric-value" id="service-1-events">-</span>
+              </div>
+            </div>
+            <div class="service-actions">
+              <button class="kafka-btn" data-service="1">🚀 Trigger Event</button>
+            </div>
+          </div>
 
-      <section>
-        <button id="ping">Ping services</button>
-        <pre id="output">Click "Ping services" to fetch status.</pre>
+          <div class="service-card" id="service-2-card">
+            <div class="service-header">
+              <h3>Service 2</h3>
+              <span class="service-type">NestJS</span>
+            </div>
+            <div class="service-status">
+              <div class="status-indicator" id="service-2-status">
+                <span class="status-dot"></span>
+                <span class="status-text">Checking...</span>
+              </div>
+            </div>
+            <div class="service-metrics">
+              <div class="metric">
+                <span class="metric-label">Events Processed</span>
+                <span class="metric-value" id="service-2-events">-</span>
+              </div>
+            </div>
+            <div class="service-actions">
+              <button class="kafka-btn" data-service="2">🚀 Trigger Event</button>
+            </div>
+          </div>
+
+          <div class="service-card" id="service-3-card">
+            <div class="service-header">
+              <h3>Service 3</h3>
+              <span class="service-type">FastAPI</span>
+            </div>
+            <div class="service-status">
+              <div class="status-indicator" id="service-3-status">
+                <span class="status-dot"></span>
+                <span class="status-text">Checking...</span>
+              </div>
+            </div>
+            <div class="service-metrics">
+              <div class="metric">
+                <span class="metric-label">Events Processed</span>
+                <span class="metric-value" id="service-3-events">-</span>
+              </div>
+            </div>
+            <div class="service-actions">
+              <button class="kafka-btn" data-service="3">🚀 Trigger Event</button>
+            </div>
+          </div>
+        </div>
+        <div class="dashboard-footer">
+          <div class="last-updated">Last updated: <span id="last-updated">Never</span></div>
+          <div class="refresh-info">Auto-refresh every 2 seconds</div>
+        </div>
       </section>
     </main>
     <script src="main.js"></script>
