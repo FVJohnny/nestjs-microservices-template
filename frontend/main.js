@@ -45,11 +45,40 @@ async function updateServiceStatus(service) {
   }
 }
 
-// Update all services
+// Update service status with independent polling cycle
+async function updateServiceStatusWithPolling(service) {
+  const delayAfterResponse = 3000; // 3 seconds delay after each response
+  
+  const poll = async () => {
+    await updateServiceStatus(service);
+    // Wait X seconds after the response, then poll again
+    setTimeout(poll, delayAfterResponse);
+  };
+  
+  // Start the polling cycle for this service
+  poll();
+}
+
+// Start independent polling for all services
+function startServicePolling() {
+  const lastUpdated = document.getElementById('last-updated');
+  
+  // Start independent polling cycles for each service
+  services.forEach(service => {
+    updateServiceStatusWithPolling(service);
+  });
+  
+  // Update timestamp every 5 seconds
+  setInterval(() => {
+    lastUpdated.textContent = new Date().toLocaleTimeString();
+  }, 5000);
+}
+
+// Legacy function for manual updates (if needed)
 async function updateAllServices() {
   const lastUpdated = document.getElementById('last-updated');
   
-  // Update all services in parallel
+  // Update all services in parallel (one-time update)
   await Promise.all(services.map(updateServiceStatus));
   
   // Update timestamp
@@ -112,6 +141,5 @@ kafkaBtns.forEach(button => {
   });
 });
 
-// Initialize dashboard and start auto-refresh
-updateAllServices();
-setInterval(updateAllServices, 2000);
+// Initialize dashboard with independent polling for each service
+startServicePolling();
