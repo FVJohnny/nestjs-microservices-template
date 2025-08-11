@@ -2,14 +2,12 @@ import { Controller, Get, Post, Body } from '@nestjs/common';
 import { AppService } from './app.service';
 import { KafkaService } from '@libs/nestjs-kafka';
 import { UserCreatedEvent, ApiResponse } from '@libs/nestjs-types';
-import { EventCounterService } from './event-counter.service';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly kafkaService: KafkaService,
-    private readonly eventCounterService: EventCounterService,
   ) {}
 
   @Get()
@@ -19,7 +17,7 @@ export class AppController {
 
   @Get('/stats')
   getStats() {
-    return this.eventCounterService.getStats();
+    return this.kafkaService.getStats();
   }
 
   @Post('/publish-event')

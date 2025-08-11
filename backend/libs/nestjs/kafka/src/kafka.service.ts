@@ -8,6 +8,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
   private producer: Producer;
   private consumer: Consumer;
   private messageHandler?: KafkaMessageHandler;
+  private processedMessages: number = 0;
 
   constructor(
     @Inject('KAFKA_OPTIONS') private readonly options: KafkaModuleOptions,
@@ -68,6 +69,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
 
           try {
             await this.messageHandler!(payload);
+            this.processedMessages++;
           } catch (error) {
             console.error(`[${this.options.clientId}] Error processing message from ${topic}:`, error);
           }
@@ -106,5 +108,13 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
       })),
     });
     console.log(`[${this.options.clientId}] Published ${messages.length} messages to ${topic}`);
+  }
+
+  getStats() {
+    return {
+      service: this.options.clientId,
+      eventsProcessed: this.processedMessages,
+      timestamp: new Date().toISOString(),
+    };
   }
 }
