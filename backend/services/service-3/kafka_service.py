@@ -37,7 +37,7 @@ class KafkaService:
                 'auto_offset_reset': 'earliest',
                 'enable_auto_commit': True,
                 'max_poll_records': 100,
-                'session_timeout_ms': 30000,
+                'session_timeout_ms': 20000,
                 'heartbeat_interval_ms': 3000
             }
             
