@@ -43,8 +43,8 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Copy shared libraries source code
-COPY --from=deps /app/libs ./libs
+# Copy built shared libraries from builder stage (includes dist/ directories)
+COPY --from=builder /app/libs ./libs
 
 # Copy service files and node_modules to the service directory
 COPY --from=deps /app/services/service-1/node_modules ./services/service-1/node_modules
