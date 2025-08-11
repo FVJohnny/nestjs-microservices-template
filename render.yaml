@@ -8,12 +8,7 @@ services:
     plan: starter
     autoDeploy: true
     envVars:
-      - key: KAFKA_BROKERS
-        value: d2cd9it6crocq0g2mec0.any.ap-southeast-1.mpx.prd.cloud.redpanda.com:9092
-      - key: KAFKA_USERNAME
-        value: fvjohnny
-      - key: KAFKA_PASSWORD
-        value: "|h2(]YoYgWyZ]3]WNPW7iZVIAIHZBM"
+      - fromGroup: Groupito
       - key: PROXY_BASE_PATH
         value: /api/service-1
 
@@ -26,12 +21,7 @@ services:
     plan: starter
     autoDeploy: true
     envVars:
-      - key: KAFKA_BROKERS
-        value: d2cd9it6crocq0g2mec0.any.ap-southeast-1.mpx.prd.cloud.redpanda.com:9092
-      - key: KAFKA_USERNAME
-        value: fvjohnny
-      - key: KAFKA_PASSWORD
-        value: "|h2(]YoYgWyZ]3]WNPW7iZVIAIHZBM"
+      - fromGroup: Groupito
       - key: PROXY_BASE_PATH
         value: /api/service-2
 
@@ -44,12 +34,7 @@ services:
     plan: starter
     autoDeploy: true
     envVars:
-      - key: KAFKA_BROKERS
-        value: d2cd9it6crocq0g2mec0.any.ap-southeast-1.mpx.prd.cloud.redpanda.com:9092
-      - key: KAFKA_USERNAME
-        value: fvjohnny
-      - key: KAFKA_PASSWORD
-        value: "|h2(]YoYgWyZ]3]WNPW7iZVIAIHZBM"
+      - fromGroup: Groupito
 
   - type: web
     name: frontend
