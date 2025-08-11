@@ -14,39 +14,28 @@ async function updateServiceStatus(service) {
   const eventsValue = document.getElementById(`service-${service.id}-events`);
   
   try {
-    // Check service health
-    const healthResponse = await fetch(`${service.baseUrl}/`, { 
+    // Use stats endpoint to check both health and get event count in one request
+    const statsResponse = await fetch(`${service.baseUrl}/stats`, { 
       headers: { 'Accept': 'application/json' },
       timeout: 5000 
     });
     
-    let eventsProcessed = 0;
-    
-    // For NestJS and FastAPI services, try to get stats (events processed)
-    try {
-        const statsResponse = await fetch(`${service.baseUrl}/stats`);
-        if (statsResponse.ok) {
-          const statsData = await statsResponse.json();
-          eventsProcessed = statsData.eventsProcessed || 0;
-        }
-      } catch (e) {
-        // Stats endpoint might not exist, that's ok
-        console.log(`Stats not available for ${service.name}:`, e.message);
-      }
-    
-    // Update UI based on health check
-    if (healthResponse.ok) {
+    if (statsResponse.ok) {
+      // Service is healthy and stats are available
+      const statsData = await statsResponse.json();
+      const eventsProcessed = statsData.eventsProcessed || 0;
+      
       statusDot.className = 'status-dot ok';
       statusText.textContent = 'OK';
       statusText.className = 'status-text ok';
       eventsValue.textContent = eventsProcessed;
       eventsValue.className = 'metric-value';
     } else {
-      throw new Error(`HTTP ${healthResponse.status}`);
+      throw new Error(`HTTP ${statsResponse.status}`);
     }
     
   } catch (error) {
-    // Service is down or unreachable
+    // Service is down, unreachable, or stats endpoint doesn't exist
     statusDot.className = 'status-dot error';
     statusText.textContent = 'KO';
     statusText.className = 'status-text error';
