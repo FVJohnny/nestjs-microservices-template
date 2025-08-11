@@ -6,7 +6,9 @@ import { RegisterChannelCommand } from '../../application/commands/register-chan
 import { GetChannelsQuery } from '../../application/queries/get-channels.query';
 import { Channel } from '../../domain/entities/channel.entity';
 import { Logger } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('channels')
 @Controller('channels')
 export class ChannelsController {
 
@@ -19,6 +21,8 @@ export class ChannelsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new channel' })
+  @ApiBody({ type: RegisterChannelDto })
   async registerChannel(@Body() dto: RegisterChannelDto): Promise<{ channelId: string }> {
     this.logger.log('[Controller - ChannelsController] Registering channel...');
     const command = new RegisterChannelCommand(
@@ -33,6 +37,8 @@ export class ChannelsController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get channels (optionally filtered by userId)' })
+  @ApiQuery({ name: 'userId', required: false })
   async getChannels(@Query('userId') userId?: string): Promise<ChannelDto[]> {
     this.logger.log('[Controller - ChannelsController] Getting channels...');
     const query = new GetChannelsQuery(userId);
@@ -51,6 +57,20 @@ export class ChannelsController {
   // Simulate receiving a message (in real implementation, this would come from external integrations)
   @Post(':channelId/messages')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Simulate receiving a message for a channel' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        messageId: { type: 'string' },
+        content: { type: 'string' },
+        senderId: { type: 'string' },
+        senderName: { type: 'string' },
+        metadata: { type: 'object', additionalProperties: true },
+      },
+      required: ['messageId', 'content', 'senderId', 'senderName'],
+    },
+  })
   async simulateMessage(
     @Body() messageData: {
       messageId: string;
