@@ -14,6 +14,8 @@ services:
         value: fvjohnny
       - key: KAFKA_PASSWORD
         value: "|h2(]YoYgWyZ]3]WNPW7iZVIAIHZBM"
+      - key: PROXY_BASE_PATH
+        value: /api/service-1
 
   - type: pserv
     name: service-2
@@ -30,6 +32,8 @@ services:
         value: fvjohnny
       - key: KAFKA_PASSWORD
         value: "|h2(]YoYgWyZ]3]WNPW7iZVIAIHZBM"
+      - key: PROXY_BASE_PATH
+        value: /api/service-2
 
   - type: pserv
     name: service-3
