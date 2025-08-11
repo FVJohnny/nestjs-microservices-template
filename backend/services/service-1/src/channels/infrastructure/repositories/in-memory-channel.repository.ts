@@ -10,29 +10,29 @@ export class InMemoryChannelRepository implements ChannelRepository {
   private channels: Map<string, Channel> = new Map();
 
   async save(channel: Channel): Promise<void> {
-    this.logger.log(`[Repository - InMemoryChannelRepository] Saving channel: ${channel.id}`);
+    this.logger.log(`Saving channel: ${channel.id}`);
     this.channels.set(channel.id, channel);
   }
 
   async findById(id: string): Promise<Channel | null> {
-    this.logger.log(`[Repository - InMemoryChannelRepository] Finding channel by id: ${id}`);
+    this.logger.log(`Finding channel by id: ${id}`);
     return this.channels.get(id) || null;
   }
 
   async findByUserId(userId: string): Promise<Channel[]> {
-    this.logger.log(`[Repository - InMemoryChannelRepository] Finding channels by user id: ${userId}`);
+    this.logger.log(`Finding channels by user id: ${userId}`);
     return Array.from(this.channels.values()).filter(
       channel => channel.userId === userId
     );
   }
 
   async findAll(): Promise<Channel[]> {
-    this.logger.log(`[Repository - InMemoryChannelRepository] Finding all channels`);
+    this.logger.log(`Finding all channels`);
     return Array.from(this.channels.values());
   }
 
   async delete(id: string): Promise<void> {
-    this.logger.log(`[Repository - InMemoryChannelRepository] Deleting channel: ${id}`);
+    this.logger.log(`Deleting channel: ${id}`);
     this.channels.delete(id);
   }
 }
