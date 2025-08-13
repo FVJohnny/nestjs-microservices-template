@@ -4,8 +4,8 @@ import { APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ChannelsModule } from './ddd/channels/channels.module';
 import { HeartbeatModule, CorrelationModule, SharedMongoDBModule } from '@libs/nestjs-common';
-import { KafkaSharedModule, KafkaService } from '@libs/nestjs-kafka';
-import { KafkaMessagePublisher } from '@libs/nestjs-ddd';
+import { KafkaSharedModule } from '@libs/nestjs-kafka';
+import { MessagingModule } from './messaging.module';
 
 @Module({
   imports: [
@@ -14,6 +14,7 @@ import { KafkaMessagePublisher } from '@libs/nestjs-ddd';
       groupId: 'service-1',
       retryDelayMs: 5000,
     }), // Import first to make it available globally
+    MessagingModule, // Import second to provide MessagePublisher globally
     CorrelationModule,
     SharedMongoDBModule.forRoot({
       uri: process.env.MONGODB_URI || 'mongodb://localhost:27017',
@@ -40,14 +41,6 @@ import { KafkaMessagePublisher } from '@libs/nestjs-ddd';
       provide: APP_PIPE,
       useClass: ValidationPipe,
     },
-    {
-      provide: 'MessagePublisher',
-      useFactory: (kafkaService: KafkaService) => {
-        return new KafkaMessagePublisher(kafkaService);
-      },
-      inject: [KafkaService],
-    },
   ],
-  exports: ['MessagePublisher'],
 })
 export class AppModule {}

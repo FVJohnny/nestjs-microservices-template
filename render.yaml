@@ -12,18 +12,6 @@ services:
       - key: PROXY_BASE_PATH
         value: /api/service-1
 
-  - type: pserv
-    name: service-2
-    region: frankfurt
-    env: docker
-    rootDir: backend
-    dockerfilePath: services/service-2/Dockerfile
-    plan: starter
-    autoDeploy: true
-    envVars:
-      - fromGroup: Groupito
-      - key: PROXY_BASE_PATH
-        value: /api/service-2
 
   - type: pserv
     name: service-3
@@ -47,7 +35,5 @@ services:
     envVars:
       - key: SERVICE_1_URL
         value: http://service-1-pdn6:10000/
-      - key: SERVICE_2_URL
-        value: http://service-2-e07k:10000/
       - key: SERVICE_3_URL
         value: http://service-3-qjlp:8000/ 

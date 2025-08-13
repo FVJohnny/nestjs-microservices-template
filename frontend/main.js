@@ -3,11 +3,10 @@ const kafkaBtns = document.querySelectorAll('.kafka-btn');
 // Service configuration
 const services = [
   { id: 1, name: 'Service 1', type: 'NestJS', baseUrl: '/api/service-1' },
-  { id: 2, name: 'Service 2', type: 'NestJS', baseUrl: '/api/service-2' },
   { id: 3, name: 'Service 3', type: 'FastAPI', baseUrl: '/api/service-3' }
 ];
 
-// Update service status and metrics using new consumer stats endpoints
+// Update service status and metrics using consumer stats endpoints
 async function updateServiceStatus(service) {
   const statusDot = document.querySelector(`#service-${service.id}-status .status-dot`);
   const statusText = document.querySelector(`#service-${service.id}-status .status-text`);
@@ -15,7 +14,7 @@ async function updateServiceStatus(service) {
   const detailsContainer = document.getElementById(`service-${service.id}-details`);
   
   try {
-    // Use new consumer-stats endpoint for detailed metrics
+    // Use consumer-stats endpoint for detailed metrics
     const statsResponse = await fetch(`${service.baseUrl}/test/kafka/consumer-stats`, { 
       headers: { 'Accept': 'application/json' },
       timeout: 5000 
@@ -33,7 +32,7 @@ async function updateServiceStatus(service) {
       eventsValue.className = 'metric-value';
       
       // Update detailed breakdown
-      updateEventDetails(service.id, statsData, detailsContainer);
+      updateEventDetails(statsData, detailsContainer);
       
       // Store additional metrics for potential future display
       service.lastStats = statsData;
@@ -42,39 +41,18 @@ async function updateServiceStatus(service) {
     }
     
   } catch (error) {
-    // Try fallback to old kafka/stats endpoint for backward compatibility
-    try {
-      const fallbackResponse = await fetch(`${service.baseUrl}/kafka/stats`, { 
-        headers: { 'Accept': 'application/json' },
-        timeout: 5000 
-      });
-      
-      if (fallbackResponse.ok) {
-        const fallbackData = await fallbackResponse.json();
-        const eventsProcessed = fallbackData.eventsProcessed || 0;
-        
-        statusDot.className = 'status-dot ok';
-        statusText.textContent = 'OK';
-        statusText.className = 'status-text ok';
-        eventsValue.textContent = eventsProcessed;
-        eventsValue.className = 'metric-value';
-      } else {
-        throw new Error(`HTTP ${fallbackResponse.status}`);
-      }
-    } catch (fallbackError) {
-      // Service is down, unreachable, or neither endpoint exists
-      statusDot.className = 'status-dot error';
-      statusText.textContent = 'KO';
-      statusText.className = 'status-text error';
-      eventsValue.textContent = 'N/A';
-      eventsValue.className = 'metric-value error';
-      console.error(`Service ${service.id} error:`, error.message);
-    }
+    // Service is down or unreachable
+    statusDot.className = 'status-dot error';
+    statusText.textContent = 'KO';
+    statusText.className = 'status-text error';
+    eventsValue.textContent = 'N/A';
+    eventsValue.className = 'metric-value error';
+    console.error(`Service ${service.id} error:`, error.message);
   }
 }
 
 // Function to update detailed event breakdown
-function updateEventDetails(serviceId, statsData, container) {
+function updateEventDetails(statsData, container) {
   if (!statsData.handlers || statsData.handlers.length === 0) {
     container.innerHTML = '<div class="no-events">No events processed yet</div>';
     return;
@@ -185,7 +163,7 @@ async function updateAllServices() {
   lastUpdated.textContent = new Date().toLocaleTimeString();
 }
 
-// Function to trigger Kafka event for a specific service using new test endpoints
+// Function to trigger Kafka event for a specific service using test endpoints
 async function triggerKafkaEvent(serviceNumber) {
   const button = document.querySelector(`[data-service="${serviceNumber}"]`);
   const originalText = button.textContent;
@@ -209,16 +187,6 @@ async function triggerKafkaEvent(serviceNumber) {
             botToken: "test-token"
           }
         }
-        break;
-      case '2':
-        // Service 2: Send notification test
-        endpoint = `/api/service-2/test/kafka/send-notification`;
-        payload = {
-          type: 'EMAIL',
-          to: 'frontend-test@example.com',
-          subject: 'Test from Frontend',
-          message: 'This is a test message from the frontend'
-        };
         break;
       case '3':
         // Service 3: Process data test

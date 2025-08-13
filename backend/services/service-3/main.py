@@ -45,10 +45,10 @@ async def get_consumer_stats():
     return {
         "consumerId": "service-3-consumer",
         "handlerCount": 1,
-        "topics": ["service-3-events"],
+        "topics": ["channel-events"],
         "handlers": [
             {
-                "topic": "service-3-events",
+                "topic": "channel-events",
                 "handlerName": "ChannelNotificationHandler",
                 "messagesProcessed": basic_stats.get("eventsProcessed", 0),
                 "messagesSucceeded": basic_stats.get("eventsProcessed", 0),

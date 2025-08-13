@@ -25,31 +25,6 @@ services:
       mongodb:
         condition: service_healthy
 
-  service-2:
-    image: node:22-alpine
-    working_dir: /app/services/service-2
-    volumes:
-      - ${PWD}/backend:/app
-      - /app/services/service-2/node_modules
-    command: sh -c "npm install && npm run start:dev"
-    environment:
-      - NODE_ENV=development
-      - PORT=3000
-      - CHOKIDAR_USEPOLLING=1
-      - WATCHPACK_POLLING=true
-      - KAFKA_BROKERS=kafka:9092
-      - PROXY_BASE_PATH=/api/service-2
-      - MONGODB_URI=mongodb://admin:admin123@mongodb:27017?authSource=admin
-      - MONGODB_DB_NAME=service-2-db
-    ports:
-      - "3002:3000"
-    networks:
-      - backend
-    depends_on:
-      kafka:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
 
   service-3:
     image: python:3.12-slim
@@ -79,11 +54,9 @@ services:
       - backend
     environment:
       - SERVICE_1_URL=http://service-1:3000/
-      - SERVICE_2_URL=http://service-2:3000/
       - SERVICE_3_URL=http://service-3:8000/
     depends_on:
       - service-1
-      - service-2
       - service-3
 
   zookeeper:

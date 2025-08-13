@@ -31,4 +31,4 @@ export interface ApiResponse<T = any> {
 export type Environment = 'development' | 'staging' | 'production';
 
 // Service identifiers
-export type ServiceName = 'service-1' | 'service-2' | 'service-3' | 'frontend';
+export type ServiceName = 'service-1' | 'service-3' | 'frontend';

@@ -66,7 +66,7 @@ class KafkaService:
             self.producer = KafkaProducer(**producer_config)
             logger.info("[Service-3] Kafka producer initialized")
             
-            self.consumer = KafkaConsumer('service-3-events', **consumer_config)
+            self.consumer = KafkaConsumer('channel-events', **consumer_config)
             logger.info("[Service-3] Kafka consumer initialized")
             
             self.running = True

@@ -4,9 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Copy Signals AI is a multi-service microservices architecture with three services:
+Copy Signals AI is a multi-service microservices architecture with two services:
 - **Service 1** (NestJS/TypeScript) - Template service with full DDD/CQRS pattern, channels management
-- **Service 2** (NestJS/TypeScript) - Basic service setup
 - **Service 3** (FastAPI/Python) - Event processing service
 
 **Service 1 serves as the architectural template for all new NestJS services** in this monorepo.
@@ -40,7 +39,7 @@ make update-libs  # Builds all shared libs and updates service dependencies
 
 ### Service-Level Commands (NestJS services)
 ```bash
-# From service-1/ or service-2/ directories
+# From service-1/ directory
 npm run build        # Build the service
 npm run start:dev    # Start with hot reload
 npm run start:prod   # Start production build
@@ -82,7 +81,7 @@ Services run in Docker containers with:
 
 ### Key Integration Points
 - All services connect to Kafka at `kafka:9092`
-- Services expose APIs on ports 3001, 3002, 3003
+- Services expose APIs on ports 3001, 3003
 - Frontend aggregates all services at localhost:3000
 - Correlation IDs track requests across service boundaries
 

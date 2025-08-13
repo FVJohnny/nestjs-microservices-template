@@ -16,8 +16,6 @@ update-libs:
 	@echo ""
 	@echo "📦 Updating service-1..."
 	@cd services/service-1 && npm install
-	@echo "📦 Updating service-2..."
-	@cd services/service-2 && npm install
 	@echo ""
 	@echo "✅ All shared libraries updated in all services!"
 	@echo "🎉 Ready to go!"
