@@ -9,27 +9,13 @@ import { MessagingModule } from './messaging.module';
 
 @Module({
   imports: [
+    MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/nestjs-app'),
     KafkaSharedModule.forRoot({
       clientId: 'service-1',
       groupId: 'service-1',
       retryDelayMs: 5000,
-    }), // Import first to make it available globally
-    SharedMongoDBModule.forRoot({
-      uri: process.env.MONGODB_URI || 'mongodb://localhost:27017',
-      dbName: process.env.MONGODB_DB_NAME || 'service-1-db',
-      connectionOptions: {
-        retryWrites: true,
-        w: 'majority',
-      },
     }),
-    MongooseModule.forRoot(
-      process.env.MONGODB_URI || 'mongodb://localhost:27017',
-      {
-        dbName: process.env.MONGODB_DB_NAME || 'service-1-db',
-        retryWrites: true,
-        w: 'majority',
-      }
-    ),
+    SharedMongoDBModule,
     HeartbeatModule,
     CorrelationModule,
     MessagingModule,
