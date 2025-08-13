@@ -1,14 +1,14 @@
 import { Controller, Post, Get, Body, Query, Param, HttpCode, HttpStatus } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { RegisterChannelDto } from '../dto/register-channel.dto';
-import { RegisterChannelResponseDto } from '../dto/register-channel-response.dto';
-import { SimulateMessageDto } from '../dto/simulate-message.dto';
-import { SimulateMessageResponseDto } from '../dto/simulate-message-response.dto';
-import { GetChannelsResponseDto } from '../dto/get-channels-response.dto';
-import { ChannelDto } from '../dto/channel.dto';
-import { RegisterChannelCommand } from '../../application/commands/register-channel.command';
-import { GetChannelsQuery } from '../../application/queries/get-channels.query';
-import { Channel } from '../../domain/entities/channel.entity';
+import { RegisterChannelDto } from '../dtos/register-channel.dto';
+import { RegisterChannelResponseDto } from '../dtos/register-channel-response.dto';
+import { SimulateMessageDto } from '../dtos/simulate-message.dto';
+import { SimulateMessageResponseDto } from '../dtos/simulate-message-response.dto';
+import { GetChannelsResponseDto } from '../dtos/get-channels-response.dto';
+import { ChannelDto } from '../dtos/channel.dto';
+import { RegisterChannelCommand } from '../../../application/commands/register-channel.command';
+import { GetChannelsQuery } from '../../../application/queries/get-channels.query';
+import { Channel } from '../../../domain/entities/channel.entity';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { ApiBody, ApiOperation, ApiQuery, ApiTags, ApiResponse, ApiParam } from '@nestjs/swagger';
 

@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsObject, IsIn } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { ChannelType } from '../../domain/value-objects/channel-type.vo';
+import { ChannelType } from '../../../domain/value-objects/channel-type.vo';
 
 export class RegisterChannelDto {
   @ApiProperty({

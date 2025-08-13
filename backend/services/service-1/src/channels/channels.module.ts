@@ -5,7 +5,7 @@ import { KafkaModule } from '../kafka/kafka.module';
 import { DDDModule } from '@libs/nestjs-ddd';
 
 // Controllers
-import { ChannelsController } from './interfaces/controllers/channels.controller';
+import { ChannelsController } from './interfaces/http/controllers/channels.controller';
 
 // Command Handlers
 import { RegisterChannelHandler } from './application/commands/register-channel.handler';
