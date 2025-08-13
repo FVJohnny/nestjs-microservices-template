@@ -1,28 +1,18 @@
 import { Module } from '@nestjs/common';
 import { KafkaModule as SharedKafkaModule } from '@libs/nestjs-kafka';
 
-// Message handler for service-1
-const messageHandler = async ({ topic, partition, message }) => {
-  console.log(`[Service-1] Received message from ${topic}:`, {
-    partition,
-    offset: message.offset,
-    value: message.value,
-  });
-};
-
 @Module({
   imports: [
-    SharedKafkaModule.forRoot(
-      {
-        clientId: 'service-1',
-        groupId: 'service-1-group',
-        topics: ['example-topic'],
-      },
-      messageHandler
-    ),
+    SharedKafkaModule.forRoot({
+      clientId: 'service-1-publisher',
+      groupId: 'service-1-publisher-group',
+      topics: [], // No topics to consume - this is only for publishing
+    }),
   ],
   providers: [],
   exports: [SharedKafkaModule],
 })
 export class KafkaModule {
+  // This module is purely for publishing events (secondary adapter)
+  // All consumption happens via specific consumers in interfaces/messaging/kafka/
 }
