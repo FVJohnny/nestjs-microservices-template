@@ -2,12 +2,13 @@ import { Module } from '@nestjs/common';
 import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ChannelsModule } from './channels/channels.module';
-import { SharedModule } from './shared/shared.module';
+import { ChannelsModule } from './ddd/channels/channels.module';
 import { HeartbeatModule, CorrelationModule, SharedMongoDBModule } from '@libs/nestjs-common';
+import { KafkaModule } from './kafka/kafka.module';
 
 @Module({
   imports: [
+    KafkaModule, // Import first to make it available globally
     CorrelationModule,
     SharedMongoDBModule.forRoot({
       uri: process.env.MONGODB_URI || 'mongodb://localhost:27017',
@@ -25,7 +26,6 @@ import { HeartbeatModule, CorrelationModule, SharedMongoDBModule } from '@libs/n
         w: 'majority',
       }
     ),
-    SharedModule,
     HeartbeatModule,
     ChannelsModule,
   ],

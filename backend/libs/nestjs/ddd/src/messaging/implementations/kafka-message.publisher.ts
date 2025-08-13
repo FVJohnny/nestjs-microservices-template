@@ -3,13 +3,13 @@ import { MessagePublisher } from '../interfaces/message-publisher.interface';
 
 /**
  * Kafka implementation of MessagePublisher interface.
- * This implementation directly injects KafkaPublisherService.
+ * This implementation uses KafkaService directly for publishing.
  */
 @Injectable()
 export class KafkaMessagePublisher implements MessagePublisher {
   private readonly logger = new Logger(KafkaMessagePublisher.name);
 
-  constructor(private readonly kafkaService: any) {} // Will be provided via module configuration
+  constructor(private readonly kafkaService: any) {} // KafkaService injected via module configuration
 
   async publish(topic: string, message: any): Promise<void> {
     try {

@@ -1,7 +1,6 @@
 export interface KafkaModuleOptions {
   clientId: string;
   groupId: string;
-  topics: string[];
   brokers?: string[];
   ssl?: boolean;
   sasl?: {

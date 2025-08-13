@@ -1,18 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { KafkaTopicHandler, KafkaMessagePayload } from '@libs/nestjs-kafka';
+import { KafkaService } from '../../../../../../kafka/kafka.service';
 import { RegisterChannelCommand } from '../../../../application/commands/register-channel.command';
 import { ProcessSignalCommand } from '../../../../application/commands/process-signal.command';
 
 @Injectable()
-export class TradingSignalsHandler implements KafkaTopicHandler {
+export class TradingSignalsHandler implements KafkaTopicHandler, OnModuleInit {
   readonly topicName = 'trading-signals';
   private readonly logger = new CorrelationLogger(TradingSignalsHandler.name);
 
   constructor(
     private readonly commandBus: CommandBus,
+    private readonly kafkaService: KafkaService,
   ) {}
+
+  async onModuleInit() {
+    this.kafkaService.registerHandler(this);
+  }
 
   async handle(payload: KafkaMessagePayload): Promise<void> {
     const startTime = Date.now();
@@ -21,7 +27,7 @@ export class TradingSignalsHandler implements KafkaTopicHandler {
     try {
       const messageValue = payload.message.value;
       if (!messageValue) {
-        this.logger.warn('Received empty message from trading-signals topic');
+        this.logger.warn('Received empty message from trading-signals topic ');
         return;
       }
 

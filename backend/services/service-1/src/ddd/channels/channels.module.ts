@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
-import { DDDModule, DDD_TOKENS } from '@libs/nestjs-ddd';
-import { KafkaPublisherService } from '@libs/nestjs-kafka';
+import { DDDModule } from '@libs/nestjs-ddd';
 
 // Controllers
 import { ChannelsController } from './interfaces/http/controllers/channels.controller';
@@ -12,8 +11,6 @@ import { TestKafkaController } from './interfaces/http/controllers/test-kafka.co
 import { TradingSignalsHandler } from './interfaces/messaging/kafka/handlers/trading-signals.handler';
 import { UserEventsHandler } from './interfaces/messaging/kafka/handlers/user-events.handler';
 
-// Kafka Service
-import { KafkaService } from '../shared/messaging/kafka/kafka.service';
 
 // Command Handlers
 import { RegisterChannelHandler } from './application/commands/register-channel.handler';
@@ -31,8 +28,6 @@ import { InMemoryChannelRepository } from './infrastructure/repositories/in-memo
 import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb-channel.repository';
 import { ChannelSchema } from './infrastructure/schemas/channel.schema';
 
-// Shared DDD Library
-import { KafkaMessagePublisher } from '@libs/nestjs-ddd';
 
 const CommandHandlers = [RegisterChannelHandler, ProcessSignalHandler];
 const QueryHandlers = [GetChannelsHandler];
@@ -53,30 +48,10 @@ const KafkaHandlers = [TradingSignalsHandler, UserEventsHandler];
     ...QueryHandlers,
     ...EventHandlers,
     ...KafkaHandlers,
-    KafkaService, // Add the Kafka service
     {
       provide: 'ChannelRepository',
       useClass: MongoDBChannelRepository, // Switch to MongoDB implementation
       // useClass: InMemoryChannelRepository, // Fallback to in-memory
-    },
-    // Single KafkaPublisherService instance
-    {
-      provide: KafkaPublisherService,
-      useFactory: () => {
-        const publisherConfig = {
-          clientId: 'service-1-publisher',
-          groupId: 'service-1-publisher-group',
-          topics: [], // No topics to consume - this is only for publishing
-        };
-        return new KafkaPublisherService(publisherConfig);
-      },
-    },
-    {
-      provide: 'MessagePublisher',
-      useFactory: (kafkaPublisher: KafkaPublisherService) => {
-        return new KafkaMessagePublisher(kafkaPublisher);
-      },
-      inject: [KafkaPublisherService],
     },
   ],
   exports: [],

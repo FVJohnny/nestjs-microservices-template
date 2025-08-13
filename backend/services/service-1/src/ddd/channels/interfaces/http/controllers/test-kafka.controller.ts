@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiTags, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { CorrelationLogger } from '@libs/nestjs-common';
-import { KafkaService } from '../../../../shared/messaging/kafka/kafka.service';
+import { KafkaService } from '../../../../../kafka/kafka.service';
 
 @ApiTags('testing')
 @Controller('test')
