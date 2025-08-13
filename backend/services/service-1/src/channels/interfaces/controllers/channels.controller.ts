@@ -1,12 +1,16 @@
-import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, Param, HttpCode, HttpStatus } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { RegisterChannelDto } from '../dto/register-channel.dto';
+import { RegisterChannelResponseDto } from '../dto/register-channel-response.dto';
+import { SimulateMessageDto } from '../dto/simulate-message.dto';
+import { SimulateMessageResponseDto } from '../dto/simulate-message-response.dto';
+import { GetChannelsResponseDto } from '../dto/get-channels-response.dto';
 import { ChannelDto } from '../dto/channel.dto';
 import { RegisterChannelCommand } from '../../application/commands/register-channel.command';
 import { GetChannelsQuery } from '../../application/queries/get-channels.query';
 import { Channel } from '../../domain/entities/channel.entity';
 import { CorrelationLogger } from '@libs/nestjs-common';
-import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiQuery, ApiTags, ApiResponse, ApiParam } from '@nestjs/swagger';
 
 @ApiTags('channels')
 @Controller('channels')
@@ -21,10 +25,25 @@ export class ChannelsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Register a new channel' })
-  @ApiBody({ type: RegisterChannelDto })
-  async registerChannel(@Body() dto: RegisterChannelDto): Promise<{ channelId: string }> {
-    this.logger.log('Registering channel...');
+  @ApiOperation({ 
+    summary: 'Register a new channel',
+    description: 'Creates a new communication channel (Telegram, Discord, or WhatsApp) for sending trading signals and messages.',
+  })
+  @ApiBody({ 
+    type: RegisterChannelDto,
+    description: 'Channel registration details',
+  })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Channel registered successfully',
+    type: RegisterChannelResponseDto,
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Invalid input data',
+  })
+  async registerChannel(@Body() dto: RegisterChannelDto): Promise<RegisterChannelResponseDto> {
+    this.logger.debug('Registering channel...');
     const command = new RegisterChannelCommand(
       dto.channelType,
       dto.name,
@@ -33,18 +52,31 @@ export class ChannelsController {
     );
 
     const channelId = await this.commandBus.execute(command);
-    return { channelId };
+    return new RegisterChannelResponseDto(channelId);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get channels (optionally filtered by userId)' })
-  @ApiQuery({ name: 'userId', required: false })
-  async getChannels(@Query('userId') userId?: string): Promise<ChannelDto[]> {
-    this.logger.log('Getting channels...');
+  @ApiOperation({ 
+    summary: 'Get channels (optionally filtered by userId)',
+    description: 'Retrieves a list of all registered channels. Optionally filter by user ID to get channels for a specific user.',
+  })
+  @ApiQuery({ 
+    name: 'userId', 
+    required: false,
+    description: 'Filter channels by user ID',
+    example: 'user-123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of channels retrieved successfully',
+    type: GetChannelsResponseDto,
+  })
+  async getChannels(@Query('userId') userId?: string): Promise<GetChannelsResponseDto> {
+    this.logger.debug('Getting channels...');
     const query = new GetChannelsQuery(userId);
     const channels: Channel[] = await this.queryBus.execute(query);
 
-    return channels.map(channel => new ChannelDto(
+    const channelDtos = channels.map(channel => new ChannelDto(
       channel.id,
       channel.channelType.toString(),
       channel.name,
@@ -52,38 +84,36 @@ export class ChannelsController {
       channel.isActive,
       channel.createdAt,
     ));
+
+    return new GetChannelsResponseDto(channelDtos);
   }
 
   // Simulate receiving a message (in real implementation, this would come from external integrations)
   @Post(':channelId/messages')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Simulate receiving a message for a channel' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        messageId: { type: 'string' },
-        content: { type: 'string' },
-        senderId: { type: 'string' },
-        senderName: { type: 'string' },
-        metadata: { type: 'object', additionalProperties: true },
-      },
-      required: ['messageId', 'content', 'senderId', 'senderName'],
-    },
+  @ApiOperation({ 
+    summary: 'Simulate receiving a message for a channel',
+    description: 'Simulates receiving a message from an external platform (Telegram, Discord, etc.). In production, this would be triggered by webhooks from the actual platforms.',
+  })
+  @ApiParam({
+    name: 'channelId',
+    description: 'Unique identifier of the channel to send the message to',
+    example: 'channel-uuid-123',
+  })
+  @ApiBody({ 
+    type: SimulateMessageDto,
+    description: 'Message data to simulate',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Message simulation completed',
+    type: SimulateMessageResponseDto,
   })
   async simulateMessage(
-    @Body() messageData: {
-      messageId: string;
-      content: string;
-      senderId: string;
-      senderName: string;
-      metadata?: Record<string, any>;
-    },
-  ): Promise<{ success: boolean }> {
-    this.logger.log('Simulating message...');
-    // This is a simplified example - in reality, messages would come from
-    // external integrations (Telegram bot, Discord bot, etc.)
-    // For now, we'll just return success
-    return { success: true };
+    @Param('channelId') channelId: string,
+    @Body() messageData: SimulateMessageDto,
+  ): Promise<SimulateMessageResponseDto> {
+    this.logger.debug('Simulating message...');
+    return new SimulateMessageResponseDto(true);
   }
 }
