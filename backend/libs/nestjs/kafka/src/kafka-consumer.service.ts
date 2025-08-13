@@ -42,7 +42,7 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
    * Register a handler for a specific topic
    * Can be called before or after initialization
    */
-  registerHandler(handler: KafkaTopicHandler): void {
+  async registerHandler(handler: KafkaTopicHandler): Promise<void> {
     this.handlerMap.set(handler.topicName, handler);
     
     // Initialize stats for this topic
@@ -57,29 +57,36 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
     });
     
     this.logger.log(`📝 Registered handler for topic: ${handler.topicName} (${handler.constructor.name})`);
+    this.logger.debug(`🔍 Current handler map size: ${this.handlerMap.size}, isInitialized: ${this.isInitialized}`);
 
-    // Do not automatically subscribe here - let the caller decide when to subscribe
-    // This prevents subscription conflicts when multiple handlers are registered
+    // Don't try to subscribe dynamically - too complex
+    // Just log that we'll handle it during initialization or manually trigger subscription
+    if (this.isInitialized) {
+      this.logger.warn(`⚠️ Handler registered after initialization: ${handler.topicName}. Consumer restart may be needed.`);
+    } else {
+      this.logger.log(`⏳ Consumer not yet initialized, will subscribe later to: ${handler.topicName}`);
+    }
   }
 
   /**
    * Register multiple handlers at once
    */
-  registerHandlers(handlers: KafkaTopicHandler[]): void {
-    handlers.forEach(handler => this.registerHandler(handler));
+  async registerHandlers(handlers: KafkaTopicHandler[]): Promise<void> {
+    await Promise.all(handlers.map(handler => this.registerHandler(handler)));
   }
 
   /**
    * Trigger subscription to all registered topics
-   * Call this after all handlers are registered
+   * Call this after all handlers are registered but before starting consumer
    */
   async subscribeToRegisteredTopics(): Promise<void> {
-    if (this.isInitialized) {
-      const topics = Array.from(this.handlerMap.keys());
-      if (topics.length > 0) {
-        await this.subscribeToTopics(topics);
-        this.logger.log(`🔄 Subscribed to ${topics.length} additional topics: ${topics.join(', ')}`);
-      }
+    const topics = Array.from(this.handlerMap.keys());
+    if (topics.length > 0) {
+      this.logger.log(`📡 Will subscribe to ${topics.length} registered topics when consumer initializes: ${topics.join(', ')}`);
+      // Don't actually subscribe here - let the initialization handle it
+      // Just confirm topics are ready
+    } else {
+      this.logger.warn('⚠️ No topics to subscribe to');
     }
   }
 
@@ -94,10 +101,14 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
       // Subscribe to all topics we have handlers for
       const topics = Array.from(this.handlerMap.keys());
       
+      this.logger.log(`🔍 Topics available at initialization: ${topics.length} - [${topics.join(', ')}]`);
+      
       if (topics.length === 0) {
         this.logger.warn('⚠️  No Kafka topics to subscribe to yet. Handlers can be registered later.');
       } else {
+        this.logger.log(`📡 Subscribing to ${topics.length} topics during initialization...`);
         await this.subscribeToTopics(topics);
+        this.logger.log(`✅ Successfully subscribed to all topics during initialization`);
       }
 
       // Start message consumption
@@ -133,19 +144,16 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async subscribeToTopic(topic: string): Promise<void> {
-    await this.consumer.subscribe({ 
-      topic,
-      fromBeginning: false,
-    });
-    this.logger.log(`✅ Subscribed to topic: ${topic}`);
-  }
-
-  private async checkAndSubscribeToNewTopics(): Promise<void> {
-    // This method will be called during initialization to subscribe to all registered topics
-    const topics = Array.from(this.handlerMap.keys());
-    if (topics.length > 0) {
-      await this.subscribeToTopics(topics);
-      this.logger.log(`🎉 Kafka consumer [${this.config.clientId}] successfully initialized and consuming from topics: ${topics.join(', ')}`);
+    this.logger.log(`🔔 Attempting to subscribe to topic: ${topic}`);
+    try {
+      await this.consumer.subscribe({ 
+        topic,
+        fromBeginning: false,
+      });
+      this.logger.log(`✅ Successfully subscribed to topic: ${topic}`);
+    } catch (error) {
+      this.logger.error(`❌ Failed to subscribe to topic ${topic}: ${error}`);
+      throw error;
     }
   }
 
@@ -233,6 +241,18 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
 
   // Check if consumer is ready
   isReady(): boolean {
-    return this.handlerMap.size > 0 && this.isInitialized;
+    return this.isInitialized;
   }
+
+  // Wait for consumer to be fully initialized
+  async waitForReady(timeoutMs: number = 30000): Promise<void> {
+    const startTime = Date.now();
+    while (!this.isInitialized && (Date.now() - startTime) < timeoutMs) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    if (!this.isInitialized) {
+      throw new Error(`Kafka consumer failed to initialize within ${timeoutMs}ms`);
+    }
+  }
+
 }

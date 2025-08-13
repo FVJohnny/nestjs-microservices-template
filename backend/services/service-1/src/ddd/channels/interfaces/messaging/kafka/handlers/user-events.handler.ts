@@ -15,7 +15,7 @@ export class UserEventsHandler implements KafkaTopicHandler, OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    this.kafkaService.registerHandler(this);
+    await this.kafkaService.registerHandler(this);
   }
 
   async handle(payload: KafkaMessagePayload): Promise<void> {

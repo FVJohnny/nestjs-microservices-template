@@ -14,8 +14,6 @@ import { MessagingModule } from './messaging.module';
       groupId: 'service-1',
       retryDelayMs: 5000,
     }), // Import first to make it available globally
-    MessagingModule, // Import second to provide MessagePublisher globally
-    CorrelationModule,
     SharedMongoDBModule.forRoot({
       uri: process.env.MONGODB_URI || 'mongodb://localhost:27017',
       dbName: process.env.MONGODB_DB_NAME || 'service-1-db',
@@ -33,6 +31,9 @@ import { MessagingModule } from './messaging.module';
       }
     ),
     HeartbeatModule,
+    CorrelationModule,
+    MessagingModule,
+    // Bounded Contexts
     ChannelsModule,
   ],
   controllers: [],

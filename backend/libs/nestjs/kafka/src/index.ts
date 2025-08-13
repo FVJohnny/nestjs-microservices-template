@@ -1,4 +1,3 @@
-export * from './kafka.module';
 export * from './kafka-publisher.service';
 export * from './kafka-consumer.service';
 export * from './kafka.controller';
