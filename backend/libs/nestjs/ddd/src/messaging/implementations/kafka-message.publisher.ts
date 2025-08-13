@@ -1,18 +1,15 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MessagePublisher } from '../interfaces/message-publisher.interface';
 
 /**
  * Kafka implementation of MessagePublisher interface.
- * This implementation uses the shared KafkaService from @libs/nestjs-kafka.
+ * This implementation directly injects KafkaPublisherService.
  */
 @Injectable()
 export class KafkaMessagePublisher implements MessagePublisher {
   private readonly logger = new Logger(KafkaMessagePublisher.name);
 
-  constructor(
-    @Inject('KAFKA_SERVICE')
-    private readonly kafkaService: any, // Using any to avoid circular dependency with @libs/nestjs-kafka
-  ) {}
+  constructor(private readonly kafkaService: any) {} // Will be provided via module configuration
 
   async publish(topic: string, message: any): Promise<void> {
     try {

@@ -4,7 +4,7 @@ import { SwaggerUtility } from '@libs/nestjs-common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   // Setup Swagger using shared utility
   SwaggerUtility.setupSwagger({
     app,
@@ -13,11 +13,11 @@ async function bootstrap() {
       description: 'Message processing microservice API',
       version: '1.0',
       path: 'docs',
-      customSiteTitle: 'Service-2 API'
+      customSiteTitle: 'Service-2 API',
     },
-    basePath: process.env.PROXY_BASE_PATH
+    basePath: process.env.PROXY_BASE_PATH,
   });
-  
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

@@ -1,8 +1,9 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { Kafka, Consumer } from 'kafkajs';
 import { KafkaTopicHandler, KafkaConsumerStats, KafkaTopicStats } from './interfaces/kafka-consumer.interface';
+import { createKafkaConfig } from './kafka-config.helper';
 
-export interface KafkaConsumerConfig {
+export interface KafkaConsumerServiceConfig {
   clientId: string;
   groupId: string;
   brokers?: string[];
@@ -10,20 +11,20 @@ export interface KafkaConsumerConfig {
 }
 
 @Injectable()
-export abstract class BaseKafkaConsumerService implements OnModuleInit, OnModuleDestroy {
-  protected readonly logger = new Logger(this.constructor.name);
-  protected consumer: Consumer;
-  protected handlerMap: Map<string, KafkaTopicHandler> = new Map();
-  protected topicStats: Map<string, KafkaTopicStats> = new Map();
-  protected startTime: Date = new Date();
+export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(KafkaConsumerService.name);
+  private consumer: Consumer;
+  private handlerMap: Map<string, KafkaTopicHandler> = new Map();
+  private topicStats: Map<string, KafkaTopicStats> = new Map();
+  private startTime: Date = new Date();
+  private isInitialized = false;
   
   constructor(
-    protected readonly config: KafkaConsumerConfig,
+    private readonly config: KafkaConsumerServiceConfig,
   ) {
-    const kafka = new Kafka({
-      clientId: this.config.clientId,
-      brokers: this.config.brokers || [process.env.KAFKA_BROKERS || 'kafka:9092'],
-    });
+    // Use shared configuration helper
+    const kafkaConfig = createKafkaConfig(this.config.clientId, this.config.brokers);
+    const kafka = new Kafka(kafkaConfig);
     
     this.consumer = kafka.consumer({ 
       groupId: this.config.groupId,
@@ -31,18 +32,17 @@ export abstract class BaseKafkaConsumerService implements OnModuleInit, OnModule
   }
 
   async onModuleInit() {
-    // Register handlers (implemented by child classes)
-    await this.registerHandlers();
-    
     // Initialize consumer asynchronously to not block app startup
     this.initializeConsumerAsync().catch(error => {
       this.logger.error(`Failed to initialize Kafka consumer asynchronously: ${error}`);
     });
   }
 
-  protected abstract registerHandlers(): Promise<void>;
-
-  protected addHandler(handler: KafkaTopicHandler): void {
+  /**
+   * Register a handler for a specific topic
+   * Can be called before or after initialization
+   */
+  registerHandler(handler: KafkaTopicHandler): void {
     this.handlerMap.set(handler.topicName, handler);
     
     // Initialize stats for this topic
@@ -57,6 +57,30 @@ export abstract class BaseKafkaConsumerService implements OnModuleInit, OnModule
     });
     
     this.logger.log(`📝 Registered handler for topic: ${handler.topicName} (${handler.constructor.name})`);
+
+    // Do not automatically subscribe here - let the caller decide when to subscribe
+    // This prevents subscription conflicts when multiple handlers are registered
+  }
+
+  /**
+   * Register multiple handlers at once
+   */
+  registerHandlers(handlers: KafkaTopicHandler[]): void {
+    handlers.forEach(handler => this.registerHandler(handler));
+  }
+
+  /**
+   * Trigger subscription to all registered topics
+   * Call this after all handlers are registered
+   */
+  async subscribeToRegisteredTopics(): Promise<void> {
+    if (this.isInitialized) {
+      const topics = Array.from(this.handlerMap.keys());
+      if (topics.length > 0) {
+        await this.subscribeToTopics(topics);
+        this.logger.log(`🔄 Subscribed to ${topics.length} additional topics: ${topics.join(', ')}`);
+      }
+    }
   }
 
   private async initializeConsumerAsync(): Promise<void> {
@@ -71,60 +95,20 @@ export abstract class BaseKafkaConsumerService implements OnModuleInit, OnModule
       const topics = Array.from(this.handlerMap.keys());
       
       if (topics.length === 0) {
-        this.logger.warn('⚠️  No Kafka topics to subscribe to. No handlers were registered.');
-        return;
-      }
-      
-      this.logger.log(`📡 Subscribing to ${topics.length} topics: ${topics.join(', ')}`);
-      
-      for (const topic of topics) {
-        await this.consumer.subscribe({ 
-          topic,
-          fromBeginning: false,
-        });
-        this.logger.log(`✅ Subscribed to topic: ${topic}`);
+        this.logger.warn('⚠️  No Kafka topics to subscribe to yet. Handlers can be registered later.');
+      } else {
+        await this.subscribeToTopics(topics);
       }
 
+      // Start message consumption
       this.logger.log('⚡ Starting message consumption...');
       await this.consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
-          const startTime = Date.now();
-          const stats = this.topicStats.get(topic);
-          
-          try {
-            const handler = this.handlerMap.get(topic);
-            if (handler) {
-              await handler.handle({
-                topic,
-                partition,
-                message: {
-                  offset: message.offset,
-                  value: message.value?.toString() || null,
-                  timestamp: message.timestamp || Date.now().toString(),
-                  key: message.key?.toString() || null,
-                },
-              });
-              
-              // Update success stats
-              if (stats) {
-                this.updateStats(stats, startTime, true);
-              }
-            } else {
-              this.logger.warn(`❌ No handler found for topic: ${topic}`);
-            }
-          } catch (error) {
-            this.logger.error(`💥 Error processing message from topic ${topic}: ${error}`);
-            
-            // Update failure stats
-            if (stats) {
-              this.updateStats(stats, startTime, false);
-            }
-            
-            // Don't re-throw to avoid stopping the consumer
-          }
+          await this.handleMessage(topic, partition, message);
         },
       });
 
+      this.isInitialized = true;
       this.logger.log(`🎉 Kafka consumer [${this.config.clientId}] successfully initialized and consuming from topics: ${topics.join(', ')}`);
     } catch (error) {
       this.logger.error(`❌ Failed to initialize Kafka consumer: ${error}`);
@@ -137,6 +121,68 @@ export abstract class BaseKafkaConsumerService implements OnModuleInit, OnModule
           this.logger.error(`🔄 Retry failed: ${retryError}`);
         });
       }, retryDelay);
+    }
+  }
+
+  private async subscribeToTopics(topics: string[]): Promise<void> {
+    this.logger.log(`📡 Subscribing to ${topics.length} topics: ${topics.join(', ')}`);
+    
+    for (const topic of topics) {
+      await this.subscribeToTopic(topic);
+    }
+  }
+
+  private async subscribeToTopic(topic: string): Promise<void> {
+    await this.consumer.subscribe({ 
+      topic,
+      fromBeginning: false,
+    });
+    this.logger.log(`✅ Subscribed to topic: ${topic}`);
+  }
+
+  private async checkAndSubscribeToNewTopics(): Promise<void> {
+    // This method will be called during initialization to subscribe to all registered topics
+    const topics = Array.from(this.handlerMap.keys());
+    if (topics.length > 0) {
+      await this.subscribeToTopics(topics);
+      this.logger.log(`🎉 Kafka consumer [${this.config.clientId}] successfully initialized and consuming from topics: ${topics.join(', ')}`);
+    }
+  }
+
+  private async handleMessage(topic: string, partition: number, message: any): Promise<void> {
+    const startTime = Date.now();
+    const stats = this.topicStats.get(topic);
+    
+    try {
+      const handler = this.handlerMap.get(topic);
+      if (handler) {
+        await handler.handle({
+          topic,
+          partition,
+          message: {
+            offset: message.offset,
+            value: message.value?.toString() || null,
+            timestamp: message.timestamp || Date.now().toString(),
+            key: message.key?.toString() || null,
+          },
+        });
+        
+        // Update success stats
+        if (stats) {
+          this.updateStats(stats, startTime, true);
+        }
+      } else {
+        this.logger.warn(`❌ No handler found for topic: ${topic}`);
+      }
+    } catch (error) {
+      this.logger.error(`💥 Error processing message from topic ${topic}: ${error}`);
+      
+      // Update failure stats
+      if (stats) {
+        this.updateStats(stats, startTime, false);
+      }
+      
+      // Don't re-throw to avoid stopping the consumer
     }
   }
 
@@ -187,6 +233,6 @@ export abstract class BaseKafkaConsumerService implements OnModuleInit, OnModule
 
   // Check if consumer is ready
   isReady(): boolean {
-    return this.handlerMap.size > 0;
+    return this.handlerMap.size > 0 && this.isInitialized;
   }
 }

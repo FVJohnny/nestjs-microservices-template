@@ -1,8 +1,7 @@
 import { Controller, Get, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiTags, ApiBody, ApiResponse } from '@nestjs/swagger';
-import { KafkaService } from '@libs/nestjs-kafka';
 import { CorrelationLogger } from '@libs/nestjs-common';
-import { Service1KafkaConsumerService } from '../../../../shared/messaging/kafka/service-1-kafka-consumer.service';
+import { KafkaService } from '../../../../shared/messaging/kafka/kafka.service';
 
 @ApiTags('testing')
 @Controller('test')
@@ -11,7 +10,6 @@ export class TestKafkaController {
   
   constructor(
     private readonly kafkaService: KafkaService,
-    private readonly kafkaConsumerService: Service1KafkaConsumerService,
   ) {}
 
   @Post('kafka/create-channel')
@@ -41,7 +39,7 @@ export class TestKafkaController {
       payload,
     };
 
-    await this.kafkaService.publishMessage('trading-signals', message);
+    await this.kafkaService.getPublisher().publishMessage('trading-signals', message);
     
     this.logger.log(`Test message sent to Kafka: ${JSON.stringify(message)}`);
     return { success: true, message: 'Channel creation message sent to Kafka' };
@@ -85,7 +83,7 @@ export class TestKafkaController {
       payload,
     };
 
-    await this.kafkaService.publishMessage('trading-signals', message);
+    await this.kafkaService.getPublisher().publishMessage('trading-signals', message);
     
     this.logger.log(`Test signal sent to Kafka: ${JSON.stringify(message)}`);
     return { success: true, message: 'Signal processing message sent to Kafka' };
@@ -94,7 +92,7 @@ export class TestKafkaController {
   @Get('kafka/consumer-stats')
   @ApiOperation({
     summary: 'Get Kafka consumer statistics with counters',
-    description: 'Returns detailed statistics from the Service1KafkaConsumerService including message counters, processing times, and per-topic metrics',
+    description: 'Returns detailed statistics from the KafkaService including message counters, processing times, and per-topic metrics',
   })
   @ApiResponse({ 
     status: 200, 
@@ -130,6 +128,6 @@ export class TestKafkaController {
     },
   })
   getConsumerStats() {
-    return this.kafkaConsumerService.getStats();
+    return this.kafkaService.getConsumerStats();
   }
 }

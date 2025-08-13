@@ -5,12 +5,7 @@ import { Service2Module } from './service-2.module';
 import { HeartbeatModule } from '@libs/nestjs-common';
 
 @Module({
-  imports: [
-    KafkaModule,
-    SharedModule,
-    HeartbeatModule,
-    Service2Module,
-  ],
+  imports: [KafkaModule, SharedModule, HeartbeatModule, Service2Module],
   controllers: [],
   providers: [],
 })

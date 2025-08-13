@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
-import { KafkaModule } from './kafka/kafka.module';
 import { ChannelsModule } from './channels/channels.module';
 import { SharedModule } from './shared/shared.module';
 import { HeartbeatModule, CorrelationModule, SharedMongoDBModule } from '@libs/nestjs-common';
@@ -26,7 +25,6 @@ import { HeartbeatModule, CorrelationModule, SharedMongoDBModule } from '@libs/n
         w: 'majority',
       }
     ),
-    KafkaModule,
     SharedModule,
     HeartbeatModule,
     ChannelsModule,

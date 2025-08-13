@@ -18,11 +18,9 @@ const messageHandler = async ({ topic, partition, message }) => {
         groupId: 'service-2-group',
         topics: ['example-topic'],
       },
-      messageHandler
+      messageHandler,
     ),
   ],
   exports: [SharedKafkaModule],
 })
-export class KafkaModule {
-  
-}
+export class KafkaModule {}

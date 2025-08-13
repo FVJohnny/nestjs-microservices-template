@@ -1,35 +1,52 @@
-import { Injectable } from '@nestjs/common';
-import { BaseKafkaConsumerService, KafkaConsumerConfig } from '@libs/nestjs-kafka';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  KafkaConsumerService,
+  KafkaConsumerServiceConfig,
+} from '@libs/nestjs-kafka';
 import { ChannelEventsHandler } from '../../../interfaces/messaging/kafka/handlers/channel-events.handler';
 import { NotificationEventsHandler } from '../../../interfaces/messaging/kafka/handlers/notification-events.handler';
 
 @Injectable()
-export class Service2KafkaConsumerService extends BaseKafkaConsumerService {
-  
+export class Service2KafkaConsumerService implements OnModuleInit {
+  private kafkaConsumer: KafkaConsumerService;
+
   constructor(
     private readonly channelEventsHandler: ChannelEventsHandler,
     private readonly notificationEventsHandler: NotificationEventsHandler,
     // Add more handlers as needed for future bounded contexts
   ) {
     // Service-2 specific configuration
-    const config: KafkaConsumerConfig = {
+    const config: KafkaConsumerServiceConfig = {
       clientId: 'service-2-consumer',
       groupId: 'service-2-consumer-group',
       retryDelayMs: 5000,
     };
-    
-    super(config);
+
+    this.kafkaConsumer = new KafkaConsumerService(config);
   }
 
-  protected async registerHandlers(): Promise<void> {
+  async onModuleInit() {
+    // Initialize the consumer
+    await this.kafkaConsumer.onModuleInit();
+
     // Register all handlers for this service
-    this.addHandler(this.channelEventsHandler); // Listen to service-1's channel events
-    this.addHandler(this.notificationEventsHandler);
-    
+    this.kafkaConsumer.registerHandler(this.channelEventsHandler); // Listen to service-1's channel events
+    this.kafkaConsumer.registerHandler(this.notificationEventsHandler);
+
     // Future bounded contexts can add their handlers here:
-    // this.addHandler(this.paymentEventsHandler);
-    // this.addHandler(this.inventoryEventsHandler);
-    
-    this.logger.log(`🔍 Handler registration complete for Service-2. Registered ${this.handlerMap.size} handlers.`);
+    // this.kafkaConsumer.registerHandler(this.paymentEventsHandler);
+    // this.kafkaConsumer.registerHandler(this.inventoryEventsHandler);
+
+    // Subscribe to registered topics
+    await this.kafkaConsumer.subscribeToRegisteredTopics();
+  }
+
+  // Expose stats and other methods if needed
+  getStats() {
+    return this.kafkaConsumer.getStats();
+  }
+
+  isReady() {
+    return this.kafkaConsumer.isReady();
   }
 }

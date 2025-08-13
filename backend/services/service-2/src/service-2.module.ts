@@ -12,7 +12,7 @@ import { NotificationEventsHandler } from './interfaces/messaging/kafka/handlers
 import { Service2KafkaConsumerService } from './shared/messaging/kafka/service-2-kafka-consumer.service';
 
 // Shared DDD Library
-import { KafkaService } from '@libs/nestjs-kafka';
+import { KafkaPublisherService } from '@libs/nestjs-kafka';
 
 const KafkaHandlers = [ChannelEventsHandler, NotificationEventsHandler];
 
@@ -24,7 +24,7 @@ const KafkaHandlers = [ChannelEventsHandler, NotificationEventsHandler];
     Service2KafkaConsumerService, // Add the Kafka consumer service
     {
       provide: 'KAFKA_SERVICE',
-      useExisting: KafkaService,
+      useExisting: KafkaPublisherService,
     },
   ],
   exports: [],

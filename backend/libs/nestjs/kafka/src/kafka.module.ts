@@ -1,5 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { KafkaService } from './kafka.service';
+import { KafkaPublisherService } from './kafka-publisher.service';
+import { KafkaConsumerService } from './kafka-consumer.service';
 import { KafkaController } from './kafka.controller';
 import { KafkaModuleOptions, KafkaMessageHandler } from './interfaces/kafka-config.interface';
 
@@ -18,9 +19,25 @@ export class KafkaModule {
           provide: 'KAFKA_MESSAGE_HANDLER',
           useValue: messageHandler,
         },
-        KafkaService,
+        // Publisher service (legacy support)
+        KafkaPublisherService,
+        // Provide legacy KafkaService alias for backward compatibility
+        {
+          provide: 'KafkaService',
+          useExisting: KafkaPublisherService,
+        },
+        // Consumer service with config
+        {
+          provide: KafkaConsumerService,
+          useFactory: () => new KafkaConsumerService({
+            clientId: options.clientId + '-consumer',
+            groupId: options.groupId || options.clientId + '-group',
+            brokers: options.brokers,
+            retryDelayMs: 5000,
+          }),
+        },
       ],
-      exports: [KafkaService],
+      exports: [KafkaPublisherService, KafkaConsumerService, 'KafkaService'],
       global: false,
     };
   }
@@ -43,9 +60,29 @@ export class KafkaModule {
           provide: 'KAFKA_MESSAGE_HANDLER',
           useValue: options.messageHandler,
         },
-        KafkaService,
+        // Publisher service
+        KafkaPublisherService,
+        // Provide legacy KafkaService alias for backward compatibility
+        {
+          provide: 'KafkaService',
+          useExisting: KafkaPublisherService,
+        },
+        // Consumer service with async config
+        {
+          provide: KafkaConsumerService,
+          useFactory: async (...args: any[]) => {
+            const kafkaOptions = await options.useFactory(...args);
+            return new KafkaConsumerService({
+              clientId: kafkaOptions.clientId + '-consumer',
+              groupId: kafkaOptions.groupId || kafkaOptions.clientId + '-group',
+              brokers: kafkaOptions.brokers,
+              retryDelayMs: 5000,
+            });
+          },
+          inject: options.inject || [],
+        },
       ],
-      exports: [KafkaService],
+      exports: [KafkaPublisherService, KafkaConsumerService, 'KafkaService'],
       global: false,
     };
   }

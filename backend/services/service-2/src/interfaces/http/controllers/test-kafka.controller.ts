@@ -1,20 +1,26 @@
-import { Controller, Get, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags, ApiBody, ApiResponse } from '@nestjs/swagger';
-import { KafkaService } from '@libs/nestjs-kafka';
+import { KafkaPublisherService } from '@libs/nestjs-kafka';
 import { Service2KafkaConsumerService } from '../../../shared/messaging/kafka/service-2-kafka-consumer.service';
 
 @ApiTags('testing')
 @Controller('test')
 export class TestKafkaController {
-  
   constructor(
-    private readonly kafkaService: KafkaService,
+    private readonly kafkaService: KafkaPublisherService,
     private readonly kafkaConsumerService: Service2KafkaConsumerService,
   ) {}
 
   @Post('kafka/create-order')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Test Kafka order creation',
     description: 'Sends a CREATE_ORDER message to Kafka to test the consumer',
   })
@@ -30,18 +36,18 @@ export class TestKafkaController {
             properties: {
               productId: { type: 'string', example: 'product-456' },
               quantity: { type: 'number', example: 2 },
-              price: { type: 'number', example: 29.99 }
-            }
-          }
+              price: { type: 'number', example: 29.99 },
+            },
+          },
         },
-        shippingAddress: { 
+        shippingAddress: {
           type: 'object',
           properties: {
             street: { type: 'string', example: '123 Main St' },
             city: { type: 'string', example: 'San Francisco' },
             state: { type: 'string', example: 'CA' },
-            zip: { type: 'string', example: '94105' }
-          }
+            zip: { type: 'string', example: '94105' },
+          },
         },
       },
     },
@@ -54,13 +60,13 @@ export class TestKafkaController {
     };
 
     await this.kafkaService.publishMessage('order-events', message);
-    
+
     return { success: true, message: 'Order creation message sent to Kafka' };
   }
 
   @Post('kafka/send-notification')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Test Kafka notification sending',
     description: 'Sends a notification message to Kafka to test the consumer',
   })
@@ -68,7 +74,11 @@ export class TestKafkaController {
     schema: {
       type: 'object',
       properties: {
-        type: { type: 'string', enum: ['EMAIL', 'SMS', 'PUSH'], example: 'EMAIL' },
+        type: {
+          type: 'string',
+          enum: ['EMAIL', 'SMS', 'PUSH'],
+          example: 'EMAIL',
+        },
         to: { type: 'string', example: 'user@example.com' },
         subject: { type: 'string', example: 'Order Confirmation' },
         message: { type: 'string', example: 'Your order has been confirmed!' },
@@ -81,7 +91,7 @@ export class TestKafkaController {
   @ApiResponse({ status: 200, description: 'Message sent to Kafka' })
   async testSendNotification(@Body() payload: any) {
     let action = 'SEND_EMAIL';
-    
+
     switch (payload.type) {
       case 'SMS':
         action = 'SEND_SMS';
@@ -99,17 +109,18 @@ export class TestKafkaController {
     };
 
     await this.kafkaService.publishMessage('notification-events', message);
-    
+
     return { success: true, message: 'Notification message sent to Kafka' };
   }
 
   @Get('kafka/consumer-stats')
   @ApiOperation({
     summary: 'Get Kafka consumer statistics with counters',
-    description: 'Returns detailed statistics from the Service2KafkaConsumerService including message counters, processing times, and per-topic metrics',
+    description:
+      'Returns detailed statistics from the Service2KafkaConsumerService including message counters, processing times, and per-topic metrics',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Consumer statistics with counters and metrics',
     schema: {
       type: 'object',

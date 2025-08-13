@@ -1,7 +1,7 @@
 # Simple shortcuts to run dev and prod from repo root
 
 COMPOSE_DEV=infra/docker/docker-compose.dev.yml
-COMPOSE_PROD=infra/docker/docker-compose.yml
+COMPOSE_PROD=infra/docker/docker-compose.prod.yml
 
 .PHONY: dev dev-d dev-down dev-logs prod prod-d prod-down prod-logs rebuild-prod rebuild-dev
 
