@@ -30,7 +30,7 @@ export class ChannelRegisteredHandler implements IEventHandler<ChannelRegistered
     };
 
     try {
-      await this.messagePublisher.publish('example-topic', message);
+      await this.messagePublisher.publish('channel-events', message);
       this.logger.log(`Published ChannelRegisteredEvent to message broker: ${event.aggregateId}`);
     } catch (error) {
       this.logger.error(`Failed to publish ChannelRegisteredEvent: ${error.message}`, error.stack);

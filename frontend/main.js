@@ -7,42 +7,142 @@ const services = [
   { id: 3, name: 'Service 3', type: 'FastAPI', baseUrl: '/api/service-3' }
 ];
 
-// Update service status and metrics
+// Update service status and metrics using new consumer stats endpoints
 async function updateServiceStatus(service) {
   const statusDot = document.querySelector(`#service-${service.id}-status .status-dot`);
   const statusText = document.querySelector(`#service-${service.id}-status .status-text`);
   const eventsValue = document.getElementById(`service-${service.id}-events`);
+  const detailsContainer = document.getElementById(`service-${service.id}-details`);
   
   try {
-    // Use kafka stats endpoint to check both health and get event count in one request
-    const statsResponse = await fetch(`${service.baseUrl}/kafka/stats`, { 
+    // Use new consumer-stats endpoint for detailed metrics
+    const statsResponse = await fetch(`${service.baseUrl}/test/kafka/consumer-stats`, { 
       headers: { 'Accept': 'application/json' },
       timeout: 5000 
     });
     
     if (statsResponse.ok) {
-      // Service is healthy and stats are available
+      // Service is healthy and detailed stats are available
       const statsData = await statsResponse.json();
-      const eventsProcessed = statsData.eventsProcessed || 0;
+      const totalMessages = statsData.totalMessages || 0;
       
       statusDot.className = 'status-dot ok';
       statusText.textContent = 'OK';
       statusText.className = 'status-text ok';
-      eventsValue.textContent = eventsProcessed;
+      eventsValue.textContent = totalMessages;
       eventsValue.className = 'metric-value';
+      
+      // Update detailed breakdown
+      updateEventDetails(service.id, statsData, detailsContainer);
+      
+      // Store additional metrics for potential future display
+      service.lastStats = statsData;
     } else {
       throw new Error(`HTTP ${statsResponse.status}`);
     }
     
   } catch (error) {
-    // Service is down, unreachable, or stats endpoint doesn't exist
-    statusDot.className = 'status-dot error';
-    statusText.textContent = 'KO';
-    statusText.className = 'status-text error';
-    eventsValue.textContent = 'N/A';
-    eventsValue.className = 'metric-value error';
-    console.error(`Service ${service.id} error:`, error.message);
+    // Try fallback to old kafka/stats endpoint for backward compatibility
+    try {
+      const fallbackResponse = await fetch(`${service.baseUrl}/kafka/stats`, { 
+        headers: { 'Accept': 'application/json' },
+        timeout: 5000 
+      });
+      
+      if (fallbackResponse.ok) {
+        const fallbackData = await fallbackResponse.json();
+        const eventsProcessed = fallbackData.eventsProcessed || 0;
+        
+        statusDot.className = 'status-dot ok';
+        statusText.textContent = 'OK';
+        statusText.className = 'status-text ok';
+        eventsValue.textContent = eventsProcessed;
+        eventsValue.className = 'metric-value';
+      } else {
+        throw new Error(`HTTP ${fallbackResponse.status}`);
+      }
+    } catch (fallbackError) {
+      // Service is down, unreachable, or neither endpoint exists
+      statusDot.className = 'status-dot error';
+      statusText.textContent = 'KO';
+      statusText.className = 'status-text error';
+      eventsValue.textContent = 'N/A';
+      eventsValue.className = 'metric-value error';
+      console.error(`Service ${service.id} error:`, error.message);
+    }
   }
+}
+
+// Function to update detailed event breakdown
+function updateEventDetails(serviceId, statsData, container) {
+  if (!statsData.handlers || statsData.handlers.length === 0) {
+    container.innerHTML = '<div class="no-events">No events processed yet</div>';
+    return;
+  }
+
+  const breakdown = document.createElement('div');
+  breakdown.className = 'topics-breakdown';
+  
+  // Add summary info
+  const summary = document.createElement('div');
+  summary.className = 'summary-info';
+  summary.innerHTML = `
+    <div class="summary-item">
+      <span class="summary-label">Consumer:</span>
+      <span class="summary-value">${statsData.consumerId}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Success Rate:</span>
+      <span class="summary-value">${statsData.totalMessages > 0 ? Math.round((statsData.totalSuccesses / statsData.totalMessages) * 100) : 0}%</span>
+    </div>
+  `;
+  breakdown.appendChild(summary);
+
+  // Add topic details
+  const topicsContainer = document.createElement('div');
+  topicsContainer.className = 'topics-container';
+  
+  statsData.handlers.forEach(handler => {
+    const topicElement = document.createElement('div');
+    topicElement.className = 'topic-item';
+    
+    const avgTime = handler.averageProcessingTime > 0 ? `${Math.round(handler.averageProcessingTime)}ms` : '-';
+    const lastProcessed = handler.lastProcessedAt ? new Date(handler.lastProcessedAt).toLocaleTimeString() : 'Never';
+    
+    topicElement.innerHTML = `
+      <div class="topic-header">
+        <span class="topic-name">${handler.topic}</span>
+        <span class="topic-count">${handler.messagesProcessed}</span>
+      </div>
+      <div class="topic-details">
+        <div class="topic-stat">
+          <span class="stat-label">Handler:</span>
+          <span class="stat-value">${handler.handlerName}</span>
+        </div>
+        <div class="topic-stat">
+          <span class="stat-label">Success:</span>
+          <span class="stat-value">${handler.messagesSucceeded}</span>
+        </div>
+        <div class="topic-stat">
+          <span class="stat-label">Failed:</span>
+          <span class="stat-value">${handler.messagesFailed}</span>
+        </div>
+        <div class="topic-stat">
+          <span class="stat-label">Avg Time:</span>
+          <span class="stat-value">${avgTime}</span>
+        </div>
+        <div class="topic-stat">
+          <span class="stat-label">Last Processed:</span>
+          <span class="stat-value">${lastProcessed}</span>
+        </div>
+      </div>
+    `;
+    
+    topicsContainer.appendChild(topicElement);
+  });
+  
+  breakdown.appendChild(topicsContainer);
+  container.querySelector('.topics-breakdown').replaceWith(breakdown);
 }
 
 // Update service status with independent polling cycle
@@ -85,7 +185,7 @@ async function updateAllServices() {
   lastUpdated.textContent = new Date().toLocaleTimeString();
 }
 
-// Function to trigger Kafka event for a specific service
+// Function to trigger Kafka event for a specific service using new test endpoints
 async function triggerKafkaEvent(serviceNumber) {
   const button = document.querySelector(`[data-service="${serviceNumber}"]`);
   const originalText = button.textContent;
@@ -94,35 +194,69 @@ async function triggerKafkaEvent(serviceNumber) {
     button.textContent = '⏳ Sending...';
     button.disabled = true;
     
-    const response = await fetch(`/api/service-${serviceNumber}/kafka/publish-event?topic=example-topic`, {
+    // Use service-specific test endpoints
+    let endpoint, payload;
+    
+    switch(serviceNumber) {
+      case '1':
+        // Service 1: Create channel test
+        endpoint = `/api/service-1/test/kafka/create-channel`;
+        payload = {
+          channelType: "telegram",
+          name: "Test Channel via Kafka",
+          userId: "user-123",
+          connectionConfig: {
+            botToken: "test-token"
+          }
+        }
+        break;
+      case '2':
+        // Service 2: Send notification test
+        endpoint = `/api/service-2/test/kafka/send-notification`;
+        payload = {
+          type: 'EMAIL',
+          to: 'frontend-test@example.com',
+          subject: 'Test from Frontend',
+          message: 'This is a test message from the frontend'
+        };
+        break;
+      case '3':
+        // Service 3: Process data test
+        endpoint = `/api/service-3/test/kafka/process-data`;
+        payload = {
+          dataType: 'frontend-test',
+          records: Math.floor(Math.random() * 100) + 1,
+          source: 'frontend-dashboard'
+        };
+        break;
+      default:
+        throw new Error(`Unknown service number: ${serviceNumber}`);
+    }
+    
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        type: 'test.event',
-        userId: 'test-user',
-        timestamp: new Date().toISOString(),
-        data: { source: 'frontend-test' }
-      })
+      body: JSON.stringify(payload)
     });
     
     if (response.ok) {
       const result = await response.json();
       button.textContent = '✅ Event Sent!';
-      console.log(`Service ${serviceNumber} Kafka event result:`, result);
+      console.log(`Service ${serviceNumber} test event result:`, result);
       
       // Immediately update the service status to reflect the new event count
       const service = services.find(s => s.id == serviceNumber);
       if (service) {
-        setTimeout(() => updateServiceStatus(service), 500);
+        setTimeout(() => updateServiceStatus(service), 1000);
       }
     } else {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
   } catch (error) {
     button.textContent = '❌ Failed';
-    console.error(`Service ${serviceNumber} Kafka event error:`, error);
+    console.error(`Service ${serviceNumber} test event error:`, error);
   } finally {
     // Reset button after 2 seconds
     setTimeout(() => {

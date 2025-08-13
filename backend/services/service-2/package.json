@@ -20,12 +20,13 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@libs/nestjs-common": "file:../../libs/nestjs/common",
+    "@libs/nestjs-kafka": "file:../../libs/nestjs/kafka",
+    "@libs/nestjs-types": "file:../../libs/nestjs/types",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
-    "@libs/nestjs-kafka": "file:../../libs/nestjs/kafka",
-    "@libs/nestjs-types": "file:../../libs/nestjs/types",
-    "@libs/nestjs-common": "file:../../libs/nestjs/common",
+    "@nestjs/swagger": "^11.2.0",
     "kafkajs": "^2.2.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"

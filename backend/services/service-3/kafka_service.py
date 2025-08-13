@@ -66,7 +66,7 @@ class KafkaService:
             self.producer = KafkaProducer(**producer_config)
             logger.info("[Service-3] Kafka producer initialized")
             
-            self.consumer = KafkaConsumer('example-topic', **consumer_config)
+            self.consumer = KafkaConsumer('service-3-events', **consumer_config)
             logger.info("[Service-3] Kafka consumer initialized")
             
             self.running = True
@@ -130,14 +130,43 @@ class KafkaService:
             logger.info("[Service-3] Consumer loop ended")
     
     def _handle_event(self, event_data: Dict[str, Any]):
-        """Handle events"""
-        logger.info(f"[Service-3] Processing event: {event_data.get('type')}")
+        """Handle events from Service-2"""
+        event_name = event_data.get('eventName', 'Unknown')
+        logger.info(f"[Service-3] Processing event: {event_name}")
+        
+        # Handle ChannelNotificationEvent from Service-2
+        if event_name == 'ChannelNotificationEvent':
+            self._handle_channel_notification(event_data)
+        else:
+            logger.warn(f"[Service-3] Unknown event type: {event_name}")
         
         # Increment the event counter
         event_counter.increment()
         logger.info(f"[Service-3] Event counter incremented to {event_counter.get_count()}")
+    
+    def _handle_channel_notification(self, event_data: Dict[str, Any]):
+        """Handle channel notification events from Service-2"""
+        channel_id = event_data.get('channelId')
+        channel_name = event_data.get('channelName')
+        channel_type = event_data.get('channelType')
+        user_id = event_data.get('userId')
+        notification_type = event_data.get('notificationType')
+        message = event_data.get('message')
         
-        # Add your business logic here
+        logger.info(f"[Service-3] Processing channel notification - Channel: {channel_name} ({channel_type}), User: {user_id}, Type: {notification_type}")
+        logger.info(f"[Service-3] Notification message: {message}")
+        
+        # Service-3 business logic for notifications:
+        # - Send email notifications
+        # - Update user dashboards
+        # - Log notification events
+        # - Create notification records
+        
+        # Simulate notification processing
+        import time
+        time.sleep(0.1)  # Simulate processing time
+        
+        logger.info(f"[Service-3] ✅ Channel notification processed successfully for channel {channel_id}")
     
     def publish_message(self, topic: str, message: Dict[str, Any], key: str = None):
         """Publish a message to Kafka topic"""
