@@ -1,15 +1,30 @@
 import { Module } from '@nestjs/common';
 import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
+import { MongooseModule } from '@nestjs/mongoose';
 import { KafkaModule } from './kafka/kafka.module';
-import { MongoDBModule } from './mongodb/mongodb.module';
 import { ChannelsModule } from './channels/channels.module';
-import { HeartbeatModule, CorrelationModule } from '@libs/nestjs-common';
+import { HeartbeatModule, CorrelationModule, SharedMongoDBModule } from '@libs/nestjs-common';
 
 @Module({
   imports: [
     CorrelationModule,
-    MongoDBModule,
+    SharedMongoDBModule.forRoot({
+      uri: process.env.MONGODB_URI || 'mongodb://localhost:27017',
+      dbName: process.env.MONGODB_DB_NAME || 'service-1-db',
+      connectionOptions: {
+        retryWrites: true,
+        w: 'majority',
+      },
+    }),
+    MongooseModule.forRoot(
+      process.env.MONGODB_URI || 'mongodb://localhost:27017',
+      {
+        dbName: process.env.MONGODB_DB_NAME || 'service-1-db',
+        retryWrites: true,
+        w: 'majority',
+      }
+    ),
     KafkaModule,
     HeartbeatModule,
     ChannelsModule,

@@ -1,5 +1,4 @@
-import { DynamicModule, Module, Global, Provider } from '@nestjs/common';
-import { Connection, createConnection } from 'mongoose';
+import { DynamicModule, Module, Global } from '@nestjs/common';
 import { MongoDBService } from './mongodb.service';
 import { MongoDBController } from './mongodb.controller';
 import { MongoDBModuleOptions } from './interfaces/mongodb-config.interface';
@@ -7,6 +6,10 @@ import { MongoDBModuleOptions } from './interfaces/mongodb-config.interface';
 @Global()
 @Module({})
 export class SharedMongoDBModule {
+  /**
+   * Provides MongoDB configuration utilities and services
+   * Services should use MongooseModule.forRoot() directly to avoid DI conflicts
+   */
   static forRoot(options: MongoDBModuleOptions = {}): DynamicModule {
     const baseUri = options.uri || process.env.MONGODB_URI || 'mongodb://localhost:27017';
     const dbName = options.dbName || process.env.MONGODB_DB_NAME || 'nestjs-app';
@@ -16,39 +19,47 @@ export class SharedMongoDBModule {
       ? `${baseUri.split('?')[0]}/${dbName}?${baseUri.split('?')[1]}`
       : `${baseUri}/${dbName}`;
 
-    const connectionProvider: Provider = {
-      provide: 'MONGODB_CONNECTION',
-      useFactory: async (): Promise<Connection> => {
-        return createConnection(uri, {
-          ...options.connectionOptions,
-        });
-      },
-    };
-
     return {
       module: SharedMongoDBModule,
       controllers: [MongoDBController],
       providers: [
-        connectionProvider,
         {
-          provide: 'MONGODB_OPTIONS',
-          useValue: { ...options, uri, dbName },
+          provide: 'MONGODB_CONFIG',
+          useValue: { 
+            uri, 
+            dbName,
+            connectionOptions: {
+              retryWrites: true,
+              w: 'majority',
+              ...options.connectionOptions,
+            }
+          },
         },
         MongoDBService,
       ],
-      exports: [MongoDBService, 'MONGODB_CONNECTION'],
+      exports: ['MONGODB_CONFIG', MongoDBService],
     };
   }
 
+  /**
+   * Helper method to get MongoDB connection configuration
+   * Services should use this with MongooseModule.forRoot() directly
+   */
+  static getConnectionConfig(options: MongoDBModuleOptions = {}) {
+    const baseUri = options.uri || process.env.MONGODB_URI || 'mongodb://localhost:27017';
+    const dbName = options.dbName || process.env.MONGODB_DB_NAME || 'nestjs-app';
+    
+    const uri = baseUri.includes('?') 
+      ? `${baseUri.split('?')[0]}/${dbName}?${baseUri.split('?')[1]}`
+      : `${baseUri}/${dbName}`;
 
-
-  static forFeature(models: any[] = []) {
-    // For custom models, they would need to be registered with the connection
-    // This is a placeholder for future model registration functionality
     return {
-      module: SharedMongoDBModule,
-      providers: [],
-      exports: [],
+      uri,
+      options: {
+        retryWrites: true,
+        w: 'majority',
+        ...options.connectionOptions,
+      }
     };
   }
 }

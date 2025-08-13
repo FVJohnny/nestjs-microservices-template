@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { MongooseModule } from '@nestjs/mongoose';
 import { KafkaModule } from '../kafka/kafka.module';
 import { DDDModule } from '@libs/nestjs-ddd';
 
@@ -18,6 +19,8 @@ import { MessageReceivedHandler } from './application/events/message-received.ha
 
 // Infrastructure
 import { InMemoryChannelRepository } from './infrastructure/repositories/in-memory-channel.repository';
+import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb-channel.repository';
+import { ChannelSchema } from './infrastructure/schemas/channel.schema';
 
 // Shared DDD Library
 import { KafkaMessagePublisher } from '@libs/nestjs-ddd';
@@ -32,6 +35,9 @@ const EventHandlers = [ChannelRegisteredHandler, MessageReceivedHandler];
     CqrsModule,
     KafkaModule,
     DDDModule,
+    MongooseModule.forFeature([
+      { name: 'Channel', schema: ChannelSchema }
+    ]),
   ],
   controllers: [ChannelsController],
   providers: [
@@ -40,7 +46,8 @@ const EventHandlers = [ChannelRegisteredHandler, MessageReceivedHandler];
     ...EventHandlers,
     {
       provide: 'ChannelRepository',
-      useClass: InMemoryChannelRepository,
+      useClass: MongoDBChannelRepository, // Switch to MongoDB implementation
+      // useClass: InMemoryChannelRepository, // Fallback to in-memory
     },
     {
       provide: 'KAFKA_SERVICE',
