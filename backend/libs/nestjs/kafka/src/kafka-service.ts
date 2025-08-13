@@ -1,10 +1,16 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { KafkaConsumerService, KafkaConsumerServiceConfig, KafkaPublisherService } from '@libs/nestjs-kafka';
+import { KafkaConsumerService, KafkaConsumerServiceConfig } from './kafka-consumer.service';
+import { KafkaPublisherService } from './kafka-publisher.service';
+
+export interface KafkaServiceConfig {
+  clientId: string;
+  groupId: string;
+  retryDelayMs?: number;
+}
 
 /**
- * Generic Kafka service for Service-1.
- * Provides both consumer (for incoming messages) and publisher (for outgoing events) functionality.
- * Can be used by any bounded context in the application.
+ * Generic Kafka service that provides both consumer and publisher functionality.
+ * Can be used by any NestJS service that needs Kafka integration.
  */
 @Injectable()
 export class KafkaService implements OnModuleInit, OnModuleDestroy {
@@ -12,19 +18,22 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
   private kafkaPublisher: KafkaPublisherService;
   private handlers: any[] = [];
   private initialized = false;
+  private config: KafkaServiceConfig;
   
-  constructor() {
+  constructor(config: KafkaServiceConfig) {
+    this.config = config;
+    
     // Consumer configuration
     const consumerConfig: KafkaConsumerServiceConfig = {
-      clientId: 'service-1-consumer',
-      groupId: 'service-1-consumer-group',
-      retryDelayMs: 5000,
+      clientId: `${config.clientId}-consumer`,
+      groupId: `${config.groupId}-consumer-group`,
+      retryDelayMs: config.retryDelayMs || 5000,
     };
     
     // Publisher configuration
     const publisherConfig = {
-      clientId: 'service-1-publisher',
-      groupId: 'service-1-publisher-group',
+      clientId: `${config.clientId}-publisher`,
+      groupId: `${config.groupId}-publisher-group`,
     };
     
     this.kafkaConsumer = new KafkaConsumerService(consumerConfig);
@@ -61,7 +70,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
     }
     
     this.initialized = true;
-    console.log(`✅ Service-1 Kafka setup complete: ${this.kafkaConsumer.getStats().handlerCount} handlers`);
+    console.log(`✅ ${this.config.clientId} Kafka setup complete: ${this.kafkaConsumer.getStats().handlerCount} handlers`);
   }
 
   async onModuleDestroy() {
@@ -72,7 +81,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
     ]);
   }
 
-  // Expose consumer stats for the test controller
+  // Expose consumer stats for monitoring
   getConsumerStats() {
     return this.kafkaConsumer.getStats();
   }
@@ -86,7 +95,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
     return this.kafkaPublisher.publishMessages(topic, messages);
   }
 
-  // Expose publisher for dependency injection (legacy support)
+  // Expose publisher for legacy support
   getPublisher(): KafkaPublisherService {
     return this.kafkaPublisher;
   }

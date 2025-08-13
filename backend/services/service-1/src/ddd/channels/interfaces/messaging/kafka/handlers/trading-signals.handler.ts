@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { KafkaTopicHandler, KafkaMessagePayload } from '@libs/nestjs-kafka';
-import { KafkaService } from '../../../../../../kafka/kafka.service';
+import { KafkaService } from '@libs/nestjs-kafka';
 import { RegisterChannelCommand } from '../../../../application/commands/register-channel.command';
 import { ProcessSignalCommand } from '../../../../application/commands/process-signal.command';
 
