@@ -41,20 +41,44 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
 
     this.kafka = new Kafka(kafkaConfig);
     this.producer = this.kafka.producer();
-    this.consumer = this.kafka.consumer({ groupId: this.options.groupId });
+    this.consumer = this.kafka.consumer({ 
+      groupId: this.options.groupId,
+      sessionTimeout: 6000,
+      rebalanceTimeout: 6000,
+      heartbeatInterval: 1000,
+      maxWaitTimeInMs: 100,
+      retry: {
+        initialRetryTime: 100,
+        retries: 5
+      }
+    });
   }
 
   async onModuleInit() {
+    console.log(`[${this.options.clientId}] Starting Kafka producer connection...`);
     await this.producer.connect();
+    console.log(`[${this.options.clientId}] Producer connected`);
+    
+    // Initialize consumer connection asynchronously to not block app startup
+    this.initializeConsumer().catch(error => {
+      console.error(`[${this.options.clientId}] Failed to initialize consumer:`, error);
+    });
+  }
+
+  private async initializeConsumer() {
+    console.log(`[${this.options.clientId}] Starting Kafka consumer connection...`);
     await this.consumer.connect();
+    console.log(`[${this.options.clientId}] Consumer connected`);
     
     // Subscribe to configured topics
     for (const topic of this.options.topics) {
+      console.log(`[${this.options.clientId}] Subscribing to topic: ${topic}`);
       await this.consumer.subscribe({ topic });
     }
 
     // Start consuming messages if handler is provided
     if (this.messageHandler) {
+      console.log(`[${this.options.clientId}] Starting message consumption...`);
       await this.consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
           const payload = {
