@@ -13,12 +13,16 @@ services:
       - WATCHPACK_POLLING=true
       - KAFKA_BROKERS=kafka:9092
       - PROXY_BASE_PATH=/api/service-1
+      - MONGODB_URI=mongodb://admin:admin123@mongodb:27017?authSource=admin
+      - MONGODB_DB_NAME=service-1-db
     ports:
       - "3001:3000"
     networks:
       - backend
     depends_on:
       kafka:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
 
   service-2:
@@ -35,12 +39,16 @@ services:
       - WATCHPACK_POLLING=true
       - KAFKA_BROKERS=kafka:9092
       - PROXY_BASE_PATH=/api/service-2
+      - MONGODB_URI=mongodb://admin:admin123@mongodb:27017?authSource=admin
+      - MONGODB_DB_NAME=service-2-db
     ports:
       - "3002:3000"
     networks:
       - backend
     depends_on:
       kafka:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
 
   service-3:
@@ -107,6 +115,28 @@ services:
       retries: 5
       start_period: 10s
 
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: copysignals
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
 networks:
   backend:
     driver: bridge
+
+volumes:
+  mongodb_data:
