@@ -5,9 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Copy Signals AI is a multi-service microservices architecture with three services:
-- **Service 1** (NestJS/TypeScript) - Domain-driven design with CQRS pattern, channels management
+- **Service 1** (NestJS/TypeScript) - Template service with full DDD/CQRS pattern, channels management
 - **Service 2** (NestJS/TypeScript) - Basic service setup
 - **Service 3** (FastAPI/Python) - Event processing service
+
+**Service 1 serves as the architectural template for all new NestJS services** in this monorepo.
 
 The system uses Kafka for inter-service messaging and includes shared NestJS libraries for common functionality.
 
@@ -63,14 +65,14 @@ uvicorn main:app --reload  # Development server
 - **kafka** - Kafka service integration and configuration
 - **types** - Shared TypeScript type definitions
 
-### Service 1 Architecture
-Implements full DDD/CQRS pattern:
+### Service 1 Architecture (Template for New NestJS Services)
+Implements full DDD/CQRS pattern that should be followed for all new NestJS services:
 - `domain/` - Entities, value objects, domain events, repository interfaces
 - `application/` - Command/query handlers, event handlers
 - `infrastructure/` - Repository implementations
 - `interfaces/` - Controllers and DTOs
 
-Uses correlation middleware for request tracking across services.
+Uses correlation middleware for request tracking across services. When creating new NestJS services, copy this structure and patterns from Service 1.
 
 ### Environment Setup
 Services run in Docker containers with:
