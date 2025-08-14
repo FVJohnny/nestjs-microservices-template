@@ -1,29 +1,31 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { Redis } from 'ioredis';
-import { RedisConfigService } from './redis-config.service';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RedisService.name);
   private client: Redis | null = null;
 
-  constructor(private readonly configService: RedisConfigService) {}
+  constructor() {}
 
   async onModuleInit(): Promise<void> {
-    const config = this.configService.getRedisConfig();
     
+    const config = {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379', 10),
+      tls: process.env.REDIS_TLS === 'true' ? {} : undefined,
+      username: process.env.REDIS_USERNAME,
+      password: process.env.REDIS_PASSWORD,
+      db: parseInt(process.env.REDIS_DB || '0', 10),
+      keyPrefix: process.env.REDIS_KEY_PREFIX || 'app:',
+      connectTimeout: 10000,
+      lazyConnect: true,
+      maxRetriesPerRequest: 3,
+    };
+
     this.logger.log(`Connecting to Redis at ${config.host}:${config.port}`);
-    
-    this.client = new Redis({
-      host: config.host,
-      port: config.port,
-      password: config.password,
-      db: config.db,
-      keyPrefix: config.keyPrefix,
-      connectTimeout: config.connectTimeout,
-      lazyConnect: false, // Let Redis connect automatically
-      maxRetriesPerRequest: config.maxRetriesPerRequest,
-    });
+
+    this.client = new Redis(config);
 
     this.client.on('connect', () => {
       this.logger.log('✅ Connected to Redis');
