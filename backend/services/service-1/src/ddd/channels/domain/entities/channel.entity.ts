@@ -36,13 +36,13 @@ export class Channel extends AggregateRoot<IEvent> {
 
     // Raise domain event
     channel.apply(
-      new ChannelRegisteredEvent(
-        id,
-        channelTypeVO.getValue(),
-        name,
-        userId,
-        connectionConfig,
-      ),
+      new ChannelRegisteredEvent({
+        aggregateId: id,
+        channelType: channelTypeVO,
+        channelName: name,
+        userId: userId,
+        connectionConfig: connectionConfig,
+      }),
     );
 
     return channel;

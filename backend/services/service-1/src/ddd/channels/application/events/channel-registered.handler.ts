@@ -1,6 +1,7 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { ChannelRegisteredEvent } from '../../domain/events/channel-registered.event';
+import { ChannelCreatedIntegrationEvent } from '@libs/nestjs-types';
 import type { MessagePublisher } from '@libs/nestjs-ddd';
 import { CorrelationLogger } from '@libs/nestjs-common';
 
@@ -18,28 +19,29 @@ export class ChannelRegisteredHandler
   ) {}
 
   async handle(event: ChannelRegisteredEvent): Promise<void> {
-    this.logger.log('Publishing ChannelRegisteredEvent to message broker...');
+    this.logger.log('Handling ChannelRegisteredEvent...');
 
-    const message = {
-      eventId: `${event.aggregateId}-${Date.now()}`,
-      eventName: event.constructor.name,
-      aggregateId: event.aggregateId,
-      channelType: event.channelType,
-      channelName: event.channelName,
+    // Transform domain event to integration event
+    const integrationEvent = new ChannelCreatedIntegrationEvent({
+      channelId: event.aggregateId,
+      channelType: event.channelType.getValue(),
       userId: event.userId,
-      occurredOn: event.occurredOn.toISOString(),
-      metadata: {
-        hasConnectionConfig: !!event.connectionConfig,
-      },
-    };
+      channelName: event.channelName,
+      occurredOn: event.occurredOn,
+    });
 
     try {
-      await this.messagePublisher.publish('channel-events', message);
+      // Publish integration event to Kafka using the event's topic
+      await this.messagePublisher.publish(
+        integrationEvent.getTopic(),
+        integrationEvent.toJSON(),
+      );
+      
       this.logger.log(
-        `Published ChannelRegisteredEvent to message broker: ${event.aggregateId}`,
+        `Published ChannelCreatedIntegrationEvent to topic '${integrationEvent.getTopic()}': ${event.aggregateId}`,
       );
     } catch (error) {
-      this.logger.error(`Failed to publish ChannelRegisteredEvent`, error);
+      this.logger.error(`Failed to publish integration event`, error);
       throw error;
     }
   }

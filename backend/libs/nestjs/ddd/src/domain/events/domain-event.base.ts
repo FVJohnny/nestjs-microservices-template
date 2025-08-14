@@ -1,8 +1,10 @@
+import { IEvent } from '@nestjs/cqrs';
+
 /**
  * Base class for all domain events in the system.
  * Provides common properties and behavior for domain events.
  */
-export abstract class DomainEvent {
+export abstract class DomainEvent implements IEvent {
   public readonly occurredOn: Date;
   public readonly eventId: string;
 
