@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { ChannelRegisteredEvent } from '../../domain/events/channel-registered.event';
 import type { MessagePublisher } from '@libs/nestjs-ddd';
 import { CorrelationLogger } from '@libs/nestjs-common';
@@ -39,10 +39,7 @@ export class ChannelRegisteredHandler
         `Published ChannelRegisteredEvent to message broker: ${event.aggregateId}`,
       );
     } catch (error) {
-      this.logger.error(
-        `Failed to publish ChannelRegisteredEvent: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Failed to publish ChannelRegisteredEvent`, error);
       throw error;
     }
   }

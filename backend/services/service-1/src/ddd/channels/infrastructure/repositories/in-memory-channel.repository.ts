@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Channel } from '../../domain/entities/channel.entity';
 import { ChannelRepository } from '../../domain/repositories/channel.repository';
 import { CorrelationLogger } from '@libs/nestjs-common';

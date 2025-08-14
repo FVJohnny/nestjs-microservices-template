@@ -29,15 +29,14 @@ export class TradingSignalsHandler implements KafkaTopicHandler, OnModuleInit {
         return;
       }
 
-      const parsedMessage = JSON.parse(messageValue);
-      messageId = parsedMessage.messageId || payload.message.offset;
+      const parsedMessage = JSON.parse(messageValue) as Record<string, unknown>;
+      messageId = (parsedMessage.messageId as string) || payload.message.offset;
 
       this.logger.debug(
         `Received Kafka Event - trading-signals [${messageId}]: ${JSON.stringify(parsedMessage)}`,
       );
 
       await this.handleCreateChannel(parsedMessage, messageId);
-
     } catch (error) {
       this.logger.error(
         `❌ Error processing trading-signals message [${messageId}]: ${error}`,
@@ -56,10 +55,16 @@ export class TradingSignalsHandler implements KafkaTopicHandler, OnModuleInit {
   }
 
   private async handleCreateChannel(
-    payload: any,
+    payload: Record<string, unknown>,
     messageId: string,
   ): Promise<void> {
-    const { channelType, name, userId, connectionConfig } = payload;
+    const channelType = payload.channelType as string;
+    const name = payload.name as string;
+    const userId = payload.userId as string;
+    const connectionConfig = payload.connectionConfig as Record<
+      string,
+      unknown
+    >;
 
     this.logger.log(
       `Creating channel from Kafka event [${messageId}] - Type: ${channelType}, Name: ${name}`,
@@ -78,7 +83,7 @@ export class TradingSignalsHandler implements KafkaTopicHandler, OnModuleInit {
     );
   }
 
-  private isRetriableError(error: any): boolean {
+  private isRetriableError(error: unknown): boolean {
     // Define which errors should trigger retries
     const retriableErrors = [
       'ECONNRESET',
@@ -88,7 +93,7 @@ export class TradingSignalsHandler implements KafkaTopicHandler, OnModuleInit {
       'Database connection error',
     ];
 
-    const errorMessage = error?.message || error?.toString() || '';
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return retriableErrors.some((pattern) => errorMessage.includes(pattern));
   }
 }

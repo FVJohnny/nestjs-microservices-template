@@ -20,7 +20,6 @@ import { ChannelRegisteredHandler } from './application/events/channel-registere
 import { MessageReceivedHandler } from './application/events/message-received.handler';
 
 // Infrastructure
-import { InMemoryChannelRepository } from './infrastructure/repositories/in-memory-channel.repository';
 import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb-channel.repository';
 import { ChannelSchema } from './infrastructure/schemas/channel.schema';
 
@@ -43,8 +42,7 @@ const KafkaHandlers = [TradingSignalsHandler];
     ...KafkaHandlers,
     {
       provide: 'ChannelRepository',
-      useClass: MongoDBChannelRepository, // Switch to MongoDB implementation
-      // useClass: InMemoryChannelRepository, // Fallback to in-memory
+      useClass: MongoDBChannelRepository,
     },
   ],
   exports: [],

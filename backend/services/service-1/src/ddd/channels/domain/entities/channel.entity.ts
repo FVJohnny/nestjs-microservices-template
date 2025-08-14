@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { AggregateRoot, IEvent } from '@nestjs/cqrs';
-import { ChannelTypeVO, ChannelType } from '../value-objects/channel-type.vo';
+import { ChannelTypeVO } from '../value-objects/channel-type.vo';
 import { ChannelRegisteredEvent } from '../events/channel-registered.event';
 import { MessageReceivedEvent } from '../events/message-received.event';
 

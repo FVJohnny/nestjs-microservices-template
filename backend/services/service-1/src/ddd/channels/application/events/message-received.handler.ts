@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { MessageReceivedEvent } from '../../domain/events/message-received.event';
 import type { MessagePublisher } from '@libs/nestjs-ddd';
 import { CorrelationLogger } from '@libs/nestjs-common';
@@ -39,10 +39,7 @@ export class MessageReceivedHandler
         `Published MessageReceivedEvent to message broker: ${event.messageId}`,
       );
     } catch (error) {
-      this.logger.error(
-        `Failed to publish MessageReceivedEvent: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Failed to publish MessageReceivedEvent`, error);
       throw error;
     }
   }

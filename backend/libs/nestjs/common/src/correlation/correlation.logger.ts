@@ -29,8 +29,14 @@ export class CorrelationLogger extends Logger implements LoggerService {
     super.log(this.formatMessage(message));
   }
 
-  error(message: any, trace?: string) {
-    super.error(this.formatMessage(message), trace);
+  error(message: any, errorOrTrace?: string | Error) {
+    // Handle Error objects directly
+    if (errorOrTrace instanceof Error) {
+      const errorMessage = `${message}: ${errorOrTrace.message}`;
+      super.error(this.formatMessage(errorMessage), errorOrTrace.stack);
+    } else {
+      super.error(this.formatMessage(message), errorOrTrace);
+    }
   }
 
   warn(message: any) {

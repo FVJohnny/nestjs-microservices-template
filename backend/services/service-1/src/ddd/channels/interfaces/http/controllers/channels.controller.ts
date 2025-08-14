@@ -58,9 +58,7 @@ export class ChannelsController {
     status: 400,
     description: 'Invalid input data',
   })
-  async registerChannel(
-    @Body() dto: RegisterChannelDto,
-  ): Promise<RegisterChannelResponseDto> {
+  async registerChannel(@Body() dto: RegisterChannelDto) {
     this.logger.debug('Registering channel...');
     const command = new RegisterChannelCommand(
       dto.channelType,
@@ -69,7 +67,7 @@ export class ChannelsController {
       dto.connectionConfig,
     );
 
-    const channelId = await this.commandBus.execute(command);
+    const channelId: string = await this.commandBus.execute(command);
     return new RegisterChannelResponseDto(channelId);
   }
 
@@ -90,9 +88,7 @@ export class ChannelsController {
     description: 'List of channels retrieved successfully',
     type: GetChannelsResponseDto,
   })
-  async getChannels(
-    @Query('userId') userId?: string,
-  ): Promise<GetChannelsResponseDto> {
+  async getChannels(@Query('userId') userId?: string) {
     this.logger.debug('Getting channels...');
     const query = new GetChannelsQuery(userId);
     const channels: Channel[] = await this.queryBus.execute(query);
@@ -137,8 +133,11 @@ export class ChannelsController {
   async simulateMessage(
     @Param('channelId') channelId: string,
     @Body() messageData: SimulateMessageDto,
-  ): Promise<SimulateMessageResponseDto> {
-    this.logger.debug('Simulating message...');
+  ) {
+    this.logger.debug(
+      `Simulating message for channel ${channelId} with data: ${JSON.stringify(messageData)}`,
+    );
+    // TODO: Implement actual message simulation logic
     return new SimulateMessageResponseDto(true);
   }
 }
