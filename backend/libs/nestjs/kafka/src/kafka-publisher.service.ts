@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Inject } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Inject, Logger } from '@nestjs/common';
 import { Kafka, Producer } from 'kafkajs';
 import { KafkaModuleOptions } from './interfaces/kafka-config.interface';
 import { createKafkaConfig } from './kafka-config.helper';
@@ -7,6 +7,8 @@ import { createKafkaConfig } from './kafka-config.helper';
 export class KafkaPublisherService implements OnModuleInit, OnModuleDestroy {
   private kafka: Kafka;
   private producer: Producer;
+
+  private readonly logger = new Logger(KafkaPublisherService.name);
 
   constructor(
     @Inject('KAFKA_OPTIONS') private readonly options: KafkaModuleOptions,
@@ -28,15 +30,15 @@ export class KafkaPublisherService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit() {
-    console.log(`[${this.options.clientId}] Starting Kafka producer connection...`);
+    this.logger.log(`[${this.options.clientId}] Starting Kafka producer connection...`);
     await this.producer.connect();
-    console.log(`[${this.options.clientId}] Producer connected`);
+    this.logger.log(`[${this.options.clientId}] Producer connected`);
   }
 
 
   async onModuleDestroy() {
     await this.producer.disconnect();
-    console.log(`[${this.options.clientId}] Kafka disconnected`);
+    this.logger.log(`[${this.options.clientId}] Kafka disconnected`);
   }
 
   async publishMessage(topic: string, message: any) {
@@ -49,7 +51,7 @@ export class KafkaPublisherService implements OnModuleInit, OnModuleDestroy {
         },
       ],
     });
-    console.log(`[${this.options.clientId}] Published message to ${topic}:`, message);
+    this.logger.log(`[${this.options.clientId}] Published message to ${topic}:`, message);
   }
 
   async publishMessages(topic: string, messages: any[]) {
@@ -60,7 +62,7 @@ export class KafkaPublisherService implements OnModuleInit, OnModuleDestroy {
         timestamp: Date.now().toString(),
       })),
     });
-    console.log(`[${this.options.clientId}] Published ${messages.length} messages to ${topic}`);
+    this.logger.log(`[${this.options.clientId}] Published ${messages.length} messages to ${topic}`);
   }
 
 }

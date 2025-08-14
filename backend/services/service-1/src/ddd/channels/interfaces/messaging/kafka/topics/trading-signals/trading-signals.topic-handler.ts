@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { KafkaService } from '@libs/nestjs-kafka';
-import { BaseTopicHandler } from '../../base/base-topic.handler';
+import { KafkaService, BaseTopicHandler } from '@libs/nestjs-kafka';
 import { ChannelCreateEventHandler } from './events/channel-create.event-handler';
 
 @Injectable()

@@ -1,16 +1,16 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { CorrelationLogger } from '@libs/nestjs-common';
-import { KafkaTopicHandler, KafkaMessagePayload, KafkaService } from '@libs/nestjs-kafka';
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { KafkaTopicHandler, KafkaMessagePayload } from '../interfaces/kafka-consumer.interface';
+import { KafkaService } from '../kafka-service';
 import { KafkaEventHandler, KafkaTopicEventRouter } from './kafka-event-handler.interface';
 
 @Injectable()
 export abstract class BaseTopicHandler implements KafkaTopicHandler, KafkaTopicEventRouter, OnModuleInit {
   abstract readonly topicName: string;
-  protected readonly logger: CorrelationLogger;
+  protected readonly logger: Logger;
   private readonly eventHandlers = new Map<string, KafkaEventHandler>();
 
   constructor(protected readonly kafkaService: KafkaService) {
-    this.logger = new CorrelationLogger(this.constructor.name);
+    this.logger = new Logger(this.constructor.name);
   }
 
   async onModuleInit() {

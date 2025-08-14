@@ -11,13 +11,13 @@ import { TradingSignalsTopicHandler } from './interfaces/messaging/kafka/topics/
 import { ChannelCreateEventHandler } from './interfaces/messaging/kafka/topics/trading-signals/events/channel-create.event-handler';
 
 // Command Handlers
-import { RegisterChannelHandler } from './application/commands/register-channel.handler';
+import { RegisterChannelCommandHandler } from './application/commands/register-channel.handler';
 
 // Query Handlers
 import { GetChannelsHandler } from './application/queries/get-channels.handler';
 
 // Event Handlers
-import { ChannelRegisteredHandler } from './application/events/channel-registered.handler';
+import { ChannelRegisteredEventHandler } from './application/events/channel-registered.handler';
 import { MessageReceivedHandler } from './application/events/message-received.handler';
 
 // Infrastructure
@@ -25,9 +25,9 @@ import { MessageReceivedHandler } from './application/events/message-received.ha
 // import { ChannelMongoSchema } from './infrastructure/schemas/channel.schema';
 import { RedisChannelRepository } from './infrastructure/repositories/redis/redis-channel.repository';
 
-const CommandHandlers = [RegisterChannelHandler];
+const CommandHandlers = [RegisterChannelCommandHandler];
 const QueryHandlers = [GetChannelsHandler];
-const EventHandlers = [ChannelRegisteredHandler, MessageReceivedHandler];
+const EventHandlers = [ChannelRegisteredEventHandler, MessageReceivedHandler];
 const KafkaHandlers = [
   TradingSignalsTopicHandler,
   ChannelCreateEventHandler,

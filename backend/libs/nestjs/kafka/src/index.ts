@@ -7,3 +7,6 @@ export * from './dto/publish-event.dto';
 export * from './interfaces/kafka-config.interface';
 export * from './interfaces/kafka-consumer.interface';
 export * from './kafka-config.helper';
+
+// Event-Driven Architecture
+export * from './event-driven';

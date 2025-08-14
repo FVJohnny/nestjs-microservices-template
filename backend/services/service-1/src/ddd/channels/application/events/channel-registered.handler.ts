@@ -6,11 +6,11 @@ import type { MessagePublisher } from '@libs/nestjs-ddd';
 import { CorrelationLogger } from '@libs/nestjs-common';
 
 @EventsHandler(ChannelRegisteredEvent)
-export class ChannelRegisteredHandler
+export class ChannelRegisteredEventHandler
   implements IEventHandler<ChannelRegisteredEvent>
 {
   private readonly logger = new CorrelationLogger(
-    ChannelRegisteredHandler.name,
+    ChannelRegisteredEventHandler.name,
   );
 
   constructor(

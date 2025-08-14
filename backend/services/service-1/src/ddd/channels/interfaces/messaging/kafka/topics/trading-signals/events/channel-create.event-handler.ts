@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { CorrelationLogger } from '@libs/nestjs-common';
-import { KafkaEventHandler } from '../../../base/kafka-event-handler.interface';
+import { KafkaEventHandler } from '@libs/nestjs-kafka';
 import { RegisterChannelCommand } from '../../../../../../application/commands/register-channel.command';
 
 @Injectable()
