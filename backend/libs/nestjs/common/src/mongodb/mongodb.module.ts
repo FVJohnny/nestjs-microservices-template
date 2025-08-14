@@ -1,6 +1,7 @@
 import { Module, Global } from '@nestjs/common';
 import { MongoDBService } from './mongodb.service';
 import { MongoDBController } from './mongodb.controller';
+import { MongoDBConfigService } from './mongodb-config.service';
 
 @Global()
 @Module({
@@ -20,7 +21,8 @@ import { MongoDBController } from './mongodb.controller';
       },
     },
     MongoDBService,
+    MongoDBConfigService,
   ],
-  exports: ['MONGODB_CONFIG', MongoDBService],
+  exports: ['MONGODB_CONFIG', MongoDBService, MongoDBConfigService],
 })
 export class SharedMongoDBModule {}
