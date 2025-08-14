@@ -60,12 +60,12 @@ export class ChannelsController {
   })
   async registerChannel(@Body() dto: RegisterChannelDto) {
     this.logger.debug('Registering channel...');
-    const command = new RegisterChannelCommand(
-      dto.channelType,
-      dto.name,
-      dto.userId,
-      dto.connectionConfig,
-    );
+    const command = new RegisterChannelCommand({
+      channelType: dto.channelType,
+      name: dto.name,
+      userId: dto.userId,
+      connectionConfig: dto.connectionConfig,
+    });
 
     const channelId: string = await this.commandBus.execute(command);
     return new RegisterChannelResponseDto(channelId);

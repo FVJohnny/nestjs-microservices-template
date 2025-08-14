@@ -180,6 +180,7 @@ async function triggerKafkaEvent(serviceNumber) {
         // Service 1: Use centralized Kafka endpoint
         endpoint = `/api/service-1/kafka/publish-event?topic=trading-signals`;
         payload = {
+          eventName: "channel.create",
           channelType: "telegram",
           name: "nombresito",
           userId: "usuariooo",

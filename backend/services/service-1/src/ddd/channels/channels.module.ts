@@ -7,7 +7,8 @@ import { DDDModule } from '@libs/nestjs-ddd';
 import { ChannelsController } from './interfaces/http/controllers/channels.controller';
 
 // Kafka Handlers (Primary/Driving Adapters)
-import { TradingSignalsHandler } from './interfaces/messaging/kafka/handlers/trading-signals.handler';
+import { TradingSignalsTopicHandler } from './interfaces/messaging/kafka/topics/trading-signals/trading-signals.topic-handler';
+import { ChannelCreateEventHandler } from './interfaces/messaging/kafka/topics/trading-signals/events/channel-create.event-handler';
 
 // Command Handlers
 import { RegisterChannelHandler } from './application/commands/register-channel.handler';
@@ -27,7 +28,10 @@ import { RedisChannelRepository } from './infrastructure/repositories/redis/redi
 const CommandHandlers = [RegisterChannelHandler];
 const QueryHandlers = [GetChannelsHandler];
 const EventHandlers = [ChannelRegisteredHandler, MessageReceivedHandler];
-const KafkaHandlers = [TradingSignalsHandler];
+const KafkaHandlers = [
+  TradingSignalsTopicHandler,
+  ChannelCreateEventHandler,
+];
 
 @Module({
   imports: [
