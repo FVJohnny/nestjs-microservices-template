@@ -55,7 +55,9 @@ export class MongoDBChannelRepository implements ChannelRepository {
       return channel;
     } catch (error) {
       this.logger.error(`Failed to save channel ${channel.id}`, error);
-      throw new Error(`Failed to save channel: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to save channel: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -66,7 +68,9 @@ export class MongoDBChannelRepository implements ChannelRepository {
       return channelDoc ? this.toDomainEntity(channelDoc) : null;
     } catch (error) {
       this.logger.error(`Failed to find channel by id ${id}`, error);
-      throw new Error(`Failed to find channel: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to find channel: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -81,7 +85,9 @@ export class MongoDBChannelRepository implements ChannelRepository {
       return channelDocs.map((doc) => this.toDomainEntity(doc));
     } catch (error) {
       this.logger.error(`Failed to find channels by user id ${userId}`, error);
-      throw new Error(`Failed to find channels by user: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to find channels by user: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -96,7 +102,9 @@ export class MongoDBChannelRepository implements ChannelRepository {
       return channelDocs.map((doc) => this.toDomainEntity(doc));
     } catch (error) {
       this.logger.error(`Failed to find all channels`, error);
-      throw new Error(`Failed to find all channels: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to find all channels: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -116,7 +124,9 @@ export class MongoDBChannelRepository implements ChannelRepository {
       this.logger.log(`Soft deleted channel: ${id}`);
     } catch (error) {
       this.logger.error(`Failed to remove channel ${id}`, error);
-      throw new Error(`Failed to remove channel: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to remove channel: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -130,7 +140,9 @@ export class MongoDBChannelRepository implements ChannelRepository {
       return count > 0;
     } catch (error) {
       this.logger.error(`Failed to check if channel exists ${id}`, error);
-      throw new Error(`Failed to check channel existence: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to check channel existence: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -140,7 +152,9 @@ export class MongoDBChannelRepository implements ChannelRepository {
       return await this.channelModel.countDocuments({ isActive: true });
     } catch (error) {
       this.logger.error(`Failed to count channels`, error);
-      throw new Error(`Failed to count channels: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to count channels: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 

@@ -13,6 +13,8 @@ update-libs:
 	@cd libs/nestjs/types && npm install && npm run build
 	@echo "🔧 Building nestjs-common library..."
 	@cd libs/nestjs/common && npm install && npm run build
+	@echo "🔧 Building nestjs-mongodb library..."
+	@cd libs/nestjs/mongodb && npm install && npm run build
 	@echo ""
 	@echo "📦 Updating service-1..."
 	@cd services/service-1 && npm install

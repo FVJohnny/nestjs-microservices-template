@@ -3,12 +3,11 @@ import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ChannelsModule } from './ddd/channels/channels.module';
+import { HeartbeatModule, CorrelationModule } from '@libs/nestjs-common';
 import {
-  HeartbeatModule,
-  CorrelationModule,
   SharedMongoDBModule,
   MongoDBConfigService,
-} from '@libs/nestjs-common';
+} from '@libs/nestjs-mongodb';
 import { KafkaSharedModule } from '@libs/nestjs-kafka';
 import { MessagingModule } from './messaging.module';
 

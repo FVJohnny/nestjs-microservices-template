@@ -6,4 +6,3 @@ export * from './correlation/correlation.service';
 export * from './correlation/correlation.middleware';
 export * from './correlation/correlation.logger';
 export * from './correlation/correlation.module';
-export * from './mongodb';
