@@ -20,8 +20,9 @@ import { ChannelRegisteredHandler } from './application/events/channel-registere
 import { MessageReceivedHandler } from './application/events/message-received.handler';
 
 // Infrastructure
-import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb-channel.repository';
-import { ChannelSchema } from './infrastructure/schemas/channel.schema';
+// import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb-channel.repository';
+// import { ChannelMongoSchema } from './infrastructure/schemas/channel.schema';
+import { RedisChannelRepository } from './infrastructure/repositories/redis/redis-channel.repository';
 
 const CommandHandlers = [RegisterChannelHandler];
 const QueryHandlers = [GetChannelsHandler];
@@ -32,7 +33,7 @@ const KafkaHandlers = [TradingSignalsHandler];
   imports: [
     CqrsModule,
     DDDModule,
-    MongooseModule.forFeature([{ name: 'Channel', schema: ChannelSchema }]),
+    // MongooseModule.forFeature([{ name: 'Channel', schema: ChannelMongoSchema }]),
   ],
   controllers: [ChannelsController],
   providers: [
@@ -42,7 +43,7 @@ const KafkaHandlers = [TradingSignalsHandler];
     ...KafkaHandlers,
     {
       provide: 'ChannelRepository',
-      useClass: MongoDBChannelRepository,
+      useClass: RedisChannelRepository, // Change to RedisChannelRepository when needed
     },
   ],
   exports: [],

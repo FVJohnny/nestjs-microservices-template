@@ -19,6 +19,8 @@ WORKDIR /app/libs/nestjs/common
 RUN npm ci && npm run build
 WORKDIR /app/libs/nestjs/mongodb
 RUN npm ci && npm run build
+WORKDIR /app/libs/nestjs/redis
+RUN npm ci && npm run build
 
 # Copy service package files and install dependencies
 WORKDIR /app

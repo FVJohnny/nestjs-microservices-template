@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Channel } from '../../domain/entities/channel.entity';
-import { ChannelRepository } from '../../domain/repositories/channel.repository';
+import { Channel } from '../../../domain/entities/channel.entity';
+import { ChannelRepository } from '../../../domain/repositories/channel.repository';
 import { CorrelationLogger } from '@libs/nestjs-common';
 
 @Injectable()

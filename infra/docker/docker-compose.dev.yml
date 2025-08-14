@@ -14,6 +14,9 @@ services:
       - KAFKA_BROKERS=kafka:9092
       - PROXY_BASE_PATH=/api/service-1
       - MONGODB_URI=mongodb://admin:admin123@mongodb:27017/service-1-db?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
     ports:
       - "3001:3000"
     networks:
@@ -22,6 +25,8 @@ services:
       kafka:
         condition: service_healthy
       mongodb:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
 
@@ -106,9 +111,26 @@ services:
       retries: 5
       start_period: 10s
 
+  redis:
+    image: redis:7.0-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
 networks:
   backend:
     driver: bridge
 
 volumes:
   mongodb_data_dev:
+  redis_data_dev:

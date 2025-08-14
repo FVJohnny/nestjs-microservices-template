@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 @Schema({ timestamps: true, collection: 'channels' })
-export class ChannelDocument extends Document {
+export class ChannelMongoDocument extends Document {
   @Prop({ required: true, unique: true })
   declare id: string;
 
@@ -46,8 +46,8 @@ export class ChannelDocument extends Document {
   updatedAt: Date;
 }
 
-export const ChannelSchema = SchemaFactory.createForClass(ChannelDocument);
+export const ChannelMongoSchema = SchemaFactory.createForClass(ChannelMongoDocument);
 
 // Add indexes for common queries
-ChannelSchema.index({ userId: 1, isActive: 1 });
-ChannelSchema.index({ channelType: 1, isActive: 1 });
+ChannelMongoSchema.index({ userId: 1, isActive: 1 });
+ChannelMongoSchema.index({ channelType: 1, isActive: 1 });

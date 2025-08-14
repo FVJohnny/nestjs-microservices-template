@@ -8,6 +8,7 @@ import {
   SharedMongoDBModule,
   MongoDBConfigService,
 } from '@libs/nestjs-mongodb';
+import { SharedRedisModule } from '@libs/nestjs-redis';
 import { KafkaSharedModule } from '@libs/nestjs-kafka';
 import { MessagingModule } from './messaging.module';
 
@@ -20,6 +21,8 @@ import { MessagingModule } from './messaging.module';
         configService.getMongoConfig(),
       inject: [MongoDBConfigService],
     }),
+
+    SharedRedisModule,
 
     KafkaSharedModule.forRoot({
       clientId: 'service-1',

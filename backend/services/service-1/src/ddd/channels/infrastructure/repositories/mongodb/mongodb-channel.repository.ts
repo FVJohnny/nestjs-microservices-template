@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Channel } from '../../domain/entities/channel.entity';
-import { ChannelRepository } from '../../domain/repositories/channel.repository';
-import { ChannelDocument } from '../schemas/channel.schema';
-import { ChannelTypeVO } from '../../domain/value-objects/channel-type.vo';
+import { Channel } from '../../../domain/entities/channel.entity';
+import { ChannelRepository } from '../../../domain/repositories/channel.repository';
+import { ChannelMongoDocument } from './channel.schema';
+import { ChannelTypeVO } from '../../../domain/value-objects/channel-type.vo';
 import { CorrelationLogger } from '@libs/nestjs-common';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
 
   constructor(
     @InjectModel('Channel')
-    private readonly channelModel: Model<ChannelDocument>,
+    private readonly channelModel: Model<ChannelMongoDocument>,
   ) {}
 
   async save(channel: Channel): Promise<Channel> {
@@ -161,7 +161,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
   /**
    * Convert MongoDB document to domain entity
    */
-  private toDomainEntity(doc: ChannelDocument): Channel {
+  private toDomainEntity(doc: ChannelMongoDocument): Channel {
     return new Channel(
       doc.id,
       ChannelTypeVO.create(doc.channelType),

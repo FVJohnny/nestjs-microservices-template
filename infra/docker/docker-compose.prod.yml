@@ -13,6 +13,10 @@ services:
       - PROXY_BASE_PATH=/api/service-1
       - MONGODB_URI=mongodb://admin:secureproductionpassword@mongodb:27017?authSource=admin
       - MONGODB_DB_NAME=service-1-db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=secureproductionredispassword
+      - REDIS_DB=0
     ports:
       - "3001:3000"
     networks:
@@ -21,6 +25,8 @@ services:
       kafka:
         condition: service_healthy
       mongodb:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
 
@@ -109,6 +115,23 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  redis:
+    image: redis:7.0-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass secureproductionredispassword
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "secureproductionredispassword", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
 networks:
   backend:
     driver: bridge
@@ -116,3 +139,4 @@ networks:
 volumes:
   mongodb_data:
   mongodb_config:
+  redis_data:
