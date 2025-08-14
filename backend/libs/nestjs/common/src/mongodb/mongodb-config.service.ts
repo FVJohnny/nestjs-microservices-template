@@ -3,25 +3,33 @@ import { MongooseModuleOptions } from '@nestjs/mongoose';
 
 @Injectable()
 export class MongoDBConfigService {
-  createMongooseOptions(): MongooseModuleOptions {
-    const dbName = process.env.MONGODB_DB_NAME || 'nestjs-app';
-    
-    return {
-      uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/nestjs-app',
-      dbName,
-    };
-  }
 
   getConnectionString(): string {
-    const baseUri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-    const dbName = process.env.MONGODB_DB_NAME || 'nestjs-app';
-    
-    return baseUri.includes('?') 
-      ? `${baseUri.split('?')[0]}/${dbName}?${baseUri.split('?')[1]}`
-      : `${baseUri}/${dbName}`;
+    return process.env.MONGODB_URI || 'mongodb://localhost:27017';
   }
 
   getDatabaseName(): string {
-    return process.env.MONGODB_DB_NAME || 'nestjs-app';
+    const uri = this.getConnectionString();
+    
+    // Find the database part between the last "/" and "?" (if present)
+    const pathMatch = uri.match(/\/([^/?]+)(\?|$)/);
+    if (pathMatch && pathMatch[1]) {
+      // Check if this is actually a database name (not host:port)
+      const dbCandidate = pathMatch[1];
+      // If it contains @ or :, it's likely part of the connection string, not a database
+      if (dbCandidate.includes('@') || dbCandidate.includes(':')) {
+        return '';
+      }
+      return dbCandidate;
+    }
+    
+    return '';
+  }
+
+  getMongoConfig(): MongooseModuleOptions {
+    return {
+      uri: this.getConnectionString(),
+      dbName: this.getDatabaseName(),
+    };
   }
 }

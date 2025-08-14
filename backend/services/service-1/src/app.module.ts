@@ -9,12 +9,13 @@ import { MessagingModule } from './messaging.module';
 
 @Module({
   imports: [
+    SharedMongoDBModule,
     MongooseModule.forRootAsync({
       imports: [SharedMongoDBModule],
-      useFactory: (configService: MongoDBConfigService) => configService.createMongooseOptions(),
+      useFactory: (configService: MongoDBConfigService) => configService.getMongoConfig(),
       inject: [MongoDBConfigService],
     }),
-    SharedMongoDBModule,
+    
     KafkaSharedModule.forRoot({
       clientId: 'service-1',
       groupId: 'service-1',

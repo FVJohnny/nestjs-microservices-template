@@ -13,15 +13,10 @@ export class KafkaSharedModule {
       module: KafkaSharedModule,
       providers: [
         {
-          provide: 'KAFKA_CONFIG',
-          useValue: config,
-        },
-        {
           provide: KafkaService,
-          useFactory: (kafkaConfig: KafkaServiceConfig) => {
-            return new KafkaService(kafkaConfig);
+          useFactory: () => {
+            return new KafkaService(config);
           },
-          inject: ['KAFKA_CONFIG'],
         },
       ],
       exports: [KafkaService],
