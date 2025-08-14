@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { CorrelationLogger } from '@libs/nestjs-common';
-import { KafkaEventHandler } from '@libs/nestjs-kafka';
+import type { EventHandler } from '@libs/nestjs-ddd';
 import { RegisterChannelCommand } from '../../../../../../application/commands/register-channel.command';
 
 @Injectable()
-export class ChannelCreateEventHandler implements KafkaEventHandler {
+export class ChannelCreateEventHandler implements EventHandler {
   readonly eventName = 'channel.create';
   private readonly logger = new CorrelationLogger(ChannelCreateEventHandler.name);
 

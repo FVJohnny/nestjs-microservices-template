@@ -1,11 +1,18 @@
 // === MESSAGING ===
-// Interfaces
+// Interfaces and Base Classes
 export * from './messaging/interfaces/message-publisher.interface';
 export * from './messaging/interfaces/kafka-publisher.interface';
+export * from './messaging/interfaces/event-listener.interface';
+export * from './messaging/interfaces/base-topic.handler';
 
 // Implementations
 export * from './messaging/implementations/kafka-message.publisher';
 export * from './messaging/implementations/redis-message.publisher';
+export * from './messaging/implementations/kafka-event.listener';
+export * from './messaging/implementations/redis-event.listener';
+
+// Modules
+export * from './messaging/event-listener.module';
 
 // === DOMAIN ===
 // Events
@@ -18,4 +25,5 @@ export * from './domain/repositories/repository.base';
 export * from './ddd.module';
 
 // === TOKENS ===
-export * from './tokens';
+export const MESSAGE_PUBLISHER_TOKEN = 'MessagePublisher';
+export const EVENT_LISTENER_TOKEN = 'EventListener';

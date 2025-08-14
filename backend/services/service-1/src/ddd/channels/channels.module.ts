@@ -28,10 +28,7 @@ import { RedisChannelRepository } from './infrastructure/repositories/redis/redi
 const CommandHandlers = [RegisterChannelCommandHandler];
 const QueryHandlers = [GetChannelsHandler];
 const EventHandlers = [ChannelRegisteredEventHandler, MessageReceivedHandler];
-const KafkaHandlers = [
-  TradingSignalsTopicHandler,
-  ChannelCreateEventHandler,
-];
+const KafkaHandlers = [TradingSignalsTopicHandler, ChannelCreateEventHandler];
 
 @Module({
   imports: [

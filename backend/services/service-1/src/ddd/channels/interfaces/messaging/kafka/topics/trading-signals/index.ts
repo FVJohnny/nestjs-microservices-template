@@ -1,5 +1,3 @@
-// Topic Handler
+// Export all trading-signals topic components
 export * from './trading-signals.topic-handler';
-
-// Event Handlers
 export * from './events/channel-create.event-handler';
