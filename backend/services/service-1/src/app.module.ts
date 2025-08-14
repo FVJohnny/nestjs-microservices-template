@@ -3,7 +3,12 @@ import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ChannelsModule } from './ddd/channels/channels.module';
-import { HeartbeatModule, CorrelationModule, SharedMongoDBModule, MongoDBConfigService } from '@libs/nestjs-common';
+import {
+  HeartbeatModule,
+  CorrelationModule,
+  SharedMongoDBModule,
+  MongoDBConfigService,
+} from '@libs/nestjs-common';
 import { KafkaSharedModule } from '@libs/nestjs-kafka';
 import { MessagingModule } from './messaging.module';
 
@@ -12,10 +17,11 @@ import { MessagingModule } from './messaging.module';
     SharedMongoDBModule,
     MongooseModule.forRootAsync({
       imports: [SharedMongoDBModule],
-      useFactory: (configService: MongoDBConfigService) => configService.getMongoConfig(),
+      useFactory: (configService: MongoDBConfigService) =>
+        configService.getMongoConfig(),
       inject: [MongoDBConfigService],
     }),
-    
+
     KafkaSharedModule.forRoot({
       clientId: 'service-1',
       groupId: 'service-1',

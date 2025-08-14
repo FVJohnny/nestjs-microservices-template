@@ -7,9 +7,8 @@ import { CorrelationLogger } from '@libs/nestjs-common';
 
 @QueryHandler(GetChannelsQuery)
 export class GetChannelsHandler implements IQueryHandler<GetChannelsQuery> {
-  
-  private readonly logger = new CorrelationLogger(GetChannelsHandler.name);  
-  
+  private readonly logger = new CorrelationLogger(GetChannelsHandler.name);
+
   constructor(
     @Inject('ChannelRepository')
     private readonly channelRepository: ChannelRepository,

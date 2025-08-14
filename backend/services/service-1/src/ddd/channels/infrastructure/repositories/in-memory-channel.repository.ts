@@ -5,9 +5,10 @@ import { CorrelationLogger } from '@libs/nestjs-common';
 
 @Injectable()
 export class InMemoryChannelRepository implements ChannelRepository {
-  
-  private readonly logger = new CorrelationLogger(InMemoryChannelRepository.name);
-  
+  private readonly logger = new CorrelationLogger(
+    InMemoryChannelRepository.name,
+  );
+
   private channels: Map<string, Channel> = new Map();
 
   async save(channel: Channel): Promise<Channel> {
@@ -24,7 +25,7 @@ export class InMemoryChannelRepository implements ChannelRepository {
   async findByUserId(userId: string): Promise<Channel[]> {
     this.logger.log(`Finding channels by user id: ${userId}`);
     return Array.from(this.channels.values()).filter(
-      channel => channel.userId === userId
+      (channel) => channel.userId === userId,
     );
   }
 

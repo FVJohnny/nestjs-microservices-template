@@ -6,36 +6,36 @@ export class ChannelDocument extends Document {
   @Prop({ required: true, unique: true })
   declare id: string;
 
-  @Prop({ 
-    required: true, 
-    minlength: 1, 
+  @Prop({
+    required: true,
+    minlength: 1,
     maxlength: 100,
-    trim: true 
+    trim: true,
   })
   name: string;
 
-  @Prop({ 
+  @Prop({
     required: true,
     enum: ['telegram', 'discord', 'whatsapp'],
-    lowercase: true
+    lowercase: true,
   })
   channelType: string;
 
-  @Prop({ 
+  @Prop({
     required: true,
-    index: true // Index for faster queries by userId
+    index: true, // Index for faster queries by userId
   })
   userId: string;
 
-  @Prop({ 
+  @Prop({
     type: Object,
-    default: {} // Connection configuration for the channel
+    default: {}, // Connection configuration for the channel
   })
   connectionConfig: Record<string, any>;
 
-  @Prop({ 
+  @Prop({
     default: true,
-    index: true // Index for filtering active channels
+    index: true, // Index for filtering active channels
   })
   isActive: boolean;
 

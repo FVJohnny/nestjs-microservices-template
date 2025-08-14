@@ -31,12 +31,7 @@ app = FastAPI(lifespan=lifespan)
 async def root():
     return {"service": "service-3", "status": "ok"}
 
-@app.get("/kafka/stats")
-async def get_stats():
-    """Get service statistics including events processed"""
-    return event_counter.get_stats()
-
-@app.get("/test/kafka/consumer-stats")
+@app.get("/kafka/consumer-stats")
 async def get_consumer_stats():
     """Get detailed consumer statistics compatible with NestJS services"""
     basic_stats = event_counter.get_stats()
@@ -92,53 +87,4 @@ async def publish_event(event: GenericEvent = None):
             raise HTTPException(status_code=500, detail="Failed to publish event")
     except Exception as e:
         logger.error(f"Error publishing event: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/test/kafka/process-data")
-async def test_process_data(event: GenericEvent = None):
-    """Test endpoint for sending data processing events"""
-    try:
-        message = {
-            'action': 'PROCESS_DATA',
-            'payload': event.dict() if event else {
-                'dataType': 'sample',
-                'records': 100,
-                'source': 'service-3-test'
-            },
-            'timestamp': str(time.time()),
-            'service': 'service-3'
-        }
-        
-        success = kafka_service.publish_message('data-processing', message)
-        if success:
-            return {"success": True, "message": "Data processing message sent to Kafka"}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to publish event")
-    except Exception as e:
-        logger.error(f"Error publishing data processing event: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/test/kafka/analyze-signal")
-async def test_analyze_signal(event: GenericEvent = None):
-    """Test endpoint for sending signal analysis events"""
-    try:
-        message = {
-            'action': 'ANALYZE_SIGNAL',
-            'payload': event.dict() if event else {
-                'signalType': 'MARKET_DATA',
-                'symbol': 'BTC/USD',
-                'confidence': 0.85,
-                'analysis': 'bullish_trend'
-            },
-            'timestamp': str(time.time()),
-            'service': 'service-3'
-        }
-        
-        success = kafka_service.publish_message('signal-analysis', message)
-        if success:
-            return {"success": True, "message": "Signal analysis message sent to Kafka"}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to publish event")
-    except Exception as e:
-        logger.error(f"Error publishing signal analysis event: {e}")
         raise HTTPException(status_code=500, detail=str(e))

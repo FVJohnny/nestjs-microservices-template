@@ -9,18 +9,21 @@ import { CorrelationLogger } from '@libs/nestjs-common';
 
 @Injectable()
 export class MongoDBChannelRepository implements ChannelRepository {
-  private readonly logger = new CorrelationLogger(MongoDBChannelRepository.name);
+  private readonly logger = new CorrelationLogger(
+    MongoDBChannelRepository.name,
+  );
 
   constructor(
-    @InjectModel('Channel') private readonly channelModel: Model<ChannelDocument>,
+    @InjectModel('Channel')
+    private readonly channelModel: Model<ChannelDocument>,
   ) {}
 
   async save(channel: Channel): Promise<Channel> {
     try {
       const channelDoc = await this.channelModel.findOne({ id: channel.id });
-      
+
       if (channelDoc) {
-        // Update existing channel 
+        // Update existing channel
         await this.channelModel.updateOne(
           { id: channel.id },
           {
@@ -30,7 +33,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
             connectionConfig: channel.connectionConfig,
             isActive: channel.isActive,
             updatedAt: new Date(),
-          }
+          },
         );
         this.logger.log(`Updated channel: ${channel.id}`);
       } else {
@@ -47,7 +50,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
         });
         this.logger.log(`Created channel: ${channel.id}`);
       }
-      
+
       // Return the saved channel
       return channel;
     } catch (error) {
@@ -74,8 +77,8 @@ export class MongoDBChannelRepository implements ChannelRepository {
         .find({ userId, isActive: true })
         .sort({ createdAt: -1 })
         .exec();
-      
-      return channelDocs.map(doc => this.toDomainEntity(doc));
+
+      return channelDocs.map((doc) => this.toDomainEntity(doc));
     } catch (error) {
       this.logger.error(`Failed to find channels for user ${userId}:`, error);
       throw new Error(`Failed to find channels: ${error.message}`);
@@ -89,8 +92,8 @@ export class MongoDBChannelRepository implements ChannelRepository {
         .find({ isActive: true })
         .sort({ createdAt: -1 })
         .exec();
-      
-      return channelDocs.map(doc => this.toDomainEntity(doc));
+
+      return channelDocs.map((doc) => this.toDomainEntity(doc));
     } catch (error) {
       this.logger.error('Failed to find all channels:', error);
       throw new Error(`Failed to find channels: ${error.message}`);
@@ -103,13 +106,13 @@ export class MongoDBChannelRepository implements ChannelRepository {
       // Soft delete by setting isActive to false
       const result = await this.channelModel.updateOne(
         { id },
-        { isActive: false, updatedAt: new Date() }
+        { isActive: false, updatedAt: new Date() },
       );
-      
+
       if (result.matchedCount === 0) {
         throw new Error(`Channel with id ${id} not found`);
       }
-      
+
       this.logger.log(`Soft deleted channel: ${id}`);
     } catch (error) {
       this.logger.error(`Failed to delete channel ${id}:`, error);
@@ -120,7 +123,10 @@ export class MongoDBChannelRepository implements ChannelRepository {
   async exists(id: string): Promise<boolean> {
     try {
       this.logger.log(`Checking if channel exists with id: ${id}`);
-      const count = await this.channelModel.countDocuments({ id, isActive: true });
+      const count = await this.channelModel.countDocuments({
+        id,
+        isActive: true,
+      });
       return count > 0;
     } catch (error) {
       this.logger.error(`Failed to check if channel exists ${id}:`, error);
@@ -149,7 +155,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
       doc.userId,
       doc.connectionConfig || {},
       doc.isActive,
-      doc.createdAt
+      doc.createdAt,
     );
   }
 }

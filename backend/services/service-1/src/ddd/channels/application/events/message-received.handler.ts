@@ -5,7 +5,9 @@ import type { MessagePublisher } from '@libs/nestjs-ddd';
 import { CorrelationLogger } from '@libs/nestjs-common';
 
 @EventsHandler(MessageReceivedEvent)
-export class MessageReceivedHandler implements IEventHandler<MessageReceivedEvent> {
+export class MessageReceivedHandler
+  implements IEventHandler<MessageReceivedEvent>
+{
   private readonly logger = new CorrelationLogger(MessageReceivedHandler.name);
 
   constructor(
@@ -14,7 +16,9 @@ export class MessageReceivedHandler implements IEventHandler<MessageReceivedEven
   ) {}
 
   async handle(event: MessageReceivedEvent): Promise<void> {
-    this.logger.log(`Handling MessageReceivedEvent for channel: ${event.aggregateId}`);
+    this.logger.log(
+      `Handling MessageReceivedEvent for channel: ${event.aggregateId}`,
+    );
 
     const message = {
       eventId: `${event.messageId}-${Date.now()}`,
@@ -31,9 +35,14 @@ export class MessageReceivedHandler implements IEventHandler<MessageReceivedEven
 
     try {
       await this.messagePublisher.publish('example-topic', message);
-      this.logger.log(`Published MessageReceivedEvent to message broker: ${event.messageId}`);
+      this.logger.log(
+        `Published MessageReceivedEvent to message broker: ${event.messageId}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to publish MessageReceivedEvent: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to publish MessageReceivedEvent: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }

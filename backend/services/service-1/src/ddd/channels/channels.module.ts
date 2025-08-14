@@ -5,16 +5,12 @@ import { DDDModule } from '@libs/nestjs-ddd';
 
 // Controllers
 import { ChannelsController } from './interfaces/http/controllers/channels.controller';
-import { TestKafkaController } from './interfaces/http/controllers/test-kafka.controller';
 
 // Kafka Handlers (Primary/Driving Adapters)
 import { TradingSignalsHandler } from './interfaces/messaging/kafka/handlers/trading-signals.handler';
-import { UserEventsHandler } from './interfaces/messaging/kafka/handlers/user-events.handler';
-
 
 // Command Handlers
 import { RegisterChannelHandler } from './application/commands/register-channel.handler';
-import { ProcessSignalHandler } from './application/commands/process-signal.handler';
 
 // Query Handlers
 import { GetChannelsHandler } from './application/queries/get-channels.handler';
@@ -28,21 +24,18 @@ import { InMemoryChannelRepository } from './infrastructure/repositories/in-memo
 import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb-channel.repository';
 import { ChannelSchema } from './infrastructure/schemas/channel.schema';
 
-
-const CommandHandlers = [RegisterChannelHandler, ProcessSignalHandler];
+const CommandHandlers = [RegisterChannelHandler];
 const QueryHandlers = [GetChannelsHandler];
 const EventHandlers = [ChannelRegisteredHandler, MessageReceivedHandler];
-const KafkaHandlers = [TradingSignalsHandler, UserEventsHandler];
+const KafkaHandlers = [TradingSignalsHandler];
 
 @Module({
   imports: [
     CqrsModule,
     DDDModule,
-    MongooseModule.forFeature([
-      { name: 'Channel', schema: ChannelSchema }
-    ]),
+    MongooseModule.forFeature([{ name: 'Channel', schema: ChannelSchema }]),
   ],
-  controllers: [ChannelsController, TestKafkaController],
+  controllers: [ChannelsController],
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,

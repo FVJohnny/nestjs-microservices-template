@@ -6,8 +6,9 @@ import type { ChannelRepository } from '../../domain/repositories/channel.reposi
 import { CorrelationLogger } from '@libs/nestjs-common';
 
 @CommandHandler(RegisterChannelCommand)
-export class RegisterChannelHandler implements ICommandHandler<RegisterChannelCommand> {
-  
+export class RegisterChannelHandler
+  implements ICommandHandler<RegisterChannelCommand>
+{
   private readonly logger = new CorrelationLogger(RegisterChannelHandler.name);
 
   constructor(
@@ -31,7 +32,7 @@ export class RegisterChannelHandler implements ICommandHandler<RegisterChannelCo
     for (const event of events) {
       this.eventBus.publish(event);
     }
-    
+
     // Commit events after publishing
     channel.commit();
 

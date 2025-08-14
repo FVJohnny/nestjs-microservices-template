@@ -5,7 +5,6 @@ import { ChannelRegisteredEvent } from '../events/channel-registered.event';
 import { MessageReceivedEvent } from '../events/message-received.event';
 
 export class Channel extends AggregateRoot<IEvent> {
-
   constructor(
     public readonly id: string,
     public readonly channelType: ChannelTypeVO,
@@ -26,7 +25,7 @@ export class Channel extends AggregateRoot<IEvent> {
   ): Channel {
     const id = uuidv4();
     const channelTypeVO = ChannelTypeVO.create(channelType);
-    
+
     const channel = new Channel(
       id,
       channelTypeVO,
@@ -79,10 +78,8 @@ export class Channel extends AggregateRoot<IEvent> {
     if (!this.isActive) {
       throw new Error('Channel is already inactive');
     }
-    
+
     // In a real implementation, you might raise a ChannelDeactivatedEvent
     // For now, we'll keep it simple
   }
-
-
 }

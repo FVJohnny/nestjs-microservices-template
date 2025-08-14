@@ -5,8 +5,12 @@ import type { MessagePublisher } from '@libs/nestjs-ddd';
 import { CorrelationLogger } from '@libs/nestjs-common';
 
 @EventsHandler(ChannelRegisteredEvent)
-export class ChannelRegisteredHandler implements IEventHandler<ChannelRegisteredEvent> {
-  private readonly logger = new CorrelationLogger(ChannelRegisteredHandler.name);
+export class ChannelRegisteredHandler
+  implements IEventHandler<ChannelRegisteredEvent>
+{
+  private readonly logger = new CorrelationLogger(
+    ChannelRegisteredHandler.name,
+  );
 
   constructor(
     @Inject('MessagePublisher')
@@ -31,9 +35,14 @@ export class ChannelRegisteredHandler implements IEventHandler<ChannelRegistered
 
     try {
       await this.messagePublisher.publish('channel-events', message);
-      this.logger.log(`Published ChannelRegisteredEvent to message broker: ${event.aggregateId}`);
+      this.logger.log(
+        `Published ChannelRegisteredEvent to message broker: ${event.aggregateId}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to publish ChannelRegisteredEvent: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to publish ChannelRegisteredEvent: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }

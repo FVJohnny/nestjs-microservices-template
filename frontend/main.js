@@ -15,7 +15,7 @@ async function updateServiceStatus(service) {
   
   try {
     // Use consumer-stats endpoint for detailed metrics
-    const statsResponse = await fetch(`${service.baseUrl}/test/kafka/consumer-stats`, { 
+    const statsResponse = await fetch(`${service.baseUrl}/kafka/consumer-stats`, { 
       headers: { 'Accept': 'application/json' },
       timeout: 5000 
     });
@@ -177,26 +177,23 @@ async function triggerKafkaEvent(serviceNumber) {
     
     switch(serviceNumber) {
       case '1':
-        // Service 1: Create channel test
-        endpoint = `/api/service-1/test/kafka/create-channel`;
+        // Service 1: Use centralized Kafka endpoint
+        endpoint = `/api/service-1/kafka/publish-event?topic=trading-signals`;
         payload = {
           channelType: "telegram",
-          name: "Test Channel via Kafka",
-          userId: "user-123",
-          connectionConfig: {
-            botToken: "test-token"
-          }
+          name: "nombresito",
+          userId: "usuariooo",
+          connectionConfig: {}
         }
         break;
       case '3':
-        // Service 3: Process data test
-        endpoint = `/api/service-3/test/kafka/process-data`;
-        payload = {
-          dataType: 'frontend-test',
-          records: Math.floor(Math.random() * 100) + 1,
-          source: 'frontend-dashboard'
-        };
-        break;
+        // Service 3: Do nothing for now
+        button.textContent = '⚠️ Disabled';
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.disabled = false;
+        }, 2000);
+        return;
       default:
         throw new Error(`Unknown service number: ${serviceNumber}`);
     }
