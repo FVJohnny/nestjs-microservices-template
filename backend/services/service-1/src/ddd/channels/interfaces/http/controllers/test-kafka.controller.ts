@@ -39,7 +39,7 @@ export class TestKafkaController {
       payload,
     };
 
-    await this.kafkaService.getPublisher().publishMessage('trading-signals', message);
+    await this.kafkaService.publishMessage('trading-signals', message);
     
     this.logger.log(`Test message sent to Kafka: ${JSON.stringify(message)}`);
     return { success: true, message: 'Channel creation message sent to Kafka' };
@@ -83,7 +83,7 @@ export class TestKafkaController {
       payload,
     };
 
-    await this.kafkaService.getPublisher().publishMessage('trading-signals', message);
+    await this.kafkaService.publishMessage('trading-signals', message);
     
     this.logger.log(`Test signal sent to Kafka: ${JSON.stringify(message)}`);
     return { success: true, message: 'Signal processing message sent to Kafka' };

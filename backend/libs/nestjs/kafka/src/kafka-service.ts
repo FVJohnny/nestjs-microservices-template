@@ -153,8 +153,4 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
     return this.kafkaPublisher.publishMessages(topic, messages);
   }
 
-  // Expose publisher for legacy support
-  getPublisher(): KafkaPublisherService {
-    return this.kafkaPublisher;
-  }
 }
