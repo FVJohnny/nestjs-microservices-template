@@ -1,6 +1,6 @@
 import { Module, DynamicModule } from '@nestjs/common';
-import { KafkaMessagePublisher } from './messaging/implementations/kafka-message.publisher';
-import { RedisMessagePublisher } from './messaging/implementations/redis-message.publisher';
+import { KafkaEventPublisher } from './messaging/implementations/kafka-event.publisher';
+import { RedisEventPublisher } from './messaging/implementations/redis-event.publisher';
 
 /**
  * Shared DDD module that provides Domain-Driven Design patterns and abstractions
@@ -9,20 +9,20 @@ import { RedisMessagePublisher } from './messaging/implementations/redis-message
 @Module({})
 export class DDDModule {
   /**
-   * Configure the DDD module with a specific message publisher type
+   * Configure the DDD module with a specific event publisher type
    */
   static forRoot(): DynamicModule {
 
     return {
       module: DDDModule,
       providers: [
-        KafkaMessagePublisher,
-        RedisMessagePublisher,
+        KafkaEventPublisher,
+        RedisEventPublisher,
       ],
       exports: [
-        'MessagePublisher',
-        'KafkaMessagePublisher',
-        'RedisMessagePublisher',
+        'EventPublisher',
+        'KafkaEventPublisher',
+        'RedisEventPublisher',
       ],
       global: false,
     };
@@ -35,13 +35,13 @@ export class DDDModule {
     return {
       module: DDDModule,
       providers: [
-        KafkaMessagePublisher,
-        RedisMessagePublisher,
+        KafkaEventPublisher,
+        RedisEventPublisher,
       ],
       exports: [
-        'MessagePublisher',
-        'KafkaMessagePublisher', 
-        'RedisMessagePublisher',
+        'EventPublisher',
+        'KafkaEventPublisher', 
+        'RedisEventPublisher',
       ],
       global: false,
     };

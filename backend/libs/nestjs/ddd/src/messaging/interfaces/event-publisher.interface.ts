@@ -3,7 +3,7 @@
  * This allows for multiple implementations (Kafka, Redis, RabbitMQ, etc.)
  * following the Dependency Inversion Principle.
  */
-export interface MessagePublisher {
+export interface EventPublisher {
   /**
    * Publishes a message to the specified topic/channel
    * @param topic - The topic or channel to publish to

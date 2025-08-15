@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessagePublisher } from '../interfaces/message-publisher.interface';
+import { EventPublisher } from '../interfaces/event-publisher.interface';
 
 /**
- * Kafka implementation of MessagePublisher interface.
+ * Kafka implementation of EventPublisher interface.
  * This implementation uses KafkaService directly for publishing.
  */
 @Injectable()
-export class KafkaMessagePublisher implements MessagePublisher {
-  private readonly logger = new Logger(KafkaMessagePublisher.name);
+export class KafkaEventPublisher implements EventPublisher {
+  private readonly logger = new Logger(KafkaEventPublisher.name);
 
   constructor(private readonly kafkaService: any) {} // KafkaService injected via module configuration
 

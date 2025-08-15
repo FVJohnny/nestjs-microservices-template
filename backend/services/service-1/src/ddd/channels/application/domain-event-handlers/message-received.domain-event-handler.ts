@@ -1,7 +1,7 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import type { MessagePublisher } from '@libs/nestjs-ddd';
-import { MESSAGE_PUBLISHER_TOKEN } from '@libs/nestjs-ddd';
+import type { EventPublisher } from '@libs/nestjs-ddd';
+import { EVENT_PUBLISHER_TOKEN } from '@libs/nestjs-ddd';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { MessageReceivedDomainEvent } from '../../domain/events/message-received.domain-event';
 
@@ -10,8 +10,8 @@ export class MessageReceivedDomainEventHandler implements IEventHandler<MessageR
   private readonly logger = new CorrelationLogger(MessageReceivedDomainEventHandler.name);
 
   constructor(
-    @Inject(MESSAGE_PUBLISHER_TOKEN)
-    private readonly messagePublisher: MessagePublisher,
+    @Inject(EVENT_PUBLISHER_TOKEN)
+    private readonly eventPublisher: EventPublisher,
   ) {}
 
   async handle(event: MessageReceivedDomainEvent): Promise<void> {
@@ -33,9 +33,9 @@ export class MessageReceivedDomainEventHandler implements IEventHandler<MessageR
     };
 
     try {
-      await this.messagePublisher.publish('example-topic', message);
+      await this.eventPublisher.publish('example-topic', message);
       this.logger.log(
-        `Published MessageReceivedEvent to message broker: ${event.messageId}`,
+        `Published MessageReceivedEvent to event broker: ${event.messageId}`,
       );
     } catch (error) {
       this.logger.error(`Failed to publish MessageReceivedEvent`, error);

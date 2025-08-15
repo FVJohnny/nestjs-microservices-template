@@ -1,14 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessagePublisher } from '../interfaces/message-publisher.interface';
+import { EventPublisher } from '../interfaces/event-publisher.interface';
 
 /**
- * Redis implementation of MessagePublisher interface.
+ * Redis implementation of EventPublisher interface.
  * This is an example implementation showing how multiple
  * messaging technologies can be supported through the same interface.
  */
 @Injectable()
-export class RedisMessagePublisher implements MessagePublisher {
-  private readonly logger = new Logger(RedisMessagePublisher.name);
+export class RedisEventPublisher implements EventPublisher {
+  private readonly logger = new Logger(RedisEventPublisher.name);
 
   constructor(
     // In a real implementation, you would inject a Redis client here
