@@ -1,7 +1,7 @@
 import { DomainEvent } from '@libs/nestjs-ddd';
 import { ChannelTypeVO } from '../value-objects/channel-type.vo';
 
-export interface ChannelRegisteredEventProps {
+export interface ChannelRegisteredDomainEventProps {
   aggregateId: string;
   channelType: ChannelTypeVO;
   channelName: string;
@@ -15,7 +15,7 @@ export class ChannelRegisteredDomainEvent extends DomainEvent {
   public readonly userId: string;
   public readonly connectionConfig: Record<string, any>;
 
-  constructor(props: ChannelRegisteredEventProps) {
+  constructor(props: ChannelRegisteredDomainEventProps) {
     super(props.aggregateId);
     this.channelType = props.channelType;
     this.channelName = props.channelName;

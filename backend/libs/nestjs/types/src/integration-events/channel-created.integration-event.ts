@@ -1,4 +1,4 @@
-import { BaseIntegrationEvent, BaseIntegrationEventProps } from '../base-integration-event';
+import { BaseIntegrationEvent, BaseIntegrationEventProps } from './base-integration-event';
 
 /**
  * Integration event published to Event Broker when a channel is created.
