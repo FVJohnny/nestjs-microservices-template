@@ -39,7 +39,8 @@ export class RedisChannelRepository implements ChannelRepository {
 
   async findAll(criteria?: Record<string, any>): Promise<Channel[]> {
     this.logger.log(`Finding all channels`);
-    const keys = await this.redisService.keys(`${this.keyPrefix}*`);
+    const keyPattern = `${this.keyPrefix}*`;
+    const keys = await this.redisService.keys(keyPattern);
     
     if (keys.length === 0) {
       return [];
@@ -58,7 +59,8 @@ export class RedisChannelRepository implements ChannelRepository {
     try {
       const channelData = JSON.parse(data) as ChannelData;
       return this.mapToEntity(channelData);
-    } catch {
+    } catch (error) {
+      this.logger.error(`Failed to parse channel data: ${data}`, error);
       return null; // Skip invalid JSON data
     }
   }

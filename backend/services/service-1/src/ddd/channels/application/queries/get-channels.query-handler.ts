@@ -19,9 +19,11 @@ export class GetChannelsHandler implements IQueryHandler<GetChannelsQuery> {
     const { userId } = query;
 
     if (userId) {
+      this.logger.debug(`Finding channels for user ${userId}`);
       return await this.channelRepository.findByUserId(userId);
     }
 
+    this.logger.debug('Finding all channels...');
     return await this.channelRepository.findAll();
   }
 }

@@ -33,7 +33,6 @@ const IntegrationEventHandlers = [TradingSignalsIntegrationEventHandler];
   imports: [
     CqrsModule,
     DDDModule,
-    // MongooseModule.forFeature([{ name: 'Channel', schema: ChannelMongoSchema }]),
   ],
   controllers: [ChannelsController],
   providers: [
