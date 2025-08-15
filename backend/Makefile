@@ -1,5 +1,5 @@
 # Simple Makefile for updating shared libraries across all services
-.PHONY: update-libs
+.PHONY: update-libs restart-service1
 
 # Update shared libraries in all services - does everything you need!
 update-libs:
@@ -25,3 +25,9 @@ update-libs:
 	@echo ""
 	@echo "✅ All shared libraries updated in all services!"
 	@echo "🎉 Ready to go!"
+
+# Restart service-1 container
+restart-service1:
+	@echo "🔄 Restarting service-1..."
+	@docker-compose -f ../infra/docker/docker-compose.dev.yml restart service-1
+	@echo "✅ Service-1 restarted!"

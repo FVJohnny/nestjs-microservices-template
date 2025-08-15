@@ -1,12 +1,9 @@
 import { Global, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import {
-  SharedMongoDBModule,
-  MongoDBConfigService,
-} from '@libs/nestjs-mongodb';
+import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
 import { SharedRedisModule } from '@libs/nestjs-redis';
-import { SharedPostgreSQLModule, PostgreSQLConfigService } from '@libs/nestjs-postgresql';
+import { SharedPostgreSQLModule } from '@libs/nestjs-postgresql';
 import { ChannelMongoSchema } from './ddd/channels/infrastructure/repositories/mongodb/channel.schema';
 import { PostgreSQLChannelEntity } from './ddd/channels/infrastructure/repositories/postgresql/channel.schema';
 
@@ -21,22 +18,18 @@ import { PostgreSQLChannelEntity } from './ddd/channels/infrastructure/repositor
 
     // MongoDB
     SharedMongoDBModule,
-    MongooseModule.forRootAsync({
-      imports: [SharedMongoDBModule],
-      useFactory: (configService: MongoDBConfigService) =>
-        configService.getMongoConfig(),
-      inject: [MongoDBConfigService],
-    }),
+    MongooseModule.forRootAsync(
+      SharedMongoDBModule.getMongooseConfig()
+    ),
     
 
-    // PostgreSQL
+    // PostgreSQL - Base module for config service
     SharedPostgreSQLModule,
-    TypeOrmModule.forRootAsync({
-      useFactory: (configService: PostgreSQLConfigService) => 
-        configService.getPostgreSQLConfig() as any,
-      inject: [PostgreSQLConfigService],
-    }),
-
+    TypeOrmModule.forRootAsync(
+      SharedPostgreSQLModule.getTypeOrmConfig([
+        PostgreSQLChannelEntity,
+      ])
+    ),
   ],
 })
 export class DatabaseModule {}

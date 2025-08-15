@@ -1,7 +1,7 @@
 import { Module, Global } from '@nestjs/common';
 import { MongoDBController } from './mongodb.controller';
 import { MongoDBConfigService } from './mongodb-config.service';
-import { MongooseModule } from '@nestjs/mongoose';
+import { MongooseModuleAsyncOptions } from '@nestjs/mongoose';
 
 @Global()
 @Module({
@@ -11,4 +11,15 @@ import { MongooseModule } from '@nestjs/mongoose';
   ],
   exports: [MongoDBConfigService],
 })
-export class SharedMongoDBModule {}
+export class SharedMongoDBModule {
+  /**
+   * Returns Mongoose configuration for use in application-level modules
+   */
+  static getMongooseConfig(): MongooseModuleAsyncOptions {
+    return {
+      useFactory: (configService: MongoDBConfigService) => 
+        configService.getMongoConfig(),
+      inject: [MongoDBConfigService],
+    };
+  }
+}
