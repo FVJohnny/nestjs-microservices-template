@@ -14,16 +14,8 @@ export interface EventPayload {
  * Works with any event source (Kafka, Redis, etc.)
  */
 export interface EventHandler {
-  readonly eventName: string;
-  handle(payload: Record<string, unknown>, messageId: string): Promise<void>;
-}
-
-/**
- * Topic handler interface for routing events from topics to specific handlers
- */
-export interface TopicHandler {
   readonly topicName: string;
-  handle(eventPayload: EventPayload): Promise<void>;
+  handle(payload: Record<string, unknown>, messageId: string): Promise<void>;
 }
 
 /**
@@ -32,7 +24,6 @@ export interface TopicHandler {
 export interface EventListener {
   startListening(): Promise<void>;
   stopListening(): Promise<void>;
-  registerTopicHandler(handler: TopicHandler): void;
-  unregisterTopicHandler(topicName: string): void;
   isListening(): boolean;
+  registerEventHandler(topicName: string, handler: EventHandler): Promise<void>;
 }

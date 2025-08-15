@@ -1,122 +1,51 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { EventListener, TopicHandler, EventPayload } from '../interfaces/event-listener.interface';
+import { Injectable } from '@nestjs/common';
+import { BaseEventListener } from './base-event.listener';
 
-// Import the actual KafkaService type to avoid interface mismatch
-// This will be injected from @libs/nestjs-kafka
+// Use type instead of import to avoid circular dependency issues
 type KafkaService = any;
 
 /**
  * Kafka implementation of EventListener
- * Creates Kafka topic handlers that adapt messages to the generic EventPayload format
+ * Adapts Kafka messages to the generic format and routes them to event handlers
  */
 @Injectable()
-export class KafkaEventListener implements EventListener, OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(KafkaEventListener.name);
-  private readonly topicHandlers = new Map<string, TopicHandler>();
-  private isListeningFlag = false;
-
-  constructor(private readonly kafkaService: KafkaService) {}
-
-  async onModuleInit() {
-    await this.startListening();
+export class KafkaEventListener extends BaseEventListener {
+  constructor(private readonly kafkaService: KafkaService) {
+    super();
   }
 
-  async onModuleDestroy() {
-    await this.stopListening();
-  }
-
-  async startListening(): Promise<void> {
-    if (this.isListeningFlag) {
-      this.logger.warn('KafkaEventListener is already listening');
-      return;
-    }
-
-    this.isListeningFlag = true;
-    this.logger.log('KafkaEventListener started listening');
-  }
-
-  async stopListening(): Promise<void> {
-    if (!this.isListeningFlag) {
-      return;
-    }
-
-    this.isListeningFlag = false;
-    this.logger.log('KafkaEventListener stopped listening');
-  }
-
-  registerTopicHandler(handler: TopicHandler): void {
-    this.topicHandlers.set(handler.topicName, handler);
-    this.logger.log(`Registered topic handler for '${handler.topicName}'`);
-
-    // Create a Kafka handler that adapts messages to EventPayload format
+  protected async subscribeToTopic(topicName: string): Promise<void> {
+    // Create a Kafka handler that delegates to our base handleMessage method
     const kafkaHandler = {
-      topicName: handler.topicName,
+      topicName,
       handle: async (kafkaMessage: any) => {
-        await this.handleKafkaMessage(handler.topicName, kafkaMessage, handler);
+        await this.handleMessage(topicName, kafkaMessage);
       }
     };
 
     // Register with the KafkaService
     this.kafkaService.registerHandler(kafkaHandler);
+    this.logger.log(`Subscribed to Kafka topic: ${topicName}`);
   }
 
-  unregisterTopicHandler(topicName: string): void {
-    this.topicHandlers.delete(topicName);
-    this.logger.log(`Unregistered topic handler for '${topicName}'`);
+  protected async unsubscribeFromTopic(topicName: string): Promise<void> {
     // Note: KafkaService doesn't currently support unregistering handlers
+    this.logger.log(`Unsubscribed from Kafka topic: ${topicName}`);
   }
 
-  isListening(): boolean {
-    return this.isListeningFlag;
-  }
-
-  private async handleKafkaMessage(topicName: string, kafkaMessage: any, topicHandler: TopicHandler): Promise<void> {
+  protected parseMessage(rawMessage: any): { parsedMessage: Record<string, unknown>; messageId: string } {
     try {
-      // Extract the actual message data - it's nested in kafkaMessage.message
-      const actualMessage = kafkaMessage.message || kafkaMessage;
+      // Extract message data from Kafka message format
+      const actualMessage = rawMessage.message || rawMessage;
       const messageValue = actualMessage.value?.toString();
       const messageKey = actualMessage.key?.toString();
-      const messageTimestamp = actualMessage.timestamp;
-
-      this.logger.debug(`Processing Kafka message from '${topicName}':`, {
-        key: messageKey,
-        value: messageValue,
-        timestamp: messageTimestamp,
-        partition: kafkaMessage.partition,
-        offset: actualMessage.offset,
-      });
-
-      if (!messageValue) {
-        this.logger.warn(`Empty message value from topic '${topicName}' - Full structure:`, kafkaMessage);
-        return;
-      }
-
-      const parsedMessage = JSON.parse(messageValue) as Record<string, unknown>;
-      const messageId = messageKey || `kafka-${Date.now()}-${Math.random()}`;
-      const eventName = parsedMessage.eventName as string;
-
-      if (!eventName) {
-        this.logger.warn(`Message missing 'eventName' field from topic '${topicName}' [${messageId}] - Parsed:`, parsedMessage);
-        return;
-      }
-
-      // Convert Kafka message to generic EventPayload
-      const eventPayload: EventPayload = {
-        messageId,
-        eventName,
-        data: parsedMessage,
-        timestamp: new Date(messageTimestamp ? parseInt(messageTimestamp) : Date.now()),
-        source: 'kafka',
-      };
-
-      this.logger.log(`🎯 Processing event [${messageId}] - ${eventName} from topic '${topicName}'`);
       
-      // Delegate to the topic handler
-      await topicHandler.handle(eventPayload);
-      
-      this.logger.log(`✅ Successfully processed event [${messageId}] - ${eventName}`);
+      const messageId = messageKey || `kafka-${Date.now()}`;
+      const parsedMessage = messageValue ? JSON.parse(messageValue) : (actualMessage.value || {});
+
+      return { parsedMessage, messageId };
     } catch (error) {
-      this.logger.error(`❌ Error handling Kafka message from topic '${topicName}': ${error}`);
+      this.logger.error(`Error parsing Kafka message: ${error}`);
       throw error;
     }
   }

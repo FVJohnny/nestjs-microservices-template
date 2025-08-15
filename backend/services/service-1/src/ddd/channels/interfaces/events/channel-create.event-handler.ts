@@ -1,20 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { CorrelationLogger } from '@libs/nestjs-common';
-import type { EventHandler } from '@libs/nestjs-ddd';
-import { RegisterChannelCommand } from '../../../../../../application/commands/register-channel.command';
+import { BaseEventHandler } from '@libs/nestjs-ddd';
+import type { EventListener } from '@libs/nestjs-ddd';
+import { RegisterChannelCommand } from '../../application/commands/register-channel.command';
 
 @Injectable()
-export class ChannelCreateEventHandler implements EventHandler {
+export class ChannelCreateEventHandler extends BaseEventHandler {
   readonly eventName = 'channel.create';
-  private readonly logger = new CorrelationLogger(ChannelCreateEventHandler.name);
+  readonly topicName = 'trading-signals';
 
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    @Inject('EventListener') eventListener: EventListener,
+    private readonly commandBus: CommandBus,
+  ) {
+    super(eventListener);
+  }
 
   async handle(payload: Record<string, unknown>, messageId: string): Promise<void> {
-    this.logger.log(`Processing channel.create event [${messageId}]`);
-
     try {
+      // Extract and validate payload
       const channelType = payload.channelType as string;
       const name = payload.name as string;
       const userId = payload.userId as string;
@@ -42,10 +46,8 @@ export class ChannelCreateEventHandler implements EventHandler {
         `✅ Channel created successfully from event [${messageId}] - ID: ${channelId}`,
       );
     } catch (error) {
-      this.logger.error(
-        `❌ Failed to process channel.create event [${messageId}]: ${error}`,
-      );
-      throw error; // Re-throw to trigger retry mechanism
+      this.logger.error(`❌ Failed to handle channel.create event [${messageId}]: ${error}`);
+      throw error;
     }
   }
 }
