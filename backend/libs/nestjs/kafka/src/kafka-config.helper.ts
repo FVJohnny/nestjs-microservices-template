@@ -3,7 +3,7 @@ import { KafkaServiceConfig } from './kafka-service';
 
 /**
  * Helper function to create KafkaServiceConfig from environment variables
- * Used by KafkaSharedModule to configure the service
+ * Used by SharedKafkaModule to configure the service
  */
 export function createKafkaServiceConfig(): KafkaServiceConfig {
   const serviceId = process.env.KAFKA_SERVICE_ID || 'default-service';

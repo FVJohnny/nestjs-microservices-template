@@ -9,7 +9,7 @@ import {
   MongoDBConfigService,
 } from '@libs/nestjs-mongodb';
 import { SharedRedisModule } from '@libs/nestjs-redis';
-import { KafkaSharedModule } from '@libs/nestjs-kafka';
+import { SharedKafkaModule } from '@libs/nestjs-kafka';
 import { MessagingModule } from './messaging.module';
 import { KafkaService } from '@libs/nestjs-kafka';
 import { KafkaMessagePublisher, KafkaEventListener } from '@libs/nestjs-ddd';
@@ -25,7 +25,7 @@ import { KafkaMessagePublisher, KafkaEventListener } from '@libs/nestjs-ddd';
     }),
 
     SharedRedisModule,
-    KafkaSharedModule,
+    SharedKafkaModule,
     HeartbeatModule,
     CorrelationModule,
     MessagingModule,

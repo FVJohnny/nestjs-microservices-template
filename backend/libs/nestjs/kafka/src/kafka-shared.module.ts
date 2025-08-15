@@ -14,4 +14,4 @@ import { KafkaController } from './kafka.controller';
   providers: [KafkaService],
   exports: [KafkaService],
 })
-export class KafkaSharedModule {}
+export class SharedKafkaModule {}
