@@ -16,6 +16,8 @@ import { KafkaMessagePublisher, KafkaEventListener } from '@libs/nestjs-ddd';
 
 @Module({
   imports: [
+    // Database Modules
+    SharedRedisModule,
     SharedMongoDBModule,
     MongooseModule.forRootAsync({
       imports: [SharedMongoDBModule],
@@ -23,12 +25,15 @@ import { KafkaMessagePublisher, KafkaEventListener } from '@libs/nestjs-ddd';
         configService.getMongoConfig(),
       inject: [MongoDBConfigService],
     }),
-
-    SharedRedisModule,
+    
+    // Event Modules
     SharedKafkaModule,
+    MessagingModule,
+
+    // Common Modules
     HeartbeatModule,
     CorrelationModule,
-    MessagingModule,
+
     // Bounded Contexts
     ChannelsModule,
   ],
