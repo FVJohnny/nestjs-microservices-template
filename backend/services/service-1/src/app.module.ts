@@ -10,9 +10,7 @@ import {
 } from '@libs/nestjs-mongodb';
 import { SharedRedisModule } from '@libs/nestjs-redis';
 import { SharedKafkaModule } from '@libs/nestjs-kafka';
-import { MessagingModule } from './messaging.module';
-import { KafkaService } from '@libs/nestjs-kafka';
-import { KafkaMessagePublisher, KafkaEventListener } from '@libs/nestjs-ddd';
+import { EventsModule } from './events.module';
 
 @Module({
   imports: [
@@ -27,8 +25,7 @@ import { KafkaMessagePublisher, KafkaEventListener } from '@libs/nestjs-ddd';
     }),
     
     // Event Modules
-    SharedKafkaModule,
-    MessagingModule,
+    EventsModule,
 
     // Common Modules
     HeartbeatModule,
@@ -42,20 +39,6 @@ import { KafkaMessagePublisher, KafkaEventListener } from '@libs/nestjs-ddd';
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,
-    },
-    {
-      provide: 'MessagePublisher',
-      useFactory: (kafkaService: KafkaService) => {
-        return new KafkaMessagePublisher(kafkaService);
-      },
-      inject: [KafkaService],
-    },
-    {
-      provide: 'EventListener',
-      useFactory: (kafkaService: KafkaService) => {
-        return new KafkaEventListener(kafkaService);
-      },
-      inject: [KafkaService],
     },
   ],
 })
