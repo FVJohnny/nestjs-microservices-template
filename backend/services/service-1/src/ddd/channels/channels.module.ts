@@ -16,8 +16,8 @@ import { RegisterChannelCommandHandler } from './application/commands/register-c
 import { GetChannelsHandler } from './application/queries/get-channels.query-handler';
 
 // Domain Event Handlers
-import { ChannelRegisteredDomainEventHandler } from './application/event-handlers/channel-registered.domain-event-handler';
-import { MessageReceivedDomainEventHandler } from './application/event-handlers/message-received.domain-event-handler';
+import { ChannelRegisteredDomainEventHandler } from './application/domain-event-handlers/channel-registered.domain-event-handler';
+import { MessageReceivedDomainEventHandler } from './application/domain-event-handlers/message-received.domain-event-handler';
 
 // Infrastructure
 // import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb-channel.repository';
