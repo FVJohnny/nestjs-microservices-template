@@ -5,8 +5,7 @@ import type { EventListener } from '@libs/nestjs-ddd';
 import { RegisterChannelCommand } from '../../application/commands/register-channel.command';
 
 @Injectable()
-export class ChannelCreateEventHandler extends BaseEventHandler {
-  readonly eventName = 'channel.create';
+export class TradingSignalsIntegrationEventHandler extends BaseEventHandler {
   readonly topicName = 'trading-signals';
 
   constructor(

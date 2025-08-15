@@ -1,21 +1,19 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { MessageReceivedEvent } from '../../domain/events/message-received.event';
 import type { MessagePublisher } from '@libs/nestjs-ddd';
 import { CorrelationLogger } from '@libs/nestjs-common';
+import { MessageReceivedDomainEvent } from '../../domain/events/message-received.domain-event';
 
-@EventsHandler(MessageReceivedEvent)
-export class MessageReceivedHandler
-  implements IEventHandler<MessageReceivedEvent>
-{
-  private readonly logger = new CorrelationLogger(MessageReceivedHandler.name);
+@EventsHandler(MessageReceivedDomainEvent)
+export class MessageReceivedDomainEventHandler implements IEventHandler<MessageReceivedDomainEvent> {
+  private readonly logger = new CorrelationLogger(MessageReceivedDomainEventHandler.name);
 
   constructor(
     @Inject('MessagePublisher')
     private readonly messagePublisher: MessagePublisher,
   ) {}
 
-  async handle(event: MessageReceivedEvent): Promise<void> {
+  async handle(event: MessageReceivedDomainEvent): Promise<void> {
     this.logger.log(
       `Handling MessageReceivedEvent for channel: ${event.aggregateId}`,
     );

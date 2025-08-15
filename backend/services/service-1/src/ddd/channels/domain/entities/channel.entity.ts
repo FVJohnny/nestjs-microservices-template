@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { AggregateRoot, IEvent } from '@nestjs/cqrs';
 import { ChannelTypeVO } from '../value-objects/channel-type.vo';
-import { ChannelRegisteredEvent } from '../events/channel-registered.event';
-import { MessageReceivedEvent } from '../events/message-received.event';
+import { ChannelRegisteredDomainEvent } from '../events/channel-registered.domain-event';
+import { MessageReceivedDomainEvent } from '../events/message-received.domain-event';
 
 export class Channel extends AggregateRoot<IEvent> {
   constructor(
@@ -36,7 +36,7 @@ export class Channel extends AggregateRoot<IEvent> {
 
     // Raise domain event
     channel.apply(
-      new ChannelRegisteredEvent({
+      new ChannelRegisteredDomainEvent({
         aggregateId: id,
         channelType: channelTypeVO,
         channelName: name,
@@ -62,7 +62,7 @@ export class Channel extends AggregateRoot<IEvent> {
 
     // Raise domain event
     this.apply(
-      new MessageReceivedEvent(
+      new MessageReceivedDomainEvent(
         this.id,
         messageId,
         content,

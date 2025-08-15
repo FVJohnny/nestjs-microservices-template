@@ -1,16 +1,14 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { ChannelRegisteredEvent } from '../../domain/events/channel-registered.event';
+import { ChannelRegisteredDomainEvent } from '../../domain/events/channel-registered.domain-event';
 import { ChannelCreatedIntegrationEvent } from '@libs/nestjs-types';
 import type { MessagePublisher } from '@libs/nestjs-ddd';
 import { CorrelationLogger } from '@libs/nestjs-common';
 
-@EventsHandler(ChannelRegisteredEvent)
-export class ChannelRegisteredEventHandler
-  implements IEventHandler<ChannelRegisteredEvent>
-{
+@EventsHandler(ChannelRegisteredDomainEvent)
+export class ChannelRegisteredDomainEventHandler implements IEventHandler<ChannelRegisteredDomainEvent> {
   private readonly logger = new CorrelationLogger(
-    ChannelRegisteredEventHandler.name,
+    ChannelRegisteredDomainEventHandler.name,
   );
 
   constructor(
@@ -18,8 +16,8 @@ export class ChannelRegisteredEventHandler
     private readonly messagePublisher: MessagePublisher,
   ) {}
 
-  async handle(event: ChannelRegisteredEvent): Promise<void> {
-    this.logger.log('Handling ChannelRegisteredEvent...');
+  async handle(event: ChannelRegisteredDomainEvent): Promise<void> {
+    this.logger.log('Handling ChannelRegisteredDomainEvent...');
 
     // Transform domain event to integration event
     const integrationEvent = new ChannelCreatedIntegrationEvent({

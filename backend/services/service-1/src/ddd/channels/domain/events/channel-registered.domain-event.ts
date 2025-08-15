@@ -9,7 +9,7 @@ export interface ChannelRegisteredEventProps {
   connectionConfig: Record<string, any>;
 }
 
-export class ChannelRegisteredEvent extends DomainEvent {
+export class ChannelRegisteredDomainEvent extends DomainEvent {
   public readonly channelType: ChannelTypeVO;
   public readonly channelName: string;
   public readonly userId: string;

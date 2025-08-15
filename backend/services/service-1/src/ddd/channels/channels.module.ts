@@ -6,18 +6,18 @@ import { DDDModule } from '@libs/nestjs-ddd';
 // Controllers
 import { ChannelsController } from './interfaces/http/controllers/channels.controller';
 
-// Event Handlers (Primary/Driving Adapters)
-import { ChannelCreateEventHandler } from './interfaces/events/channel-create.event-handler';
+// Integration Event Handlers (Primary/Driving Adapters)
+import { TradingSignalsIntegrationEventHandler } from './interfaces/integration-events/trading-signals.integration-event-handler';
 
 // Command Handlers
-import { RegisterChannelCommandHandler } from './application/commands/register-channel.handler';
+import { RegisterChannelCommandHandler } from './application/commands/register-channel.command-handler';
 
 // Query Handlers
-import { GetChannelsHandler } from './application/queries/get-channels.handler';
+import { GetChannelsHandler } from './application/queries/get-channels.query-handler';
 
-// Event Handlers
-import { ChannelRegisteredEventHandler } from './application/events/channel-registered.handler';
-import { MessageReceivedHandler } from './application/events/message-received.handler';
+// Domain Event Handlers
+import { ChannelRegisteredDomainEventHandler } from './application/event-handlers/channel-registered.domain-event-handler';
+import { MessageReceivedDomainEventHandler } from './application/event-handlers/message-received.domain-event-handler';
 
 // Infrastructure
 // import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb-channel.repository';
@@ -26,8 +26,8 @@ import { RedisChannelRepository } from './infrastructure/repositories/redis/redi
 
 const CommandHandlers = [RegisterChannelCommandHandler];
 const QueryHandlers = [GetChannelsHandler];
-const EventHandlers = [ChannelRegisteredEventHandler, MessageReceivedHandler];
-const EventHandlers_Kafka = [ChannelCreateEventHandler];
+const DomainEventHandlers = [ChannelRegisteredDomainEventHandler, MessageReceivedDomainEventHandler];
+const IntegrationEventHandlers = [TradingSignalsIntegrationEventHandler];
 
 @Module({
   imports: [
@@ -39,8 +39,8 @@ const EventHandlers_Kafka = [ChannelCreateEventHandler];
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
-    ...EventHandlers,
-    ...EventHandlers_Kafka,
+    ...DomainEventHandlers,
+    ...IntegrationEventHandlers,
     {
       provide: 'ChannelRepository',
       useClass: RedisChannelRepository, // Change to RedisChannelRepository when needed
