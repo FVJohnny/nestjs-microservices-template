@@ -70,7 +70,8 @@ This is a **microservices architecture** implementing **Domain-Driven Design (DD
 - `ddd`: DDD patterns, messaging abstractions, event handling
 - `kafka`: Kafka integration and event-driven functionality
 - `mongodb`: MongoDB configuration and utilities
-- `redis`: Redis configuration and utilities
+- `redis`: Redis configuration and utilities with health monitoring
+- `postgresql`: PostgreSQL/TypeORM configuration with health monitoring
 - `types`: Shared TypeScript types and integration events
 
 ### Directory Structure Conventions
@@ -97,8 +98,9 @@ channels/
 **Repository Pattern:**
 Repository implementations are swappable via dependency injection:
 - In-Memory: For testing
-- Redis: For caching and simple storage
-- MongoDB: For persistent storage
+- Redis: For caching and simple storage (default)
+- MongoDB: For NoSQL document storage
+- PostgreSQL: For relational data with TypeORM
 
 ## Integration Events
 
@@ -170,6 +172,15 @@ Cross-service communication uses integration events located in `@libs/nestjs-typ
 - Transforms external events into internal commands via CommandBus
 - Auto-registration with EventListener during module initialization
 
+**Repository Selection:**
+```bash
+# Environment variable controls which repository to use
+CHANNEL_REPOSITORY=redis      # Default
+CHANNEL_REPOSITORY=mongodb
+CHANNEL_REPOSITORY=postgresql
+CHANNEL_REPOSITORY=memory
+```
+
 **Repository Implementations:**
 
 **Redis Implementation (`RedisChannelRepository`):**
@@ -189,6 +200,14 @@ Cross-service communication uses integration events located in `@libs/nestjs-typ
 **In-Memory Implementation (`InMemoryChannelRepository`):**
 - Simple Map-based storage for testing
 - All operations synchronous but wrapped in Promises for interface compliance
+
+**PostgreSQL Implementation (`PostgreSQLChannelRepository`):**
+- TypeORM-based implementation with Entity mapping
+- JSONB support for flexible connectionConfig storage
+- Indexed columns for efficient queries (userId, channelType, isActive)
+- Query builder support for complex filtering
+- Soft deletes with isActive flag
+- Automatic timestamp tracking (createdAt, updatedAt)
 
 ### HTTP Interface Layer
 
@@ -282,12 +301,83 @@ Cross-service communication uses integration events located in `@libs/nestjs-typ
 - Test event publishing/consuming end-to-end
 - Test HTTP endpoints with real dependencies
 
+### Health & Monitoring Endpoints
+
+Each infrastructure component provides health monitoring endpoints:
+
+**Redis** (`/redis/*`):
+- `/redis/health` - Connection health check
+- `/redis/stats` - Usage statistics and key counts
+- `/redis/keys` - List keys by pattern
+- `/redis/key/:key` - Inspect individual key data
+
+**PostgreSQL** (`/postgresql/*`):
+- `/postgresql/health` - Database connection status
+- `/postgresql/stats` - Database size, connections, table stats
+- `/postgresql/tables` - List all tables
+- `/postgresql/table/:name` - Table structure and indexes
+- `/postgresql/config` - Current configuration (masked)
+
+**MongoDB** (`/mongodb/*`):
+- `/mongodb/config` - MongoDB configuration
+
+**Kafka** (`/kafka/*`):
+- `/kafka/consumer-stats` - Consumer statistics and metrics
+- `/kafka/publish-event` - Test event publishing
+
+### Conditional Database Loading
+
+The system uses smart conditional loading - databases are only initialized if their environment variables are configured:
+
+**Redis Loading**: 
+- Loads if `REDIS_HOST` is set OR not explicitly disabled
+- Skip with `DISABLE_REDIS=true` or `DISABLE_ALL_DBS=true`
+
+**MongoDB Loading**:
+- Loads if `MONGODB_URI` OR `MONGO_HOST` is set
+- No environment variables = no MongoDB initialization
+
+**PostgreSQL Loading**:
+- Loads if `POSTGRES_HOST` is set
+- No `POSTGRES_HOST` = no PostgreSQL initialization
+
+**Repository Fallbacks**:
+- If selected repository's database isn't available, falls back to in-memory
+- Warns in console when fallback occurs
+- `memory` repository always available as ultimate fallback
+
+**Example Configurations**:
+```bash
+# Minimal setup - only in-memory
+CHANNEL_REPOSITORY=memory
+
+# Redis only
+REDIS_HOST=localhost
+CHANNEL_REPOSITORY=redis
+
+# PostgreSQL only
+POSTGRES_HOST=localhost
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=secret
+POSTGRES_DB=myapp
+CHANNEL_REPOSITORY=postgresql
+
+# All databases available, use PostgreSQL
+REDIS_HOST=localhost
+MONGODB_URI=mongodb://localhost:27017/myapp
+POSTGRES_HOST=localhost
+CHANNEL_REPOSITORY=postgresql
+```
+
 ### Development Notes
 
 - Services use file-based dependencies to shared libraries (`"@libs/nestjs-[name]": "file:../../libs/nestjs/[name]"`)
-- Repository implementation can be changed in module providers (currently using `RedisChannelRepository`)
+- Repository implementation controlled by `CHANNEL_REPOSITORY` environment variable
+- Automatic fallback to in-memory if selected database unavailable
+- Databases only load if their connection environment variables are configured
 - CQRS pattern separates read/write operations with dedicated handlers
 - All NestJS services include Swagger documentation at `/docs`
 - Services run on ports 3001, 3002, 3003 respectively in development
 - Correlation IDs automatically injected via middleware for request tracing
 - Global validation pipe enabled for all endpoints
+- PostgreSQL uses TypeORM with synchronize option for development (disable in production)

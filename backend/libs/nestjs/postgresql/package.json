@@ -1,0 +1,37 @@
+{
+  "name": "@libs/nestjs-postgresql",
+  "version": "1.0.0",
+  "description": "Shared PostgreSQL utilities for NestJS services",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/swagger": "^11.0.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "typeorm": "^0.3.20",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/swagger": "^11.0.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "@types/node": "^22.10.7",
+    "@types/pg": "^8.13.1",
+    "pg": "^8.13.1",
+    "typeorm": "^0.3.20",
+    "typescript": "^5.7.3"
+  },
+  "keywords": [
+    "nestjs",
+    "postgresql",
+    "typeorm",
+    "database",
+    "shared"
+  ],
+  "author": "",
+  "license": "MIT"
+}

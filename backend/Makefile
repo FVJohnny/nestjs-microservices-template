@@ -17,6 +17,8 @@ update-libs:
 	@cd libs/nestjs/mongodb && npm install && npm run build
 	@echo "🔧 Building nestjs-redis library..."
 	@cd libs/nestjs/redis && npm install && npm run build
+	@echo "🔧 Building nestjs-postgresql library..."
+	@cd libs/nestjs/postgresql && npm install && npm run build
 	@echo ""
 	@echo "📦 Updating service-1..."
 	@cd services/service-1 && npm install

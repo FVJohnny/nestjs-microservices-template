@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { DDDModule } from '@libs/nestjs-ddd';
 
 // Controllers
@@ -19,10 +20,16 @@ import { GetChannelsHandler } from './application/queries/get-channels.query-han
 import { ChannelRegisteredDomainEventHandler } from './application/domain-event-handlers/channel-registered.domain-event-handler';
 import { MessageReceivedDomainEventHandler } from './application/domain-event-handlers/message-received.domain-event-handler';
 
-// Infrastructure
-// import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb-channel.repository';
-// import { ChannelMongoSchema } from './infrastructure/schemas/channel.schema';
-import { RedisChannelRepository } from './infrastructure/repositories/redis/redis-channel.repository';
+// Infrastructure Redis
+// import { RedisChannelRepository } from './infrastructure/repositories/redis/redis-channel.repository';
+
+// Infrastructure PostgreSQL
+import { PostgreSQLChannelRepository } from './infrastructure/repositories/postgresql/postgresql-channel.repository';
+import { PostgreSQLChannelEntity } from './infrastructure/repositories/postgresql/channel.schema';
+
+// Infrastructure MongoDB
+// import { ChannelMongoSchema } from './infrastructure/repositories/mongodb/channel.schema';
+// import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb/mongodb-channel.repository';
 
 const CommandHandlers = [RegisterChannelCommandHandler];
 const QueryHandlers = [GetChannelsHandler];
@@ -33,6 +40,10 @@ const IntegrationEventHandlers = [TradingSignalsIntegrationEventHandler];
   imports: [
     CqrsModule,
     DDDModule,
+    // PostgreSQL
+    TypeOrmModule.forFeature([PostgreSQLChannelEntity]),
+    // MongoDB
+    // MongooseModule.forFeature([{ name: 'Channel', schema: ChannelMongoSchema }]),
   ],
   controllers: [ChannelsController],
   providers: [
@@ -40,9 +51,10 @@ const IntegrationEventHandlers = [TradingSignalsIntegrationEventHandler];
     ...QueryHandlers,
     ...DomainEventHandlers,
     ...IntegrationEventHandlers,
+    // Repository
     {
       provide: 'ChannelRepository',
-      useClass: RedisChannelRepository, // Change to RedisChannelRepository when needed
+      useClass: PostgreSQLChannelRepository, // Change to the repository you want to use
     },
   ],
   exports: [],

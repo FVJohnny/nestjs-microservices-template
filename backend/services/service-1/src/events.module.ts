@@ -18,7 +18,6 @@ import {
 @Module({
   imports: [SharedKafkaModule],
   providers: [
-    // Use clean factory pattern - NestJS will inject KafkaService automatically
     {
       provide: MESSAGE_PUBLISHER_TOKEN,
       useFactory: (kafkaService: KafkaService) => new KafkaMessagePublisher(kafkaService),
