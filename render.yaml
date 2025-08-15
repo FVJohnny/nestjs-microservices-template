@@ -11,6 +11,8 @@ services:
       - fromGroup: Groupito
       - key: PROXY_BASE_PATH
         value: /api/service-1
+      - key: KAFKA_SERVICE_ID
+        value: service-1
 
 
   - type: pserv

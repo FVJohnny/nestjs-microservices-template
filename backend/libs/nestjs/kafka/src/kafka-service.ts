@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { KafkaConsumerService, KafkaConsumerServiceConfig } from './kafka-consumer.service';
 import { KafkaPublisherService } from './kafka-publisher.service';
+import { createKafkaServiceConfig } from './kafka-config.helper';
 
 export interface KafkaServiceConfig {
   clientId: string;
@@ -23,20 +24,20 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
   private config: KafkaServiceConfig;
   private initializationTimeout: NodeJS.Timeout | null = null;
   
-  constructor(config: KafkaServiceConfig) {
-    this.config = config;
+  constructor() {
+    this.config = createKafkaServiceConfig();
     
     // Consumer configuration
     const consumerConfig: KafkaConsumerServiceConfig = {
-      clientId: `${config.clientId}-consumer`,
-      groupId: `${config.groupId}-consumer-group`,
-      retryDelayMs: config.retryDelayMs || 5000,
+      clientId: `${this.config.clientId}-consumer`,
+      groupId: `${this.config.groupId}-consumer-group`,
+      retryDelayMs: this.config.retryDelayMs || 5000,
     };
     
     // Publisher configuration
     const publisherConfig = {
-      clientId: `${config.clientId}-publisher`,
-      groupId: `${config.groupId}-publisher-group`,
+      clientId: `${this.config.clientId}-publisher`,
+      groupId: `${this.config.groupId}-publisher-group`,
     };
     
     this.kafkaConsumer = new KafkaConsumerService(consumerConfig);

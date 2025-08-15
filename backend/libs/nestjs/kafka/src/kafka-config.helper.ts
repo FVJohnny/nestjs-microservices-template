@@ -1,4 +1,18 @@
 import { KafkaConfig } from 'kafkajs';
+import { KafkaServiceConfig } from './kafka-service';
+
+/**
+ * Helper function to create KafkaServiceConfig from environment variables
+ * Used by KafkaSharedModule to configure the service
+ */
+export function createKafkaServiceConfig(): KafkaServiceConfig {
+  const serviceId = process.env.KAFKA_SERVICE_ID || 'default-service';
+  return {
+    clientId: serviceId,
+    groupId: serviceId,
+    retryDelayMs: parseInt(process.env.KAFKA_RETRY_DELAY_MS || '5000', 10),
+  };
+}
 
 /**
  * Helper function to create Kafka configuration with proper authentication
