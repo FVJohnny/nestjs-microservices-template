@@ -1,4 +1,4 @@
-import { Injectable, Inject, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, Inject, OnApplicationBootstrap, Logger } from '@nestjs/common';
 import { EventHandler, EventListener } from './event-listener.interface';
 import { EVENT_LISTENER_TOKEN } from '../../index';
 
@@ -7,15 +7,15 @@ import { EVENT_LISTENER_TOKEN } from '../../index';
  * Eliminates the need for separate topic handler classes
  */
 @Injectable()
-export abstract class BaseEventHandler implements EventHandler, OnModuleInit {
+export abstract class BaseEventHandler implements EventHandler, OnApplicationBootstrap {
   protected readonly logger = new Logger(this.constructor.name);
 
   abstract readonly topicName: string;
 
   constructor(@Inject(EVENT_LISTENER_TOKEN) private readonly eventListener: EventListener) {}
 
-  async onModuleInit() {
-    // Auto-register this event handler with its topic
+  async onApplicationBootstrap() {
+    // Auto-register this event handler with its topic - happens after all modules are initialized
     await this.eventListener.registerEventHandler(this.topicName, this);
   }
 
