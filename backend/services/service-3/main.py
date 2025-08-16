@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from contextlib import asynccontextmanager
 import logging
 import time
+from datetime import datetime
 from kafka_service import kafka_service
 from event_counter import event_counter
 
@@ -11,9 +12,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Pydantic models for request bodies
-class GenericEvent(BaseModel):
-    class Config:
-        extra = "allow"  # Allow additional fields beyond what's defined
+class PublishEventRequest(BaseModel):
+    topic: str
+    message: dict
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,16 +32,62 @@ app = FastAPI(lifespan=lifespan)
 async def root():
     return {"service": "service-3", "status": "ok"}
 
-@app.get("/kafka/consumer-stats")
-async def get_consumer_stats():
-    """Get detailed consumer statistics compatible with NestJS services"""
+
+# Generic messaging endpoints to match NestJS service structure
+@app.post("/messaging/publish")
+async def messaging_publish(request: PublishEventRequest):
+    """Generic messaging publish endpoint"""
+    try:
+        # Add metadata to the message
+        enhanced_message = request.message.copy()
+        enhanced_message.update({
+            'timestamp': str(time.time()),
+            'source': 'service-3',
+            'topic': request.topic
+        })
+        
+        success = kafka_service.publish_message(request.topic, enhanced_message)
+        if success:
+            return {
+                "success": True,
+                "topic": request.topic,
+                "message": "Event published successfully",
+                "backend": "Kafka",
+                "timestamp": enhanced_message['timestamp']
+            }
+        else:
+            return {
+                "success": False,
+                "error": "Failed to publish event to Kafka",
+                "timestamp": enhanced_message['timestamp']
+            }
+    except Exception as e:
+        logger.error(f"Error in messaging publish: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": str(time.time())
+        }
+
+@app.get("/messaging/listener/status")
+async def messaging_listener_status():
+    """Get messaging listener status"""
+    return {
+        "listening": kafka_service.is_connected(),
+        "backend": "KafkaEventListener",
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+
+@app.get("/messaging/listener/stats")
+async def messaging_listener_stats():
+    """Get detailed messaging listener statistics"""
     basic_stats = event_counter.get_stats()
     
-    # Transform to match NestJS consumer stats format
     return {
-        "consumerId": "service-3-consumer",
+        "listening": kafka_service.is_connected(),
+        "backend": "KafkaEventListener",
+        "subscribedTopics": ["channel-events"],
         "handlerCount": 1,
-        "topics": ["channel-events"],
         "handlers": [
             {
                 "topic": "channel-events",
@@ -48,43 +95,48 @@ async def get_consumer_stats():
                 "messagesProcessed": basic_stats.get("eventsProcessed", 0),
                 "messagesSucceeded": basic_stats.get("eventsProcessed", 0),
                 "messagesFailed": 0,
-                "totalProcessingTime": basic_stats.get("eventsProcessed", 0) * 100,  # Simulate 100ms per message
                 "averageProcessingTime": 100,
                 "lastProcessedAt": basic_stats.get("timestamp")
             }
         ],
-        "totalMessages": basic_stats.get("eventsProcessed", 0),
-        "totalSuccesses": basic_stats.get("eventsProcessed", 0),
-        "totalFailures": 0,
-        "uptime": int(time.time() * 1000),  # Current timestamp in ms
-        "startedAt": basic_stats.get("timestamp")
+        "totalStats": {
+            "totalMessages": basic_stats.get("eventsProcessed", 0),
+            "totalSuccesses": basic_stats.get("eventsProcessed", 0),
+            "totalFailures": 0,
+            "averageProcessingTime": 100
+        },
+        "timestamp": basic_stats.get("timestamp")
     }
 
-@app.post("/kafka/publish-event")
-async def publish_event(event: GenericEvent = None):
-    """Publish generic events to Kafka"""
+@app.post("/messaging/listener/start")
+async def messaging_listener_start():
+    """Start the messaging listener"""
     try:
-        # Create default event data if no event provided
-        if event is None:
-            message = {
-                'type': 'USER_ACTION',
-                'action': 'frontend_trigger',
-                'timestamp': str(time.time()),
-                'source': 'service-3'
-            }
-        else:
-            # Use the entire event data as the message, adding metadata
-            message = event.dict()
-            message.update({
-                'timestamp': str(time.time()),
-                'source': 'service-3'
-            })
-        
-        success = kafka_service.publish_message('example-topic', message)
-        if success:
-            return {"message": "Event published to Kafka", "data": message}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to publish event")
+        # Kafka service is already started in lifespan
+        return {
+            "success": True,
+            "message": "Event listener is already running",
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
     except Exception as e:
-        logger.error(f"Error publishing event: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
+
+@app.post("/messaging/listener/stop")
+async def messaging_listener_stop():
+    """Stop the messaging listener"""
+    try:
+        return {
+            "success": True,
+            "message": "Event listener cannot be stopped (managed by lifespan)",
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }

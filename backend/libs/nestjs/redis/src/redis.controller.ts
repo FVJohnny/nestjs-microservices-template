@@ -1,16 +1,11 @@
-import { Controller, Get, Query, Param, Post, Body } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBody } from '@nestjs/swagger';
+import { Controller, Get, Query, Param } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { RedisService } from './redis.service';
-import { RedisEventPublisher } from './redis-event.publisher';
 
 @ApiTags('Redis')
 @Controller('redis')
 export class RedisController {
-  private readonly eventPublisher: RedisEventPublisher;
-
-  constructor(private readonly redisService: RedisService) {
-    this.eventPublisher = new RedisEventPublisher(redisService);
-  }
+  constructor(private readonly redisService: RedisService) {}
 
   @Get('health')
   @ApiOperation({ 
@@ -347,98 +342,4 @@ export class RedisController {
     }
   }
 
-  @Post('publish-event')
-  @ApiOperation({ 
-    summary: 'Publish an event to Redis pub/sub',
-    description: 'Publishes an event message to a specified Redis channel for testing event-driven functionality' 
-  })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        topic: { 
-          type: 'string', 
-          example: 'trading-signals',
-          default: 'trading-signals',
-          description: 'The Redis channel/topic to publish to' 
-        },
-        message: { 
-          type: 'object',
-          example: {
-            eventName: 'channel.create',
-            channelType: 'telegram',
-            name: 'nombresito',
-            userId: 'usuariooo',
-            connectionConfig: {}
-          },
-          default: {
-            eventName: 'channel.create',
-            channelType: 'telegram',
-            name: 'nombresito',
-            userId: 'usuariooo',
-            connectionConfig: {}
-          },
-          description: 'The event message payload' 
-        },
-      },
-      required: ['topic', 'message'],
-    },
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Event published successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        topic: { type: 'string', example: 'trading-signals' },
-        message: { type: 'string', example: 'Event published successfully' },
-        timestamp: { type: 'string', format: 'date-time' },
-      },
-    },
-  })
-  @ApiResponse({ 
-    status: 500, 
-    description: 'Failed to publish event',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: false },
-        error: { type: 'string', example: 'Failed to publish event' },
-        timestamp: { type: 'string', format: 'date-time' },
-      },
-    },
-  })
-  async publishEvent(
-    @Body() body: { 
-      topic?: string; 
-      message?: any;
-    }
-  ) {
-    // Use default values if not provided
-    const topic = body.topic || 'trading-signals';
-    const message = body.message || {
-      eventName: 'channel.create',
-      channelType: 'telegram',
-      name: 'nombresito',
-      userId: 'usuariooo',
-      connectionConfig: {}
-    };
-
-    try {
-      await this.eventPublisher.publish(topic, message);
-      return {
-        success: true,
-        topic,
-        message: 'Event published successfully',
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to publish event',
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
 }

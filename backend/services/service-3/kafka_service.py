@@ -99,6 +99,10 @@ class KafkaService:
             
         logger.info("[Service-3] Kafka connections closed")
     
+    def is_connected(self):
+        """Check if Kafka service is connected and running"""
+        return self.running and self.producer is not None and self.consumer is not None
+    
     def _consume_messages(self):
         """Consumer loop running in separate thread"""
         try:

@@ -8,6 +8,9 @@ export * from './messaging/interfaces/base-event.handler';
 // Implementations
 export * from './messaging/implementations/base-event.listener';
 
+// Controllers
+export * from './messaging/messaging.controller';
+
 // Modules
 
 

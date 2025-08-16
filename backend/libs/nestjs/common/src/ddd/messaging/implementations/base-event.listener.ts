@@ -9,6 +9,13 @@ import { EventListener, EventHandler } from '../interfaces/event-listener.interf
 export abstract class BaseEventListener implements EventListener, OnModuleInit, OnModuleDestroy {
   protected readonly logger = new Logger(this.constructor.name);
   protected readonly eventHandlers = new Map<string, EventHandler>();
+  protected readonly messageStats = new Map<string, {
+    messagesProcessed: number;
+    messagesSucceeded: number;
+    messagesFailed: number;
+    totalProcessingTime: number;
+    lastProcessedAt: Date | null;
+  }>();
   protected isListeningFlag = false;
 
   async onModuleInit() {
@@ -69,6 +76,15 @@ export abstract class BaseEventListener implements EventListener, OnModuleInit, 
 
     this.eventHandlers.set(topicName, handler);
 
+    // Initialize message stats for this topic
+    this.messageStats.set(topicName, {
+      messagesProcessed: 0,
+      messagesSucceeded: 0,
+      messagesFailed: 0,
+      totalProcessingTime: 0,
+      lastProcessedAt: null,
+    });
+
     // Always subscribe to the topic when registering a handler
     await this.subscribeToTopic(topicName);
 
@@ -80,6 +96,9 @@ export abstract class BaseEventListener implements EventListener, OnModuleInit, 
    * Parses the message and delegates to the appropriate event handler
    */
   protected async handleMessage(topicName: string, rawMessage: any): Promise<void> {
+    const startTime = Date.now();
+    const stats = this.messageStats.get(topicName);
+    
     try {
       const { parsedMessage, messageId } = this.parseMessage(rawMessage);
 
@@ -91,12 +110,81 @@ export abstract class BaseEventListener implements EventListener, OnModuleInit, 
         return;
       }
 
+      // Update message stats - increment processed count
+      if (stats) {
+        stats.messagesProcessed++;
+        stats.lastProcessedAt = new Date();
+      }
+
       // Delegate to the event handler
       await eventHandler.handle(parsedMessage, messageId);
+      
+      // Update success stats
+      if (stats) {
+        stats.messagesSucceeded++;
+        stats.totalProcessingTime += Date.now() - startTime;
+      }
+      
     } catch (error) {
+      // Update failure stats
+      if (stats) {
+        stats.messagesFailed++;
+        stats.totalProcessingTime += Date.now() - startTime;
+      }
+      
       this.logger.error(`Error handling message for topic '${topicName}': ${error}`);
       throw error;
     }
+  }
+
+  /**
+   * Get message statistics for all topics
+   */
+  getMessageStats() {
+    const stats = [];
+    for (const [topicName, handler] of this.eventHandlers.entries()) {
+      const messageStats = this.messageStats.get(topicName);
+      if (messageStats) {
+        stats.push({
+          topic: topicName,
+          handlerName: handler.constructor.name,
+          messagesProcessed: messageStats.messagesProcessed,
+          messagesSucceeded: messageStats.messagesSucceeded,
+          messagesFailed: messageStats.messagesFailed,
+          averageProcessingTime: messageStats.messagesProcessed > 0 
+            ? Math.round(messageStats.totalProcessingTime / messageStats.messagesProcessed)
+            : 0,
+          lastProcessedAt: messageStats.lastProcessedAt,
+        });
+      }
+    }
+    return stats;
+  }
+
+  /**
+   * Get total message statistics across all topics
+   */
+  getTotalMessageStats() {
+    let totalProcessed = 0;
+    let totalSucceeded = 0;
+    let totalFailed = 0;
+    let totalProcessingTime = 0;
+
+    for (const stats of this.messageStats.values()) {
+      totalProcessed += stats.messagesProcessed;
+      totalSucceeded += stats.messagesSucceeded;
+      totalFailed += stats.messagesFailed;
+      totalProcessingTime += stats.totalProcessingTime;
+    }
+
+    return {
+      totalMessages: totalProcessed,
+      totalSuccesses: totalSucceeded,
+      totalFailures: totalFailed,
+      averageProcessingTime: totalProcessed > 0 
+        ? Math.round(totalProcessingTime / totalProcessed)
+        : 0,
+    };
   }
 
   /**

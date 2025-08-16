@@ -331,6 +331,12 @@ p {
   border: 1px solid rgba(212, 175, 55, 0.1);
 }
 
+@media (max-width: 768px) {
+  .summary-info {
+    grid-template-columns: 1fr;
+  }
+}
+
 .summary-item {
   display: flex;
   justify-content: space-between;
@@ -347,6 +353,33 @@ p {
   font-size: 0.8rem;
   color: var(--text-primary);
   font-weight: 600;
+}
+
+.backend-type {
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.backend-redis {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.backend-kafka {
+  background: rgba(32, 201, 151, 0.1);
+  color: #20c997;
+  border: 1px solid rgba(32, 201, 151, 0.2);
+}
+
+.backend-unknown {
+  background: rgba(108, 117, 125, 0.1);
+  color: #6c757d;
+  border: 1px solid rgba(108, 117, 125, 0.2);
 }
 
 .topics-container {
@@ -397,26 +430,31 @@ p {
 
 .topic-details {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
 }
 
 .topic-stat {
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.2rem 0.4rem;
+  background: rgba(212, 175, 55, 0.03);
+  border-radius: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.1);
 }
 
 .stat-label {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .stat-value {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-primary);
   font-weight: 600;
   font-family: 'Courier New', monospace;

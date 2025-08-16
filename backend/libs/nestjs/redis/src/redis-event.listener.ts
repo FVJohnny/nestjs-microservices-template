@@ -14,6 +14,18 @@ export class RedisEventListener extends BaseEventListener {
     super();
   }
 
+  async onModuleInit() {
+    await super.onModuleInit();
+    // Auto-start listening when the module initializes
+    // This ensures handlers registered in onModuleInit are ready
+    setTimeout(async () => {
+      if (this.eventHandlers.size > 0 && !this.isListeningFlag) {
+        this.logger.log(`Auto-starting listener with ${this.eventHandlers.size} registered handlers`);
+        await this.startListening();
+      }
+    }, 100); // Small delay to allow all handlers to register
+  }
+
   protected async subscribeToTopic(topicName: string): Promise<void> {
     const client = this.redisService.getSubscriberClient();
     if (!client) {
