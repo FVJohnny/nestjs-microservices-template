@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 import logging
 import time
 from datetime import datetime
-from kafka_service import kafka_service
+from messaging_service import messaging_service
 from event_counter import event_counter
 
 # Configure logging
@@ -20,11 +20,11 @@ class PublishEventRequest(BaseModel):
 async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Service-3...")
-    kafka_service.start()
+    messaging_service.start()
     yield
     # Shutdown
     logger.info("Shutting down Service-3...")
-    kafka_service.stop()
+    messaging_service.stop()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -55,19 +55,19 @@ async def messaging_publish(request: PublishEventRequest):
             'topic': request.topic
         })
         
-        success = kafka_service.publish_message(request.topic, enhanced_message)
+        success = messaging_service.publish_message(request.topic, enhanced_message)
         if success:
             return {
                 "success": True,
                 "topic": request.topic,
                 "message": "Event published successfully",
-                "backend": "Kafka",
+                "backend": messaging_service.get_backend_type(),
                 "timestamp": enhanced_message['timestamp']
             }
         else:
             return {
                 "success": False,
-                "error": "Failed to publish event to Kafka",
+                "error": f"Failed to publish event to {messaging_service.get_backend_type()}",
                 "timestamp": enhanced_message['timestamp']
             }
     except Exception as e:
@@ -82,8 +82,8 @@ async def messaging_publish(request: PublishEventRequest):
 async def messaging_listener_status():
     """Get messaging listener status"""
     return {
-        "listening": kafka_service.is_connected(),
-        "backend": "KafkaEventListener",
+        "listening": messaging_service.is_connected(),
+        "backend": messaging_service.get_backend_class_name(),
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }
 
@@ -92,14 +92,16 @@ async def messaging_listener_stats():
     """Get detailed messaging listener statistics"""
     basic_stats = event_counter.get_stats()
     
+    subscribed_topics = messaging_service.get_subscribed_topics()
+    
     return {
-        "listening": kafka_service.is_connected(),
-        "backend": "KafkaEventListener",
-        "subscribedTopics": ["channel-events"],
+        "listening": messaging_service.is_connected(),
+        "backend": messaging_service.get_backend_class_name(),
+        "subscribedTopics": subscribed_topics,
         "handlerCount": 1,
         "handlers": [
             {
-                "topic": "channel-events",
+                "topic": subscribed_topics[0] if subscribed_topics else "unknown",
                 "handlerName": "ChannelNotificationHandler",
                 "messagesProcessed": basic_stats.get("eventsProcessed", 0),
                 "messagesSucceeded": basic_stats.get("eventsProcessed", 0),
@@ -121,10 +123,10 @@ async def messaging_listener_stats():
 async def messaging_listener_start():
     """Start the messaging listener"""
     try:
-        # Kafka service is already started in lifespan
+        # Messaging service is already started in lifespan
         return {
             "success": True,
-            "message": "Event listener is already running",
+            "message": f"{messaging_service.get_backend_type()} event listener is already running",
             "timestamp": datetime.utcnow().isoformat() + "Z"
         }
     except Exception as e:
@@ -140,7 +142,7 @@ async def messaging_listener_stop():
     try:
         return {
             "success": True,
-            "message": "Event listener cannot be stopped (managed by lifespan)",
+            "message": f"{messaging_service.get_backend_type()} event listener cannot be stopped (managed by lifespan)",
             "timestamp": datetime.utcnow().isoformat() + "Z"
         }
     except Exception as e:

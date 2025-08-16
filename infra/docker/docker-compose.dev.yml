@@ -50,7 +50,11 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=8000
+      - MESSAGING_BACKEND=redis
       - KAFKA_BROKERS=kafka:9092
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
     ports:
       - "3003:8000"
     networks:

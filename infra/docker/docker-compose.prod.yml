@@ -4,25 +4,31 @@ services:
       context: ${PWD}/backend
       dockerfile: services/service-1/Dockerfile
     image: copy-signals-service-1:latest
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
+      - KAFKA_USERNAME=${KAFKA_USERNAME:-}
+      - KAFKA_PASSWORD=${KAFKA_PASSWORD:-}
       - PROXY_BASE_PATH=/api/service-1
-      - MONGODB_URI=mongodb://admin:secureproductionpassword@mongodb:27017?authSource=admin
-      - MONGODB_DB_NAME=service-1-db
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=secureproductionredispassword
-      - REDIS_DB=0
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=secureproductionpostgrespassword
-      - POSTGRES_DB=service-1-db
-      - POSTGRES_SYNCHRONIZE=true
-      - POSTGRES_LOGGING=true
-      - CORS_ORIGINS=https://copysignals.ai,https://www.copysignals.ai
+      - MONGODB_URI=${MONGODB_URI:-mongodb://admin:secureproductionpassword@mongodb:27017?authSource=admin}
+      - MONGODB_DB_NAME=${MONGODB_DB_NAME:-service-1-db}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-secureproductionredispassword}
+      - REDIS_DB=${REDIS_DB:-0}
+      - REDIS_USERNAME=${REDIS_USERNAME:-}
+      - REDIS_TLS=${REDIS_TLS:-false}
+      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER:-admin}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-secureproductionpostgrespassword}
+      - POSTGRES_DB=${POSTGRES_DB:-service-1-db}
+      - POSTGRES_SYNCHRONIZE=${POSTGRES_SYNCHRONIZE:-true}
+      - POSTGRES_LOGGING=${POSTGRES_LOGGING:-true}
+      - CORS_ORIGINS=${CORS_ORIGINS:-https://copysignals.ai,https://www.copysignals.ai}
     ports:
       - "3001:3000"
     networks:
@@ -42,10 +48,21 @@ services:
       context: ${PWD}/backend
       dockerfile: services/service-3/Dockerfile
     image: copy-signals-service-3:latest
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
       - PORT=8000
-      - KAFKA_BROKERS=kafka:9092
+      - MESSAGING_BACKEND=${MESSAGING_BACKEND:-kafka}
+      - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
+      - KAFKA_USERNAME=${KAFKA_USERNAME:-}
+      - KAFKA_PASSWORD=${KAFKA_PASSWORD:-}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_USERNAME=${REDIS_USERNAME:-}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_DB=${REDIS_DB:-0}
+      - REDIS_TLS=${REDIS_TLS:-false}
     ports:
       - "3003:8000"
     networks:

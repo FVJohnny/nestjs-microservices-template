@@ -25,6 +25,8 @@ services:
     autoDeploy: true
     envVars:
       - fromGroup: Groupito
+      - key: MESSAGING_BACKEND
+        value: redis
 
   - type: web
     name: frontend
