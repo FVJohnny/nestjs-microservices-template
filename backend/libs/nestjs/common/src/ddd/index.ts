@@ -21,8 +21,6 @@ export * from './domain/events/domain-event.base';
 // Repositories
 export * from './domain/repositories/repository.base';
 
-// === MODULE ===
-export * from './ddd.module';
 
 // === TOKENS ===
 export const EVENT_PUBLISHER_TOKEN = 'EventPublisher';

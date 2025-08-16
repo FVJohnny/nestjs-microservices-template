@@ -18,6 +18,8 @@ WORKDIR /app/libs/nestjs/redis
 RUN npm ci && npm run build
 WORKDIR /app/libs/nestjs/postgresql
 RUN npm ci && npm run build
+WORKDIR /app/libs/nestjs/events
+RUN npm ci && npm run build
 
 
 # Copy service package files and install dependencies
