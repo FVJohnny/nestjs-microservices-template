@@ -144,7 +144,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: channels_db
+      POSTGRES_DB: service-1-db
       PGDATA: /data/postgres
     volumes:
       - postgres_data_dev:/data/postgres

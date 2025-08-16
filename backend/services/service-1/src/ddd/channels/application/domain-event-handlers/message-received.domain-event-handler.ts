@@ -1,7 +1,7 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import type { EventPublisher } from '@libs/nestjs-ddd';
-import { EVENT_PUBLISHER_TOKEN } from '@libs/nestjs-ddd';
+import type { EventPublisher } from '@libs/nestjs-common';
+import { EVENT_PUBLISHER_TOKEN } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { MessageReceivedDomainEvent } from '../../domain/events/message-received.domain-event';
 

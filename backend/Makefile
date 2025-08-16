@@ -27,7 +27,7 @@ update-libs:
 	@echo "🎉 Ready to go!"
 
 # Restart service-1 container
-restart-service1:
+dev-restart-service1:
 	@echo "🔄 Restarting service-1..."
 	@docker-compose -f ../infra/docker/docker-compose.dev.yml restart service-1
 	@echo "✅ Service-1 restarted!"

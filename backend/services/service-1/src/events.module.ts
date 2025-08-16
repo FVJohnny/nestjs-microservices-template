@@ -1,14 +1,10 @@
 import { Global, Module } from '@nestjs/common';
-import { SharedKafkaModule, KafkaService } from '@libs/nestjs-kafka';
-// import { SharedRedisModule } from '@libs/nestjs-redis';
+import { SharedKafkaModule, KafkaService, KafkaEventPublisher, KafkaEventListener } from '@libs/nestjs-kafka';
+// import { SharedRedisModule, RedisService, RedisEventPublisher, RedisEventListener } from '@libs/nestjs-redis';
 import { 
-  KafkaEventPublisher, 
-  KafkaEventListener,
-  // RedisEventPublisher,
-  // RedisEventListener,
   EVENT_PUBLISHER_TOKEN,
   EVENT_LISTENER_TOKEN 
-} from '@libs/nestjs-ddd';
+} from '@libs/nestjs-common';
 
 /**
  * Global messaging module that provides both EventPublisher and EventListener

@@ -23,6 +23,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@libs/nestjs-common": "file:../common",
     "class-transformer": "^0.5.1"
   }
 }

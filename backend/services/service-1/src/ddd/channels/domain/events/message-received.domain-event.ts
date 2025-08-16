@@ -1,4 +1,4 @@
-import { DomainEvent } from '@libs/nestjs-ddd';
+import { DomainEvent } from '@libs/nestjs-common';
 
 export class MessageReceivedDomainEvent extends DomainEvent {
   constructor(

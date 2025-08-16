@@ -1,22 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EventPublisher } from '../interfaces/event-publisher.interface';
+import { EventPublisher } from '@libs/nestjs-common';
+import { KafkaService } from './kafka-service';
 
 /**
  * Kafka implementation of EventPublisher interface.
- * This implementation uses KafkaService directly for publishing.
+ * Provides type-safe event publishing through Kafka.
  */
 @Injectable()
 export class KafkaEventPublisher implements EventPublisher {
   private readonly logger = new Logger(KafkaEventPublisher.name);
 
-  constructor(private readonly kafkaService: any) {} // KafkaService injected via module configuration
+  constructor(private readonly kafkaService: KafkaService) {}
 
   async publish(topic: string, message: any): Promise<void> {
     try {
       await this.kafkaService.publishMessage(topic, message);
-      this.logger.debug(`Message published to Kafka topic ${topic}: ${message.eventName || 'unknown'}`);
+      this.logger.debug(`Event published to Kafka topic ${topic}: ${message.eventName || 'unknown'}`);
     } catch (error) {
-      this.logger.error(`Failed to publish message to Kafka topic ${topic}:`, error);
+      this.logger.error(`Failed to publish event to Kafka topic ${topic}:`, error);
       throw error;
     }
   }
@@ -24,9 +25,9 @@ export class KafkaEventPublisher implements EventPublisher {
   async publishBatch(topic: string, messages: any[]): Promise<void> {
     try {
       await this.kafkaService.publishMessages(topic, messages);
-      this.logger.debug(`${messages.length} messages published to Kafka topic ${topic}`);
+      this.logger.debug(`${messages.length} events published to Kafka topic ${topic}`);
     } catch (error) {
-      this.logger.error(`Failed to publish batch messages to Kafka topic ${topic}:`, error);
+      this.logger.error(`Failed to publish batch events to Kafka topic ${topic}:`, error);
       throw error;
     }
   }

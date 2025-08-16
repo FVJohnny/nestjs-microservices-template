@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@libs/nestjs-common": "file:../../libs/nestjs/common",
-    "@libs/nestjs-ddd": "file:../../libs/nestjs/ddd",
     "@libs/nestjs-kafka": "file:../../libs/nestjs/kafka",
     "@libs/nestjs-mongodb": "file:../../libs/nestjs/mongodb",
     "@libs/nestjs-postgresql": "file:../../libs/nestjs/postgresql",

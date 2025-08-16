@@ -1,4 +1,4 @@
-import { DomainEvent } from '@libs/nestjs-ddd';
+import { DomainEvent } from '@libs/nestjs-common';
 import { ChannelTypeVO } from '../value-objects/channel-type.vo';
 
 export interface ChannelRegisteredDomainEventProps {

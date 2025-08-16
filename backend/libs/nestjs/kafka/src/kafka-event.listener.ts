@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { BaseEventListener } from './base-event.listener';
-
-// Use type instead of import to avoid circular dependency issues
-type KafkaService = any;
+import { BaseEventListener } from '@libs/nestjs-common';
+import { KafkaService } from './kafka-service';
 
 /**
  * Kafka implementation of EventListener

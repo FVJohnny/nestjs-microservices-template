@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DDDModule } from '@libs/nestjs-ddd';
+import { DDDModule } from '@libs/nestjs-common';
 
 // Controllers
 import { ChannelsController } from './interfaces/http/controllers/channels.controller';

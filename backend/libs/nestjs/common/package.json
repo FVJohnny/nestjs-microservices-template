@@ -11,11 +11,15 @@
   "peerDependencies": {
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/cqrs": "^11.0.3",
     "@nestjs/swagger": "^11.2.0",
     "@types/express": "^5.0.3",
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/cqrs": "^11.0.3",
     "@types/node": "^22.10.7",
     "typescript": "^5.7.3"
   },

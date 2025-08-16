@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { BaseEventHandler } from '@libs/nestjs-ddd';
-import type { EventListener } from '@libs/nestjs-ddd';
+import { BaseEventHandler } from '@libs/nestjs-common';
+import type { EventListener } from '@libs/nestjs-common';
 import { RegisterChannelCommand } from '../../application/commands/register-channel.command';
 
 @Injectable()
