@@ -32,6 +32,15 @@ app = FastAPI(lifespan=lifespan)
 async def root():
     return {"service": "service-3", "status": "ok"}
 
+@app.get("/health/environment")
+async def get_environment():
+    import os
+    environment = os.getenv("NODE_ENV", "development")
+    return {
+        "environment": environment,
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+
 
 # Generic messaging endpoints to match NestJS service structure
 @app.post("/messaging/publish")

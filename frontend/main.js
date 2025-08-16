@@ -13,25 +13,38 @@ async function updateServiceStatus(service) {
   const detailsContainer = document.getElementById(`service-${service.id}-details`);
   
   try {
-    // Use generic messaging listener stats endpoint
-    const statsResponse = await fetch(`${service.baseUrl}/messaging/listener/stats`, { 
-      headers: { 'Accept': 'application/json' },
-      timeout: 5000 
-    });
+    // Fetch both stats and environment data in parallel
+    const [statsResponse, envResponse] = await Promise.all([
+      fetch(`${service.baseUrl}/messaging/listener/stats`, { 
+        headers: { 'Accept': 'application/json' },
+        timeout: 5000 
+      }),
+      fetch(`${service.baseUrl}/health/environment`, {
+        headers: { 'Accept': 'application/json' },
+        timeout: 5000
+      })
+    ]);
     
     if (statsResponse.ok) {
       // Service is healthy and detailed stats are available
       const statsData = await statsResponse.json();
       
+      // Get environment data if available
+      let envData = null;
+      if (envResponse.ok) {
+        envData = await envResponse.json();
+      }
+      
       statusDot.className = 'status-dot ok';
       statusText.textContent = 'OK';
       statusText.className = 'status-text ok';
       
-      // Update detailed breakdown
-      updateEventDetails(statsData, detailsContainer);
+      // Update detailed breakdown with environment info
+      updateEventDetails(statsData, detailsContainer, envData);
       
       // Store additional metrics for potential future display
       service.lastStats = statsData;
+      service.lastEnv = envData;
     } else {
       throw new Error(`HTTP ${statsResponse.status}`);
     }
@@ -46,7 +59,7 @@ async function updateServiceStatus(service) {
 }
 
 // Function to update detailed event breakdown
-function updateEventDetails(statsData, container) {
+function updateEventDetails(statsData, container, envData = null) {
   if (!statsData.handlers || statsData.handlers.length === 0) {
     container.innerHTML = '<div class="no-events">No events processed yet</div>';
     return;
@@ -64,7 +77,15 @@ function updateEventDetails(statsData, container) {
   const backendClass = backend.toLowerCase().includes('redis') ? 'backend-redis' : 
                       backend.toLowerCase().includes('kafka') ? 'backend-kafka' : 'backend-unknown';
   
+  // Determine environment class
+  const environment = envData?.environment || 'unknown';
+  const envClass = environment === 'production' ? 'env-production' : 'env-development';
+  
   summary.innerHTML = `
+    <div class="summary-item">
+      <span class="summary-label">Environment:</span>
+      <span class="summary-value environment-type ${envClass}">${environment}</span>
+    </div>
     <div class="summary-item">
       <span class="summary-label">Backend:</span>
       <span class="summary-value backend-type ${backendClass}">${backend}</span>
