@@ -8,35 +8,29 @@ import { RedisService } from './redis.service';
  */
 @Injectable()
 export class RedisEventListener extends BaseEventListener {
-  private subscriberClient: any;
-
   constructor(
     private readonly redisService: RedisService,
   ) {
     super();
-    // Create a dedicated client for subscriptions
-    const mainClient = this.redisService.getClient();
-    if (mainClient) {
-      this.subscriberClient = mainClient.duplicate();
-    }
   }
 
   protected async subscribeToTopic(topicName: string): Promise<void> {
-    if (!this.subscriberClient) {
-      this.logger.warn(`No Redis client available, cannot subscribe to ${topicName}`);
+    const client = this.redisService.getSubscriberClient();
+    if (!client) {
+      this.logger.warn(`No Redis subscriber client available, cannot subscribe to ${topicName}`);
       return;
     }
 
     try {
       // Subscribe to the Redis channel
-      await this.subscriberClient.subscribe(topicName);
+      await client.subscribe(topicName);
       
-      // Set up message handler
-      this.subscriberClient.on('message', async (channel: string, message: string) => {
-        if (channel === topicName) {
-          await this.handleMessage(topicName, message);
-        }
-      });
+      // Set up message handler (only once, not for each topic)
+      if (!client.listenerCount('message')) {
+        client.on('message', async (channel: string, message: string) => {
+          await this.handleMessage(channel, message);
+        });
+      }
       
       this.logger.log(`Subscribed to Redis channel: ${topicName}`);
     } catch (error) {
@@ -46,12 +40,14 @@ export class RedisEventListener extends BaseEventListener {
   }
 
   protected async unsubscribeFromTopic(topicName: string): Promise<void> {
-    if (!this.subscriberClient) {
+    const client = this.redisService.getSubscriberClient();
+    if (!client) {
+      this.logger.warn(`No Redis subscriber client available, cannot unsubscribe from ${topicName}`);
       return;
     }
 
     try {
-      await this.subscriberClient.unsubscribe(topicName);
+      await client.unsubscribe(topicName);
       this.logger.log(`Unsubscribed from Redis channel: ${topicName}`);
     } catch (error) {
       this.logger.error(`Failed to unsubscribe from Redis channel ${topicName}:`, error);
@@ -76,10 +72,6 @@ export class RedisEventListener extends BaseEventListener {
   }
 
   async onModuleDestroy() {
-    // Clean up subscriber client on module destroy
-    if (this.subscriberClient) {
-      await this.subscriberClient.quit();
-    }
     await super.onModuleDestroy();
   }
 }

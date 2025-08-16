@@ -1,11 +1,16 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Query, Param, Post, Body } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBody } from '@nestjs/swagger';
 import { RedisService } from './redis.service';
+import { RedisEventPublisher } from './redis-event.publisher';
 
 @ApiTags('Redis')
 @Controller('redis')
 export class RedisController {
-  constructor(private readonly redisService: RedisService) {}
+  private readonly eventPublisher: RedisEventPublisher;
+
+  constructor(private readonly redisService: RedisService) {
+    this.eventPublisher = new RedisEventPublisher(redisService);
+  }
 
   @Get('health')
   @ApiOperation({ 
@@ -27,6 +32,13 @@ export class RedisController {
   async getHealth() {
     try {
       const client = this.redisService.getClient();
+      if (!client) {
+        return {
+          status: 'unavailable',
+          message: 'Redis client not initialized',
+          timestamp: new Date().toISOString(),
+        };
+      }
       const ping = await client.ping();
       return {
         status: 'healthy',
@@ -64,6 +76,9 @@ export class RedisController {
   async getInfo() {
     try {
       const client = this.redisService.getClient();
+      if (!client) {
+        throw new Error('Redis client not initialized');
+      }
       const info = await client.info();
       
       // Parse info string into structured object
@@ -113,6 +128,9 @@ export class RedisController {
   async getStats() {
     try {
       const client = this.redisService.getClient();
+      if (!client) {
+        throw new Error('Redis client not initialized');
+      }
       
       // Get basic info
       const info = await client.info('memory');
@@ -266,6 +284,9 @@ export class RedisController {
   async getKeyInfo(@Param('key') key: string) {
     try {
       const client = this.redisService.getClient();
+      if (!client) {
+        throw new Error('Redis client not initialized');
+      }
       
       const exists = await this.redisService.exists(key);
       if (!exists) {
@@ -323,6 +344,101 @@ export class RedisController {
       };
     } catch (error) {
       throw new Error(`Failed to get key info: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  @Post('publish-event')
+  @ApiOperation({ 
+    summary: 'Publish an event to Redis pub/sub',
+    description: 'Publishes an event message to a specified Redis channel for testing event-driven functionality' 
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        topic: { 
+          type: 'string', 
+          example: 'trading-signals',
+          default: 'trading-signals',
+          description: 'The Redis channel/topic to publish to' 
+        },
+        message: { 
+          type: 'object',
+          example: {
+            eventName: 'channel.create',
+            channelType: 'telegram',
+            name: 'nombresito',
+            userId: 'usuariooo',
+            connectionConfig: {}
+          },
+          default: {
+            eventName: 'channel.create',
+            channelType: 'telegram',
+            name: 'nombresito',
+            userId: 'usuariooo',
+            connectionConfig: {}
+          },
+          description: 'The event message payload' 
+        },
+      },
+      required: ['topic', 'message'],
+    },
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Event published successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        topic: { type: 'string', example: 'trading-signals' },
+        message: { type: 'string', example: 'Event published successfully' },
+        timestamp: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to publish event',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: false },
+        error: { type: 'string', example: 'Failed to publish event' },
+        timestamp: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  async publishEvent(
+    @Body() body: { 
+      topic?: string; 
+      message?: any;
+    }
+  ) {
+    // Use default values if not provided
+    const topic = body.topic || 'trading-signals';
+    const message = body.message || {
+      eventName: 'channel.create',
+      channelType: 'telegram',
+      name: 'nombresito',
+      userId: 'usuariooo',
+      connectionConfig: {}
+    };
+
+    try {
+      await this.eventPublisher.publish(topic, message);
+      return {
+        success: true,
+        topic,
+        message: 'Event published successfully',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to publish event',
+        timestamp: new Date().toISOString(),
+      };
     }
   }
 }

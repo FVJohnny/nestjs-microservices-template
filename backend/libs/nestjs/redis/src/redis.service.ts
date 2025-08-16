@@ -5,13 +5,24 @@ import { Redis } from 'ioredis';
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RedisService.name);
   private client: Redis | null = null;
+  private publisherClient: Redis | null = null;
+  private subscriberClient: Redis | null = null;
 
   constructor() {}
 
   async onModuleInit(): Promise<void> {
+    // Check if Redis should be disabled
+    const disableRedis = process.env.DISABLE_REDIS === 'true' || process.env.DISABLE_ALL_DBS === 'true';
+    const redisHost = process.env.REDIS_HOST;
+    
+    // Only initialize Redis if it's not disabled and host is configured
+    if (disableRedis || !redisHost) {
+      this.logger.warn('Redis is disabled or not configured. Event publishing/listening will not be available.');
+      return;
+    }
     
     const config = {
-      host: process.env.REDIS_HOST || 'localhost',
+      host: redisHost,
       port: parseInt(process.env.REDIS_PORT || '6379', 10),
       tls: process.env.REDIS_TLS === 'true' ? {} : undefined,
       username: process.env.REDIS_USERNAME,
@@ -25,32 +36,54 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
     this.logger.log(`Connecting to Redis at ${config.host}:${config.port}`);
 
+    // Create main client for general operations
     this.client = new Redis(config);
+    // Create dedicated publisher client
+    this.publisherClient = new Redis(config);
+    // Create dedicated subscriber client
+    this.subscriberClient = new Redis(config);
 
     this.client.on('connect', () => {
-      this.logger.log('✅ Connected to Redis');
+      this.logger.log('✅ Connected to Redis (main client)');
     });
 
     this.client.on('error', (error) => {
-      this.logger.error(`❌ Redis connection error: ${error.message}`);
+      this.logger.error(`❌ Redis connection error (main): ${error.message}`);
     });
 
     this.client.on('reconnecting', () => {
-      this.logger.warn('🔄 Reconnecting to Redis...');
+      this.logger.warn('🔄 Reconnecting to Redis (main)...');
     });
 
     // Wait for connection to be ready
     try {
       await this.client.ping();
+      await this.publisherClient.ping();
+      await this.subscriberClient.ping();
+      this.logger.log('✅ All Redis clients connected successfully');
     } catch (error) {
       this.logger.error(`Failed to connect to Redis: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      throw error;
+      // Don't throw - allow the app to continue without Redis
+      if (this.client) await this.client.quit();
+      if (this.publisherClient) await this.publisherClient.quit();
+      if (this.subscriberClient) await this.subscriberClient.quit();
+      this.client = null;
+      this.publisherClient = null;
+      this.subscriberClient = null;
     }
   }
 
   async onModuleDestroy(): Promise<void> {
     if (this.client) {
       await this.client.quit();
+    }
+    if (this.publisherClient) {
+      await this.publisherClient.quit();
+    }
+    if (this.subscriberClient) {
+      await this.subscriberClient.quit();
+    }
+    if (this.client || this.publisherClient || this.subscriberClient) {
       this.logger.log('👋 Disconnected from Redis');
     }
   }
@@ -61,9 +94,16 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  getClient(): Redis {
-    this.checkRedisInitialized();
-    return this.client!;
+  getClient(): Redis | null {
+    return this.client;
+  }
+
+  getPublisherClient(): Redis | null {
+    return this.publisherClient;
+  }
+
+  getSubscriberClient(): Redis | null {
+    return this.subscriberClient;
   }
 
   // Convenience methods for common operations

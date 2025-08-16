@@ -35,10 +35,6 @@ export class ChannelRegisteredDomainEventHandler implements IEventHandler<Channe
         integrationEvent.getTopic(),
         integrationEvent.toJSON(),
       );
-      
-      this.logger.log(
-        `Published ChannelCreatedIntegrationEvent to topic '${integrationEvent.getTopic()}': ${event.aggregateId}`,
-      );
     } catch (error) {
       this.logger.error(`Failed to publish integration event`, error);
       throw error;
