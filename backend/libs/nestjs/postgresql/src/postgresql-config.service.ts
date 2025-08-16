@@ -43,8 +43,17 @@ export class PostgreSQLConfigService {
     }
 
     this.logger.log(
-      `PostgreSQL configuration: ${config.host}:${config.port}/${config.database} (SSL: ${!!config.ssl})`,
+      `PostgreSQL configuration: ${config.host}:${config.port}/${config.database} (user: ${config.username}, SSL: ${!!config.ssl})`,
     );
+    
+    // Debug environment variables
+    this.logger.debug('Environment variables:', {
+      POSTGRES_HOST: process.env.POSTGRES_HOST,
+      POSTGRES_PORT: process.env.POSTGRES_PORT,
+      POSTGRES_USER: process.env.POSTGRES_USER,
+      POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD ? '***' : undefined,
+      POSTGRES_DB: process.env.POSTGRES_DB,
+    });
 
     return config;
   }

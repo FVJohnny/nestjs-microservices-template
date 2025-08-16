@@ -22,7 +22,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=channels_db
+      - POSTGRES_DB=service-1-db
       - POSTGRES_SYNCHRONIZE=true
       - POSTGRES_LOGGING=false
       - CHANNEL_REPOSITORY=redis

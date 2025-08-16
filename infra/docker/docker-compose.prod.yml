@@ -18,6 +18,11 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=secureproductionredispassword
       - REDIS_DB=0
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=secureproductionpostgrespassword
+      - POSTGRES_DB=service-1-db
     ports:
       - "3001:3000"
     networks:
@@ -28,6 +33,8 @@ services:
       mongodb:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
 
 
@@ -133,6 +140,27 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secureproductionpostgrespassword
+      POSTGRES_DB: service-1-db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d service-1-db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
 networks:
   backend:
     driver: bridge
@@ -141,3 +169,4 @@ volumes:
   mongodb_data:
   mongodb_config:
   redis_data:
+  postgres_data:
