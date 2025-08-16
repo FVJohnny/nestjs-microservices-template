@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { BaseEventHandler } from '@libs/nestjs-common';
+import { BaseEventHandler, EVENT_LISTENER_TOKEN } from '@libs/nestjs-common';
 import type { EventListener } from '@libs/nestjs-common';
 import { RegisterChannelCommand } from '../../application/commands/register-channel.command';
 
@@ -9,7 +9,7 @@ export class TradingSignalsIntegrationEventHandler extends BaseEventHandler {
   readonly topicName = 'trading-signals';
 
   constructor(
-    @Inject('EventListener') eventListener: EventListener,
+    @Inject(EVENT_LISTENER_TOKEN) eventListener: EventListener,
     private readonly commandBus: CommandBus,
   ) {
     super(eventListener);

@@ -1,5 +1,6 @@
 import { Injectable, Inject, OnModuleInit, Logger } from '@nestjs/common';
 import { EventHandler, EventListener } from './event-listener.interface';
+import { EVENT_LISTENER_TOKEN } from '../../index';
 
 /**
  * Base event handler that auto-registers itself with its topic
@@ -11,7 +12,7 @@ export abstract class BaseEventHandler implements EventHandler, OnModuleInit {
 
   abstract readonly topicName: string;
 
-  constructor(@Inject('EventListener') private readonly eventListener: EventListener) {}
+  constructor(@Inject(EVENT_LISTENER_TOKEN) private readonly eventListener: EventListener) {}
 
   async onModuleInit() {
     // Auto-register this event handler with its topic
