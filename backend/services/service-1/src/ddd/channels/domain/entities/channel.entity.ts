@@ -3,6 +3,7 @@ import { AggregateRoot, IEvent } from '@nestjs/cqrs';
 import { ChannelTypeVO } from '../value-objects/channel-type.vo';
 import { ChannelRegisteredDomainEvent } from '../events/channel-registered.domain-event';
 import { MessageReceivedDomainEvent } from '../events/message-received.domain-event';
+import { InvalidOperationException } from '@libs/nestjs-common';
 
 export class Channel extends AggregateRoot<IEvent> {
   constructor(
@@ -57,7 +58,11 @@ export class Channel extends AggregateRoot<IEvent> {
     metadata: Record<string, any> = {},
   ): void {
     if (!this.isActive) {
-      throw new Error('Cannot receive messages on inactive channel');
+      throw new InvalidOperationException(
+        'receive_message',
+        'inactive_channel',
+        { channelId: this.id, reason: 'Cannot receive messages on inactive channel' }
+      );
     }
 
     // Raise domain event
@@ -76,7 +81,11 @@ export class Channel extends AggregateRoot<IEvent> {
 
   deactivate(): void {
     if (!this.isActive) {
-      throw new Error('Channel is already inactive');
+      throw new InvalidOperationException(
+        'deactivate',
+        'already_inactive',
+        { channelId: this.id, reason: 'Channel is already inactive' }
+      );
     }
 
     // In a real implementation, you might raise a ChannelDeactivatedEvent

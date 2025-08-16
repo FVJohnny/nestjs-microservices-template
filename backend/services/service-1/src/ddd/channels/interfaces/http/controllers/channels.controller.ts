@@ -27,6 +27,7 @@ import {
   ApiResponse,
   ApiParam,
 } from '@nestjs/swagger';
+import { EntityNotFoundException } from '@libs/nestjs-common';
 
 @ApiTags('channels')
 @Controller('channels')
@@ -58,17 +59,29 @@ export class ChannelsController {
     status: 400,
     description: 'Invalid input data',
   })
+  @ApiResponse({
+    status: 422,
+    description: 'Invalid channel configuration',
+  })
   async registerChannel(@Body() dto: RegisterChannelDto) {
-    this.logger.debug('Registering channel...');
-    const command = new RegisterChannelCommand({
-      channelType: dto.channelType,
-      name: dto.name,
-      userId: dto.userId,
-      connectionConfig: dto.connectionConfig,
-    });
+    this.logger.debug(`Registering channel for user ${dto.userId}, type: ${dto.channelType}`);
+    
+    try {
+      const command = new RegisterChannelCommand({
+        channelType: dto.channelType,
+        name: dto.name,
+        userId: dto.userId,
+        connectionConfig: dto.connectionConfig,
+      });
 
-    const channelId: string = await this.commandBus.execute(command);
-    return new RegisterChannelResponseDto(channelId);
+      const channelId: string = await this.commandBus.execute(command);
+      this.logger.log(`Channel registered successfully: ${channelId} for user ${dto.userId}`);
+      
+      return new RegisterChannelResponseDto(channelId);
+    } catch (error) {
+      this.logger.error(`Failed to register channel: ${error.message}`);
+      throw error; // Let global exception filter handle it
+    }
   }
 
   @Get()
@@ -130,14 +143,43 @@ export class ChannelsController {
     description: 'Message simulation completed',
     type: SimulateMessageResponseDto,
   })
+  @ApiResponse({
+    status: 404,
+    description: 'Channel not found',
+  })
+  @ApiResponse({
+    status: 422,
+    description: 'Message simulation failed',
+  })
   async simulateMessage(
     @Param('channelId') channelId: string,
     @Body() messageData: SimulateMessageDto,
   ) {
-    this.logger.debug(
-      `Simulating message for channel ${channelId} with data: ${JSON.stringify(messageData)}`,
-    );
-    // TODO: Implement actual message simulation logic
-    return new SimulateMessageResponseDto(true);
+    this.logger.debug(`Simulating message for channel ${channelId}`);
+    
+    try {
+      // First verify channel exists by getting channels and finding this one
+      const getChannelsQuery = new GetChannelsQuery();
+      const channels: Channel[] = await this.queryBus.execute(getChannelsQuery);
+      
+      const channel = channels.find(c => c.id === channelId);
+      if (!channel) {
+        throw new EntityNotFoundException('Channel', channelId);
+      }
+      
+      // Simulate some validation that could fail
+      if (!messageData.content || messageData.content.trim().length === 0) {
+        throw new Error('Message content cannot be empty');
+      }
+      
+      // TODO: Implement actual message simulation logic
+      this.logger.log(`Message simulation completed for channel ${channelId}`);
+      
+      return new SimulateMessageResponseDto(true);
+    } catch (error) {
+      this.logger.error(`Message simulation failed for channel ${channelId}: ${error.message}`);
+      throw error; // Let global exception filter handle it
+    }
   }
+
 }

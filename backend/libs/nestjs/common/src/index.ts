@@ -7,5 +7,8 @@ export * from './correlation/correlation.middleware';
 export * from './correlation/correlation.logger';
 export * from './correlation/correlation.module';
 
+// Error handling exports
+export * from './errors';
+
 // DDD exports
 export * from './ddd';

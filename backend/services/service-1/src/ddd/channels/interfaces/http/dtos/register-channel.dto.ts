@@ -10,7 +10,6 @@ export class RegisterChannelDto {
   })
   @IsString()
   @IsNotEmpty()
-  @IsIn(Object.values(ChannelType))
   channelType: string;
 
   @ApiProperty({

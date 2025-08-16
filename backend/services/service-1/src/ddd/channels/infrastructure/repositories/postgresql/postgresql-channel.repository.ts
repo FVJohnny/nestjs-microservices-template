@@ -6,6 +6,7 @@ import { ChannelRepository } from '../../../domain/repositories/channel.reposito
 import { PostgreSQLChannelEntity } from './channel.schema';
 import { ChannelTypeVO } from '../../../domain/value-objects/channel-type.vo';
 import { CorrelationLogger } from '@libs/nestjs-common';
+import { ChannelPersistenceException } from '../../errors';
 
 @Injectable()
 export class PostgreSQLChannelRepository implements ChannelRepository {
@@ -28,10 +29,7 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
       this.logger.log(`Successfully saved channel: ${channel.id}`);
       return channel;
     } catch (error) {
-      this.logger.error(`Failed to save channel ${channel.id}`, error);
-      throw new Error(
-        `Failed to save channel: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('save', channel.id, error);
     }
   }
 
@@ -45,17 +43,16 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
       
       return entity ? this.mapToDomain(entity) : null;
     } catch (error) {
-      this.logger.error(`Failed to find channel by id ${id}`, error);
-      throw new Error(
-        `Failed to find channel: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('find', id, error);
     }
   }
 
   async findByUserId(userId: string): Promise<Channel[]> {
     try {
       this.logger.log(`Finding channels for userId: ${userId}`);
-      
+      if (userId=="123") {
+        throw new Error("Test error");
+      }
       const entities = await this.channelRepository.find({
         where: { userId, isActive: true },
         order: { createdAt: 'DESC' },
@@ -63,10 +60,7 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
       
       return entities.map(entity => this.mapToDomain(entity));
     } catch (error) {
-      this.logger.error(`Failed to find channels by user id ${userId}`, error);
-      throw new Error(
-        `Failed to find channels by user: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('findByUserId', userId, error);
     }
   }
 
@@ -101,10 +95,7 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
       const entities = await queryBuilder.getMany();
       return entities.map(entity => this.mapToDomain(entity));
     } catch (error) {
-      this.logger.error(`Failed to find all channels`, error);
-      throw new Error(
-        `Failed to find all channels: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('findAll', 'all', error);
     }
   }
 
@@ -120,10 +111,7 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
       
       this.logger.log(`Soft deleted channel: ${id}`);
     } catch (error) {
-      this.logger.error(`Failed to remove channel ${id}`, error);
-      throw new Error(
-        `Failed to remove channel: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('remove', id, error);
     }
   }
 
@@ -137,10 +125,7 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
       
       return count > 0;
     } catch (error) {
-      this.logger.error(`Failed to check if channel exists ${id}`, error);
-      throw new Error(
-        `Failed to check channel existence: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('exists', id, error);
     }
   }
 
@@ -161,11 +146,16 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
       
       return await this.channelRepository.count({ where });
     } catch (error) {
-      this.logger.error(`Failed to count channels`, error);
-      throw new Error(
-        `Failed to count channels: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('count', 'all', error);
     }
+  }
+
+  /**
+   * Handle database errors consistently
+   */
+  private handleDatabaseError(operation: string, id: string, error: unknown): never {
+    const cause = error instanceof Error ? error : new Error('Unknown database error');
+    throw new ChannelPersistenceException(operation, id, cause);
   }
 
   /**

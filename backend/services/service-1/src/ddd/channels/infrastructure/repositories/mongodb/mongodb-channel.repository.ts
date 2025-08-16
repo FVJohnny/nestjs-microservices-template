@@ -6,6 +6,7 @@ import { ChannelRepository } from '../../../domain/repositories/channel.reposito
 import { ChannelMongoDocument } from './channel.schema';
 import { ChannelTypeVO } from '../../../domain/value-objects/channel-type.vo';
 import { CorrelationLogger } from '@libs/nestjs-common';
+import { ChannelPersistenceException } from '../../errors';
 
 @Injectable()
 export class MongoDBChannelRepository implements ChannelRepository {
@@ -54,10 +55,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
       // Return the saved channel
       return channel;
     } catch (error) {
-      this.logger.error(`Failed to save channel ${channel.id}`, error);
-      throw new Error(
-        `Failed to save channel: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('save', channel.id, error);
     }
   }
 
@@ -67,10 +65,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
       const channelDoc = await this.channelModel.findOne({ id }).exec();
       return channelDoc ? this.toDomainEntity(channelDoc) : null;
     } catch (error) {
-      this.logger.error(`Failed to find channel by id ${id}`, error);
-      throw new Error(
-        `Failed to find channel: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('find', id, error);
     }
   }
 
@@ -84,10 +79,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
 
       return channelDocs.map((doc) => this.toDomainEntity(doc));
     } catch (error) {
-      this.logger.error(`Failed to find channels by user id ${userId}`, error);
-      throw new Error(
-        `Failed to find channels by user: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('findByUserId', userId, error);
     }
   }
 
@@ -101,10 +93,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
 
       return channelDocs.map((doc) => this.toDomainEntity(doc));
     } catch (error) {
-      this.logger.error(`Failed to find all channels`, error);
-      throw new Error(
-        `Failed to find all channels: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('findAll', 'all', error);
     }
   }
 
@@ -123,10 +112,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
 
       this.logger.log(`Soft deleted channel: ${id}`);
     } catch (error) {
-      this.logger.error(`Failed to remove channel ${id}`, error);
-      throw new Error(
-        `Failed to remove channel: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('remove', id, error);
     }
   }
 
@@ -139,10 +125,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
       });
       return count > 0;
     } catch (error) {
-      this.logger.error(`Failed to check if channel exists ${id}`, error);
-      throw new Error(
-        `Failed to check channel existence: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('exists', id, error);
     }
   }
 
@@ -151,11 +134,16 @@ export class MongoDBChannelRepository implements ChannelRepository {
       this.logger.log('Counting channels');
       return await this.channelModel.countDocuments({ isActive: true });
     } catch (error) {
-      this.logger.error(`Failed to count channels`, error);
-      throw new Error(
-        `Failed to count channels: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      this.handleDatabaseError('count', 'all', error);
     }
+  }
+
+  /**
+   * Handle database errors consistently
+   */
+  private handleDatabaseError(operation: string, id: string, error: unknown): never {
+    const cause = error instanceof Error ? error : new Error('Unknown database error');
+    throw new ChannelPersistenceException(operation, id, cause);
   }
 
   /**

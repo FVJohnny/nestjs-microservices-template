@@ -1,3 +1,5 @@
+import { InvalidChannelTypeError } from '../errors';
+
 export enum ChannelType {
   TELEGRAM = 'telegram',
   DISCORD = 'discord',
@@ -9,7 +11,7 @@ export class ChannelTypeVO {
 
   static create(value: string): ChannelTypeVO {
     if (!Object.values(ChannelType).includes(value as ChannelType)) {
-      throw new Error(`Invalid channel type: ${value}`);
+      throw new InvalidChannelTypeError(value);
     }
     return new ChannelTypeVO(value as ChannelType);
   }

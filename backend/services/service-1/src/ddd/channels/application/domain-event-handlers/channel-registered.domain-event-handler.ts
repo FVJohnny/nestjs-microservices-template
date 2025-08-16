@@ -4,6 +4,7 @@ import { ChannelRegisteredDomainEvent } from '../../domain/events/channel-regist
 import { ChannelCreatedIntegrationEvent } from '@libs/nestjs-types';
 import type { EventPublisher } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';
+import { EVENT_PUBLISHER_TOKEN } from '@libs/nestjs-common';
 
 @EventsHandler(ChannelRegisteredDomainEvent)
 export class ChannelRegisteredDomainEventHandler implements IEventHandler<ChannelRegisteredDomainEvent> {
@@ -12,7 +13,7 @@ export class ChannelRegisteredDomainEventHandler implements IEventHandler<Channe
   );
 
   constructor(
-    @Inject('EventPublisher')
+    @Inject(EVENT_PUBLISHER_TOKEN)
     private readonly eventPublisher: EventPublisher,
   ) {}
 

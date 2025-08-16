@@ -4,7 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
 import { SharedRedisModule } from '@libs/nestjs-redis';
 import { SharedPostgreSQLModule } from '@libs/nestjs-postgresql';
-import { ChannelMongoSchema } from './ddd/channels/infrastructure/repositories/mongodb/channel.schema';
 import { PostgreSQLChannelEntity } from './ddd/channels/infrastructure/repositories/postgresql/channel.schema';
 
 /**

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { ChannelsModule } from './ddd/channels/channels.module';
-import { HeartbeatModule, CorrelationModule } from '@libs/nestjs-common';
+import { HeartbeatModule, CorrelationModule, ErrorHandlingModule } from '@libs/nestjs-common';
 import { EventsModule } from './events.module';
 import { DatabaseModule } from './database.module';
 
@@ -17,6 +17,7 @@ import { DatabaseModule } from './database.module';
     // Common Modules
     HeartbeatModule,
     CorrelationModule,
+    ErrorHandlingModule,
 
     // DDD Bounded Contexts
     ChannelsModule,
