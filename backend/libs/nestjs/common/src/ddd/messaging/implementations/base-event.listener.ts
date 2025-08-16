@@ -69,10 +69,8 @@ export abstract class BaseEventListener implements EventListener, OnModuleInit, 
 
     this.eventHandlers.set(topicName, handler);
 
-    // If already listening, subscribe to the new topic
-    if (this.isListeningFlag) {
-      await this.subscribeToTopic(topicName);
-    }
+    // Always subscribe to the topic when registering a handler
+    await this.subscribeToTopic(topicName);
 
     this.logger.log(`Registered event handler '${handler.constructor.name}' for topic '${topicName}'`);
   }

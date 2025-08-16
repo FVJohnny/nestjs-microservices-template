@@ -66,3 +66,9 @@ dev-restart-service1:
 	@echo "🔄 Restarting service-1..."
 	@docker compose -f $(COMPOSE_DEV) restart service-1
 	@echo "✅ Service-1 restarted!"
+
+prod-restart-service1:
+	@echo "🔄 Restarting service-1..."
+	@docker compose -f $(COMPOSE_PROD) up --build service-1
+	@echo "✅ Service-1 restarted!"
+	
