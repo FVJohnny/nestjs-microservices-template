@@ -46,7 +46,8 @@ export class ChannelMongoDocument extends Document {
   updatedAt: Date;
 }
 
-export const ChannelMongoSchema = SchemaFactory.createForClass(ChannelMongoDocument);
+export const ChannelMongoSchema =
+  SchemaFactory.createForClass(ChannelMongoDocument);
 
 // Add indexes for common queries
 ChannelMongoSchema.index({ userId: 1, isActive: 1 });

@@ -6,26 +6,35 @@ services:
       - ${PWD}/backend:/app
       - /app/services/service-1/node_modules
     command: sh -c "npm install && npm run start:dev"
+    env_file:
+      - .env
     environment:
       - NODE_ENV=development
       - PORT=3000
       - CHOKIDAR_USEPOLLING=1
       - WATCHPACK_POLLING=true
-      - KAFKA_BROKERS=kafka:9092
+      - MESSAGING_BACKEND=${MESSAGING_BACKEND:-redis}
+      - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
+      - KAFKA_USERNAME=${KAFKA_USERNAME:-}
+      - KAFKA_PASSWORD=${KAFKA_PASSWORD:-}
       - KAFKA_SERVICE_ID=service-1
       - PROXY_BASE_PATH=/api/service-1
-      - MONGODB_URI=mongodb://admin:admin123@mongodb:27017/service-1-db?authSource=admin
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_DB=0
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=service-1-db
-      - POSTGRES_SYNCHRONIZE=true
-      - POSTGRES_LOGGING=true
-      - CORS_ORIGINS=http://localhost:3000
+      - MONGODB_URI=${MONGODB_URI:-mongodb://admin:admin123@mongodb:27017/service-1-db?authSource=admin}
+      - MONGODB_DB_NAME=${MONGODB_DB_NAME:-service-1-db}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_USERNAME=${REDIS_USERNAME:-}
+      - REDIS_DB=${REDIS_DB:-0}
+      - REDIS_TLS=${REDIS_TLS:-false}
+      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-service-1-db}
+      - POSTGRES_SYNCHRONIZE=${POSTGRES_SYNCHRONIZE:-true}
+      - POSTGRES_LOGGING=${POSTGRES_LOGGING:-true}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
     ports:
       - "3001:3000"
     networks:
@@ -47,14 +56,21 @@ services:
     volumes:
       - ${PWD}/backend/services/service-3:/app
     command: sh -c "pip install --upgrade pip && pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    env_file:
+      - .env
     environment:
       - NODE_ENV=development
       - PORT=8000
-      - MESSAGING_BACKEND=redis
-      - KAFKA_BROKERS=kafka:9092
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_DB=0
+      - MESSAGING_BACKEND=${MESSAGING_BACKEND:-redis}
+      - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
+      - KAFKA_USERNAME=${KAFKA_USERNAME:-}
+      - KAFKA_PASSWORD=${KAFKA_PASSWORD:-}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_USERNAME=${REDIS_USERNAME:-}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_DB=${REDIS_DB:-0}
+      - REDIS_TLS=${REDIS_TLS:-false}
     ports:
       - "3003:8000"
     networks:

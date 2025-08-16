@@ -9,7 +9,9 @@ import { CorrelationLogger } from '@libs/nestjs-common';
 export class RegisterChannelCommandHandler
   implements ICommandHandler<RegisterChannelCommand>
 {
-  private readonly logger = new CorrelationLogger(RegisterChannelCommandHandler.name);
+  private readonly logger = new CorrelationLogger(
+    RegisterChannelCommandHandler.name,
+  );
 
   constructor(
     @Inject('ChannelRepository')

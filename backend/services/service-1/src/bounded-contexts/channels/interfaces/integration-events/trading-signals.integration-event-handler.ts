@@ -15,17 +15,25 @@ export class TradingSignalsIntegrationEventHandler extends BaseEventHandler {
     super(eventListener);
   }
 
-  async handle(payload: Record<string, unknown>, messageId: string): Promise<void> {
+  async handle(
+    payload: Record<string, unknown>,
+    messageId: string,
+  ): Promise<void> {
     try {
       // Extract and validate payload
       const channelType = payload.channelType as string;
       const name = payload.name as string;
       const userId = payload.userId as string;
-      const connectionConfig = payload.connectionConfig as Record<string, unknown>;
+      const connectionConfig = payload.connectionConfig as Record<
+        string,
+        unknown
+      >;
 
       // Validate required fields
       if (!channelType || !name || !userId) {
-        throw new Error(`Missing required fields in channel.create event [${messageId}]`);
+        throw new Error(
+          `Missing required fields in channel.create event [${messageId}]`,
+        );
       }
 
       this.logger.log(
@@ -40,12 +48,14 @@ export class TradingSignalsIntegrationEventHandler extends BaseEventHandler {
       });
 
       const channelId = await this.commandBus.execute(command);
-      
+
       this.logger.log(
         `✅ Channel created successfully from event [${messageId}] - ID: ${channelId}`,
       );
     } catch (error) {
-      this.logger.error(`❌ Failed to handle channel.create event [${messageId}]: ${error}`);
+      this.logger.error(
+        `❌ Failed to handle channel.create event [${messageId}]: ${error}`,
+      );
       throw error;
     }
   }

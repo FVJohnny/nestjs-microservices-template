@@ -64,8 +64,10 @@ export class ChannelsController {
     description: 'Invalid channel configuration',
   })
   async registerChannel(@Body() dto: RegisterChannelDto) {
-    this.logger.debug(`Registering channel for user ${dto.userId}, type: ${dto.channelType}`);
-    
+    this.logger.debug(
+      `Registering channel for user ${dto.userId}, type: ${dto.channelType}`,
+    );
+
     try {
       const command = new RegisterChannelCommand({
         channelType: dto.channelType,
@@ -75,8 +77,10 @@ export class ChannelsController {
       });
 
       const channelId: string = await this.commandBus.execute(command);
-      this.logger.log(`Channel registered successfully: ${channelId} for user ${dto.userId}`);
-      
+      this.logger.log(
+        `Channel registered successfully: ${channelId} for user ${dto.userId}`,
+      );
+
       return new RegisterChannelResponseDto(channelId);
     } catch (error) {
       this.logger.error(`Failed to register channel: ${error.message}`);
@@ -156,30 +160,31 @@ export class ChannelsController {
     @Body() messageData: SimulateMessageDto,
   ) {
     this.logger.debug(`Simulating message for channel ${channelId}`);
-    
+
     try {
       // First verify channel exists by getting channels and finding this one
       const getChannelsQuery = new GetChannelsQuery();
       const channels: Channel[] = await this.queryBus.execute(getChannelsQuery);
-      
-      const channel = channels.find(c => c.id === channelId);
+
+      const channel = channels.find((c) => c.id === channelId);
       if (!channel) {
         throw new EntityNotFoundException('Channel', channelId);
       }
-      
+
       // Simulate some validation that could fail
       if (!messageData.content || messageData.content.trim().length === 0) {
         throw new Error('Message content cannot be empty');
       }
-      
+
       // TODO: Implement actual message simulation logic
       this.logger.log(`Message simulation completed for channel ${channelId}`);
-      
+
       return new SimulateMessageResponseDto(true);
     } catch (error) {
-      this.logger.error(`Message simulation failed for channel ${channelId}: ${error.message}`);
+      this.logger.error(
+        `Message simulation failed for channel ${channelId}: ${error.message}`,
+      );
       throw error; // Let global exception filter handle it
     }
   }
-
 }

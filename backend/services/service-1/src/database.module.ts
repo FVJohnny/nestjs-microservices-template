@@ -17,17 +17,12 @@ import { PostgreSQLChannelEntity } from './bounded-contexts/channels/infrastruct
 
     // MongoDB
     SharedMongoDBModule,
-    MongooseModule.forRootAsync(
-      SharedMongoDBModule.getMongooseConfig()
-    ),
-    
+    MongooseModule.forRootAsync(SharedMongoDBModule.getMongooseConfig()),
 
     // PostgreSQL - Base module for config service
     SharedPostgreSQLModule,
     TypeOrmModule.forRootAsync(
-      SharedPostgreSQLModule.getTypeOrmConfig([
-        PostgreSQLChannelEntity,
-      ])
+      SharedPostgreSQLModule.getTypeOrmConfig([PostgreSQLChannelEntity]),
     ),
   ],
 })

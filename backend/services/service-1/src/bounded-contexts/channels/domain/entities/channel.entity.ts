@@ -61,7 +61,10 @@ export class Channel extends AggregateRoot<IEvent> {
       throw new InvalidOperationException(
         'receive_message',
         'inactive_channel',
-        { channelId: this.id, reason: 'Cannot receive messages on inactive channel' }
+        {
+          channelId: this.id,
+          reason: 'Cannot receive messages on inactive channel',
+        },
       );
     }
 
@@ -81,11 +84,10 @@ export class Channel extends AggregateRoot<IEvent> {
 
   deactivate(): void {
     if (!this.isActive) {
-      throw new InvalidOperationException(
-        'deactivate',
-        'already_inactive',
-        { channelId: this.id, reason: 'Channel is already inactive' }
-      );
+      throw new InvalidOperationException('deactivate', 'already_inactive', {
+        channelId: this.id,
+        reason: 'Channel is already inactive',
+      });
     }
 
     // In a real implementation, you might raise a ChannelDeactivatedEvent

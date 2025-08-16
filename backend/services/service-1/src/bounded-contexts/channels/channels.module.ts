@@ -33,7 +33,10 @@ import { PostgreSQLChannelEntity } from './infrastructure/repositories/postgresq
 
 const CommandHandlers = [RegisterChannelCommandHandler];
 const QueryHandlers = [GetChannelsHandler];
-const DomainEventHandlers = [ChannelRegisteredDomainEventHandler, MessageReceivedDomainEventHandler];
+const DomainEventHandlers = [
+  ChannelRegisteredDomainEventHandler,
+  MessageReceivedDomainEventHandler,
+];
 const IntegrationEventHandlers = [TradingSignalsIntegrationEventHandler];
 
 @Module({

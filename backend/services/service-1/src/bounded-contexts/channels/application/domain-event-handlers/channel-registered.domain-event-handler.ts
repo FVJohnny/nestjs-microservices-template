@@ -7,7 +7,9 @@ import { CorrelationLogger } from '@libs/nestjs-common';
 import { EVENT_PUBLISHER_TOKEN } from '@libs/nestjs-common';
 
 @EventsHandler(ChannelRegisteredDomainEvent)
-export class ChannelRegisteredDomainEventHandler implements IEventHandler<ChannelRegisteredDomainEvent> {
+export class ChannelRegisteredDomainEventHandler
+  implements IEventHandler<ChannelRegisteredDomainEvent>
+{
   private readonly logger = new CorrelationLogger(
     ChannelRegisteredDomainEventHandler.name,
   );

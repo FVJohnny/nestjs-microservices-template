@@ -6,11 +6,8 @@ import { DomainValidationException } from '@libs/nestjs-common';
 
 export class InvalidChannelTypeError extends DomainValidationException {
   constructor(channelType: string) {
-    super(
-      'channelType',
+    super('channelType', channelType, `Invalid channel type: ${channelType}`, {
       channelType,
-      `Invalid channel type: ${channelType}`,
-      { channelType }
-    );
+    });
   }
 }

@@ -6,8 +6,12 @@ import { CorrelationLogger } from '@libs/nestjs-common';
 import { MessageReceivedDomainEvent } from '../../domain/events/message-received.domain-event';
 
 @EventsHandler(MessageReceivedDomainEvent)
-export class MessageReceivedDomainEventHandler implements IEventHandler<MessageReceivedDomainEvent> {
-  private readonly logger = new CorrelationLogger(MessageReceivedDomainEventHandler.name);
+export class MessageReceivedDomainEventHandler
+  implements IEventHandler<MessageReceivedDomainEvent>
+{
+  private readonly logger = new CorrelationLogger(
+    MessageReceivedDomainEventHandler.name,
+  );
 
   constructor(
     @Inject(EVENT_PUBLISHER_TOKEN)

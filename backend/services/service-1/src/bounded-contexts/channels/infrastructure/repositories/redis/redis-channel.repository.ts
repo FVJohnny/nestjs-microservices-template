@@ -21,9 +21,7 @@ export class RedisChannelRepository implements ChannelRepository {
   private readonly keyPrefix = 'channel:';
   private readonly userIndexPrefix = 'user_channels:';
 
-  private readonly logger = new CorrelationLogger(
-    RedisChannelRepository.name,
-  );
+  private readonly logger = new CorrelationLogger(RedisChannelRepository.name);
 
   constructor(private readonly redisService: RedisService) {}
 
@@ -47,18 +45,18 @@ export class RedisChannelRepository implements ChannelRepository {
       this.logger.log(`Finding all channels`);
       const keyPattern = `${this.keyPrefix}*`;
       const keys = await this.redisService.keys(keyPattern);
-      
+
       if (keys.length === 0) {
         return [];
       }
 
       const values = await this.redisService.mget(...keys);
-      
+
       return values
         .filter((data) => data !== null)
-        .map(data => this.safeParseChannel(data))
+        .map((data) => this.safeParseChannel(data))
         .filter((channel) => channel !== null)
-        .filter(channel => this.matchesCriteria(channel, criteria));
+        .filter((channel) => this.matchesCriteria(channel, criteria));
     } catch (error) {
       this.handleDatabaseError('findAll', 'all', error);
     }
@@ -85,12 +83,12 @@ export class RedisChannelRepository implements ChannelRepository {
         return [];
       }
 
-      const keys = channelIds.map(id => `${this.keyPrefix}${id}`);
+      const keys = channelIds.map((id) => `${this.keyPrefix}${id}`);
       const values = await this.redisService.mget(...keys);
 
       return values
         .filter((data) => data !== null)
-        .map(data => this.safeParseChannel(data))
+        .map((data) => this.safeParseChannel(data))
         .filter((channel) => channel !== null);
     } catch (error) {
       this.handleDatabaseError('findByUserId', userId, error);
@@ -144,8 +142,13 @@ export class RedisChannelRepository implements ChannelRepository {
   /**
    * Handle database errors consistently
    */
-  private handleDatabaseError(operation: string, id: string, error: unknown): never {
-    const cause = error instanceof Error ? error : new Error('Unknown database error');
+  private handleDatabaseError(
+    operation: string,
+    id: string,
+    error: unknown,
+  ): never {
+    const cause =
+      error instanceof Error ? error : new Error('Unknown database error');
     throw new ChannelPersistenceException(operation, id, cause);
   }
 

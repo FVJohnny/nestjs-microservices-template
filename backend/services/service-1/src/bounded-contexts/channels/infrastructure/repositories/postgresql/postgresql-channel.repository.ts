@@ -22,10 +22,10 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
   async save(channel: Channel): Promise<Channel> {
     try {
       this.logger.log(`Saving channel: ${channel.id}`);
-      
+
       const entity = this.mapToEntity(channel);
       await this.channelRepository.save(entity);
-      
+
       this.logger.log(`Successfully saved channel: ${channel.id}`);
       return channel;
     } catch (error) {
@@ -36,11 +36,11 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
   async findById(id: string): Promise<Channel | null> {
     try {
       this.logger.log(`Finding channel by id: ${id}`);
-      
+
       const entity = await this.channelRepository.findOne({
         where: { id, isActive: true },
       });
-      
+
       return entity ? this.mapToDomain(entity) : null;
     } catch (error) {
       this.handleDatabaseError('find', id, error);
@@ -50,15 +50,15 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
   async findByUserId(userId: string): Promise<Channel[]> {
     try {
       this.logger.log(`Finding channels for userId: ${userId}`);
-      if (userId=="123") {
-        throw new Error("Test error");
+      if (userId == '123') {
+        throw new Error('Test error');
       }
       const entities = await this.channelRepository.find({
         where: { userId, isActive: true },
         order: { createdAt: 'DESC' },
       });
-      
-      return entities.map(entity => this.mapToDomain(entity));
+
+      return entities.map((entity) => this.mapToDomain(entity));
     } catch (error) {
       this.handleDatabaseError('findByUserId', userId, error);
     }
@@ -67,10 +67,10 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
   async findAll(criteria?: Record<string, any>): Promise<Channel[]> {
     try {
       this.logger.log('Finding all channels');
-      
+
       const queryBuilder = this.channelRepository.createQueryBuilder('channel');
       queryBuilder.where('channel.isActive = :isActive', { isActive: true });
-      
+
       // Apply additional criteria if provided
       if (criteria) {
         if (criteria.channelType) {
@@ -89,11 +89,11 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
           });
         }
       }
-      
+
       queryBuilder.orderBy('channel.createdAt', 'DESC');
-      
+
       const entities = await queryBuilder.getMany();
-      return entities.map(entity => this.mapToDomain(entity));
+      return entities.map((entity) => this.mapToDomain(entity));
     } catch (error) {
       this.handleDatabaseError('findAll', 'all', error);
     }
@@ -102,13 +102,13 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
   async remove(id: string): Promise<void> {
     try {
       this.logger.log(`Removing channel with id: ${id}`);
-      
+
       // Soft delete by setting isActive to false
       await this.channelRepository.update(
         { id },
         { isActive: false, updatedAt: new Date() },
       );
-      
+
       this.logger.log(`Soft deleted channel: ${id}`);
     } catch (error) {
       this.handleDatabaseError('remove', id, error);
@@ -118,11 +118,11 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
   async exists(id: string): Promise<boolean> {
     try {
       this.logger.log(`Checking if channel exists with id: ${id}`);
-      
+
       const count = await this.channelRepository.count({
         where: { id, isActive: true },
       });
-      
+
       return count > 0;
     } catch (error) {
       this.handleDatabaseError('exists', id, error);
@@ -132,9 +132,9 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
   async count(criteria?: Record<string, any>): Promise<number> {
     try {
       this.logger.log('Counting channels');
-      
+
       const where: any = { isActive: true };
-      
+
       if (criteria) {
         if (criteria.channelType) {
           where.channelType = criteria.channelType;
@@ -143,7 +143,7 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
           where.userId = criteria.userId;
         }
       }
-      
+
       return await this.channelRepository.count({ where });
     } catch (error) {
       this.handleDatabaseError('count', 'all', error);
@@ -153,8 +153,13 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
   /**
    * Handle database errors consistently
    */
-  private handleDatabaseError(operation: string, id: string, error: unknown): never {
-    const cause = error instanceof Error ? error : new Error('Unknown database error');
+  private handleDatabaseError(
+    operation: string,
+    id: string,
+    error: unknown,
+  ): never {
+    const cause =
+      error instanceof Error ? error : new Error('Unknown database error');
     throw new ChannelPersistenceException(operation, id, cause);
   }
 
@@ -171,7 +176,7 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
     entity.isActive = channel.isActive;
     entity.createdAt = channel.createdAt;
     entity.updatedAt = new Date();
-    
+
     return entity;
   }
 

@@ -71,8 +71,13 @@ export class InMemoryChannelRepository implements ChannelRepository {
   /**
    * Handle database errors consistently
    */
-  private handleDatabaseError(operation: string, id: string, error: unknown): never {
-    const cause = error instanceof Error ? error : new Error('Unknown database error');
+  private handleDatabaseError(
+    operation: string,
+    id: string,
+    error: unknown,
+  ): never {
+    const cause =
+      error instanceof Error ? error : new Error('Unknown database error');
     throw new ChannelPersistenceException(operation, id, cause);
   }
 }

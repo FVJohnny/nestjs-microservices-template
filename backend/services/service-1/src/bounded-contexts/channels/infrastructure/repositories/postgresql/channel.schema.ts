@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+} from 'typeorm';
 
 @Entity('channels')
 @Index('idx_channels_user_id', ['userId'])
