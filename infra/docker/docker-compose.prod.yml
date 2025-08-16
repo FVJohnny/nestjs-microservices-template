@@ -23,6 +23,8 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=secureproductionpostgrespassword
       - POSTGRES_DB=service-1-db
+      - POSTGRES_SYNCHRONIZE=true
+      - POSTGRES_LOGGING=true
     ports:
       - "3001:3000"
     networks:

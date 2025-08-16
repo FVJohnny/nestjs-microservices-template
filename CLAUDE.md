@@ -172,14 +172,6 @@ Cross-service communication uses integration events located in `@libs/nestjs-typ
 - Transforms external events into internal commands via CommandBus
 - Auto-registration with EventListener during module initialization
 
-**Repository Selection:**
-```bash
-# Environment variable controls which repository to use
-CHANNEL_REPOSITORY=redis      # Default
-CHANNEL_REPOSITORY=mongodb
-CHANNEL_REPOSITORY=postgresql
-CHANNEL_REPOSITORY=memory
-```
 
 **Repository Implementations:**
 
@@ -348,31 +340,25 @@ The system uses smart conditional loading - databases are only initialized if th
 
 **Example Configurations**:
 ```bash
-# Minimal setup - only in-memory
-CHANNEL_REPOSITORY=memory
 
 # Redis only
 REDIS_HOST=localhost
-CHANNEL_REPOSITORY=redis
 
 # PostgreSQL only
 POSTGRES_HOST=localhost
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=secret
 POSTGRES_DB=myapp
-CHANNEL_REPOSITORY=postgresql
 
 # All databases available, use PostgreSQL
 REDIS_HOST=localhost
 MONGODB_URI=mongodb://localhost:27017/myapp
 POSTGRES_HOST=localhost
-CHANNEL_REPOSITORY=postgresql
 ```
 
 ### Development Notes
 
 - Services use file-based dependencies to shared libraries (`"@libs/nestjs-[name]": "file:../../libs/nestjs/[name]"`)
-- Repository implementation controlled by `CHANNEL_REPOSITORY` environment variable
 - Automatic fallback to in-memory if selected database unavailable
 - Databases only load if their connection environment variables are configured
 - CQRS pattern separates read/write operations with dedicated handlers
