@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
-import { ChannelsModule } from './ddd/channels/channels.module';
+import { ChannelsModule } from './bounded-contexts/channels/channels.module';
 import { HeartbeatModule, CorrelationModule, ErrorHandlingModule } from '@libs/nestjs-common';
 import { EventsModule } from './events.module';
 import { DatabaseModule } from './database.module';

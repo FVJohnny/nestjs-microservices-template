@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
 import { SharedRedisModule } from '@libs/nestjs-redis';
 import { SharedPostgreSQLModule } from '@libs/nestjs-postgresql';
-import { PostgreSQLChannelEntity } from './ddd/channels/infrastructure/repositories/postgresql/channel.schema';
+import { PostgreSQLChannelEntity } from './bounded-contexts/channels/infrastructure/repositories/postgresql/channel.schema';
 
 /**
  * Global database module that provides MongoDB, Redis, and PostgreSQL connections
