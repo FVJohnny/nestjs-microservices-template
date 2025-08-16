@@ -12,3 +12,9 @@ export * from './errors';
 
 // DDD exports
 export * from './ddd';
+
+// Audit exports
+export * from './audit/audit.module';
+export * from './audit/audit.service';
+export * from './audit/audit.middleware';
+export * from './audit/audit-log.interface';

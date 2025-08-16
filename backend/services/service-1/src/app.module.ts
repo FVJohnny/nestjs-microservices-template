@@ -7,6 +7,7 @@ import {
   HeartbeatModule,
   CorrelationModule,
   ErrorHandlingModule,
+  AuditModule,
   MessagingController,
 } from '@libs/nestjs-common';
 import { ConfigurableEventsModule } from '@libs/nestjs-events';
@@ -32,6 +33,7 @@ import { DatabaseModule } from './database.module';
     HeartbeatModule,
     CorrelationModule,
     ErrorHandlingModule,
+    AuditModule,
 
     // DDD Bounded Contexts
     ChannelsModule,
