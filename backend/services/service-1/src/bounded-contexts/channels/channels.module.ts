@@ -46,14 +46,16 @@ const IntegrationEventHandlers = [TradingSignalsIntegrationEventHandler];
   ],
   controllers: [ChannelsController],
   providers: [
+    // Handlers
     ...CommandHandlers,
     ...QueryHandlers,
     ...DomainEventHandlers,
     ...IntegrationEventHandlers,
-    // Repository
+
+    // Repositories
     {
       provide: 'ChannelRepository',
-      useClass: PostgreSQLChannelRepository, // Change to the repository you want to use
+      useClass: PostgreSQLChannelRepository,
       // useClass: MongoDBChannelRepository,
     },
   ],
