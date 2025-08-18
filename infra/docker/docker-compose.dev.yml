@@ -18,6 +18,7 @@ services:
       - KAFKA_USERNAME=${KAFKA_USERNAME:-}
       - KAFKA_PASSWORD=${KAFKA_PASSWORD:-}
       - KAFKA_SERVICE_ID=service-1
+      - SERVICE_NAME=service-1
       - PROXY_BASE_PATH=/api/service-1
       - MONGODB_URI=${MONGODB_URI:-mongodb://admin:admin123@mongodb:27017/service-1-db?authSource=admin}
       - MONGODB_DB_NAME=${MONGODB_DB_NAME:-service-1-db}
@@ -123,6 +124,33 @@ services:
       timeout: 10s
       retries: 5
       start_period: 10s
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ${PWD}/infra/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - service-1
+    networks:
+      - backend
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - "4000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ${PWD}/infra/monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ${PWD}/infra/monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - backend
 
   mongodb:
     image: mongo:7.0

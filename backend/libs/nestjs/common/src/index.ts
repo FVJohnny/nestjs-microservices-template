@@ -18,3 +18,9 @@ export * from './audit/audit.module';
 export * from './audit/audit.service';
 export * from './audit/audit.middleware';
 export * from './audit/audit-log.interface';
+
+// Metrics exports
+export * from './metrics/metrics.module';
+export * from './metrics/metrics.service';
+export * from './metrics/metrics.controller';
+export * from './metrics/metrics.interceptor';

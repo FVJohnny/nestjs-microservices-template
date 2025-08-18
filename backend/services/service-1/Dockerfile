@@ -21,7 +21,6 @@ RUN npm ci && npm run build
 WORKDIR /app/libs/nestjs/events
 RUN npm ci && npm run build
 
-
 # Copy service package files and install dependencies
 WORKDIR /app
 COPY services/service-1/package*.json ./services/service-1/
