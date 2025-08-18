@@ -19,7 +19,7 @@ export class RegisterChannelCommandHandler
     private readonly eventBus: EventBus,
   ) {}
 
-  async execute(command: RegisterChannelCommand): Promise<string> {
+  async execute(command: RegisterChannelCommand): Promise<RegisterChannelCommandHandlerResult> {
     this.logger.log('Registering channel...');
     const { channelType, name, userId, connectionConfig } = command;
 
@@ -31,13 +31,16 @@ export class RegisterChannelCommandHandler
 
     // Publish domain events
     const events = channel.getUncommittedEvents();
-    for (const event of events) {
-      this.eventBus.publish(event);
-    }
+    this.eventBus.publishAll(events);
 
     // Commit events after publishing
     channel.commit();
 
-    return channel.id;
+    return { id: channel.id };
   }
 }
+
+export type RegisterChannelCommandHandlerResult = {
+  id: string;
+};
+

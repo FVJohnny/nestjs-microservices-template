@@ -24,3 +24,6 @@ export * from './metrics/metrics.module';
 export * from './metrics/metrics.service';
 export * from './metrics/metrics.controller';
 export * from './metrics/metrics.interceptor';
+
+// Testing utilities
+export * from './testing/cqrs-event-capture';
