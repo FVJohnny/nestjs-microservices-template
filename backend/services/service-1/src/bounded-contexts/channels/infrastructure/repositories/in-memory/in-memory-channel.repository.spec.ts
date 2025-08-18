@@ -16,10 +16,13 @@ describe('InMemoryChannelRepository', () => {
     const userId2 = 'u2';
     const a = Channel.random({userId: userId1});
     const b = Channel.random({userId: userId2});
+    
     await repo.save(a);
     await repo.save(b);
-    const u1 = await repo.findByUserId('u1');
-    expect(u1.map((c) => c.id)).toEqual([a.id]);
+
+    const u1Channels = await repo.findByUserId('u1');
+    expect(u1Channels.map((c) => c.id)).toEqual([a.id]);
+
     await repo.remove(a.id);
     expect(await repo.findById(a.id)).toBeNull();
   });
