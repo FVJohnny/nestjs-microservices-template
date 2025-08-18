@@ -18,15 +18,15 @@ describe('PostgreSQLChannelRepository', () => {
     (orm.save as jest.Mock).mockResolvedValue(undefined);
     const repo = new PostgreSQLChannelRepository(orm as any);
 
-    const ch = Channel.create('telegram', 'c1', 'u1', { token: 't' });
+    const ch = Channel.random();
     await repo.save(ch);
 
     expect((orm.save as jest.Mock)).toHaveBeenCalledTimes(1);
     const entityArg = (orm.save as jest.Mock).mock.calls[0][0] as PostgreSQLChannelEntity;
     expect(entityArg.id).toBe(ch.id);
-    expect(entityArg.channelType).toBe('telegram');
-    expect(entityArg.name).toBe('c1');
-    expect(entityArg.userId).toBe('u1');
+    expect(entityArg.channelType).toBe(ch.channelType.getValue());
+    expect(entityArg.name).toBe(ch.name);
+    expect(entityArg.userId).toBe(ch.userId);
   });
 
   it('findById maps entity -> domain', async () => {

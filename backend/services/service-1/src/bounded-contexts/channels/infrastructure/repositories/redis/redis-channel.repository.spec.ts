@@ -19,7 +19,7 @@ describe('RedisChannelRepository', () => {
     const redis = makeRedis();
     const repo = new RedisChannelRepository(redis as any);
 
-    const ch = Channel.create('telegram', 'c1', 'u1', { token: 't' });
+    const ch = Channel.random();
     await repo.save(ch);
 
     expect(redis.set).toHaveBeenCalledTimes(1);
@@ -31,7 +31,7 @@ describe('RedisChannelRepository', () => {
     const redis = makeRedis();
     const repo = new RedisChannelRepository(redis as any);
 
-    const ch = Channel.create('telegram', 'c1', 'u1', {});
+    const ch = Channel.random();
     (redis.get as jest.Mock).mockResolvedValueOnce(JSON.stringify({
       id: ch.id,
       channelType: 'telegram',
@@ -53,8 +53,8 @@ describe('RedisChannelRepository', () => {
     const redis = makeRedis();
     const repo = new RedisChannelRepository(redis as any);
 
-    const c1 = Channel.create('telegram', 'c1', 'u1', {});
-    const c2 = Channel.create('discord', 'c2', 'u2', {});
+    const c1 = Channel.random();
+    const c2 = Channel.random();
     (redis.keys as jest.Mock).mockResolvedValueOnce([`channel:${c1.id}`, `channel:${c2.id}`]);
     (redis.mget as jest.Mock).mockResolvedValueOnce([
       JSON.stringify({ id: c1.id, channelType: 'telegram', name: c1.name, userId: c1.userId, connectionConfig: {}, isActive: true, createdAt: c1.createdAt.toISOString() }),
@@ -69,7 +69,7 @@ describe('RedisChannelRepository', () => {
     const redis = makeRedis();
     const repo = new RedisChannelRepository(redis as any);
 
-    const ch = Channel.create('telegram', 'c1', 'u1', {});
+    const ch = Channel.random();
     (redis.smembers as jest.Mock).mockResolvedValueOnce([ch.id]);
     (redis.mget as jest.Mock).mockResolvedValueOnce([
       JSON.stringify({ id: ch.id, channelType: 'telegram', name: ch.name, userId: ch.userId, connectionConfig: {}, isActive: true, createdAt: ch.createdAt.toISOString() }),

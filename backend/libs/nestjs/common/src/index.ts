@@ -26,4 +26,5 @@ export * from './metrics/metrics.controller';
 export * from './metrics/metrics.interceptor';
 
 // Testing utilities
-export * from './testing/cqrs-event-capture';
+export * from './testing/cqrs-event-handler';
+export * from './testing/cqrs-event-bus';

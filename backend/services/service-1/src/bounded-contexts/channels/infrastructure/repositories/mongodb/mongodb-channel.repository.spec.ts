@@ -30,7 +30,7 @@ describe('MongoDBChannelRepository', () => {
     (model.create as jest.Mock).mockResolvedValueOnce(undefined);
 
     const repo = new MongoDBChannelRepository(model as any);
-    const ch = Channel.create('telegram', 'c1', 'u1', { token: 't' });
+    const ch = Channel.random();
 
     const res = await repo.save(ch);
     expect(res.id).toBe(ch.id);
@@ -57,7 +57,7 @@ describe('MongoDBChannelRepository', () => {
     (model.updateOne as jest.Mock).mockResolvedValueOnce({ matchedCount: 1 });
 
     const repo = new MongoDBChannelRepository(model as any);
-    const ch = Channel.create('discord', 'c2', 'u2', {});
+    const ch = Channel.random();
 
     await repo.save(ch);
 
@@ -65,7 +65,7 @@ describe('MongoDBChannelRepository', () => {
       { id: ch.id },
       expect.objectContaining({
         name: ch.name,
-        channelType: 'discord',
+        channelType: ch.channelType.getValue(),
         userId: ch.userId,
         connectionConfig: ch.connectionConfig,
         isActive: ch.isActive,

@@ -4,7 +4,7 @@ import { Channel } from '../../../domain/entities/channel.entity';
 describe('InMemoryChannelRepository', () => {
   it('saves and finds by id', async () => {
     const repo = new InMemoryChannelRepository();
-    const ch = Channel.create('telegram', 'c1', 'u1', {});
+    const ch = Channel.random();
     await repo.save(ch);
     const found = await repo.findById(ch.id);
     expect(found?.id).toBe(ch.id);
@@ -12,8 +12,10 @@ describe('InMemoryChannelRepository', () => {
 
   it('finds by user and removes', async () => {
     const repo = new InMemoryChannelRepository();
-    const a = Channel.create('telegram', 'c1', 'u1', {});
-    const b = Channel.create('discord', 'c2', 'u2', {});
+    const userId1 = 'u1'
+    const userId2 = 'u2';
+    const a = Channel.random({userId: userId1});
+    const b = Channel.random({userId: userId2});
     await repo.save(a);
     await repo.save(b);
     const u1 = await repo.findByUserId('u1');
@@ -24,7 +26,7 @@ describe('InMemoryChannelRepository', () => {
 
   it('exists reflects presence', async () => {
     const repo = new InMemoryChannelRepository();
-    const ch = Channel.create('telegram', 'c1', 'u1', {});
+    const ch = Channel.random();
     await repo.save(ch);
     expect(await repo.exists(ch.id)).toBe(true);
     await repo.remove(ch.id);

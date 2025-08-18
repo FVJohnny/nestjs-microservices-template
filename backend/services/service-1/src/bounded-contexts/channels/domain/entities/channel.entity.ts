@@ -5,6 +5,12 @@ import { ChannelRegisteredDomainEvent } from '../events/channel-registered.domai
 import { MessageReceivedDomainEvent } from '../events/message-received.domain-event';
 import { InvalidOperationException } from '@libs/nestjs-common';
 
+interface CreateChannelProps {
+  channelType: string,
+  name: string,
+  userId: string,
+  connectionConfig: Record<string, any>,
+}
 export class Channel extends AggregateRoot<IEvent> {
   constructor(
     public readonly id: string,
@@ -12,27 +18,24 @@ export class Channel extends AggregateRoot<IEvent> {
     public readonly name: string,
     public readonly userId: string,
     public readonly connectionConfig: Record<string, any>,
-    public readonly isActive: boolean = true,
+    public isActive: boolean = true,
     public readonly createdAt: Date = new Date(),
   ) {
     super();
   }
 
   static create(
-    channelType: string,
-    name: string,
-    userId: string,
-    connectionConfig: Record<string, any>,
+    props: CreateChannelProps
   ): Channel {
     const id = uuidv4();
-    const channelTypeVO = ChannelTypeVO.create(channelType);
+    const channelTypeVO = ChannelTypeVO.create(props.channelType);
 
     const channel = new Channel(
       id,
       channelTypeVO,
-      name,
-      userId,
-      connectionConfig,
+      props.name,
+      props.userId,
+      props.connectionConfig,
     );
 
     // Raise domain event
@@ -40,14 +43,24 @@ export class Channel extends AggregateRoot<IEvent> {
       new ChannelRegisteredDomainEvent({
         aggregateId: id,
         channelType: channelTypeVO,
-        channelName: name,
-        userId: userId,
-        connectionConfig: connectionConfig,
+        channelName: props.name,
+        userId: props.userId,
+        connectionConfig: props.connectionConfig,
       }),
     );
 
     return channel;
   }
+
+  static random(props?: Partial<CreateChannelProps>) {
+    return Channel.create({
+      channelType: props?.channelType || "telegram",
+      userId: props?.userId || 'user-1',
+      name: props?.name || 'My Beautiful Channel',
+      connectionConfig: props?.connectionConfig || {token: 'abc'}
+    })
+  } 
+
 
   receiveMessage(
     messageId: string,
@@ -90,7 +103,10 @@ export class Channel extends AggregateRoot<IEvent> {
       });
     }
 
+    this.isActive = false;
+
     // In a real implementation, you might raise a ChannelDeactivatedEvent
     // For now, we'll keep it simple
   }
+
 }

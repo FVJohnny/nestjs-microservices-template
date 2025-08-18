@@ -24,7 +24,12 @@ export class RegisterChannelCommandHandler
     const { channelType, name, userId, connectionConfig } = command;
 
     // Create the channel aggregate
-    const channel = Channel.create(channelType, name, userId, connectionConfig);
+    const channel = Channel.create({
+      channelType,
+      name,
+      userId,
+      connectionConfig
+    });
 
     // Save the channel
     await this.channelRepository.save(channel);

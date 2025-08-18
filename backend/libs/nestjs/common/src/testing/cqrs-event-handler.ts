@@ -13,11 +13,6 @@ export interface EventCapture<T extends IEvent> {
 /**
  * Creates a NestJS CQRS EventsHandler class that captures all events of the given type.
  *
- * Usage in tests:
- *   const Capture = createTestDomainEventTestHandler(ChannelRegisteredDomainEvent);
- *   Test.createTestingModule({ providers: [Capture, ...] })
- *   Capture.reset();
- *   expect(Capture.events).toHaveLength(1);
  */
 export function createTestDomainEventTestHandler<T extends IEvent>(eventClass: EventClass<T>) {
   @EventsHandler(eventClass as any)

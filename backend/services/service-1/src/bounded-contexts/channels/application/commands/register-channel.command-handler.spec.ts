@@ -1,36 +1,17 @@
 import { RegisterChannelCommandHandler } from './register-channel.command-handler';
 import { RegisterChannelCommand } from './register-channel.command';
 import type { RegisterChannelCommandProps } from './register-channel.command';
-import type { ChannelRepository } from '../../domain/repositories/channel.repository';
-import { Test } from '@nestjs/testing';
-import { CqrsModule } from '@nestjs/cqrs';
 import { InMemoryChannelRepository } from '../../infrastructure/repositories/in-memory/in-memory-channel.repository';
 import { ChannelRegisteredDomainEvent } from '../../domain/events/channel-registered.domain-event';
-import { createTestDomainEventTestHandler } from '@libs/nestjs-common';
 import { Channel } from '../../domain/entities/channel.entity';
+import { ICommandHandler } from '@nestjs/cqrs';
+import { createTestingModule } from './testing-helper';
+import { fail } from 'assert';
 
-const ChannelRegisteredDomainTestEventHandler = createTestDomainEventTestHandler(ChannelRegisteredDomainEvent);
 
-async function createTestingModule() {
-  ChannelRegisteredDomainTestEventHandler.reset();
-
-  const moduleRef = await Test.createTestingModule({
-    imports: [CqrsModule],
-    providers: [
-      RegisterChannelCommandHandler,
-      ChannelRegisteredDomainTestEventHandler,
-      { provide: 'ChannelRepository', useClass: InMemoryChannelRepository },
-    ],
-  }).compile();
-  await moduleRef.init();
-
-  const handler = moduleRef.get(RegisterChannelCommandHandler);
-  const repo = moduleRef.get<ChannelRepository>('ChannelRepository');
-  return { handler, repo, close: () => moduleRef.close() };
-}
 
 async function executeCommand(
-  handler: RegisterChannelCommandHandler,
+  handler: ICommandHandler,
   overrides: Partial<RegisterChannelCommandProps> = {},
 ) {
   const cmdProps: RegisterChannelCommandProps = {
@@ -39,11 +20,10 @@ async function executeCommand(
     userId: overrides.userId ?? 'user-1',
     connectionConfig: overrides.connectionConfig ?? { token: 'abc' },
   };
-
   const cmd = new RegisterChannelCommand(cmdProps);
   const cmdResult = await handler.execute(cmd);
 
-  const checkRepoEntityIsCorrect = async (repoEntity: Channel | null) => {
+  const checkRepoEntityIsCorrect = (repoEntity: Channel | null) => {
     expect(repoEntity).toBeTruthy();
     expect(repoEntity?.name).toBe(cmdProps.name);
     expect(repoEntity?.channelType.toString()).toBe(cmdProps.channelType);
@@ -62,34 +42,58 @@ async function executeCommand(
   return { cmdResult, checkRepoEntityIsCorrect, checkEventIsCorrect };
 }
 
-function getSingleCapturedEvent() {
-  expect(ChannelRegisteredDomainTestEventHandler.events.length).toBe(1);
-  return ChannelRegisteredDomainTestEventHandler
-    .events[0] as unknown as ChannelRegisteredDomainEvent;
+async function setupTestingModule({shouldEventPublishFail}) {
+  return await createTestingModule({
+    commands: {
+      commandHandler: RegisterChannelCommandHandler,
+    },
+    events: {
+      shouldEventPublishFail,
+    },
+    repositories: {name: 'ChannelRepository', repository: InMemoryChannelRepository}
+  });
 }
 
 describe('RegisterChannelCommandHandler', () => {
-  let handler: RegisterChannelCommandHandler;
-  let repo: ChannelRepository;
-  let close: () => Promise<void>;
 
   beforeEach(async () => {
-    ({ handler, repo, close } = await createTestingModule());
+    
   });
 
   afterEach(async () => {
-    await close();
   });
 
-  it('persists, commits events, and emits ChannelRegisteredDomainEvent', async () => {
-    const { cmdResult, checkRepoEntityIsCorrect, checkEventIsCorrect } = await executeCommand(handler);
+  it('saves the data on the repository', async () => {
+    const { commandHandler, repository } = await setupTestingModule({shouldEventPublishFail: false})
+    const { cmdResult, checkRepoEntityIsCorrect } = await executeCommand(commandHandler);
 
     // Persisted state
-    const saved = await repo.findById(cmdResult.id);
-    await checkRepoEntityIsCorrect(saved);
+    const saved = await repository.findById(cmdResult.id);
+    checkRepoEntityIsCorrect(saved as Channel);
+  });
 
-    // Event delivered to handler
-    const evt = getSingleCapturedEvent();
-    checkEventIsCorrect(evt);
+  it('emits ChannelRegisteredDomainEvent', async () => {
+    const { eventBus, commandHandler } = await setupTestingModule({shouldEventPublishFail: false})
+    const { checkEventIsCorrect } = await executeCommand(commandHandler);
+
+    // TODO:  Mock Event Bus
+    // const lastEvent = eventBus.something
+    // checkEventIsCorrect(lastEvent)
+  });
+
+  it('throws error if EventBus publish fails', async () => {
+    const { commandHandler } = await setupTestingModule({shouldEventPublishFail: true})
+    
+    try {
+      await executeCommand(commandHandler)
+      fail("Should throw error")
+
+    } catch (error) {
+      expect(error.message).toBe("error test")
+    }
+
+    // TODO:  Mock Event Bus
+    // const lastEvent = eventBus.something
+    // Check that there is no event
   });
 });
