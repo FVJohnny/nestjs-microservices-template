@@ -210,7 +210,7 @@ async function triggerKafkaEvent(serviceNumber) {
     switch(serviceNumber) {
       case '1':
         // Service 1: Use generic messaging endpoint
-        endpoint = `/api/service-1/messaging/publish`;
+        endpoint = `/api/service-1/integration-events/publish`;
         payload = {
           topic: "trading-signals",
           message: {
@@ -224,7 +224,7 @@ async function triggerKafkaEvent(serviceNumber) {
         break;
       case '3':
         // Service 3: Use generic messaging endpoint
-        endpoint = `/api/service-3/messaging/publish`;
+        endpoint = `/api/service-3/integration-events/publish`;
         payload = {
           topic: "trading-signals",
           message: {

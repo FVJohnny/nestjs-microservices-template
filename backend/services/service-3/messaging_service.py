@@ -42,9 +42,9 @@ class MessagingServiceManager:
     def get_backend_class_name(self) -> str:
         """Return the backend class name for API responses"""
         if self.backend_type == 'redis':
-            return 'RedisEventListener'
+            return 'Redis'
         else:
-            return 'KafkaEventListener'
+            return 'Kafka'
     
     def start(self):
         """Start the messaging service"""

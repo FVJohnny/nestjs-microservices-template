@@ -78,7 +78,7 @@ async def messaging_publish(request: PublishEventRequest):
             "timestamp": str(time.time())
         }
 
-@app.get("/messaging/listener/status")
+@app.get("/integration-events/listener/status")
 async def messaging_listener_status():
     """Get messaging listener status"""
     return {
@@ -87,7 +87,7 @@ async def messaging_listener_status():
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }
 
-@app.get("/messaging/listener/stats")
+@app.get("/integration-events/listener/stats")
 async def messaging_listener_stats():
     """Get detailed messaging listener statistics"""
     basic_stats = event_counter.get_stats()
@@ -119,7 +119,7 @@ async def messaging_listener_stats():
         "timestamp": basic_stats.get("timestamp")
     }
 
-@app.post("/messaging/listener/start")
+@app.post("/integration-events/listener/start")
 async def messaging_listener_start():
     """Start the messaging listener"""
     try:
@@ -136,7 +136,7 @@ async def messaging_listener_start():
             "timestamp": datetime.utcnow().isoformat() + "Z"
         }
 
-@app.post("/messaging/listener/stop")
+@app.post("/integration-events/listener/stop")
 async def messaging_listener_stop():
     """Stop the messaging listener"""
     try:
