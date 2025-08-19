@@ -1,12 +1,12 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { IntegrationEventListener, EventHandler } from '../interfaces/event-listener.interface';
+import { EventHandler } from './base.integration-event-handler';
 
 /**
  * Abstract base class for EventListener implementations
  * Provides common functionality for managing event handlers and listening state
  */
 @Injectable()
-export abstract class BaseEventListener implements IntegrationEventListener, OnModuleInit, OnModuleDestroy {
+export abstract class BaseIntegrationEventListener implements IntegrationEventListener, OnModuleInit, OnModuleDestroy {
   protected readonly logger = new Logger(this.constructor.name);
   protected readonly eventHandlers = new Map<string, EventHandler>();
   protected readonly messageStats = new Map<string, {
@@ -193,4 +193,12 @@ export abstract class BaseEventListener implements IntegrationEventListener, OnM
   protected abstract subscribeToTopic(topicName: string): Promise<void>;
   protected abstract unsubscribeFromTopic(topicName: string): Promise<void>;
   protected abstract parseMessage(rawMessage: any): { parsedMessage: Record<string, unknown>; messageId: string };
+}
+
+export const INTEGRATION_EVENT_LISTENER_TOKEN = 'IntegrationEventListener';
+export interface IntegrationEventListener {
+  startListening(): Promise<void>;
+  stopListening(): Promise<void>;
+  isListening(): boolean;
+  registerEventHandler(topicName: string, handler: EventHandler): Promise<void>;
 }

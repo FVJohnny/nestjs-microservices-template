@@ -1,6 +1,6 @@
 import { Injectable, Inject, OnModuleInit, Logger } from '@nestjs/common';
-import { EventHandler, IntegrationEventListener } from './event-listener.interface';
-import { INTEGRATION_EVENT_LISTENER_TOKEN } from '../../index';
+import { IntegrationEventListener } from '../index';
+import { INTEGRATION_EVENT_LISTENER_TOKEN } from '.';
 
 /**
  * Base event handler that auto-registers itself with its topic
@@ -20,4 +20,9 @@ export abstract class BaseIntegrationEventHandler implements EventHandler, OnMod
   }
 
   abstract handle(payload: Record<string, unknown>, messageId: string): Promise<void>;
+}
+
+export interface EventHandler {
+  readonly topicName: string;
+  handle(payload: Record<string, unknown>, messageId: string): Promise<void>;
 }

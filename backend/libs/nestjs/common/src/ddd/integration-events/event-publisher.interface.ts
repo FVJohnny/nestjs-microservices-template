@@ -1,0 +1,10 @@
+/**
+ * Generic interface for publishing messages to external systems.
+ * This allows for multiple implementations (Kafka, Redis, RabbitMQ, etc.)
+ * following the Dependency Inversion Principle.
+ */
+export const INTEGRATION_EVENT_PUBLISHER_TOKEN = 'IntegrationEventPublisher';
+export interface IntegrationEventPublisher {
+  publish(topic: string, message: any): Promise<void>;
+  publishBatch?(topic: string, messages: any[]): Promise<void>;
+}

@@ -1,15 +1,13 @@
 // === MESSAGING ===
 // Interfaces and Base Classes
-export * from './messaging/interfaces/event-publisher.interface';
-export * from './messaging/interfaces/event-listener.interface';
-
-export * from './messaging/interfaces/base.integration-event-handler';
+export * from './integration-events/event-publisher.interface';
+export * from './integration-events/base.integration-event-handler';
 
 // Implementations
-export * from './messaging/implementations/base-event.listener';
+export * from './integration-events/base.integration-event-listener';
 
 // Controllers
-export * from './messaging/messaging.controller';
+export * from './integration-events/messaging.controller';
 
 // Modules
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BaseEventListener } from '@libs/nestjs-common';
+import { BaseIntegrationEventListener } from '@libs/nestjs-common';
 import { KafkaService } from './kafka-service';
 
 /**
@@ -7,7 +7,7 @@ import { KafkaService } from './kafka-service';
  * Adapts Kafka messages to the generic format and routes them to event handlers
  */
 @Injectable()
-export class KafkaEventListener extends BaseEventListener {
+export class KafkaEventListener extends BaseIntegrationEventListener {
   constructor(private readonly kafkaService: KafkaService) {
     super();
   }

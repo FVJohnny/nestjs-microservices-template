@@ -1,12 +1,8 @@
 import { Controller, Post, Get, Body, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { IntegrationEventPublisher } from './interfaces/event-publisher.interface';
-import { IntegrationEventListener } from './interfaces/event-listener.interface';
-import { BaseEventListener } from './implementations/base-event.listener';
-
-// Import tokens from the DDD index
-export const INTEGRATION_EVENT_PUBLISHER_TOKEN = 'IntegrationEventPublisher';
-export const INTEGRATION_EVENT_LISTENER_TOKEN = 'IntegrationEventListener';
+import { IntegrationEventPublisher } from './event-publisher.interface';
+import { BaseIntegrationEventListener, IntegrationEventListener } from './base.integration-event-listener';
+import { INTEGRATION_EVENT_LISTENER_TOKEN, INTEGRATION_EVENT_PUBLISHER_TOKEN } from '.';
 
 /**
  * Generic messaging controller that works with any event source implementation
@@ -266,7 +262,7 @@ export class MessagingController {
     let handlers: any[] = [];
     let totalStats: any = {};
     
-    if (this.integrationEventListener instanceof BaseEventListener) {
+    if (this.integrationEventListener instanceof BaseIntegrationEventListener) {
       const baseListener = this.integrationEventListener as any; // Access protected members
       if (baseListener.eventHandlers) {
         subscribedTopics = Array.from(baseListener.eventHandlers.keys());
