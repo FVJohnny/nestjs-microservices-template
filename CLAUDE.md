@@ -228,7 +228,7 @@ Cross-service communication uses integration events located in `@libs/nestjs-typ
 ```
 
 **Event System Configuration:**
-- Global `EventsModule` provides `MESSAGE_PUBLISHER_TOKEN` and `EVENT_LISTENER_TOKEN`
+- Global `EventsModule` provides `MESSAGE_PUBLISHER_TOKEN` and `INTEGRATION_EVENT_LISTENER_TOKEN`
 - Factory pattern injection with automatic KafkaService dependency
 - Token-based injection prevents tight coupling to specific implementations
 

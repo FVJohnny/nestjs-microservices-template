@@ -1,12 +1,12 @@
 import { RegisterChannelCommandHandler } from './register-channel.command-handler';
 import { RegisterChannelCommand } from './register-channel.command';
 import type { RegisterChannelCommandProps } from './register-channel.command';
-import { InMemoryChannelRepository } from '../../infrastructure/repositories/in-memory/in-memory-channel.repository';
-import { ChannelRegisteredDomainEvent } from '../../domain/events/channel-registered.domain-event';
-import { Channel } from '../../domain/entities/channel.entity';
+import { InMemoryChannelRepository } from '../../../infrastructure/repositories/in-memory/in-memory-channel.repository';
+import { ChannelRegisteredDomainEvent } from '../../../domain/events/channel-registered.domain-event';
+import { Channel } from '../../../domain/entities/channel.entity';
 import { ICommandHandler, CqrsModule } from '@nestjs/cqrs';
 import { fail } from 'assert';
-import { createTestingModule } from '../../../../testing';
+import { createTestingModule } from '../../../../../testing';
 
 
 async function executeCommand(

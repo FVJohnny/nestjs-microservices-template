@@ -15,7 +15,7 @@ import { SimulateMessageDto } from '../dtos/simulate-message.dto';
 import { SimulateMessageResponseDto } from '../dtos/simulate-message-response.dto';
 import { GetChannelsResponseDto } from '../dtos/get-channels-response.dto';
 import { ChannelDto } from '../dtos/channel.dto';
-import { RegisterChannelCommand } from '../../../application/commands/register-channel.command';
+import { RegisterChannelCommand } from '../../../application/commands/register-channel/register-channel.command';
 import { GetChannelsQuery } from '../../../application/queries/get-channels.query';
 import { Channel } from '../../../domain/entities/channel.entity';
 import { CorrelationLogger } from '@libs/nestjs-common';

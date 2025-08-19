@@ -23,8 +23,8 @@ import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
 
     // Event Modules
     ConfigurableEventsModule.forRoot({
-      kafka: { sharedModule: SharedKafkaModule, service: KafkaService, eventPublisher: KafkaEventPublisher, eventListener: KafkaEventListener },
-      redis: { sharedModule: SharedRedisModule, service: RedisService, eventPublisher: RedisEventPublisher, eventListener: RedisEventListener }
+      kafka: { sharedModule: SharedKafkaModule, service: KafkaService, integrationEventPublisher: KafkaEventPublisher, integrationEventListener: KafkaEventListener },
+      redis: { sharedModule: SharedRedisModule, service: RedisService, integrationEventPublisher: RedisEventPublisher, integrationEventListener: RedisEventListener }
     }),
 
     // CQRS (Global for all bounded contexts)

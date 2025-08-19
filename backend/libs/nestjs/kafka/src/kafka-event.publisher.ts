@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EventPublisher } from '@libs/nestjs-common';
+import { IntegrationEventPublisher } from '@libs/nestjs-common';
 import { KafkaService } from './kafka-service';
 
 /**
@@ -7,7 +7,7 @@ import { KafkaService } from './kafka-service';
  * Provides type-safe event publishing through Kafka.
  */
 @Injectable()
-export class KafkaEventPublisher implements EventPublisher {
+export class KafkaEventPublisher implements IntegrationEventPublisher {
   private readonly logger = new Logger(KafkaEventPublisher.name);
 
   constructor(private readonly kafkaService: KafkaService) {}

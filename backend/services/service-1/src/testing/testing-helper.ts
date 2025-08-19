@@ -1,13 +1,13 @@
 import { Provider, Type } from "@nestjs/common";
 import { ICommandHandler, AggregateRoot, CqrsModule, EventBus, IEventHandler } from "@nestjs/cqrs";
 import { Test } from "@nestjs/testing";
-import { Repository, EVENT_PUBLISHER_TOKEN, EventPublisher } from "@libs/nestjs-common";
+import { Repository, INTEGRATION_EVENT_PUBLISHER_TOKEN, IntegrationEventPublisher } from "@libs/nestjs-common";
 
 interface TestEventBus extends EventBus {
   events: any[];
 }
 
-interface TestEventPublisherInterface extends EventPublisher {
+interface TestEventPublisherInterface extends IntegrationEventPublisher {
   events: any[];
 }
 
@@ -30,7 +30,7 @@ export class TestEventPublisher implements TestEventPublisherInterface {
 interface CreateCQRSTestingModuleOptions {
   commands?: { commandHandler: Type<ICommandHandler> };
   events?: { 
-    eventHandler?: Type<IEventHandler>;
+    domainEventHandler?: Type<IEventHandler>;
     shouldDomainEventPublishFail: boolean;
   };
   repositories?: {
@@ -47,10 +47,10 @@ export async function createTestingModule(options: CreateCQRSTestingModuleOption
   
   if (commands?.commandHandler) providers.push(commands.commandHandler);
   
-  if (events?.eventHandler) {
+  if (events?.domainEventHandler) {
     providers.push(
-      events.eventHandler,
-      { provide: EVENT_PUBLISHER_TOKEN, useFactory: () => new TestEventPublisher(shouldFail) }
+      events.domainEventHandler,
+      { provide: INTEGRATION_EVENT_PUBLISHER_TOKEN, useFactory: () => new TestEventPublisher(shouldFail) }
     );
   }
   
@@ -66,8 +66,8 @@ export async function createTestingModule(options: CreateCQRSTestingModuleOption
   await moduleRef.init();
 
   const commandHandler = commands?.commandHandler && moduleRef.get<ICommandHandler>(commands.commandHandler);
-  const eventHandler = events?.eventHandler && moduleRef.get<IEventHandler>(events.eventHandler);
-  const eventPublisher = events?.eventHandler && moduleRef.get<EventPublisher>(EVENT_PUBLISHER_TOKEN);
+  const eventHandler = events?.domainEventHandler && moduleRef.get<IEventHandler>(events.domainEventHandler);
+  const integrationEventPublisher = events?.domainEventHandler && moduleRef.get<IntegrationEventPublisher>(INTEGRATION_EVENT_PUBLISHER_TOKEN);
   const repository = repositories && moduleRef.get<Repository<AggregateRoot>>(repositories.name);
   const eventBus = moduleRef.get(EventBus);
   
@@ -96,7 +96,7 @@ export async function createTestingModule(options: CreateCQRSTestingModuleOption
     eventBus: eventBus as TestEventBus, 
     commandHandler, 
     eventHandler, 
-    eventPublisher: eventPublisher as TestEventPublisherInterface,
+    integrationEventPublisher: integrationEventPublisher as TestEventPublisherInterface,
     repository 
   };
 }

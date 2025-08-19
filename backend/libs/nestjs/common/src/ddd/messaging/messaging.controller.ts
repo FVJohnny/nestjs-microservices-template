@@ -1,12 +1,12 @@
 import { Controller, Post, Get, Body, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { EventPublisher } from './interfaces/event-publisher.interface';
-import { EventListener } from './interfaces/event-listener.interface';
+import { IntegrationEventPublisher } from './interfaces/event-publisher.interface';
+import { IntegrationEventListener } from './interfaces/event-listener.interface';
 import { BaseEventListener } from './implementations/base-event.listener';
 
 // Import tokens from the DDD index
-export const EVENT_PUBLISHER_TOKEN = 'EventPublisher';
-export const EVENT_LISTENER_TOKEN = 'EventListener';
+export const INTEGRATION_EVENT_PUBLISHER_TOKEN = 'IntegrationEventPublisher';
+export const INTEGRATION_EVENT_LISTENER_TOKEN = 'IntegrationEventListener';
 
 /**
  * Generic messaging controller that works with any event source implementation
@@ -16,10 +16,10 @@ export const EVENT_LISTENER_TOKEN = 'EventListener';
 @Controller('messaging')
 export class MessagingController {
   constructor(
-    @Inject(EVENT_PUBLISHER_TOKEN)
-    private readonly eventPublisher: EventPublisher,
-    @Inject(EVENT_LISTENER_TOKEN)
-    private readonly eventListener: EventListener,
+    @Inject(INTEGRATION_EVENT_PUBLISHER_TOKEN)
+    private readonly integrationEventPublisher: IntegrationEventPublisher,
+    @Inject(INTEGRATION_EVENT_LISTENER_TOKEN)
+    private readonly integrationEventListener: IntegrationEventListener,
   ) {}
 
   @Post('publish')
@@ -84,10 +84,10 @@ export class MessagingController {
     }
   ) {
     try {
-      await this.eventPublisher.publish(body.topic, body.message);
+      await this.integrationEventPublisher.publish(body.topic, body.message);
       
       // Get backend type from the implementation class name
-      const backend = this.eventPublisher.constructor.name.replace('EventPublisher', '');
+      const backend = this.integrationEventPublisher.constructor.name.replace('EventPublisher', '');
       
       return {
         success: true,
@@ -154,16 +154,16 @@ export class MessagingController {
     }
   ) {
     try {
-      if (this.eventPublisher.publishBatch) {
-        await this.eventPublisher.publishBatch(body.topic, body.messages);
+      if (this.integrationEventPublisher.publishBatch) {
+        await this.integrationEventPublisher.publishBatch(body.topic, body.messages);
       } else {
         // Fallback to publishing one by one if batch is not supported
         for (const message of body.messages) {
-          await this.eventPublisher.publish(body.topic, message);
+          await this.integrationEventPublisher.publish(body.topic, message);
         }
       }
       
-      const backend = this.eventPublisher.constructor.name.replace('EventPublisher', '');
+      const backend = this.integrationEventPublisher.constructor.name.replace('EventPublisher', '');
       
       return {
         success: true,
@@ -200,8 +200,8 @@ export class MessagingController {
     },
   })
   async getListenerStatus() {
-    const isListening = this.eventListener.isListening();
-    const backend = this.eventListener.constructor.name;
+    const isListening = this.integrationEventListener.isListening();
+    const backend = this.integrationEventListener.constructor.name;
     
     return {
       listening: isListening,
@@ -258,16 +258,16 @@ export class MessagingController {
     },
   })
   async getListenerStats() {
-    const isListening = this.eventListener.isListening();
-    const backend = this.eventListener.constructor.name;
+    const isListening = this.integrationEventListener.isListening();
+    const backend = this.integrationEventListener.constructor.name;
     
     // Try to get detailed stats if the listener is a BaseEventListener
     let subscribedTopics: string[] = [];
     let handlers: any[] = [];
     let totalStats: any = {};
     
-    if (this.eventListener instanceof BaseEventListener) {
-      const baseListener = this.eventListener as any; // Access protected members
+    if (this.integrationEventListener instanceof BaseEventListener) {
+      const baseListener = this.integrationEventListener as any; // Access protected members
       if (baseListener.eventHandlers) {
         subscribedTopics = Array.from(baseListener.eventHandlers.keys());
         
@@ -334,7 +334,7 @@ export class MessagingController {
   })
   async startListener() {
     try {
-      await this.eventListener.startListening();
+      await this.integrationEventListener.startListening();
       return {
         success: true,
         message: 'Event listener started',
@@ -368,7 +368,7 @@ export class MessagingController {
   })
   async stopListener() {
     try {
-      await this.eventListener.stopListening();
+      await this.integrationEventListener.stopListening();
       return {
         success: true,
         message: 'Event listener stopped',

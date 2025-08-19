@@ -2,9 +2,9 @@ import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { ChannelRegisteredDomainEvent } from '../../../domain/events/channel-registered.domain-event';
 import { ChannelCreatedIntegrationEvent } from '@libs/nestjs-types';
-import type { EventPublisher } from '@libs/nestjs-common';
+import type { IntegrationEventPublisher } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';
-import { EVENT_PUBLISHER_TOKEN } from '@libs/nestjs-common';
+import { INTEGRATION_EVENT_PUBLISHER_TOKEN } from '@libs/nestjs-common';
 
 @EventsHandler(ChannelRegisteredDomainEvent)
 export class ChannelRegisteredDomainEventHandler
@@ -15,8 +15,8 @@ export class ChannelRegisteredDomainEventHandler
   );
 
   constructor(
-    @Inject(EVENT_PUBLISHER_TOKEN)
-    private readonly eventPublisher: EventPublisher,
+    @Inject(INTEGRATION_EVENT_PUBLISHER_TOKEN)
+    private readonly integrationEventPublisher: IntegrationEventPublisher,
   ) {}
 
   async handle(event: ChannelRegisteredDomainEvent): Promise<void> {
@@ -33,7 +33,7 @@ export class ChannelRegisteredDomainEventHandler
 
     try {
       // Publish integration event to Kafka using the event's topic
-      await this.eventPublisher.publish(
+      await this.integrationEventPublisher.publish(
         integrationEvent.getTopic(),
         integrationEvent.toJSON(),
       );

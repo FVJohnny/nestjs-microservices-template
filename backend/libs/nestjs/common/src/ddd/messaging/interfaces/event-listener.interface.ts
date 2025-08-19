@@ -21,7 +21,7 @@ export interface EventHandler {
 /**
  * Generic event listener interface that can be implemented for different event sources
  */
-export interface EventListener {
+export interface IntegrationEventListener {
   startListening(): Promise<void>;
   stopListening(): Promise<void>;
   isListening(): boolean;

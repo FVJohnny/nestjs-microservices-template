@@ -26,7 +26,7 @@ async function executeEvent(
 async function setupTestingModule({shouldDomainEventPublishFail}) {
   return await createTestingModule({
     events: {
-      eventHandler: ChannelRegisteredDomainEventHandler,
+      domainEventHandler: ChannelRegisteredDomainEventHandler,
       shouldDomainEventPublishFail,
     },
   });
@@ -35,11 +35,11 @@ async function setupTestingModule({shouldDomainEventPublishFail}) {
 describe('RegisterChannelCommandHandler', () => {
 
   it('publishes an integration event ChannelCreatedIntegrationEvent :D', async () => {
-    const { eventHandler, eventPublisher } = await setupTestingModule({shouldDomainEventPublishFail: false})
+    const { eventHandler, integrationEventPublisher } = await setupTestingModule({shouldDomainEventPublishFail: false})
     
     const { domainEvent } = await executeEvent(eventHandler);
 
-    const lastEvent = eventPublisher.events.pop();
+    const lastEvent = integrationEventPublisher.events.pop();
     expect(lastEvent.topic).toBe(INTEGRATION_EVENT_TOPIC_CHANNELS)
     expect(lastEvent.eventName).toBe('channel.created')
     expect(lastEvent.data.channelId).toBe(domainEvent.aggregateId)

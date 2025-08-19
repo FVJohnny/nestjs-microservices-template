@@ -1,7 +1,7 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import type { EventPublisher } from '@libs/nestjs-common';
-import { EVENT_PUBLISHER_TOKEN } from '@libs/nestjs-common';
+import type { IntegrationEventPublisher } from '@libs/nestjs-common';
+import { INTEGRATION_EVENT_PUBLISHER_TOKEN } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { MessageReceivedDomainEvent } from '../../domain/events/message-received.domain-event';
 
@@ -14,8 +14,8 @@ export class MessageReceivedDomainEventHandler
   );
 
   constructor(
-    @Inject(EVENT_PUBLISHER_TOKEN)
-    private readonly eventPublisher: EventPublisher,
+    @Inject(INTEGRATION_EVENT_PUBLISHER_TOKEN)
+    private readonly integrationEventPublisher: IntegrationEventPublisher,
   ) {}
 
   async handle(event: MessageReceivedDomainEvent): Promise<void> {
@@ -37,7 +37,7 @@ export class MessageReceivedDomainEventHandler
     };
 
     try {
-      await this.eventPublisher.publish('example-topic', message);
+      await this.integrationEventPublisher.publish('example-topic', message);
       this.logger.log(
         `Published MessageReceivedEvent to event broker: ${event.messageId}`,
       );

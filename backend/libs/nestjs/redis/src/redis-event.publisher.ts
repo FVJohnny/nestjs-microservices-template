@@ -1,5 +1,5 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
-import { EventPublisher } from '@libs/nestjs-common';
+import { IntegrationEventPublisher } from '@libs/nestjs-common';
 import { RedisService } from './redis.service';
 
 /**
@@ -7,7 +7,7 @@ import { RedisService } from './redis.service';
  * Provides type-safe event publishing through Redis pub/sub.
  */
 @Injectable()
-export class RedisEventPublisher implements EventPublisher {
+export class RedisEventPublisher implements IntegrationEventPublisher {
   private readonly logger = new Logger(RedisEventPublisher.name);
 
   constructor(

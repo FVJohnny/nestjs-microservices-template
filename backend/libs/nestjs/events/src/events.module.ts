@@ -1,39 +1,15 @@
 import { Global, Module, DynamicModule, Logger, Type } from '@nestjs/common';
-import { EVENT_PUBLISHER_TOKEN, EVENT_LISTENER_TOKEN } from '@libs/nestjs-common';
+import { INTEGRATION_EVENT_PUBLISHER_TOKEN, INTEGRATION_EVENT_LISTENER_TOKEN } from '@libs/nestjs-common';
 
 export type MessagingBackend = 'kafka' | 'redis';
 
 export interface MessagingModules {
   sharedModule: Type<any>;
   service: Type<any>;
-  eventPublisher: Type<any>;
-  eventListener: Type<any>;
+  integrationEventPublisher: Type<any>;
+  integrationEventListener: Type<any>;
 }
 
-/**
- * Global messaging module that provides both EventPublisher and EventListener
- * Supports configurable messaging backend via MESSAGING_BACKEND environment variable
- * Options: 'kafka' or 'redis' (default)
- * 
- * Features:
- * - No module resolution issues: Uses injected dependencies
- * - Environment variable configuration: MESSAGING_BACKEND=kafka|redis
- * - Shareable across multiple services
- * 
- * Usage:
- * import { ConfigurableEventsModule } from '@libs/nestjs-events';
- * import { SharedKafkaModule, KafkaService, KafkaEventPublisher, KafkaEventListener } from '@libs/nestjs-kafka';
- * import { SharedRedisModule, RedisService, RedisEventPublisher, RedisEventListener } from '@libs/nestjs-redis';
- * 
- * @Module({
- *   imports: [
- *     ConfigurableEventsModule.forRoot({
- *       kafka: { sharedModule: SharedKafkaModule, service: KafkaService, eventPublisher: KafkaEventPublisher, eventListener: KafkaEventListener },
- *       redis: { sharedModule: SharedRedisModule, service: RedisService, eventPublisher: RedisEventPublisher, eventListener: RedisEventListener }
- *     })
- *   ],
- * })
- */
 @Global()
 @Module({})
 export class ConfigurableEventsModule {
@@ -70,17 +46,17 @@ export class ConfigurableEventsModule {
       imports: [modules.sharedModule],
       providers: [
         {
-          provide: EVENT_PUBLISHER_TOKEN,
-          useFactory: (kafkaService: any) => new modules.eventPublisher(kafkaService),
+          provide: INTEGRATION_EVENT_PUBLISHER_TOKEN,
+          useFactory: (kafkaService: any) => new modules.integrationEventPublisher(kafkaService),
           inject: [modules.service],
         },
         {
-          provide: EVENT_LISTENER_TOKEN,
-          useFactory: (kafkaService: any) => new modules.eventListener(kafkaService),
+          provide: INTEGRATION_EVENT_LISTENER_TOKEN,
+          useFactory: (kafkaService: any) => new modules.integrationEventListener(kafkaService),
           inject: [modules.service],
         },
       ],
-      exports: [EVENT_PUBLISHER_TOKEN, EVENT_LISTENER_TOKEN],
+      exports: [INTEGRATION_EVENT_PUBLISHER_TOKEN, INTEGRATION_EVENT_LISTENER_TOKEN],
     };
   }
 
@@ -90,17 +66,17 @@ export class ConfigurableEventsModule {
       imports: [modules.sharedModule],
       providers: [
         {
-          provide: EVENT_PUBLISHER_TOKEN,
-          useFactory: (redisService: any) => new modules.eventPublisher(redisService),
+          provide: INTEGRATION_EVENT_PUBLISHER_TOKEN,
+          useFactory: (redisService: any) => new modules.integrationEventPublisher(redisService),
           inject: [modules.service],
         },
         {
-          provide: EVENT_LISTENER_TOKEN,
-          useFactory: (redisService: any) => new modules.eventListener(redisService),
+          provide: INTEGRATION_EVENT_LISTENER_TOKEN,
+          useFactory: (redisService: any) => new modules.integrationEventListener(redisService),
           inject: [modules.service],
         },
       ],
-      exports: [EVENT_PUBLISHER_TOKEN, EVENT_LISTENER_TOKEN],
+      exports: [INTEGRATION_EVENT_PUBLISHER_TOKEN, INTEGRATION_EVENT_LISTENER_TOKEN],
     };
   }
 

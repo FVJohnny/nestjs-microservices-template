@@ -9,7 +9,7 @@ import { ChannelsController } from './interfaces/http/controllers/channels.contr
 import { TradingSignalsIntegrationEventHandler } from './interfaces/integration-events/trading-signals.integration-event-handler';
 
 // Command Handlers
-import { RegisterChannelCommandHandler } from './application/commands/register-channel.command-handler';
+import { RegisterChannelCommandHandler } from './application/commands/register-channel/register-channel.command-handler';
 
 // Query Handlers
 import { GetChannelsHandler } from './application/queries/get-channels.query-handler';
