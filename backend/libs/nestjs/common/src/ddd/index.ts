@@ -1,13 +1,16 @@
 // === MESSAGING ===
 // Interfaces and Base Classes
-export * from './integration-events/event-publisher.interface';
-export * from './integration-events/base.integration-event-handler';
+export * from '../integration-events/event-publisher.interface';
+export * from '../integration-events/base.integration-event-handler';
 
 // Implementations
-export * from './integration-events/base.integration-event-listener';
+export * from '../integration-events/base.integration-event-listener';
 
 // Controllers
-export * from './integration-events/integration-events.controller';
+export * from '../integration-events/integration-events.controller';
+
+// Integration Events
+export * from './integration-events/events';
 
 // Modules
 

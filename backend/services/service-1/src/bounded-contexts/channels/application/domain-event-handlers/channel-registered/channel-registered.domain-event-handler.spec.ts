@@ -2,7 +2,7 @@ import { IEventHandler } from "@nestjs/cqrs";
 import { ChannelRegisteredDomainEvent, ChannelRegisteredDomainEventProps } from "../../../domain/events/channel-registered.domain-event";
 import { ChannelTypeVO } from "../../../domain/value-objects/channel-type.vo";
 import { ChannelRegisteredDomainEventHandler } from "./channel-registered.domain-event-handler";
-import { INTEGRATION_EVENT_TOPIC_CHANNELS } from "@libs/nestjs-types";
+import { INTEGRATION_EVENT_TOPIC_CHANNELS } from "@libs/nestjs-common";
 import { createTestingModule } from "../../../../../testing";
 
 async function executeEvent(

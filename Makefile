@@ -46,8 +46,6 @@ update-libs:
 	@cd backend/libs/nestjs/common && npm install && npm run build
 	@echo "🔧 Building nestjs-kafka library..."
 	@cd backend/libs/nestjs/kafka && npm install && npm run build
-	@echo "🔧 Building nestjs-types library..."
-	@cd backend/libs/nestjs/types && npm install && npm run build
 	@echo "🔧 Building nestjs-mongodb library..."
 	@cd backend/libs/nestjs/mongodb && npm install && npm run build
 	@echo "🔧 Building nestjs-redis library..."

@@ -10,8 +10,6 @@ WORKDIR /app/libs/nestjs/common
 RUN npm ci --include=dev && npm run build
 WORKDIR /app/libs/nestjs/kafka
 RUN npm ci --include=dev && npm run build
-WORKDIR /app/libs/nestjs/types  
-RUN npm ci --include=dev && npm run build
 WORKDIR /app/libs/nestjs/mongodb
 RUN npm ci --include=dev && npm run build
 WORKDIR /app/libs/nestjs/redis

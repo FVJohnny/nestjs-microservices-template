@@ -1,5 +1,5 @@
 import { Injectable, Inject, OnModuleInit, Logger } from '@nestjs/common';
-import { IntegrationEventListener } from '../index';
+import { IntegrationEventListener } from '../ddd/index';
 import { INTEGRATION_EVENT_LISTENER_TOKEN } from '.';
 
 /**
