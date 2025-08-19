@@ -6,7 +6,7 @@ import { ChannelRegisteredDomainEvent } from '../../domain/events/channel-regist
 import { Channel } from '../../domain/entities/channel.entity';
 import { ICommandHandler, CqrsModule } from '@nestjs/cqrs';
 import { fail } from 'assert';
-import { createTestingModule } from '@libs/nestjs-common';
+import { createTestingModule } from './testing-helper';
 
 
 async function executeCommand(
