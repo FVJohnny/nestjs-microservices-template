@@ -15,7 +15,7 @@ async function updateServiceStatus(service) {
   try {
     // Fetch both stats and environment data in parallel
     const [statsResponse, envResponse] = await Promise.all([
-      fetch(`${service.baseUrl}/messaging/listener/stats`, { 
+      fetch(`${service.baseUrl}/integration-events/listener/stats`, { 
         headers: { 'Accept': 'application/json' },
         timeout: 5000 
       }),

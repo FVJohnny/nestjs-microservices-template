@@ -7,7 +7,7 @@ export * from './integration-events/base.integration-event-handler';
 export * from './integration-events/base.integration-event-listener';
 
 // Controllers
-export * from './integration-events/messaging.controller';
+export * from './integration-events/integration-events.controller';
 
 // Modules
 

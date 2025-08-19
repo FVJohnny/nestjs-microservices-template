@@ -8,8 +8,8 @@ import { INTEGRATION_EVENT_LISTENER_TOKEN, INTEGRATION_EVENT_PUBLISHER_TOKEN } f
  * Generic messaging controller that works with any event source implementation
  * (Kafka, Redis, RabbitMQ, etc.) through dependency injection
  */
-@ApiTags('Messaging')
-@Controller('messaging')
+@ApiTags('Integration-Events')
+@Controller('integration-events')
 export class MessagingController {
   constructor(
     @Inject(INTEGRATION_EVENT_PUBLISHER_TOKEN)
@@ -20,8 +20,8 @@ export class MessagingController {
 
   @Post('publish')
   @ApiOperation({ 
-    summary: 'Publish an event to the messaging system',
-    description: 'Publishes an event to the configured messaging backend (Kafka, Redis, etc.)' 
+    summary: 'Publish an integration event.',
+    description: 'Publishes an integration event to the configured messaging backend (Kafka, Redis, etc.)' 
   })
   @ApiBody({
     schema: {
@@ -49,13 +49,13 @@ export class MessagingController {
   })
   @ApiResponse({ 
     status: 200, 
-    description: 'Event published successfully',
+    description: 'Integration event published successfully',
     schema: {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
         topic: { type: 'string', example: 'trading-signals' },
-        message: { type: 'string', example: 'Event published successfully' },
+        message: { type: 'string', example: 'Integration event published successfully' },
         backend: { type: 'string', example: 'Redis' },
         timestamp: { type: 'string', format: 'date-time' },
       },
@@ -63,12 +63,12 @@ export class MessagingController {
   })
   @ApiResponse({ 
     status: 500, 
-    description: 'Failed to publish event',
+    description: 'Failed to publish Integration Event',
     schema: {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: false },
-        error: { type: 'string', example: 'Failed to publish event' },
+        error: { type: 'string', example: 'Failed to publish Integration Event' },
         timestamp: { type: 'string', format: 'date-time' },
       },
     },
@@ -83,12 +83,12 @@ export class MessagingController {
       await this.integrationEventPublisher.publish(body.topic, body.message);
       
       // Get backend type from the implementation class name
-      const backend = this.integrationEventPublisher.constructor.name.replace('EventPublisher', '');
+      const backend = this.integrationEventPublisher.constructor.name.replace('IntegrationEventPublisher', '');
       
       return {
         success: true,
         topic: body.topic,
-        message: 'Event published successfully',
+        message: 'Integration Event published successfully',
         backend,
         timestamp: new Date().toISOString(),
       };
@@ -96,83 +96,6 @@ export class MessagingController {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to publish event',
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
-  @Post('publish-batch')
-  @ApiOperation({ 
-    summary: 'Publish multiple events to the messaging system',
-    description: 'Publishes a batch of events to the configured messaging backend' 
-  })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        topic: { 
-          type: 'string', 
-          example: 'trading-signals',
-          description: 'The topic/channel to publish to' 
-        },
-        messages: { 
-          type: 'array',
-          items: { type: 'object' },
-          example: [
-            { eventName: 'event1', data: {} },
-            { eventName: 'event2', data: {} }
-          ],
-          description: 'Array of event message payloads' 
-        },
-      },
-      required: ['topic', 'messages'],
-    },
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Events published successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        topic: { type: 'string', example: 'trading-signals' },
-        count: { type: 'number', example: 2 },
-        message: { type: 'string', example: 'Events published successfully' },
-        backend: { type: 'string', example: 'Redis' },
-        timestamp: { type: 'string', format: 'date-time' },
-      },
-    },
-  })
-  async publishBatchEvents(
-    @Body() body: { 
-      topic: string; 
-      messages: any[];
-    }
-  ) {
-    try {
-      if (this.integrationEventPublisher.publishBatch) {
-        await this.integrationEventPublisher.publishBatch(body.topic, body.messages);
-      } else {
-        // Fallback to publishing one by one if batch is not supported
-        for (const message of body.messages) {
-          await this.integrationEventPublisher.publish(body.topic, message);
-        }
-      }
-      
-      const backend = this.integrationEventPublisher.constructor.name.replace('EventPublisher', '');
-      
-      return {
-        success: true,
-        topic: body.topic,
-        count: body.messages.length,
-        message: 'Events published successfully',
-        backend,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to publish events',
         timestamp: new Date().toISOString(),
       };
     }
@@ -255,7 +178,7 @@ export class MessagingController {
   })
   async getListenerStats() {
     const isListening = this.integrationEventListener.isListening();
-    const backend = this.integrationEventListener.constructor.name;
+    const backend = this.integrationEventListener.constructor.name.replace('IntegrationEventListener', '');
     
     // Try to get detailed stats if the listener is a BaseEventListener
     let subscribedTopics: string[] = [];

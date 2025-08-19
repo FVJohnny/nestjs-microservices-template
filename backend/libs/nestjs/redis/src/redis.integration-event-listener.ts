@@ -7,7 +7,7 @@ import { RedisService } from './redis.service';
  * Provides event listening through Redis pub/sub
  */
 @Injectable()
-export class RedisEventListener extends BaseIntegrationEventListener {
+export class RedisIntegrationEventListener extends BaseIntegrationEventListener {
   constructor(
     private readonly redisService: RedisService,
   ) {

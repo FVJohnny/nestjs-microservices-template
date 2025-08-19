@@ -7,7 +7,7 @@ import { KafkaService } from './kafka-service';
  * Adapts Kafka messages to the generic format and routes them to event handlers
  */
 @Injectable()
-export class KafkaEventListener extends BaseIntegrationEventListener {
+export class KafkaIntegrationEventListener extends BaseIntegrationEventListener {
   constructor(private readonly kafkaService: KafkaService) {
     super();
   }

@@ -7,8 +7,8 @@ import { RedisService } from './redis.service';
  * Provides type-safe event publishing through Redis pub/sub.
  */
 @Injectable()
-export class RedisEventPublisher implements IntegrationEventPublisher {
-  private readonly logger = new Logger(RedisEventPublisher.name);
+export class RedisIntegrationEventPublisher implements IntegrationEventPublisher {
+  private readonly logger = new Logger(RedisIntegrationEventPublisher.name);
 
   constructor(
     private readonly redisService: RedisService,

@@ -11,8 +11,8 @@ import {
   MessagingController,
 } from '@libs/nestjs-common';
 import { ConfigurableEventsModule } from '@libs/nestjs-events';
-import { SharedKafkaModule, KafkaService, KafkaEventPublisher, KafkaEventListener } from '@libs/nestjs-kafka';
-import { SharedRedisModule, RedisService, RedisEventPublisher, RedisEventListener } from '@libs/nestjs-redis';
+import { SharedKafkaModule, KafkaService, KafkaIntegrationEventPublisher, KafkaIntegrationEventListener } from '@libs/nestjs-kafka';
+import { SharedRedisModule, RedisService, RedisIntegrationEventPublisher, RedisIntegrationEventListener } from '@libs/nestjs-redis';
 import { DatabaseModule } from './database.module';
 import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
 
@@ -23,8 +23,8 @@ import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
 
     // Event Modules
     ConfigurableEventsModule.forRoot({
-      kafka: { sharedModule: SharedKafkaModule, service: KafkaService, integrationEventPublisher: KafkaEventPublisher, integrationEventListener: KafkaEventListener },
-      redis: { sharedModule: SharedRedisModule, service: RedisService, integrationEventPublisher: RedisEventPublisher, integrationEventListener: RedisEventListener }
+      kafka: { sharedModule: SharedKafkaModule, service: KafkaService, integrationEventPublisher: KafkaIntegrationEventPublisher, integrationEventListener: KafkaIntegrationEventListener },
+      redis: { sharedModule: SharedRedisModule, service: RedisService, integrationEventPublisher: RedisIntegrationEventPublisher, integrationEventListener: RedisIntegrationEventListener }
     }),
 
     // CQRS (Global for all bounded contexts)

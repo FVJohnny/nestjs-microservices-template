@@ -6,4 +6,4 @@ export * from './base.integration-event-handler';
 export * from './base.integration-event-listener';
 
 // Controller
-export * from './messaging.controller';
+export * from './integration-events.controller';

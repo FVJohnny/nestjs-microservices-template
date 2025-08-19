@@ -7,8 +7,8 @@ import { KafkaService } from './kafka-service';
  * Provides type-safe event publishing through Kafka.
  */
 @Injectable()
-export class KafkaEventPublisher implements IntegrationEventPublisher {
-  private readonly logger = new Logger(KafkaEventPublisher.name);
+export class KafkaIntegrationEventPublisher implements IntegrationEventPublisher {
+  private readonly logger = new Logger(KafkaIntegrationEventPublisher.name);
 
   constructor(private readonly kafkaService: KafkaService) {}
 
