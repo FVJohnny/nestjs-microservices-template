@@ -15,7 +15,7 @@ import { RegisterChannelCommandHandler } from './application/commands/register-c
 import { GetChannelsHandler } from './application/queries/get-channels.query-handler';
 
 // Domain Event Handlers
-import { ChannelRegisteredDomainEventHandler } from './application/domain-event-handlers/channel-registered.domain-event-handler';
+import { ChannelRegisteredDomainEventHandler } from './application/domain-event-handlers/channel-registered/channel-registered.domain-event-handler';
 import { MessageReceivedDomainEventHandler } from './application/domain-event-handlers/message-received.domain-event-handler';
 
 // Infrastructure Redis

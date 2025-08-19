@@ -4,16 +4,17 @@ import type { RegisterChannelCommandProps } from './register-channel.command';
 import { InMemoryChannelRepository } from '../../infrastructure/repositories/in-memory/in-memory-channel.repository';
 import { ChannelRegisteredDomainEvent } from '../../domain/events/channel-registered.domain-event';
 import { Channel } from '../../domain/entities/channel.entity';
-import { ICommandHandler } from '@nestjs/cqrs';
-import { createTestingModule } from './testing-helper';
+import { ICommandHandler, CqrsModule } from '@nestjs/cqrs';
 import { fail } from 'assert';
-
+import { createTestingModule } from '@libs/nestjs-common';
 
 
 async function executeCommand(
-  handler: ICommandHandler,
+  handler: ICommandHandler | undefined,
   overrides: Partial<RegisterChannelCommandProps> = {},
 ) {
+  if (!handler) throw Error("Command Handler is undefined!!")
+
   const cmdProps: RegisterChannelCommandProps = {
     channelType: overrides.channelType ?? 'telegram',
     name: overrides.name ?? 'My Channel',
@@ -42,13 +43,13 @@ async function executeCommand(
   return { cmdResult, checkRepoEntityIsCorrect, checkEventIsCorrect };
 }
 
-async function setupTestingModule({shouldEventPublishFail}) {
+async function setupTestingModule({shouldDomainEventPublishFail}) {
   return await createTestingModule({
     commands: {
       commandHandler: RegisterChannelCommandHandler,
     },
     events: {
-      shouldEventPublishFail,
+      shouldDomainEventPublishFail,
     },
     repositories: {name: 'ChannelRepository', repository: InMemoryChannelRepository}
   });
@@ -56,33 +57,24 @@ async function setupTestingModule({shouldEventPublishFail}) {
 
 describe('RegisterChannelCommandHandler', () => {
 
-  beforeEach(async () => {
-    
-  });
-
-  afterEach(async () => {
-  });
-
   it('saves the data on the repository', async () => {
-    const { commandHandler, repository } = await setupTestingModule({shouldEventPublishFail: false})
+    const { commandHandler, repository } = await setupTestingModule({shouldDomainEventPublishFail: false})
     const { cmdResult, checkRepoEntityIsCorrect } = await executeCommand(commandHandler);
 
-    // Persisted state
-    const saved = await repository.findById(cmdResult.id);
+    const saved = await repository?.findById(cmdResult.id);
     checkRepoEntityIsCorrect(saved as Channel);
   });
 
   it('emits ChannelRegisteredDomainEvent', async () => {
-    const { eventBus, commandHandler } = await setupTestingModule({shouldEventPublishFail: false})
+    const { eventBus, commandHandler } = await setupTestingModule({shouldDomainEventPublishFail: false})
     const { checkEventIsCorrect } = await executeCommand(commandHandler);
 
-    // TODO:  Mock Event Bus
-    // const lastEvent = eventBus.something
-    // checkEventIsCorrect(lastEvent)
+    const lastEvent = (eventBus as any).events.pop()
+    checkEventIsCorrect(lastEvent as ChannelRegisteredDomainEvent)
   });
 
   it('throws error if EventBus publish fails', async () => {
-    const { commandHandler } = await setupTestingModule({shouldEventPublishFail: true})
+    const { eventBus, commandHandler } = await setupTestingModule({shouldDomainEventPublishFail: true})
     
     try {
       await executeCommand(commandHandler)
@@ -92,8 +84,7 @@ describe('RegisterChannelCommandHandler', () => {
       expect(error.message).toBe("error test")
     }
 
-    // TODO:  Mock Event Bus
-    // const lastEvent = eventBus.something
-    // Check that there is no event
+    const lastEvent = (eventBus as any).events.pop()
+    expect(lastEvent).toBeUndefined()
   });
 });

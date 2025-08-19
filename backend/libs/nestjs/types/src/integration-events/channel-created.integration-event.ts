@@ -1,4 +1,5 @@
 import { BaseIntegrationEvent, BaseIntegrationEventProps } from './base-integration-event';
+import { INTEGRATION_EVENT_TOPIC_CHANNELS } from './topics';
 
 /**
  * Integration event published to Event Broker when a channel is created.
@@ -17,7 +18,7 @@ export interface ChannelCreatedIntegrationEventProps extends BaseIntegrationEven
 export class ChannelCreatedIntegrationEvent extends BaseIntegrationEvent {
   readonly eventVersion = '1.0';
   readonly eventName = 'channel.created';
-  readonly topic = 'channels';
+  readonly topic = INTEGRATION_EVENT_TOPIC_CHANNELS;
 
   public readonly channelId: string;
   public readonly channelType: string;

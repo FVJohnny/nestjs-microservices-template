@@ -11,7 +11,7 @@ describe('ChannelTypeVO', () => {
     }
   });
 
-  it('throws for invalid channel type', () => {
+  it('throws error for invalid channel type', () => {
     expect(() => ChannelTypeVO.create('invalid-type')).toThrow(InvalidChannelTypeError);
   });
 

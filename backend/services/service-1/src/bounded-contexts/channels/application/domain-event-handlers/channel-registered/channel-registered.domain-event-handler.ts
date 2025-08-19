@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { ChannelRegisteredDomainEvent } from '../../domain/events/channel-registered.domain-event';
+import { ChannelRegisteredDomainEvent } from '../../../domain/events/channel-registered.domain-event';
 import { ChannelCreatedIntegrationEvent } from '@libs/nestjs-types';
 import type { EventPublisher } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';

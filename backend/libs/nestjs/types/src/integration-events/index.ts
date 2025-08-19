@@ -1,3 +1,6 @@
+// Topics
+export * from './topics'
+
 // Channel Events
 export * from './channel-created.integration-event';
 

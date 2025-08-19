@@ -29,7 +29,6 @@ export abstract class BaseIntegrationEvent {
 
   /**
    * Converts the event to a JSON message payload.
-   * Subclasses should call super.toEvent() and merge with their data.
    */
   toJSON(): Record<string, any> {
     return {
