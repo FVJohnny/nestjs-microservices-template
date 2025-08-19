@@ -38,13 +38,13 @@ RUN npm run build
 FROM node:22-alpine AS deps
 WORKDIR /app
 
-# Copy shared libraries (don't install deps here - use peer deps from service)
-COPY libs ./libs
+# Copy built shared libraries from builder stage (includes dist/ directories)
+COPY --from=builder /app/libs ./libs
 
 # Copy service package files and install prod dependencies
 COPY services/service-1/package*.json ./services/service-1/
 WORKDIR /app/services/service-1
-RUN npm ci --omit=dev --ignore-scripts
+RUN npm ci --omit=dev
 
 # --- Runtime stage: minimal image with prod deps and built code ---
 FROM node:22-alpine AS runner
