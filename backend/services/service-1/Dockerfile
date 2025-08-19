@@ -7,19 +7,19 @@ WORKDIR /app
 # Copy shared libraries first (needed for local file dependencies)
 COPY libs ./libs
 WORKDIR /app/libs/nestjs/common
-RUN npm ci && npm run build
+RUN npm ci --include=dev && npm run build
 WORKDIR /app/libs/nestjs/kafka
-RUN npm ci && npm run build
+RUN npm ci --include=dev && npm run build
 WORKDIR /app/libs/nestjs/types  
-RUN npm ci && npm run build
+RUN npm ci --include=dev && npm run build
 WORKDIR /app/libs/nestjs/mongodb
-RUN npm ci && npm run build
+RUN npm ci --include=dev && npm run build
 WORKDIR /app/libs/nestjs/redis
-RUN npm ci && npm run build
+RUN npm ci --include=dev && npm run build
 WORKDIR /app/libs/nestjs/postgresql
-RUN npm ci && npm run build
+RUN npm ci --include=dev && npm run build
 WORKDIR /app/libs/nestjs/events
-RUN npm ci && npm run build
+RUN npm ci --include=dev && npm run build
 
 # Copy service package files and install dependencies
 WORKDIR /app
