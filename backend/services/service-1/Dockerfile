@@ -44,7 +44,7 @@ COPY libs ./libs
 # Copy service package files and install prod dependencies
 COPY services/service-1/package*.json ./services/service-1/
 WORKDIR /app/services/service-1
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 # --- Runtime stage: minimal image with prod deps and built code ---
 FROM node:22-alpine AS runner
