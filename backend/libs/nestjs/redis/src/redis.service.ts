@@ -135,6 +135,27 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     return this.client!.keys(pattern);
   }
 
+  /**
+   * Scans Redis keys using the SCAN command (non-blocking alternative to KEYS)
+   * @param pattern - The pattern to match keys against
+   * @param count - Approximate number of keys to return per iteration (default: 100)
+   * @returns Array of matching keys
+   */
+  async scan(pattern: string, count: number = 100): Promise<string[]> {
+    this.checkRedisInitialized();
+    
+    const keys: string[] = [];
+    let cursor = '0';
+    
+    do {
+      const [nextCursor, batch] = await this.client!.scan(cursor, 'MATCH', pattern, 'COUNT', count);
+      cursor = nextCursor;
+      keys.push(...batch);
+    } while (cursor !== '0');
+    
+    return keys;
+  }
+
   async hget(key: string, field: string): Promise<string | null> {
     this.checkRedisInitialized();
     return this.client!.hget(key, field);

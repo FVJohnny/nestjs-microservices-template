@@ -129,15 +129,6 @@ export class MongoDBChannelRepository implements ChannelRepository {
     }
   }
 
-  async count(): Promise<number> {
-    try {
-      this.logger.log('Counting channels');
-      return await this.channelModel.countDocuments({ isActive: true });
-    } catch (error) {
-      this.handleDatabaseError('count', 'all', error);
-    }
-  }
-
   /**
    * Handle database errors consistently
    */

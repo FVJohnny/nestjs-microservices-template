@@ -133,10 +133,10 @@ export class RedisController {
       const clientsInfo = await client.info('clients');
       
       // Count keys by patterns
-      const allKeys = await this.redisService.keys('*');
+      const allKeys = await this.redisService.scan('*');
       const keyPatterns = {
-        'channel:*': await this.redisService.keys('channel:*'),
-        'user_channels:*': await this.redisService.keys('user_channels:*'),
+        'channel:*': await this.redisService.scan('channel:*'),
+        'user_channels:*': await this.redisService.scan('user_channels:*'),
         'other': [] as string[],
       };
       
@@ -235,7 +235,7 @@ export class RedisController {
   ) {
     try {
       const limit = limitStr ? parseInt(limitStr, 10) : undefined;
-      const keys = await this.redisService.keys(pattern);
+      const keys = await this.redisService.scan(pattern);
       
       const limitedKeys = limit ? keys.slice(0, limit) : keys;
       

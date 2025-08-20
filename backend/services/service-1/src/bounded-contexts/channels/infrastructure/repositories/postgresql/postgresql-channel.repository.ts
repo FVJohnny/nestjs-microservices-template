@@ -50,9 +50,7 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
   async findByUserId(userId: string): Promise<Channel[]> {
     try {
       this.logger.log(`Finding channels for userId: ${userId}`);
-      if (userId == '123') {
-        throw new Error('Test error');
-      }
+
       const entities = await this.channelRepository.find({
         where: { userId, isActive: true },
         order: { createdAt: 'DESC' },
@@ -127,28 +125,7 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
     } catch (error) {
       this.handleDatabaseError('exists', id, error);
     }
-  }
-
-  async count(criteria?: Record<string, any>): Promise<number> {
-    try {
-      this.logger.log('Counting channels');
-
-      const where: any = { isActive: true };
-
-      if (criteria) {
-        if (criteria.channelType) {
-          where.channelType = criteria.channelType;
-        }
-        if (criteria.userId) {
-          where.userId = criteria.userId;
-        }
-      }
-
-      return await this.channelRepository.count({ where });
-    } catch (error) {
-      this.handleDatabaseError('count', 'all', error);
-    }
-  }
+  } 
 
   /**
    * Handle database errors consistently

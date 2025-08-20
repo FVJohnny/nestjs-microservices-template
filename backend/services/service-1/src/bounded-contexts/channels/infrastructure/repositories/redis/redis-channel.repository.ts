@@ -44,7 +44,7 @@ export class RedisChannelRepository implements ChannelRepository {
     try {
       this.logger.log(`Finding all channels`);
       const keyPattern = `${this.keyPrefix}*`;
-      const keys = await this.redisService.keys(keyPattern);
+      const keys = await this.redisService.scan(keyPattern);
 
       if (keys.length === 0) {
         return [];

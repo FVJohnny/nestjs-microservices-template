@@ -7,3 +7,6 @@ export * from './base.integration-event-listener';
 
 // Controller
 export * from './integration-events.controller';
+
+// Events
+export * from './events';

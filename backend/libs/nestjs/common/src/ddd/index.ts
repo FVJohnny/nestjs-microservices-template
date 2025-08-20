@@ -10,7 +10,7 @@ export * from '../integration-events/base.integration-event-listener';
 export * from '../integration-events/integration-events.controller';
 
 // Integration Events
-export * from './integration-events/events';
+export * from '../integration-events/events';
 
 // Modules
 
