@@ -7,6 +7,13 @@ interface TestEventBus extends EventBus {
   events: any[];
 }
 
+// Generic type-safe test module interface
+export interface TestModule<TCommandHandler = ICommandHandler, TRepository = Repository<AggregateRoot>> {
+  eventBus: TestEventBus;
+  commandHandler: TCommandHandler;
+  repository: TRepository;
+}
+
 interface TestEventPublisherInterface extends IntegrationEventPublisher {
   events: any[];
 }
