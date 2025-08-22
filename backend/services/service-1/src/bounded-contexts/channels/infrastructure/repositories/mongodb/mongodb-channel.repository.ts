@@ -5,6 +5,7 @@ import { Channel } from '../../../domain/entities/channel.entity';
 import { ChannelRepository } from '../../../domain/repositories/channel.repository';
 import { ChannelMongoDocument } from './channel.schema';
 import { ChannelTypeVO } from '../../../domain/value-objects/channel-type.vo';
+import { ChannelCriteria } from '../../../domain/criteria/channel-criteria';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { ChannelPersistenceException } from '../../errors';
 
@@ -126,6 +127,76 @@ export class MongoDBChannelRepository implements ChannelRepository {
       return count > 0;
     } catch (error) {
       this.handleDatabaseError('exists', id, error);
+    }
+  }
+
+  async countByUserId(userId: string): Promise<number> {
+    try {
+      this.logger.log(`Counting channels for userId: ${userId}`);
+      return await this.channelModel.countDocuments({
+        userId,
+        isActive: true,
+      });
+    } catch (error) {
+      this.handleDatabaseError('countByUserId', userId, error);
+    }
+  }
+
+  async findByUserIdAndName(
+    userId: string,
+    name: string,
+  ): Promise<Channel | null> {
+    try {
+      this.logger.log(`Finding channel by userId: ${userId} and name: ${name}`);
+      const channelDoc = await this.channelModel
+        .findOne({
+          userId,
+          name,
+          isActive: true,
+        })
+        .exec();
+      return channelDoc ? this.toDomainEntity(channelDoc) : null;
+    } catch (error) {
+      this.handleDatabaseError(
+        'findByUserIdAndName',
+        `${userId}:${name}`,
+        error,
+      );
+    }
+  }
+
+  async findByCriteria(criteria: ChannelCriteria): Promise<Channel[]> {
+    try {
+      this.logger.log(`Finding channels with criteria: ${JSON.stringify(criteria)}`);
+      const filter: any = { isActive: true };
+
+      if (criteria.userId) filter.userId = criteria.userId;
+      if (criteria.channelType) filter.channelType = criteria.channelType;
+      if (criteria.nameContains) {
+        filter.name = { $regex: criteria.nameContains, $options: 'i' };
+      }
+
+      const channelDocs = await this.channelModel.find(filter).exec();
+      return channelDocs.map(doc => this.toDomainEntity(doc));
+    } catch (error) {
+      this.handleDatabaseError('findByCriteria', JSON.stringify(criteria), error);
+    }
+  }
+
+  async countByCriteria(criteria: ChannelCriteria): Promise<number> {
+    try {
+      this.logger.log(`Counting channels with criteria: ${JSON.stringify(criteria)}`);
+      const filter: any = { isActive: true };
+
+      if (criteria.userId) filter.userId = criteria.userId;
+      if (criteria.channelType) filter.channelType = criteria.channelType;
+      if (criteria.nameContains) {
+        filter.name = { $regex: criteria.nameContains, $options: 'i' };
+      }
+
+      return await this.channelModel.countDocuments(filter);
+    } catch (error) {
+      this.handleDatabaseError('countByCriteria', JSON.stringify(criteria), error);
     }
   }
 

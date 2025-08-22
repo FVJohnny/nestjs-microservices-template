@@ -4,7 +4,6 @@ import { ChannelRegisteredDomainEvent } from '../events/channel-registered.domai
 import { MessageReceivedDomainEvent } from '../events/message-received.domain-event';
 import { InvalidOperationException } from '@libs/nestjs-common';
 
-
 describe('Channel (domain)', () => {
   it('create() raises ChannelRegisteredDomainEvent', () => {
     const channel = Channel.random();
@@ -17,13 +16,17 @@ describe('Channel (domain)', () => {
     const channel = Channel.random();
     channel.receiveMessage('msg-1', 'hello', 'sender-1', 'Sender');
     const events = channel.getUncommittedEvents();
-    expect(events.some((e) => e instanceof MessageReceivedDomainEvent)).toBe(true);
+    expect(events.some((e) => e instanceof MessageReceivedDomainEvent)).toBe(
+      true,
+    );
     expect(events.length).toBe(2);
   });
 
   it('receiveMessage() on inactive channel throws', () => {
     const channel = Channel.random();
     channel.deactivate();
-    expect(() => channel.receiveMessage('m', 'c', 's', 'sn')).toThrow(InvalidOperationException);
+    expect(() => channel.receiveMessage('m', 'c', 's', 'sn')).toThrow(
+      InvalidOperationException,
+    );
   });
 });

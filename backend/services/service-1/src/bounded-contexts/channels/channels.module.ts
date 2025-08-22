@@ -12,7 +12,10 @@ import { TradingSignalsIntegrationEventHandler } from './interfaces/integration-
 import { RegisterChannelCommandHandler } from './application/commands/register-channel/register-channel.command-handler';
 
 // Query Handlers
-import { GetChannelsHandler } from './application/queries/get-channels.query-handler';
+import { GetChannelsHandler } from './application/queries/get-channels/get-channels.query-handler';
+import { UserExistsHandler } from './application/queries/user-exists/user-exists.query-handler';
+import { CountUserChannelsHandler } from './application/queries/count-user-channels/count-user-channels.query-handler';
+import { FindChannelByUserAndNameHandler } from './application/queries/find-channel-by-user-and-name/find-channel-by-user-and-name.query-handler';
 
 // Domain Event Handlers
 import { ChannelRegisteredDomainEventHandler } from './application/domain-event-handlers/channel-registered/channel-registered.domain-event-handler';
@@ -29,20 +32,52 @@ import { PostgreSQLChannelEntity } from './infrastructure/repositories/postgresq
 import { ChannelMongoSchema } from './infrastructure/repositories/mongodb/channel.schema';
 import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb/mongodb-channel.repository';
 
+// Use Cases
+import {
+  RegisterChannelUseCase,
+  RegisterChannelUseCaseImpl,
+} from './application/use-cases/register-channel/register-channel.use-case';
+import {
+  GetChannelsUseCase,
+  GetChannelsUseCaseImpl,
+} from './application/use-cases/get-channels/get-channels.use-case';
+
+// Cross-BC Adapters
+import { UserRepositoryAdapter } from './infrastructure/adapters/user-repository.adapter';
+
 const CommandHandlers = [RegisterChannelCommandHandler];
-const QueryHandlers = [GetChannelsHandler];
+const QueryHandlers = [
+  GetChannelsHandler,
+  UserExistsHandler,
+  CountUserChannelsHandler,
+  FindChannelByUserAndNameHandler,
+];
 const DomainEventHandlers = [
   ChannelRegisteredDomainEventHandler,
   MessageReceivedDomainEventHandler,
 ];
 const IntegrationEventHandlers = [TradingSignalsIntegrationEventHandler];
 
+// Use Cases
+const UseCases = [
+  {
+    provide: 'RegisterChannelUseCase',
+    useClass: RegisterChannelUseCaseImpl,
+  },
+  {
+    provide: 'GetChannelsUseCase',
+    useClass: GetChannelsUseCaseImpl,
+  },
+];
+
 @Module({
   imports: [
     // PostgreSQL
     TypeOrmModule.forFeature([PostgreSQLChannelEntity]),
     // MongoDB
-    MongooseModule.forFeature([{ name: 'Channel', schema: ChannelMongoSchema }]),
+    MongooseModule.forFeature([
+      { name: 'Channel', schema: ChannelMongoSchema },
+    ]),
   ],
   controllers: [ChannelsController],
   providers: [
@@ -52,11 +87,18 @@ const IntegrationEventHandlers = [TradingSignalsIntegrationEventHandler];
     ...DomainEventHandlers,
     ...IntegrationEventHandlers,
 
+    // Use Cases
+    ...UseCases,
+
     // Repositories
     {
       provide: 'ChannelRepository',
       useClass: PostgreSQLChannelRepository,
       // useClass: MongoDBChannelRepository,
+    },
+    {
+      provide: 'UserRepository',
+      useClass: UserRepositoryAdapter,
     },
   ],
   exports: [],

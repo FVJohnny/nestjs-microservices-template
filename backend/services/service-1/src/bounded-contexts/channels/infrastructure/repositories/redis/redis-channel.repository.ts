@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Channel } from '../../../domain/entities/channel.entity';
 import { ChannelRepository } from '../../../domain/repositories/channel.repository';
 import { ChannelTypeVO } from '../../../domain/value-objects/channel-type.vo';
+import { ChannelCriteria } from '../../../domain/criteria/channel-criteria';
 import { RedisService } from '@libs/nestjs-redis';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { ChannelPersistenceException } from '../../errors';
@@ -136,6 +137,71 @@ export class RedisChannelRepository implements ChannelRepository {
       return exists === 1;
     } catch (error) {
       this.handleDatabaseError('exists', id, error);
+    }
+  }
+
+  async countByUserId(userId: string): Promise<number> {
+    try {
+      this.logger.log(`Counting channels for userId: ${userId}`);
+      const channelIds = await this.redisService.smembers(
+        `${this.userIndexPrefix}${userId}`,
+      );
+      return channelIds.length;
+    } catch (error) {
+      this.handleDatabaseError('countByUserId', userId, error);
+    }
+  }
+
+  async findByUserIdAndName(
+    userId: string,
+    name: string,
+  ): Promise<Channel | null> {
+    try {
+      this.logger.log(`Finding channel by userId: ${userId} and name: ${name}`);
+      const channels = await this.findByUserId(userId);
+      return channels.find((channel) => channel.name === name) || null;
+    } catch (error) {
+      this.handleDatabaseError(
+        'findByUserIdAndName',
+        `${userId}:${name}`,
+        error,
+      );
+    }
+  }
+
+  async findByCriteria(criteria: ChannelCriteria): Promise<Channel[]> {
+    try {
+      this.logger.log(`Finding channels with criteria: ${JSON.stringify(criteria)}`);
+      
+      // For Redis, we'll get all channels and filter in-memory for simplicity
+      // In a production system, you might use Redis modules for more complex querying
+      const allChannels = await this.findAll();
+      let filtered = allChannels;
+
+      if (criteria.userId) {
+        filtered = filtered.filter(channel => channel.userId === criteria.userId);
+      }
+      if (criteria.channelType) {
+        filtered = filtered.filter(channel => channel.channelType.getValue() === criteria.channelType);
+      }
+      if (criteria.nameContains) {
+        filtered = filtered.filter(channel => 
+          channel.name.toLowerCase().includes(criteria.nameContains!.toLowerCase())
+        );
+      }
+
+      return filtered;
+    } catch (error) {
+      this.handleDatabaseError('findByCriteria', JSON.stringify(criteria), error);
+    }
+  }
+
+  async countByCriteria(criteria: ChannelCriteria): Promise<number> {
+    try {
+      const channels = await this.findByCriteria(criteria);
+      return channels.length;
+    } catch (error) {
+      this.handleDatabaseError('countByCriteria', JSON.stringify(criteria), error);
     }
   }
 

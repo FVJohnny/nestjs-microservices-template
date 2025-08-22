@@ -19,7 +19,9 @@ export class RegisterChannelCommandHandler
     private readonly eventBus: EventBus,
   ) {}
 
-  async execute(command: RegisterChannelCommand): Promise<RegisterChannelCommandHandlerResult> {
+  async execute(
+    command: RegisterChannelCommand,
+  ): Promise<RegisterChannelCommandHandlerResult> {
     this.logger.log('Registering channel...');
     const { channelType, name, userId, connectionConfig } = command;
 
@@ -28,7 +30,7 @@ export class RegisterChannelCommandHandler
       channelType,
       name,
       userId,
-      connectionConfig
+      connectionConfig,
     });
 
     // Save the channel
@@ -48,4 +50,3 @@ export class RegisterChannelCommandHandler
 export type RegisterChannelCommandHandlerResult = {
   id: string;
 };
-

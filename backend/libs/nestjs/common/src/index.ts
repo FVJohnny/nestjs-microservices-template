@@ -29,3 +29,6 @@ export * from './metrics/metrics.interceptor';
 export * from './testing/cqrs-event-handler';
 export * from './testing/cqrs-event-bus';
 
+// Use Case interface and decorators
+export * from './ddd/application';
+

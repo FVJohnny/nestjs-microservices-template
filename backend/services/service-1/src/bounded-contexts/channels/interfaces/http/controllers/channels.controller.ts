@@ -7,17 +7,15 @@ import {
   Param,
   HttpCode,
   HttpStatus,
+  BadRequestException,
+  Inject,
 } from '@nestjs/common';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { RegisterChannelDto } from '../dtos/register-channel.dto';
 import { RegisterChannelResponseDto } from '../dtos/register-channel-response.dto';
 import { SimulateMessageDto } from '../dtos/simulate-message.dto';
 import { SimulateMessageResponseDto } from '../dtos/simulate-message-response.dto';
 import { GetChannelsResponseDto } from '../dtos/get-channels-response.dto';
 import { ChannelDto } from '../dtos/channel.dto';
-import { RegisterChannelCommand } from '../../../application/commands/register-channel/register-channel.command';
-import { GetChannelsQuery } from '../../../application/queries/get-channels.query';
-import { Channel } from '../../../domain/entities/channel.entity';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import {
   ApiBody,
@@ -29,14 +27,26 @@ import {
 } from '@nestjs/swagger';
 import { EntityNotFoundException } from '@libs/nestjs-common';
 
+// Use Cases
+import type { RegisterChannelUseCase } from '../../../application/use-cases/register-channel/register-channel.use-case';
+import type { GetChannelsUseCase } from '../../../application/use-cases/get-channels/get-channels.use-case';
+import {
+  UserNotFoundError,
+  TooManyChannelsError,
+  DuplicateChannelNameError,
+} from '../../../application/use-cases/register-channel/register-channel.request-response';
+
 @ApiTags('channels')
 @Controller('channels')
 export class ChannelsController {
   private readonly logger = new CorrelationLogger(ChannelsController.name);
 
   constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
+    // Use Cases
+    @Inject('RegisterChannelUseCase')
+    private readonly registerChannelUseCase: RegisterChannelUseCase,
+    @Inject('GetChannelsUseCase')
+    private readonly getChannelsUseCase: GetChannelsUseCase,
   ) {}
 
   @Post()
@@ -44,10 +54,10 @@ export class ChannelsController {
   @ApiOperation({
     summary: 'Register a new channel',
     description:
-      'Creates a new communication channel (Telegram, Discord, or WhatsApp) for sending trading signals and messages.',
+      'Creates a new communication channel (Telegram, Discord, or WhatsApp) with business rule validation including user existence, channel limits, and name uniqueness.',
   })
   @ApiBody({
-    type: RegisterChannelDto,
+    type: RegisterChannelResponseDto,
     description: 'Channel registration details',
   })
   @ApiResponse({
@@ -57,7 +67,7 @@ export class ChannelsController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid input data',
+    description: 'Business rule violation (user not found, too many channels, duplicate name) or invalid input data',
   })
   @ApiResponse({
     status: 422,
@@ -68,31 +78,25 @@ export class ChannelsController {
       `Registering channel for user ${dto.userId}, type: ${dto.channelType}`,
     );
 
-    try {
-      const command = new RegisterChannelCommand({
-        channelType: dto.channelType,
-        name: dto.name,
-        userId: dto.userId,
-        connectionConfig: dto.connectionConfig,
-      });
+    const response = await this.registerChannelUseCase.execute({
+      userId: dto.userId,
+      channelType: dto.channelType,
+      name: dto.name,
+      connectionConfig: dto.connectionConfig,
+    });
 
-      const channelId: string = await this.commandBus.execute(command);
-      this.logger.log(
-        `Channel registered successfully: ${channelId} for user ${dto.userId}`,
-      );
+    this.logger.log(
+      `Channel registered successfully: ${response.channelId} for user ${dto.userId}`,
+    );
 
-      return new RegisterChannelResponseDto(channelId);
-    } catch (error) {
-      this.logger.error(`Failed to register channel: ${error.message}`);
-      throw error; // Let global exception filter handle it
-    }
+    return new RegisterChannelResponseDto(response.channelId);
   }
 
   @Get()
   @ApiOperation({
-    summary: 'Get channels (optionally filtered by userId)',
+    summary: 'Get channels with configurable filtering',
     description:
-      'Retrieves a list of all registered channels. Optionally filter by user ID to get channels for a specific user.',
+      'Retrieves channels with support for multiple optional filters including user ID, channel type, active status, name search, and date ranges.',
   })
   @ApiQuery({
     name: 'userId',
@@ -100,29 +104,93 @@ export class ChannelsController {
     description: 'Filter channels by user ID',
     example: 'user-123',
   })
+  @ApiQuery({
+    name: 'channelType',
+    required: false,
+    description: 'Filter channels by type (telegram, discord, whatsapp)',
+    example: 'telegram',
+  })
+  @ApiQuery({
+    name: 'isActive',
+    required: false,
+    description: 'Filter channels by active status',
+    type: 'boolean',
+    example: true,
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    description: 'Filter channels by name (partial match, case-insensitive)',
+    example: 'trading',
+  })
+  @ApiQuery({
+    name: 'createdAfter',
+    required: false,
+    description: 'Filter channels created after this date (ISO string)',
+    type: 'string',
+    example: '2024-01-01T00:00:00Z',
+  })
+  @ApiQuery({
+    name: 'createdBefore',
+    required: false,
+    description: 'Filter channels created before this date (ISO string)',
+    type: 'string',
+    example: '2024-12-31T23:59:59Z',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of channels retrieved successfully',
     type: GetChannelsResponseDto,
   })
-  async getChannels(@Query('userId') userId?: string) {
-    this.logger.debug('Getting channels...');
-    const query = new GetChannelsQuery(userId);
-    const channels: Channel[] = await this.queryBus.execute(query);
+  @ApiResponse({
+    status: 400,
+    description: 'User does not exist or invalid filter parameters',
+  })
+  async getChannels(
+    @Query('userId') userId?: string,
+    @Query('channelType') channelType?: string,
+    @Query('isActive') isActive?: boolean,
+    @Query('name') name?: string,
+    @Query('createdAfter') createdAfter?: string,
+    @Query('createdBefore') createdBefore?: string,
+  ) {
+    const filters = {
+      userId,
+      channelType,
+      isActive,
+      name,
+      createdAfter: createdAfter ? new Date(createdAfter) : undefined,
+      createdBefore: createdBefore ? new Date(createdBefore) : undefined,
+    };
 
-    const channelDtos = channels.map(
-      (channel) =>
-        new ChannelDto(
-          channel.id,
-          channel.channelType.toString(),
-          channel.name,
-          channel.userId,
-          channel.isActive,
-          channel.createdAt,
-        ),
-    );
+    this.logger.debug(`Getting channels with filters: ${JSON.stringify(filters)}`);
 
-    return new GetChannelsResponseDto(channelDtos);
+    try {
+      const response = await this.getChannelsUseCase.execute(filters);
+
+      // Transform to the existing DTO format for backward compatibility
+      const channelDtos = response.channels.map(
+        (channel) =>
+          new ChannelDto(
+            channel.id,
+            channel.channelType,
+            channel.name,
+            channel.userId,
+            channel.isActive,
+            channel.createdAt,
+          ),
+      );
+
+      return new GetChannelsResponseDto(channelDtos);
+    } catch (error) {
+      this.logger.error(`Failed to get channels: ${error.message}`);
+      
+      if (error instanceof UserNotFoundError) {
+        throw new BadRequestException('User does not exist');
+      }
+      
+      throw error;
+    }
   }
 
   // Simulate receiving a message (in real implementation, this would come from external integrations)
@@ -162,11 +230,9 @@ export class ChannelsController {
     this.logger.debug(`Simulating message for channel ${channelId}`);
 
     try {
-      // First verify channel exists by getting channels and finding this one
-      const getChannelsQuery = new GetChannelsQuery();
-      const channels: Channel[] = await this.queryBus.execute(getChannelsQuery);
-
-      const channel = channels.find((c) => c.id === channelId);
+      // First verify channel exists by getting all channels and finding this one
+      const response = await this.getChannelsUseCase.execute({});
+      const channel = response.channels.find((c) => c.id === channelId);
       if (!channel) {
         throw new EntityNotFoundException('Channel', channelId);
       }

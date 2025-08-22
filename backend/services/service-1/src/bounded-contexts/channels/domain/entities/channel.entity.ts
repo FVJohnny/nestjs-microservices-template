@@ -6,10 +6,10 @@ import { MessageReceivedDomainEvent } from '../events/message-received.domain-ev
 import { InvalidOperationException } from '@libs/nestjs-common';
 
 interface CreateChannelProps {
-  channelType: string,
-  name: string,
-  userId: string,
-  connectionConfig: Record<string, any>,
+  channelType: string;
+  name: string;
+  userId: string;
+  connectionConfig: Record<string, any>;
 }
 export class Channel extends AggregateRoot<IEvent> {
   constructor(
@@ -24,9 +24,7 @@ export class Channel extends AggregateRoot<IEvent> {
     super();
   }
 
-  static create(
-    props: CreateChannelProps
-  ): Channel {
+  static create(props: CreateChannelProps): Channel {
     const id = uuidv4();
     const channelTypeVO = ChannelTypeVO.create(props.channelType);
 
@@ -54,13 +52,12 @@ export class Channel extends AggregateRoot<IEvent> {
 
   static random(props?: Partial<CreateChannelProps>) {
     return Channel.create({
-      channelType: props?.channelType || "telegram",
+      channelType: props?.channelType || 'telegram',
       userId: props?.userId || 'user-1',
       name: props?.name || 'My Beautiful Channel',
-      connectionConfig: props?.connectionConfig || {token: 'abc'}
-    })
-  } 
-
+      connectionConfig: props?.connectionConfig || { token: 'abc' },
+    });
+  }
 
   receiveMessage(
     messageId: string,
@@ -108,5 +105,4 @@ export class Channel extends AggregateRoot<IEvent> {
     // In a real implementation, you might raise a ChannelDeactivatedEvent
     // For now, we'll keep it simple
   }
-
 }

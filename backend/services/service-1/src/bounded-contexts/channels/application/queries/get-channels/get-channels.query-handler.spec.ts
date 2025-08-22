@@ -14,7 +14,7 @@ describe('GetChannelsHandler', () => {
     const handler = new GetChannelsHandler(repo as any);
     const result = await handler.execute(new GetChannelsQuery('user-1'));
     expect(result).toEqual([]);
-    expect((repo.findByUserId as jest.Mock)).toHaveBeenCalledWith('user-1');
+    expect(repo.findByUserId as jest.Mock).toHaveBeenCalledWith('user-1');
   });
 
   it('without userId delegates to findAll', async () => {
@@ -22,6 +22,6 @@ describe('GetChannelsHandler', () => {
     const handler = new GetChannelsHandler(repo as any);
     const result = await handler.execute(new GetChannelsQuery(undefined));
     expect(result).toEqual([]);
-    expect((repo.findAll as jest.Mock)).toHaveBeenCalled();
+    expect(repo.findAll as jest.Mock).toHaveBeenCalled();
   });
 });

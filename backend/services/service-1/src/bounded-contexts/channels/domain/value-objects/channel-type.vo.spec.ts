@@ -3,7 +3,11 @@ import { InvalidChannelTypeError } from '../errors';
 
 describe('ChannelTypeVO', () => {
   it('creates for valid channel types', () => {
-    const valid = [ChannelType.TELEGRAM, ChannelType.DISCORD, ChannelType.WHATSAPP];
+    const valid = [
+      ChannelType.TELEGRAM,
+      ChannelType.DISCORD,
+      ChannelType.WHATSAPP,
+    ];
     for (const v of valid) {
       const vo = ChannelTypeVO.create(v);
       expect(vo.getValue()).toBe(v);
@@ -12,7 +16,9 @@ describe('ChannelTypeVO', () => {
   });
 
   it('throws error for invalid channel type', () => {
-    expect(() => ChannelTypeVO.create('invalid-type')).toThrow(InvalidChannelTypeError);
+    expect(() => ChannelTypeVO.create('invalid-type')).toThrow(
+      InvalidChannelTypeError,
+    );
   });
 
   it('equality works', () => {

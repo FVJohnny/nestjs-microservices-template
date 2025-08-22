@@ -1,11 +1,11 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { ChannelRegisteredDomainEvent } from '../../../domain/events/channel-registered.domain-event';
-import { 
+import {
   ChannelCreatedIntegrationEvent,
   type IntegrationEventPublisher,
   CorrelationLogger,
-  INTEGRATION_EVENT_PUBLISHER_TOKEN 
+  INTEGRATION_EVENT_PUBLISHER_TOKEN,
 } from '@libs/nestjs-common';
 
 @EventsHandler(ChannelRegisteredDomainEvent)

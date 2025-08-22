@@ -12,11 +12,11 @@ describe('InMemoryChannelRepository', () => {
 
   it('finds by user and removes', async () => {
     const repo = new InMemoryChannelRepository();
-    const userId1 = 'u1'
+    const userId1 = 'u1';
     const userId2 = 'u2';
-    const a = Channel.random({userId: userId1});
-    const b = Channel.random({userId: userId2});
-    
+    const a = Channel.random({ userId: userId1 });
+    const b = Channel.random({ userId: userId2 });
+
     await repo.save(a);
     await repo.save(b);
 
