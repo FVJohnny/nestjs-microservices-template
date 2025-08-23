@@ -32,8 +32,6 @@ import type { RegisterChannelUseCase } from '../../../application/use-cases/regi
 import type { GetChannelsUseCase } from '../../../application/use-cases/get-channels/get-channels.use-case';
 import {
   UserNotFoundError,
-  TooManyChannelsError,
-  DuplicateChannelNameError,
 } from '../../../application/use-cases/register-channel/register-channel.request-response';
 
 @ApiTags('channels')

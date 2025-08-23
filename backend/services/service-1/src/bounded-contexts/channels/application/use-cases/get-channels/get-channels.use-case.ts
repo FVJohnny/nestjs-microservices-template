@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { CorrelationLogger, UseCase, UseCaseHandler } from '@libs/nestjs-common';
-import { UserExistsQuery } from '../../queries/user-exists/user-exists.query';
 import { GetChannelsQuery } from '../../queries/get-channels/get-channels.query';
 import { ChannelCriteriaBuilder } from '../../../domain/criteria/channel-criteria';
 import {
@@ -9,7 +8,6 @@ import {
   GetChannelsResponse,
   ChannelSummary,
 } from './get-channels.request-response';
-import { UserNotFoundError } from '../register-channel/register-channel.request-response';
 import { Channel } from '../../../domain/entities/channel.entity';
 
 export interface GetChannelsUseCase 
@@ -36,11 +34,6 @@ export class GetChannelsUseCaseImpl implements GetChannelsUseCase {
       `Executing GetChannels use case with filters: ${JSON.stringify(request)}`,
     );
 
-    // If userId is provided, validate the user exists
-    if (request.userId) {
-      await this.validateUserExists(request.userId);
-    }
-
     // Build criteria from request
     const criteria = this.buildCriteriaFromRequest(request);
 
@@ -63,15 +56,6 @@ export class GetChannelsUseCaseImpl implements GetChannelsUseCase {
     };
   }
 
-  private async validateUserExists(userId: string): Promise<void> {
-    const userExists = await this.queryBus.execute(
-      new UserExistsQuery(userId)
-    );
-    if (!userExists) {
-      this.logger.warn(`Query failed: User ${userId} does not exist`);
-      throw new UserNotFoundError(userId);
-    }
-  }
 
   private buildCriteriaFromRequest(request: GetChannelsRequest) {
     const builder = ChannelCriteriaBuilder.create();

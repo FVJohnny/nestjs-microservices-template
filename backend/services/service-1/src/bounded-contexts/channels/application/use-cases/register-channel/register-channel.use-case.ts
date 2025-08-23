@@ -5,15 +5,15 @@ import { RegisterChannelCommand } from '../../commands/register-channel/register
 import { CountUserChannelsQuery } from '../../queries/count-user-channels/count-user-channels.query';
 import { FindChannelByUserAndNameQuery } from '../../queries/find-channel-by-user-and-name/find-channel-by-user-and-name.query';
 import {
-  RegisterChannelRequest,
-  RegisterChannelResponse,
+  RegisterChannelUseCaseProps,
+  RegisterChannelUseCaseResponse,
   UserNotFoundError,
   TooManyChannelsError,
   DuplicateChannelNameError,
 } from './register-channel.request-response';
 
 export interface RegisterChannelUseCase 
-  extends UseCase<RegisterChannelRequest, RegisterChannelResponse> {}
+  extends UseCase<RegisterChannelUseCaseProps, RegisterChannelUseCaseResponse> {}
 
 @Injectable()
 @UseCaseHandler({
@@ -33,8 +33,8 @@ export class RegisterChannelUseCaseImpl implements RegisterChannelUseCase {
   ) {}
 
   async execute(
-    request: RegisterChannelRequest,
-  ): Promise<RegisterChannelResponse> {
+    request: RegisterChannelUseCaseProps,
+  ): Promise<RegisterChannelUseCaseResponse> {
     this.logger.log(
       `Executing RegisterChannel use case for user ${request.userId}`,
     );
@@ -52,9 +52,6 @@ export class RegisterChannelUseCaseImpl implements RegisterChannelUseCase {
 
     const result = await this.commandBus.execute(command);
 
-    // 3. Handle any post-processing side effects
-    await this.handleSideEffects(request, result);
-
     this.logger.log(
       `Successfully registered channel ${result.id} for user ${request.userId}`,
     );
@@ -66,18 +63,9 @@ export class RegisterChannelUseCaseImpl implements RegisterChannelUseCase {
   }
 
   private async validateBusinessRules(
-    request: RegisterChannelRequest,
+    request: RegisterChannelUseCaseProps,
   ): Promise<void> {
-    // Business rule: User must exist (cross-bounded-context validation)
-    // const userExists = await this.queryBus.execute(
-    //   new UserExistsQuery(request.userId)
-    // );
-    // if (!userExists) {
-    //   this.logger.warn(
-    //     `Registration failed: User ${request.userId} does not exist`,
-    //   );
-    //   throw new UserNotFoundError(request.userId);
-    // }
+    // Business rule: User must exist
 
     // Business rule: User can't have more than 10 channels
     const userChannelCount = await this.queryBus.execute(
@@ -106,29 +94,5 @@ export class RegisterChannelUseCaseImpl implements RegisterChannelUseCase {
     this.logger.log(
       `Business rules validation passed for user ${request.userId}`,
     );
-  }
-
-  private async handleSideEffects(
-    request: RegisterChannelRequest,
-    result: { id: string },
-  ): Promise<void> {
-    // Future: This is where we could add cross-bounded-context side effects like:
-    // - Updating user's last activity timestamp
-    // - Sending notifications
-    // - Recording analytics events
-    // - Updating quotas or usage tracking
-
-    // For now, just log the successful creation
-    this.logger.log(
-      `Channel ${result.id} created successfully for user ${request.userId}`,
-    );
-
-    // Example future side effect:
-    // this.eventBus.publish(new UserActivityRecordedEvent({
-    //   userId: request.userId,
-    //   activity: 'channel_created',
-    //   channelId: result.id,
-    //   timestamp: new Date()
-    // }));
   }
 }

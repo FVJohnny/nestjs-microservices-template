@@ -1,27 +1,30 @@
 import { GetChannelsHandler } from './get-channels.query-handler';
 import { GetChannelsQuery } from './get-channels.query';
-import type { ChannelRepository } from '../../domain/repositories/channel.repository';
-import { Channel } from '../../domain/entities/channel.entity';
+import type { ChannelRepository } from '../../../domain/repositories/channel.repository';
+import { Channel } from '../../../domain/entities/channel.entity';
+import { ChannelCriteria } from '../../../domain/criteria/channel-criteria';
 
 describe('GetChannelsHandler', () => {
   const makeRepo = (): Partial<ChannelRepository> => ({
-    findByUserId: jest.fn(async () => []),
-    findAll: jest.fn(async () => []),
+    findByCriteria: jest.fn(async () => []),
+    countByCriteria: jest.fn(async () => 0),
   });
 
-  it('with userId delegates to findByUserId', async () => {
+  it('delegates to findByCriteria with criteria', async () => {
     const repo = makeRepo();
     const handler = new GetChannelsHandler(repo as any);
-    const result = await handler.execute(new GetChannelsQuery('user-1'));
+    const criteria: ChannelCriteria = { userId: 'user-1' };
+    const result = await handler.execute(new GetChannelsQuery(criteria));
     expect(result).toEqual([]);
-    expect(repo.findByUserId as jest.Mock).toHaveBeenCalledWith('user-1');
+    expect(repo.findByCriteria as jest.Mock).toHaveBeenCalledWith(criteria);
   });
 
-  it('without userId delegates to findAll', async () => {
+  it('handles empty criteria', async () => {
     const repo = makeRepo();
     const handler = new GetChannelsHandler(repo as any);
-    const result = await handler.execute(new GetChannelsQuery(undefined));
+    const criteria: ChannelCriteria = {};
+    const result = await handler.execute(new GetChannelsQuery(criteria));
     expect(result).toEqual([]);
-    expect(repo.findAll as jest.Mock).toHaveBeenCalled();
+    expect(repo.findByCriteria as jest.Mock).toHaveBeenCalledWith(criteria);
   });
 });

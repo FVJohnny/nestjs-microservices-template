@@ -3,7 +3,7 @@ import { Inject } from '@nestjs/common';
 import type { IntegrationEventPublisher } from '@libs/nestjs-common';
 import { INTEGRATION_EVENT_PUBLISHER_TOKEN } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';
-import { MessageReceivedDomainEvent } from '../../domain/events/message-received.domain-event';
+import { MessageReceivedDomainEvent } from '../../../domain/events/message-received.domain-event';
 
 @EventsHandler(MessageReceivedDomainEvent)
 export class MessageReceivedDomainEventHandler

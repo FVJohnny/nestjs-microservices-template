@@ -1,20 +1,23 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
 import {
   BaseIntegrationEventHandler,
   INTEGRATION_EVENT_LISTENER_TOKEN,
 } from '@libs/nestjs-common';
 import type { IntegrationEventListener } from '@libs/nestjs-common';
-import { RegisterChannelCommand } from '../../application/commands/register-channel/register-channel.command';
+import type { RegisterChannelUseCase } from '../../application/use-cases/register-channel/register-channel.use-case';
+import { RegisterChannelUseCaseProps } from '../../application/use-cases/register-channel/register-channel.request-response';
+
+const INTEGRATION_EVENT_TOPIC_TRADING_SIGNALS = 'trading-signals';
 
 @Injectable()
 export class TradingSignalsIntegrationEventHandler extends BaseIntegrationEventHandler {
-  readonly topicName = 'trading-signals';
+  readonly topicName = INTEGRATION_EVENT_TOPIC_TRADING_SIGNALS;
 
   constructor(
     @Inject(INTEGRATION_EVENT_LISTENER_TOKEN)
     eventListener: IntegrationEventListener,
-    private readonly commandBus: CommandBus,
+    @Inject('RegisterChannelUseCase')
+    private readonly registerChannelUseCase: RegisterChannelUseCase,
   ) {
     super(eventListener);
   }
@@ -23,44 +26,21 @@ export class TradingSignalsIntegrationEventHandler extends BaseIntegrationEventH
     payload: Record<string, unknown>,
     messageId: string,
   ): Promise<void> {
-    try {
-      // Extract and validate payload
-      const channelType = payload.channelType as string;
-      const name = payload.name as string;
-      const userId = payload.userId as string;
-      const connectionConfig = payload.connectionConfig as Record<
-        string,
-        unknown
-      >;
+    this.logger.log(
+      `Processing trading-signals event [${messageId}]`,
+    );
 
-      // Validate required fields
-      if (!channelType || !name || !userId) {
-        throw new Error(
-          `Missing required fields in channel.create event [${messageId}]`,
-        );
-      }
+    const request: RegisterChannelUseCaseProps = {
+      channelType: payload.channelType as string,
+      name: payload.name as string,
+      userId: payload.userId as string,
+      connectionConfig: (payload.connectionConfig as Record<string, unknown>) || {},
+    };
 
-      this.logger.log(
-        `Creating channel from event [${messageId}] - Type: ${channelType}, Name: ${name}, User: ${userId}`,
-      );
+    const response = await this.registerChannelUseCase.execute(request);
 
-      const command = new RegisterChannelCommand({
-        channelType,
-        name,
-        userId,
-        connectionConfig: connectionConfig || {},
-      });
-
-      const channelId = await this.commandBus.execute(command);
-
-      this.logger.log(
-        `✅ Channel created successfully from event [${messageId}] - ID: ${channelId}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `❌ Failed to handle channel.create event [${messageId}]: ${error}`,
-      );
-      throw error;
-    }
+    this.logger.log(
+      `✅ Channel created successfully from trading-signals event [${messageId}] - Channel ID: ${response.channelId}`,
+    );
   }
 }

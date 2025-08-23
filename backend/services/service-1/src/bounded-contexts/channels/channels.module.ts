@@ -13,13 +13,12 @@ import { RegisterChannelCommandHandler } from './application/commands/register-c
 
 // Query Handlers
 import { GetChannelsHandler } from './application/queries/get-channels/get-channels.query-handler';
-import { UserExistsHandler } from './application/queries/user-exists/user-exists.query-handler';
 import { CountUserChannelsHandler } from './application/queries/count-user-channels/count-user-channels.query-handler';
 import { FindChannelByUserAndNameHandler } from './application/queries/find-channel-by-user-and-name/find-channel-by-user-and-name.query-handler';
 
 // Domain Event Handlers
 import { ChannelRegisteredDomainEventHandler } from './application/domain-event-handlers/channel-registered/channel-registered.domain-event-handler';
-import { MessageReceivedDomainEventHandler } from './application/domain-event-handlers/message-received.domain-event-handler';
+import { MessageReceivedDomainEventHandler } from './application/domain-event-handlers/message-received/message-received.domain-event-handler';
 
 // Infrastructure Redis
 // import { RedisChannelRepository } from './infrastructure/repositories/redis/redis-channel.repository';
@@ -42,13 +41,10 @@ import {
   GetChannelsUseCaseImpl,
 } from './application/use-cases/get-channels/get-channels.use-case';
 
-// Cross-BC Adapters
-import { UserRepositoryAdapter } from './infrastructure/adapters/user-repository.adapter';
 
 const CommandHandlers = [RegisterChannelCommandHandler];
 const QueryHandlers = [
   GetChannelsHandler,
-  UserExistsHandler,
   CountUserChannelsHandler,
   FindChannelByUserAndNameHandler,
 ];
@@ -95,10 +91,6 @@ const UseCases = [
       provide: 'ChannelRepository',
       useClass: PostgreSQLChannelRepository,
       // useClass: MongoDBChannelRepository,
-    },
-    {
-      provide: 'UserRepository',
-      useClass: UserRepositoryAdapter,
     },
   ],
   exports: [],

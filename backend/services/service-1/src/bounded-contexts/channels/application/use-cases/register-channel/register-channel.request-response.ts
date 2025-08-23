@@ -1,11 +1,11 @@
-export interface RegisterChannelRequest {
+export interface RegisterChannelUseCaseProps {
   userId: string;
   channelType: string;
   name: string;
   connectionConfig: Record<string, any>;
 }
 
-export interface RegisterChannelResponse {
+export interface RegisterChannelUseCaseResponse {
   channelId: string;
   success: boolean;
 }
