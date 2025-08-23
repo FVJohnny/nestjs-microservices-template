@@ -77,9 +77,11 @@ const UseCases = [
   ],
   controllers: [ChannelsController],
   providers: [
-    // Handlers
+    // CQRS
     ...CommandHandlers,
     ...QueryHandlers,
+
+    // Event Handlers
     ...DomainEventHandlers,
     ...IntegrationEventHandlers,
 
@@ -91,6 +93,8 @@ const UseCases = [
       provide: 'ChannelRepository',
       useClass: PostgreSQLChannelRepository,
       // useClass: MongoDBChannelRepository,
+      // useClass: RedisChannelRepository,
+      // useClass: InMemoryChannelRepository,
     },
   ],
   exports: [],
