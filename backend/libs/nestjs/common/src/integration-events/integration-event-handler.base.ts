@@ -3,9 +3,7 @@ import { IntegrationEventListener } from '../ddd/index';
 import { INTEGRATION_EVENT_LISTENER_TOKEN } from '.';
 import { BaseIntegrationEvent } from './events/base-integration-event';
 
-interface EventClass<T extends BaseIntegrationEvent> {
-  fromJSON(json: any): T;
-}
+
 
 /**
  * Base event handler that auto-registers itself with its topic
@@ -14,12 +12,12 @@ interface EventClass<T extends BaseIntegrationEvent> {
  * @template T The specific integration event type this handler processes
  */
 @Injectable()
-export abstract class BaseIntegrationEventHandler<T extends BaseIntegrationEvent = BaseIntegrationEvent> 
-  implements IntegrationEventHandler, OnModuleInit {
+export abstract class BaseIntegrationEventHandler<T extends BaseIntegrationEvent> 
+  implements IIntegrationEventHandler, OnModuleInit {
   protected readonly logger = new Logger(this.constructor.name);
 
   abstract readonly topicName: string;
-  abstract readonly eventClass: EventClass<T>;
+  eventClass!: { fromJSON(json: any): T };
 
   constructor(
     @Inject(INTEGRATION_EVENT_LISTENER_TOKEN) private readonly integrationEventListener: IntegrationEventListener,
@@ -47,7 +45,7 @@ export abstract class BaseIntegrationEventHandler<T extends BaseIntegrationEvent
   protected abstract handleEvent(event: T, messageId: string): Promise<void>;
 }
 
-export interface IntegrationEventHandler {
+export interface IIntegrationEventHandler {
   readonly topicName: string;
   handle(payload: Record<string, unknown>, messageId: string): Promise<void>;
 }

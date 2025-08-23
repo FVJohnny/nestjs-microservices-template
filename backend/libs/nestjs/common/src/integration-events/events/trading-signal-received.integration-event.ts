@@ -12,7 +12,6 @@ export interface TradingSignalReceivedIntegrationEventProps extends BaseIntegrat
   userId: string;
   connectionConfig?: Record<string, unknown>;
 }
-
 export class TradingSignalReceivedIntegrationEvent extends BaseIntegrationEvent {
   readonly eventVersion = '1.0';
   readonly eventName = 'trading-signal.received';

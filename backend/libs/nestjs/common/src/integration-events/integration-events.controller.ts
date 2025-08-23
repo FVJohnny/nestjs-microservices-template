@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { IntegrationEventPublisher } from './event-publisher.interface';
-import { BaseIntegrationEventListener, IntegrationEventListener } from './base.integration-event-listener';
+import { BaseIntegrationEventListener, IntegrationEventListener } from './integration-event-listener.base';
 import { INTEGRATION_EVENT_LISTENER_TOKEN, INTEGRATION_EVENT_PUBLISHER_TOKEN } from '.';
 
 /**

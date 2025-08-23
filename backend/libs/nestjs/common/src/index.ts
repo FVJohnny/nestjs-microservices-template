@@ -32,3 +32,7 @@ export * from './testing/cqrs-event-bus';
 // Use Case interface and decorators
 export * from './ddd/application';
 
+// Integration events
+export * from './integration-events';
+
+
