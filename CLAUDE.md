@@ -1,369 +1,337 @@
-# CLAUDE.md
+# Copy Signals AI - Microservices Template
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Overview
+Copy Signals AI is a comprehensive microservices template built with modern technologies, implementing Domain-Driven Design (DDD), CQRS, and Hexagonal Architecture patterns. This template provides a production-ready foundation for developing microservices with pre-configured infrastructure, monitoring, and best practices.
+
+**Service-1** serves as the primary **NestJS microservice template** that can be duplicated and customized to create new microservices. It includes a complete reference implementation with the Channels bounded context, demonstrating proper DDD architecture and integration patterns.
+
+## Project Structure
+
+### Root Level
+- `backend/` - All backend services and shared libraries
+- `frontend/` - Simple HTML/CSS/JS frontend dashboard
+- `infra/` - Infrastructure configuration (Docker, monitoring)
+- `docs/` - Documentation and architecture diagrams
+- `scripts/` - Utility scripts
+- `Makefile` - Development and deployment shortcuts
+- `render.yaml` - Render.com deployment configuration
+
+### Backend Architecture
+
+#### Services
+- **Service 1** (NestJS/TypeScript) - **Template microservice** for creating new NestJS services on port 3001
+- **Service 3** (FastAPI/Python) - Template microservice for creating new FastAPI services on port 3003
+
+#### Shared Libraries (`backend/libs/nestjs/`)
+- **common** - Core utilities, DDD base classes, CQRS, metrics, audit, correlation
+- **kafka** - Kafka integration and event publishing/listening
+- **redis** - Redis integration and event handling
+- **mongodb** - MongoDB configuration and utilities
+- **postgresql** - PostgreSQL configuration and TypeORM setup
+- **events** - Event system configuration and management
+
+## Technologies & Patterns
+
+### Architecture Patterns
+- **Domain-Driven Design (DDD)** - Organized by bounded contexts
+- **CQRS (Command Query Responsibility Segregation)** - Separate read/write operations
+- **Hexagonal Architecture** - Clean separation of concerns
+- **Event Sourcing** - Domain events and integration events
+
+### Technologies
+- **NestJS** - Node.js framework with TypeScript
+- **FastAPI** - Python web framework
+- **Kafka** - Event streaming platform
+- **Redis** - Caching and message broker
+- **MongoDB** - Document database
+- **PostgreSQL** - Relational database
+- **Prometheus** - Metrics collection
+- **Grafana** - Metrics visualization
+- **Docker** - Containerization
+
+## Service 1 (NestJS) - Template Architecture
+
+Service-1 serves as a **template for creating new NestJS microservices**. It demonstrates best practices and provides a complete example implementation that can be duplicated and modified for new services.
+
+### Bounded Contexts Template
+Located in `backend/services/service-1/src/bounded-contexts/`:
+
+The Channels bounded context serves as a **reference implementation** showing how to structure new bounded contexts:
+
+#### Channels Context
+- **Domain Layer**
+  - `entities/channel.entity.ts` - Channel aggregate root
+  - `value-objects/channel-type.vo.ts` - Channel type value object
+  - `events/` - Domain events (ChannelRegistered, MessageReceived)
+  - `repositories/channel.repository.ts` - Repository interface
+  
+- **Application Layer**
+  - `commands/` - Command handlers (RegisterChannel)
+  - `queries/` - Query handlers (GetChannels, CountUserChannels)
+  - `use-cases/` - Business use cases
+  - `domain-event-handlers/` - Domain event handlers
+
+- **Infrastructure Layer**
+  - `repositories/` - Repository implementations (MongoDB, PostgreSQL, Redis, In-Memory)
+  - `adapters/` - External service adapters
+
+- **Interface Layer**
+  - `http/controllers/` - REST API controllers
+  - `http/dtos/` - Data transfer objects
+  - `integration-events/` - External event handlers
+
+### Shared Common Library Features
+
+#### Core DDD Components
+- `ddd/domain/` - Base domain classes and interfaces
+- `ddd/application/` - Use case interfaces and decorators
+- Repository base classes and domain event handling
+
+#### Cross-Cutting Concerns
+- **Audit Module** - Request/response logging
+- **Correlation Module** - Request correlation IDs
+- **Metrics Module** - Prometheus metrics collection
+- **Error Handling** - Global exception filters
+- **Heartbeat Module** - Health check endpoints
+
+#### Integration Events
+- Event publisher interfaces
+- Base integration event classes
+- Event handler decorators and base classes
+- Predefined events: ChannelCreated, TradingSignalReceived
+
+## Service 3 (FastAPI) Architecture
+
+Located in `backend/services/service-3/`:
+
+### Core Components
+- `main.py` - FastAPI application with lifespan management
+- `messaging_service.py` - Message broker abstraction
+- `event_counter.py` - Event statistics tracking
+- `kafka_service.py` - Kafka client implementation
+- `redis_service.py` - Redis client implementation
+
+### API Endpoints
+- `/health` - Health check
+- `/health/environment` - Environment information
+- `/messaging/publish` - Generic message publishing
+- `/integration-events/listener/status` - Event listener status
+- `/integration-events/listener/stats` - Detailed statistics
+- `/integration-events/listener/start` - Start event listener
+- `/integration-events/listener/stop` - Stop event listener
+
+## Infrastructure & DevOps
+
+### Development Environment
+Run with: `make dev`
+
+**Services:**
+- service-1:3001 (NestJS Template)
+- service-3:3003 (FastAPI Template)  
+- frontend:3000 (Nginx Dashboard)
+- kafka:9092 (Message Broker)
+- mongodb:27017 (Document Database)
+- redis:6379 (Cache/Message Broker)
+- postgres:5432 (Relational Database)
+- prometheus:9090 (Metrics Collection)
+- grafana:4000 (Metrics Visualization)
+
+### Production Environment
+Run with: `make prod`
+- Multi-stage Docker builds
+- Production-optimized configurations
+- Persistent data volumes
+- Health checks and restart policies
+
+### Monitoring Stack
+
+#### Prometheus Configuration
+- Scrapes metrics from service-1:3000/metrics
+- 5-second scrape interval
+- Located in `infra/monitoring/prometheus/prometheus.yml`
+
+#### Grafana Dashboard
+- Pre-configured NestJS HTTP metrics dashboard
+- Panels for: requests/sec, p95 latency, status codes, request duration
+- Auto-refresh every 10 seconds
+- Located in `infra/monitoring/grafana/provisioning/dashboards/nestjs-metrics.json`
+
+### Deployment
+
+#### Render.com Configuration
+`render.yaml` defines:
+- service-1: NestJS template service in Frankfurt
+- service-3: FastAPI template service in Frankfurt  
+- frontend: Static web service dashboard
+- Environment variables from shared group "Groupito"
+- Auto-deployment enabled
+
+When creating new services, duplicate the service configuration and update the service name, dockerfile path, and environment variables.
 
 ## Development Commands
 
-**Docker-based development (recommended):**
-```bash
-# Development with hot reload
-make dev                # Start all services in development mode
-make dev-d              # Start in detached mode
-make dev-down           # Stop development services
-make dev-logs           # View logs
-
-# Production deployment
-make prod               # Start all services in production mode
-make prod-down          # Stop production services
-make prod-logs          # View logs
-
-# Rebuild (if needed)
-make rebuild-dev        # Rebuild dev images without cache
-make rebuild-prod       # Rebuild prod images without cache
-```
-
-**NestJS Service Development:**
-```bash
-cd backend/services/service-1
-npm run start:dev       # Development with hot reload
-npm run build           # Build the service
-npm run test            # Run unit tests
-npm run test:e2e        # Run end-to-end tests
-npm run lint            # Run ESLint
-npm run format          # Format code with Prettier
-```
-
-**Library Development:**
-```bash
-cd backend/libs/nestjs/[library-name]
-npm run build           # Build library
-npm run dev             # Build with watch mode
-```
-
-## Architecture Overview
-
-This is a **microservices architecture** implementing **Domain-Driven Design (DDD)** patterns with event-driven communication.
-
-### Service Structure
-- **Service 1** (NestJS/TypeScript): Primary business service with DDD implementation
-- **Service 2** (NestJS/TypeScript): Secondary service
-- **Service 3** (FastAPI/Python): Python-based service
-- **Frontend**: Vanilla JavaScript client
-
-### Key Architectural Patterns
-
-**Domain-Driven Design Implementation:**
-- Bounded contexts organized as modules (e.g., `channels`)
-- CQRS pattern with command/query handlers
-- Domain events for internal communication
-- Integration events for cross-service communication
-- Repository pattern with multiple implementations (Redis, MongoDB, In-Memory)
-
-**Event-Driven Architecture:**
-- Domain events handled within bounded contexts
-- Integration events for cross-service communication via Kafka/Redis
-- Event handlers in `application/domain-event-handlers/`
-- Integration event handlers in `interfaces/integration-events/`
-
-**Shared Libraries (`backend/libs/nestjs/`):**
-- `common`: Heartbeat, correlation, Swagger utilities
-- `ddd`: DDD patterns, messaging abstractions, event handling
-- `kafka`: Kafka integration and event-driven functionality
-- `mongodb`: MongoDB configuration and utilities
-- `redis`: Redis configuration and utilities with health monitoring
-- `postgresql`: PostgreSQL/TypeORM configuration with health monitoring
-- `types`: Shared TypeScript types and integration events
-
-### Directory Structure Conventions
-
-**DDD Module Structure (e.g., `channels`):**
-```
-channels/
-├── application/
-│   ├── commands/           # Command handlers (write operations)
-│   ├── queries/           # Query handlers (read operations)
-│   └── domain-event-handlers/  # Internal domain event handlers
-├── domain/
-│   ├── entities/          # Domain entities
-│   ├── events/           # Domain events
-│   ├── repositories/     # Repository interfaces
-│   └── value-objects/    # Value objects
-├── infrastructure/
-│   └── repositories/     # Repository implementations
-└── interfaces/
-    ├── http/             # REST controllers and DTOs
-    └── integration-events/  # Cross-service event handlers
-```
-
-**Repository Pattern:**
-Repository implementations are swappable via dependency injection:
-- In-Memory: For testing
-- Redis: For caching and simple storage (default)
-- MongoDB: For NoSQL document storage
-- PostgreSQL: For relational data with TypeORM
-
-## Integration Events
-
-Cross-service communication uses integration events located in `@libs/nestjs-types/integration-events/`. Current events:
-- `ChannelCreatedIntegrationEvent`: Notifies when a channel is created
-- Base event: `BaseIntegrationEvent`
-
-## Service-1 Detailed Implementation Guide
-
-### Application Bootstrap and Configuration
-
-**Entry Point (`main.ts`):**
-- Uses shared `SwaggerUtility` from `@libs/nestjs-common` for consistent API docs
-- Supports `PROXY_BASE_PATH` environment variable for reverse proxy setups
-- Configurable port via `PORT` environment variable (defaults to 3000)
-
-**App Module Structure:**
-- **Infrastructure**: Redis, MongoDB, Kafka modules imported globally
-- **Cross-cutting**: Heartbeat, correlation, validation pipes
-- **Business Logic**: Channels module as bounded context
-- **Event System**: Global `EventsModule` provides messaging infrastructure
-
-### Channels Bounded Context Deep Dive
-
-**Domain Layer Architecture:**
-
-**Entities:**
-- `Channel` extends `AggregateRoot` from NestJS CQRS for event sourcing
-- Immutable properties with factory method `Channel.create()`
-- Business methods like `receiveMessage()` that emit domain events
-- UUID generation for aggregate IDs
-
-**Value Objects:**
-- `ChannelTypeVO` enforces valid channel types (telegram, discord, whatsapp)
-- Immutable with validation in factory method
-- Equality comparison and serialization support
-
-**Domain Events:**
-- `ChannelRegisteredDomainEvent`: Fired when new channel is created
-- `MessageReceivedDomainEvent`: Fired when channel receives a message
-- Both extend base `DomainEvent` from DDD library with auto-generated IDs and timestamps
-
-**Application Layer (CQRS Implementation):**
-
-**Command Flow:**
-1. `RegisterChannelCommand` → `RegisterChannelCommandHandler`
-2. Handler creates `Channel` aggregate using factory method
-3. Aggregate emits `ChannelRegisteredDomainEvent` automatically
-4. Handler saves aggregate via injected repository
-5. Handler publishes uncommitted events via `EventBus`
-6. Handler commits events on aggregate
-
-**Query Flow:**
-1. `GetChannelsQuery` → `GetChannelsHandler`
-2. Direct repository access for read operations
-3. Optional userId filtering supported
-4. Returns domain entities (converted to DTOs at controller level)
-
-**Event Handling Architecture:**
-
-**Domain Event Handlers:**
-- `ChannelRegisteredDomainEventHandler`: Transforms domain events to integration events
-- `MessageReceivedDomainEventHandler`: Publishes message events to external systems
-- Both use injected `MessagePublisher` from global events module
-
-**Integration Event Handlers:**
-- `TradingSignalsIntegrationEventHandler` extends `BaseEventHandler`
-- Listens to 'trading-signals' Kafka topic
-- Transforms external events into internal commands via CommandBus
-- Auto-registration with EventListener during module initialization
-
-
-**Repository Implementations:**
-
-**Redis Implementation (`RedisChannelRepository`):**
-- Key patterns: `channel:{id}` for entities, `user_channels:{userId}` for indexing
-- JSON serialization with proper date handling
-- Multi-get operations for bulk queries
-- Safe JSON parsing with error handling
-- User indexing via Redis sets for efficient user-based queries
-
-**MongoDB Implementation (`MongoDBChannelRepository`):**
-- Soft deletes using `isActive` flag
-- Proper error handling with descriptive messages
-- Upsert operations (create/update in single method)
-- Indexed queries on userId and isActive fields
-- Date handling for createdAt/updatedAt timestamps
-
-**In-Memory Implementation (`InMemoryChannelRepository`):**
-- Simple Map-based storage for testing
-- All operations synchronous but wrapped in Promises for interface compliance
-
-**PostgreSQL Implementation (`PostgreSQLChannelRepository`):**
-- TypeORM-based implementation with Entity mapping
-- JSONB support for flexible connectionConfig storage
-- Indexed columns for efficient queries (userId, channelType, isActive)
-- Query builder support for complex filtering
-- Soft deletes with isActive flag
-- Automatic timestamp tracking (createdAt, updatedAt)
-
-### HTTP Interface Layer
-
-**Controller Design:**
-- `/channels` RESTful endpoint with full Swagger documentation
-- CQRS pattern: Commands via POST, Queries via GET
-- Proper HTTP status codes (201 for creation, 200 for queries)
-- DTO transformation layer between domain and API
-- Correlation logging for request tracing
-
-**DTO Patterns:**
-- Request DTOs with validation decorators (`class-validator`)
-- Response DTOs with explicit construction
-- Domain-to-DTO mapping in controllers
-- Swagger decorations for API documentation
-
-### Dependency Injection and Module Configuration
-
-**Module Composition:**
-```typescript
-// Current repository binding in channels.module.ts
-{
-  provide: 'ChannelRepository',
-  useClass: RedisChannelRepository, // Change this to switch implementations
-}
-```
-
-**Event System Configuration:**
-- Global `EventsModule` provides `MESSAGE_PUBLISHER_TOKEN` and `INTEGRATION_EVENT_LISTENER_TOKEN`
-- Factory pattern injection with automatic KafkaService dependency
-- Token-based injection prevents tight coupling to specific implementations
-
-### Adding New Functionality Guide
-
-**Adding New Domain Events:**
-1. Create event class extending `DomainEvent` in `domain/events/`
-2. Add event emission in aggregate method
-3. Create domain event handler in `application/domain-event-handlers/`
-4. Register handler in module providers array
-
-**Adding New Commands:**
-1. Create command class implementing `ICommand` in `application/commands/`
-2. Create command handler implementing `ICommandHandler`
-3. Use `@CommandHandler(YourCommand)` decorator
-4. Register in module's `CommandHandlers` array
-
-**Adding New Queries:**
-1. Create query class implementing `IQuery` in `application/queries/`
-2. Create query handler implementing `IQueryHandler`
-3. Use `@QueryHandler(YourQuery)` decorator
-4. Register in module's `QueryHandlers` array
-
-**Adding New Integration Events:**
-1. Create event in `@libs/nestjs-types/integration-events/`
-2. Extend `BaseIntegrationEvent` with proper versioning
-3. Add to shared types library exports
-4. Create handler extending `BaseEventHandler` in service
-
-**Repository Implementation Switching:**
-- Change `useClass` in module provider configuration
-- No changes needed in application layer (dependency inversion)
-- Add schema files for MongoDB implementation
-- Configure connection strings for new databases
-
-### Event Flow Examples
-
-**Channel Registration Flow:**
-1. HTTP POST → `ChannelsController.registerChannel()`
-2. Creates `RegisterChannelCommand` → CommandBus
-3. `RegisterChannelCommandHandler` creates `Channel` aggregate
-4. Aggregate emits `ChannelRegisteredDomainEvent`
-5. Saved to repository, events published via EventBus
-6. `ChannelRegisteredDomainEventHandler` transforms to `ChannelCreatedIntegrationEvent`
-7. Published to Kafka 'channels' topic for other services
-
-**External Event Processing:**
-1. Kafka message arrives on 'trading-signals' topic
-2. `TradingSignalsIntegrationEventHandler.handle()` called
-3. Validates payload and creates `RegisterChannelCommand`
-4. Executes command via CommandBus (same flow as HTTP)
-
-### Testing Strategies
-
-**Unit Testing:**
-- Use `InMemoryChannelRepository` for application layer tests
-- Mock `MessagePublisher` for event handler tests
-- Test aggregate behavior in isolation
-
-**Integration Testing:**
-- TestContainers for Redis/MongoDB repositories
-- Test event publishing/consuming end-to-end
-- Test HTTP endpoints with real dependencies
-
-### Health & Monitoring Endpoints
-
-Each infrastructure component provides health monitoring endpoints:
-
-**Redis** (`/redis/*`):
-- `/redis/health` - Connection health check
-- `/redis/stats` - Usage statistics and key counts
-- `/redis/keys` - List keys by pattern
-- `/redis/key/:key` - Inspect individual key data
-
-**PostgreSQL** (`/postgresql/*`):
-- `/postgresql/health` - Database connection status
-- `/postgresql/stats` - Database size, connections, table stats
-- `/postgresql/tables` - List all tables
-- `/postgresql/table/:name` - Table structure and indexes
-- `/postgresql/config` - Current configuration (masked)
-
-**MongoDB** (`/mongodb/*`):
-- `/mongodb/config` - MongoDB configuration
-
-**Kafka** (`/kafka/*`):
-- `/kafka/consumer-stats` - Consumer statistics and metrics
-- `/kafka/publish-event` - Test event publishing
-
-### Conditional Database Loading
-
-The system uses smart conditional loading - databases are only initialized if their environment variables are configured:
-
-**Redis Loading**: 
-- Loads if `REDIS_HOST` is set OR not explicitly disabled
-- Skip with `DISABLE_REDIS=true` or `DISABLE_ALL_DBS=true`
-
-**MongoDB Loading**:
-- Loads if `MONGODB_URI` OR `MONGO_HOST` is set
-- No environment variables = no MongoDB initialization
-
-**PostgreSQL Loading**:
-- Loads if `POSTGRES_HOST` is set
-- No `POSTGRES_HOST` = no PostgreSQL initialization
-
-**Repository Fallbacks**:
-- If selected repository's database isn't available, falls back to in-memory
-- Warns in console when fallback occurs
-- `memory` repository always available as ultimate fallback
-
-**Example Configurations**:
-```bash
-
-# Redis only
-REDIS_HOST=localhost
-
-# PostgreSQL only
-POSTGRES_HOST=localhost
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=secret
-POSTGRES_DB=myapp
-
-# All databases available, use PostgreSQL
-REDIS_HOST=localhost
-MONGODB_URI=mongodb://localhost:27017/myapp
-POSTGRES_HOST=localhost
-```
-
-### Development Notes
-
-- Services use file-based dependencies to shared libraries (`"@libs/nestjs-[name]": "file:../../libs/nestjs/[name]"`)
-- Automatic fallback to in-memory if selected database unavailable
-- Databases only load if their connection environment variables are configured
-- CQRS pattern separates read/write operations with dedicated handlers
-- All NestJS services include Swagger documentation at `/docs`
-- Services run on ports 3001, 3002, 3003 respectively in development
-- Correlation IDs automatically injected via middleware for request tracing
-- Global validation pipe enabled for all endpoints
-- PostgreSQL uses TypeORM with synchronize option for development (disable in production)
+### Makefile Commands
+- `make dev` - Start development environment
+- `make dev-down` - Stop development environment
+- `make dev-logs` - View development logs
+- `make prod` - Start production environment
+- `make update-libs` - Update all shared libraries
+- `make dev-restart-service1` - Restart service-1 only
+
+### Service 1 Commands
+Located in `backend/services/service-1/`:
+- `npm run start:dev` - Development with hot reload
+- `npm run build` - Build for production
+- `npm run test` - Run unit tests
+- `npm run test:e2e` - Run end-to-end tests
+- `npm run lint` - Lint TypeScript code
+
+## Database Support
+
+### PostgreSQL Integration
+- TypeORM configuration
+- Schema synchronization
+- Connection pooling
+- Located in `backend/libs/nestjs/postgresql/`
+
+### MongoDB Integration  
+- Mongoose configuration
+- Schema definitions
+- Connection management
+- Located in `backend/libs/nestjs/mongodb/`
+
+### Redis Integration
+- Redis client configuration
+- Pub/sub messaging
+- Caching utilities
+- Located in `backend/libs/nestjs/redis/`
+
+## Event-Driven Architecture
+
+### Messaging Backends
+Configurable via `MESSAGING_BACKEND` environment variable:
+- `kafka` - Apache Kafka (production)
+- `redis` - Redis pub/sub (development)
+
+### Event Types
+- **Domain Events** - Internal bounded context events
+- **Integration Events** - Cross-service communication events
+
+### Event Flow
+1. Domain operations trigger domain events
+2. Domain event handlers process internal logic
+3. Integration events published to message broker
+4. Other services consume integration events
+5. External handlers process cross-service logic
+
+## Testing Strategy
+
+### Service 1 Testing
+- Unit tests with Jest
+- Domain entity tests
+- Command/query handler tests  
+- Repository implementation tests
+- End-to-end API tests
+
+### Test Commands
+- `npm run test` - Unit tests
+- `npm run test:watch` - Watch mode
+- `npm run test:cov` - Coverage report
+- `npm run test:e2e` - End-to-end tests
+
+## Key Features
+
+### 🏗️ Architecture
+- Clean Architecture principles
+- DDD with bounded contexts
+- CQRS command/query separation
+- Event-driven communication
+- Hexagonal architecture
+
+### 🚀 Development Experience  
+- Hot reload for all services
+- Shared library system
+- Type-safe APIs
+- Comprehensive error handling
+- Request correlation tracking
+
+### 📊 Observability
+- Prometheus metrics collection
+- Grafana visualization dashboards  
+- Request/response audit logging
+- Health check endpoints
+- Performance monitoring
+
+### 🔧 DevOps Ready
+- Docker containerization
+- Development/production configurations
+- Database migrations
+- Environment configuration
+- Cloud deployment ready
+
+## Environment Variables
+
+### Core Configuration
+- `NODE_ENV` - Environment (development/production)
+- `MESSAGING_BACKEND` - Message broker (kafka/redis)
+- `SERVICE_NAME` - Service identifier
+
+### Database Configuration
+- `MONGODB_URI` - MongoDB connection string
+- `POSTGRES_HOST/PORT/USER/PASSWORD/DB` - PostgreSQL config
+- `REDIS_HOST/PORT/PASSWORD` - Redis configuration
+
+### Kafka Configuration
+- `KAFKA_BROKERS` - Kafka broker endpoints
+- `KAFKA_USERNAME/PASSWORD` - Authentication
+- `KAFKA_SERVICE_ID` - Service identifier
+
+### API Configuration
+- `PORT` - Service port
+- `CORS_ORIGINS` - Allowed CORS origins
+- `PROXY_BASE_PATH` - API base path
+
+## Creating New Microservices
+
+### From Service-1 Template
+To create a new NestJS microservice:
+
+1. **Copy the service-1 directory:**
+   ```bash
+   cp -r backend/services/service-1 backend/services/service-2
+   ```
+
+2. **Update package.json:**
+   - Change the `name` field
+   - Update dependencies if needed
+
+3. **Modify bounded contexts:**
+   - Replace the `channels` bounded context with your domain
+   - Update entity names, value objects, and business logic
+   - Modify repository interfaces and implementations
+
+4. **Update Docker configuration:**
+   - Create new Dockerfile if needed
+   - Add to docker-compose files with new service name and port
+
+5. **Configure environment:**
+   - Add environment variables to docker-compose
+   - Update service-specific configuration
+
+6. **Update Makefile:**
+   - Add restart commands for the new service
+   - Include in update-libs script if using shared libraries
+
+### From Service-3 Template
+To create a new FastAPI microservice:
+
+1. **Copy the service-3 directory:**
+   ```bash
+   cp -r backend/services/service-3 backend/services/service-4
+   ```
+
+2. **Update main.py and requirements.txt**
+3. **Modify business logic and endpoints**
+4. **Update Docker and deployment configuration**
+
+This template provides a complete foundation for building scalable, maintainable microservices with modern architectural patterns and comprehensive tooling.
