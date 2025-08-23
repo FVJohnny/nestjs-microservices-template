@@ -1,9 +1,9 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
 import { SharedRedisModule } from '@libs/nestjs-redis';
 import { SharedPostgreSQLModule } from '@libs/nestjs-postgresql';
 import { PostgreSQLChannelEntity } from './bounded-contexts/channels/infrastructure/repositories/postgresql/channel.schema';
+import { MongoDBConfigService, SharedMongoDBModule } from '@libs/nestjs-mongodb';
 import { MongoClient } from 'mongodb';
 
 /**
@@ -23,18 +23,10 @@ import { MongoClient } from 'mongodb';
     TypeOrmModule.forRootAsync(
       SharedPostgreSQLModule.getTypeOrmConfig([PostgreSQLChannelEntity]),
     ),
+    
   ],
   providers: [
-        // MongoDB Client Provider
-        {
-          provide: 'MONGODB_CLIENT',
-          useFactory: async (): Promise<MongoClient> => {
-            const client = new MongoClient(process.env.MONGODB_URI || 'mongodb://localhost:27017');
-            await client.connect();
-            return client;
-          },
-        },
   ],
-  exports: ['MONGODB_CLIENT']
+  exports: []
 })
 export class DatabaseModule {}

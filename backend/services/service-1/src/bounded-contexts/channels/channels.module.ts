@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SharedMongoDBModule, MongoDBConfigService } from '@libs/nestjs-mongodb';
+import { MongoClient } from 'mongodb';
 
 // Controllers
 import { 

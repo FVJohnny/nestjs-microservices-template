@@ -77,30 +77,15 @@ export class MongoDBChannelRepository implements ChannelRepository {
 
   async findByCriteria(criteria: Criteria): Promise<Channel[]> {
     try {
-      this.logger.log(`Finding channels with criteria`);
+      this.logger.log(`Finding channels with criteria: ${JSON.stringify(criteria)}`);
       
       const { filter, options } = MongoCriteriaConverter.convert(criteria);
-      
-      const findOptions: any = {};
-      
-      // Apply sorting if specified
-      if (options.sort) {
-        findOptions.sort = options.sort;
-      }
-      
-      // Apply pagination if specified
-      if (options.limit) {
-        findOptions.limit = options.limit;
-      }
-      
-      if (options.skip) {
-        findOptions.skip = options.skip;
-      }
-      
-      const channelDocs = await this.collection.find(filter, findOptions).toArray();
+      console.log(filter, options)
+      const channelDocs = await this.collection.find(filter, options).toArray();
       return channelDocs.map((doc: any) => Channel.fromPrimitives(doc));
     } catch (error) {
-      this.handleDatabaseError('findByCriteria', 'findByCriteria', error);
+      console.error(error)
+      this.handleDatabaseError('findByCriteria', '', error);
     }
   }
 
