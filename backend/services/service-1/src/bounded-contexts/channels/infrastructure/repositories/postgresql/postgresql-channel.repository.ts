@@ -20,7 +20,7 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
     private readonly channelRepository: Repository<PostgreSQLChannelEntity>,
   ) {}
 
-  async save(channel: Channel): Promise<Channel> {
+  async save(channel: Channel): Promise<void> {
     try {
       this.logger.log(`Saving channel: ${channel.id}`);
 
@@ -28,7 +28,6 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
       await this.channelRepository.save(entity);
 
       this.logger.log(`Successfully saved channel: ${channel.id}`);
-      return channel;
     } catch (error) {
       this.handleDatabaseError('save', channel.id, error);
     }
@@ -68,11 +67,9 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
   async findById(id: string): Promise<Channel | null> {
     try {
       this.logger.log(`Finding channel by id: ${id}`);
-
       const entity = await this.channelRepository.findOne({
         where: { id, isActive: true },
       });
-
       return entity ? this.mapToDomain(entity) : null;
     } catch (error) {
       this.handleDatabaseError('find', id, error);

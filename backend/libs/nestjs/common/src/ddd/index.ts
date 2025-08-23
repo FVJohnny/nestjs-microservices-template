@@ -19,6 +19,9 @@ export * from '../integration-events/events';
 // Events
 export * from './domain/events/domain-event.base';
 
+// Aggregate Root
+export * from './domain/AggregateRoot';
+
 // Repositories
 export * from './domain/repositories/repository.base';
 

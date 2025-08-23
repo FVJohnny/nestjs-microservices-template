@@ -1,10 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Injectable, Inject } from '@nestjs/common';
+import { MongoClient, Collection } from 'mongodb';
 import { Channel } from '../../../domain/entities/channel.entity';
 import { ChannelRepository } from '../../../domain/repositories/channel.repository';
-import { ChannelMongoDocument } from './channel.schema';
-import { ChannelTypeVO } from '../../../domain/value-objects/channel-type.vo';
 import { Criteria, MongoCriteriaConverter } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { ChannelPersistenceException } from '../../errors';
@@ -15,46 +12,24 @@ export class MongoDBChannelRepository implements ChannelRepository {
     MongoDBChannelRepository.name,
   );
 
+  private readonly collection: Collection;
+
   constructor(
-    @InjectModel('Channel')
-    private readonly channelModel: Model<ChannelMongoDocument>,
-  ) {}
+    @Inject('MONGODB_CLIENT') private readonly mongoClient: MongoClient,
+  ) {
+    this.collection = this.mongoClient.db().collection('channels');
+  }
 
-  async save(channel: Channel): Promise<Channel> {
+  async save(channel: Channel): Promise<void> {
     try {
-      const channelDoc = await this.channelModel.findOne({ id: channel.id });
+      const primitives = channel.toPrimitives();
 
-      if (channelDoc) {
-        // Update existing channel
-        await this.channelModel.updateOne(
-          { id: channel.id },
-          {
-            name: channel.name,
-            channelType: channel.channelType.toString(),
-            userId: channel.userId,
-            connectionConfig: channel.connectionConfig,
-            isActive: channel.isActive,
-            updatedAt: new Date(),
-          },
-        );
-        this.logger.log(`Updated channel: ${channel.id}`);
-      } else {
-        // Create new channel
-        await this.channelModel.create({
-          id: channel.id,
-          name: channel.name,
-          channelType: channel.channelType.toString(),
-          userId: channel.userId,
-          connectionConfig: channel.connectionConfig,
-          isActive: channel.isActive,
-          createdAt: channel.createdAt,
-          updatedAt: new Date(),
-        });
-        this.logger.log(`Created channel: ${channel.id}`);
-      }
+      await this.collection.updateOne(
+        { id: channel.id },
+        { $set: { ...primitives, updatedAt: new Date() } },
+        { upsert: true }
+      );
 
-      // Return the saved channel
-      return channel;
     } catch (error) {
       this.handleDatabaseError('save', channel.id, error);
     }
@@ -64,12 +39,11 @@ export class MongoDBChannelRepository implements ChannelRepository {
     try {
       this.logger.log(`Removing channel with id: ${id}`);
       // Soft delete by setting isActive to false
-      const result = await this.channelModel.updateOne(
+      const result = await this.collection.deleteOne(
         { id },
-        { isActive: false, updatedAt: new Date() },
       );
 
-      if (result.matchedCount === 0) {
+      if (result.deletedCount === 0) {
         throw new Error(`Channel with id ${id} not found`);
       }
 
@@ -82,9 +56,8 @@ export class MongoDBChannelRepository implements ChannelRepository {
   async exists(id: string): Promise<boolean> {
     try {
       this.logger.log(`Checking if channel exists with id: ${id}`);
-      const count = await this.channelModel.countDocuments({
+      const count = await this.collection.countDocuments({
         id,
-        isActive: true,
       });
       return count > 0;
     } catch (error) {
@@ -95,10 +68,10 @@ export class MongoDBChannelRepository implements ChannelRepository {
   async findById(id: string): Promise<Channel | null> {
     try {
       this.logger.log(`Finding channel by id: ${id}`);
-      const channelDoc = await this.channelModel.findOne({ id }).exec();
-      return channelDoc ? this.toDomainEntity(channelDoc) : null;
+      const entity = await this.collection.findOne({ id });
+      return entity ? Channel.fromPrimitives(entity) : null;
     } catch (error) {
-      this.handleDatabaseError('find', id, error);
+      this.handleDatabaseError('findById', id, error);
     }
   }
 
@@ -108,24 +81,24 @@ export class MongoDBChannelRepository implements ChannelRepository {
       
       const { filter, options } = MongoCriteriaConverter.convert(criteria);
       
-      let query = this.channelModel.find(filter);
+      const findOptions: any = {};
       
       // Apply sorting if specified
       if (options.sort) {
-        query = query.sort(options.sort);
+        findOptions.sort = options.sort;
       }
       
       // Apply pagination if specified
       if (options.limit) {
-        query = query.limit(options.limit);
+        findOptions.limit = options.limit;
       }
       
       if (options.skip) {
-        query = query.skip(options.skip);
+        findOptions.skip = options.skip;
       }
       
-      const channelDocs = await query.exec();
-      return channelDocs.map((doc) => this.toDomainEntity(doc));
+      const channelDocs = await this.collection.find(filter, findOptions).toArray();
+      return channelDocs.map((doc: any) => Channel.fromPrimitives(doc));
     } catch (error) {
       this.handleDatabaseError('findByCriteria', 'findByCriteria', error);
     }
@@ -137,7 +110,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
       
       const { filter } = MongoCriteriaConverter.convert(criteria);
       
-      return await this.channelModel.countDocuments(filter);
+      return await this.collection.countDocuments(filter);
     } catch (error) {
       this.handleDatabaseError('countByCriteria', 'criteria', error);
     }
@@ -154,20 +127,5 @@ export class MongoDBChannelRepository implements ChannelRepository {
     const cause =
       error instanceof Error ? error : new Error('Unknown database error');
     throw new ChannelPersistenceException(operation, id, cause);
-  }
-
-  /**
-   * Convert MongoDB document to domain entity
-   */
-  private toDomainEntity(doc: ChannelMongoDocument): Channel {
-    return new Channel(
-      doc.id,
-      ChannelTypeVO.create(doc.channelType),
-      doc.name,
-      doc.userId,
-      doc.connectionConfig || {},
-      doc.isActive,
-      doc.createdAt,
-    );
   }
 }

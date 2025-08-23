@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Controllers
@@ -29,7 +28,6 @@ import { PostgreSQLChannelRepository } from './infrastructure/repositories/postg
 import { PostgreSQLChannelEntity } from './infrastructure/repositories/postgresql/channel.schema';
 
 // Infrastructure MongoDB
-import { ChannelMongoSchema } from './infrastructure/repositories/mongodb/channel.schema';
 import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb/mongodb-channel.repository';
 
 
@@ -48,10 +46,6 @@ const IntegrationEventHandlers = [TradingSignalsIntegrationEventHandler];
   imports: [
     // PostgreSQL
     TypeOrmModule.forFeature([PostgreSQLChannelEntity]),
-    // MongoDB
-    MongooseModule.forFeature([
-      { name: 'Channel', schema: ChannelMongoSchema },
-    ]),
   ],
   controllers: [
     RegisterChannelController,
@@ -66,11 +60,12 @@ const IntegrationEventHandlers = [TradingSignalsIntegrationEventHandler];
     ...DomainEventHandlers,
     ...IntegrationEventHandlers,
 
+
     // Repositories
     {
       provide: 'ChannelRepository',
-      useClass: PostgreSQLChannelRepository,
-      // useClass: MongoDBChannelRepository,
+      // useClass: PostgreSQLChannelRepository,
+      useClass: MongoDBChannelRepository,
       // useClass: RedisChannelRepository,
       // useClass: InMemoryChannelRepository,
     },

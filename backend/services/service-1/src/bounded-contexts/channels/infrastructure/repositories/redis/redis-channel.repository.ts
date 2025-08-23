@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Channel } from '../../../domain/entities/channel.entity';
 import { ChannelRepository } from '../../../domain/repositories/channel.repository';
 import { ChannelTypeVO } from '../../../domain/value-objects/channel-type.vo';
-import { Criteria, Operator } from '@libs/nestjs-common';
+import { Criteria, FilterField, FilterOperator, FilterValue, Operator } from '@libs/nestjs-common';
 import { RedisService } from '@libs/nestjs-redis';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { ChannelPersistenceException } from '../../errors';
@@ -25,21 +25,6 @@ export class RedisChannelRepository implements ChannelRepository {
   private readonly logger = new CorrelationLogger(RedisChannelRepository.name);
 
   constructor(private readonly redisService: RedisService) {}
-
-  async findById(id: string): Promise<Channel | null> {
-    try {
-      this.logger.log(`Finding channel by id: ${id}`);
-      const data = await this.redisService.get(`${this.keyPrefix}${id}`);
-      if (!data) {
-        return null;
-      }
-
-      const channelData = JSON.parse(data) as ChannelData;
-      return this.mapToEntity(channelData);
-    } catch (error) {
-      this.handleDatabaseError('find', id, error);
-    }
-  }
 
   async findAll(criteria?: Record<string, any>): Promise<Channel[]> {
     try {
@@ -96,7 +81,7 @@ export class RedisChannelRepository implements ChannelRepository {
     }
   }
 
-  async save(entity: Channel): Promise<Channel> {
+  async save(entity: Channel): Promise<void> {
     try {
       this.logger.log(`Saving channel: ${entity.id}`);
       const channelData = this.mapToData(entity);
@@ -107,8 +92,6 @@ export class RedisChannelRepository implements ChannelRepository {
         `${this.userIndexPrefix}${entity.userId}`,
         entity.id,
       );
-
-      return entity;
     } catch (error) {
       this.handleDatabaseError('save', entity.id, error);
     }
@@ -118,6 +101,7 @@ export class RedisChannelRepository implements ChannelRepository {
     try {
       this.logger.log(`Deleting channel: ${id}`);
       const channel = await this.findById(id);
+
       if (channel) {
         await this.redisService.del(`${this.keyPrefix}${id}`);
         await this.redisService.srem(
@@ -152,20 +136,13 @@ export class RedisChannelRepository implements ChannelRepository {
     }
   }
 
-  async findByUserIdAndName(
-    userId: string,
-    name: string,
-  ): Promise<Channel | null> {
+  async findById(id: string): Promise<Channel | null> {
     try {
-      this.logger.log(`Finding channel by userId: ${userId} and name: ${name}`);
-      const channels = await this.findByUserId(userId);
-      return channels.find((channel) => channel.name === name) || null;
+      this.logger.log(`Finding channel by id: ${id}`);
+      const channelData = await this.redisService.get(`${this.keyPrefix}${id}`);
+      return channelData ? this.safeParseChannel(channelData) : null;
     } catch (error) {
-      this.handleDatabaseError(
-        'findByUserIdAndName',
-        `${userId}:${name}`,
-        error,
-      );
+      this.handleDatabaseError('findById', id, error);
     }
   }
 

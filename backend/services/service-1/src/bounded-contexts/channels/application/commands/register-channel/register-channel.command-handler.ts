@@ -39,8 +39,6 @@ export class RegisterChannelCommandHandler
     // Publish domain events
     const events = channel.getUncommittedEvents();
     this.eventBus.publishAll(events);
-
-    // Commit events after publishing
     channel.commit();
 
     return { id: channel.id };

@@ -18,7 +18,7 @@ export interface Repository<T, ID = string> {
   /**
    * Saves an entity (create or update)
    */
-  save(entity: T): Promise<T>;
+  save(entity: T): Promise<void>;
 
   /**
    * Removes an entity by its ID

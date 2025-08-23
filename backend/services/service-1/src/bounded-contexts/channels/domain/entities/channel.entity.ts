@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
-import { AggregateRoot, IEvent } from '@nestjs/cqrs';
 import { ChannelTypeVO } from '../value-objects/channel-type.vo';
 import { ChannelRegisteredDomainEvent } from '../events/channel-registered.domain-event';
 import { MessageReceivedDomainEvent } from '../events/message-received.domain-event';
-import { InvalidOperationException } from '@libs/nestjs-common';
+import { InvalidOperationException, Primitives } from '@libs/nestjs-common';
+import { AggregateRoot } from '@libs/nestjs-common';
 
 interface CreateChannelProps {
   channelType: string;
@@ -11,7 +11,7 @@ interface CreateChannelProps {
   userId: string;
   connectionConfig: Record<string, any>;
 }
-export class Channel extends AggregateRoot<IEvent> {
+export class Channel extends AggregateRoot {
   constructor(
     public readonly id: string,
     public readonly channelType: ChannelTypeVO,
@@ -104,5 +104,29 @@ export class Channel extends AggregateRoot<IEvent> {
 
     // In a real implementation, you might raise a ChannelDeactivatedEvent
     // For now, we'll keep it simple
+  }
+
+  static fromPrimitives(primitives: Primitives): Channel {
+    return new Channel(
+      primitives.id,
+      ChannelTypeVO.create(primitives.channelType),
+      primitives.name,
+      primitives.userId,
+      primitives.connectionConfig,
+      primitives.isActive,
+      new Date(primitives.createdAt),
+    );
+  }
+
+  toPrimitives(): Primitives {
+    return {
+      id: this.id,
+      channelType: this.channelType.getValue(),
+      name: this.name,
+      userId: this.userId,
+      connectionConfig: this.connectionConfig,
+      isActive: this.isActive,
+      createdAt: this.createdAt,
+    };
   }
 }

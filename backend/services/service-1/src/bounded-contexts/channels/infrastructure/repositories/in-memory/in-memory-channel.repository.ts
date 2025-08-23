@@ -13,11 +13,10 @@ export class InMemoryChannelRepository implements ChannelRepository {
 
   private channels: Map<string, Channel> = new Map();
 
-  async save(channel: Channel): Promise<Channel> {
+  async save(channel: Channel): Promise<void> {
     try {
       this.logger.log(`Saving channel: ${channel.id}`);
       this.channels.set(channel.id, channel);
-      return channel;
     } catch (error) {
       this.handleDatabaseError('save', channel.id, error);
     }
@@ -45,7 +44,7 @@ export class InMemoryChannelRepository implements ChannelRepository {
       this.logger.log(`Finding channel by id: ${id}`);
       return this.channels.get(id) || null;
     } catch (error) {
-      this.handleDatabaseError('find', id, error);
+      this.handleDatabaseError('findById', id, error);
     }
   }
 
