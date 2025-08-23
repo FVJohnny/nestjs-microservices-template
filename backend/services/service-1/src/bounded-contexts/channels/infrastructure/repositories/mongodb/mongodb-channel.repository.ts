@@ -5,6 +5,7 @@ import { ChannelRepository } from '../../../domain/repositories/channel.reposito
 import { Criteria, MongoCriteriaConverter } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { ChannelPersistenceException } from '../../errors';
+import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
 
 @Injectable()
 export class MongoDBChannelRepository implements ChannelRepository {
@@ -15,7 +16,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
   private readonly collection: Collection;
 
   constructor(
-    @Inject('MONGODB_CLIENT') private readonly mongoClient: MongoClient,
+    @Inject(SharedMongoDBModule.MONGO_CLIENT_TOKEN) private readonly mongoClient: MongoClient,
   ) {
     this.collection = this.mongoClient.db().collection('channels');
   }
