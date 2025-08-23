@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Channel } from '../../../domain/entities/channel.entity';
 import { ChannelRepository } from '../../../domain/repositories/channel.repository';
 import { ChannelTypeVO } from '../../../domain/value-objects/channel-type.vo';
-import { ChannelCriteria } from '../../../domain/criteria/channel-criteria';
+import { Criteria, Operator } from '@libs/nestjs-common';
 import { RedisService } from '@libs/nestjs-redis';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { ChannelPersistenceException } from '../../errors';
@@ -169,39 +169,84 @@ export class RedisChannelRepository implements ChannelRepository {
     }
   }
 
-  async findByCriteria(criteria: ChannelCriteria): Promise<Channel[]> {
+  async findByCriteria(criteria: Criteria): Promise<Channel[]> {
     try {
-      this.logger.log(`Finding channels with criteria: ${JSON.stringify(criteria)}`);
-      
+      this.logger.log(`Finding channels with criteria`);
+
       // For Redis, we'll get all channels and filter in-memory for simplicity
       // In a production system, you might use Redis modules for more complex querying
       const allChannels = await this.findAll();
       let filtered = allChannels;
 
-      if (criteria.userId) {
-        filtered = filtered.filter(channel => channel.userId === criteria.userId);
-      }
-      if (criteria.channelType) {
-        filtered = filtered.filter(channel => channel.channelType.getValue() === criteria.channelType);
-      }
-      if (criteria.nameContains) {
-        filtered = filtered.filter(channel => 
-          channel.name.toLowerCase().includes(criteria.nameContains!.toLowerCase())
-        );
-      }
+      // Apply filters
+      criteria.filters.filters.forEach((filter) => {
+        const fieldName = filter.field.value;
+        const operator = filter.operator.value;
+        const value = filter.value.value;
+
+        filtered = filtered.filter((channel) => {
+          let channelValue: any;
+
+          // Get channel field value
+          switch (fieldName) {
+            case 'userId':
+              channelValue = channel.userId;
+              break;
+            case 'channelType':
+              channelValue = channel.channelType.getValue();
+              break;
+            case 'name':
+              channelValue = channel.name;
+              break;
+            case 'isActive':
+              channelValue = channel.isActive;
+              break;
+            case 'createdAt':
+              channelValue = channel.createdAt;
+              break;
+            default:
+              return true;
+          }
+
+          // Apply operator
+          switch (operator) {
+            case Operator.EQUAL:
+              return (
+                channelValue === value || channelValue?.toString() === value
+              );
+            case Operator.NOT_EQUAL:
+              return channelValue !== value;
+            case Operator.CONTAINS:
+              return (
+                channelValue?.toLowerCase?.()?.includes(value.toLowerCase()) ||
+                false
+              );
+            case Operator.NOT_CONTAINS:
+              return !channelValue
+                ?.toLowerCase?.()
+                ?.includes(value.toLowerCase());
+            case Operator.GT:
+              return new Date(channelValue) > new Date(value);
+            case Operator.LT:
+              return new Date(channelValue) < new Date(value);
+            default:
+              return true;
+          }
+        });
+      });
 
       return filtered;
     } catch (error) {
-      this.handleDatabaseError('findByCriteria', JSON.stringify(criteria), error);
+      this.handleDatabaseError('findByCriteria', 'criteria', error);
     }
   }
 
-  async countByCriteria(criteria: ChannelCriteria): Promise<number> {
+  async countByCriteria(criteria: Criteria): Promise<number> {
     try {
       const channels = await this.findByCriteria(criteria);
       return channels.length;
     } catch (error) {
-      this.handleDatabaseError('countByCriteria', JSON.stringify(criteria), error);
+      this.handleDatabaseError('countByCriteria', 'criteria', error);
     }
   }
 

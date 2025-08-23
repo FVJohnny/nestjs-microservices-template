@@ -5,7 +5,7 @@ import { Channel } from '../../../domain/entities/channel.entity';
 import { ChannelRepository } from '../../../domain/repositories/channel.repository';
 import { PostgreSQLChannelEntity } from './channel.schema';
 import { ChannelTypeVO } from '../../../domain/value-objects/channel-type.vo';
-import { ChannelCriteria } from '../../../domain/criteria/channel-criteria';
+import { Criteria, Operator } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { ChannelPersistenceException } from '../../errors';
 
@@ -34,69 +34,6 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
     }
   }
 
-  async findById(id: string): Promise<Channel | null> {
-    try {
-      this.logger.log(`Finding channel by id: ${id}`);
-
-      const entity = await this.channelRepository.findOne({
-        where: { id, isActive: true },
-      });
-
-      return entity ? this.mapToDomain(entity) : null;
-    } catch (error) {
-      this.handleDatabaseError('find', id, error);
-    }
-  }
-
-  async findByUserId(userId: string): Promise<Channel[]> {
-    try {
-      this.logger.log(`Finding channels for userId: ${userId}`);
-
-      const entities = await this.channelRepository.find({
-        where: { userId, isActive: true },
-        order: { createdAt: 'DESC' },
-      });
-
-      return entities.map((entity) => this.mapToDomain(entity));
-    } catch (error) {
-      this.handleDatabaseError('findByUserId', userId, error);
-    }
-  }
-
-  async findAll(criteria?: Record<string, any>): Promise<Channel[]> {
-    try {
-      this.logger.log('Finding all channels');
-
-      const queryBuilder = this.channelRepository.createQueryBuilder('channel');
-      queryBuilder.where('channel.isActive = :isActive', { isActive: true });
-
-      // Apply additional criteria if provided
-      if (criteria) {
-        if (criteria.channelType) {
-          queryBuilder.andWhere('channel.channelType = :channelType', {
-            channelType: criteria.channelType,
-          });
-        }
-        if (criteria.userId) {
-          queryBuilder.andWhere('channel.userId = :userId', {
-            userId: criteria.userId,
-          });
-        }
-        if (criteria.name) {
-          queryBuilder.andWhere('channel.name ILIKE :name', {
-            name: `%${criteria.name}%`,
-          });
-        }
-      }
-
-      queryBuilder.orderBy('channel.createdAt', 'DESC');
-
-      const entities = await queryBuilder.getMany();
-      return entities.map((entity) => this.mapToDomain(entity));
-    } catch (error) {
-      this.handleDatabaseError('findAll', 'all', error);
-    }
-  }
 
   async remove(id: string): Promise<void> {
     try {
@@ -128,75 +65,156 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
     }
   }
 
-  async findByCriteria(criteria: ChannelCriteria): Promise<Channel[]> {
+  async findById(id: string): Promise<Channel | null> {
     try {
-      this.logger.log(`Finding channels with criteria: ${JSON.stringify(criteria)}`);
+      this.logger.log(`Finding channel by id: ${id}`);
+
+      const entity = await this.channelRepository.findOne({
+        where: { id, isActive: true },
+      });
+
+      return entity ? this.mapToDomain(entity) : null;
+    } catch (error) {
+      this.handleDatabaseError('find', id, error);
+    }
+  }
+
+  async findByCriteria(criteria: Criteria): Promise<Channel[]> {
+    try {
+      this.logger.log(
+        `Finding channels with criteria: ${JSON.stringify(criteria)}`,
+      );
 
       const queryBuilder = this.buildCriteriaQuery(criteria);
       const entities = await queryBuilder.getMany();
 
-      return entities.map(entity => this.mapToDomain(entity));
+      return entities.map((entity) => this.mapToDomain(entity));
     } catch (error) {
-      this.handleDatabaseError('findByCriteria', JSON.stringify(criteria), error);
+      this.handleDatabaseError(
+        'findByCriteria',
+        JSON.stringify(criteria),
+        error,
+      );
     }
   }
 
-  async countByCriteria(criteria: ChannelCriteria): Promise<number> {
+  async countByCriteria(criteria: Criteria): Promise<number> {
     try {
-      this.logger.log(`Counting channels with criteria: ${JSON.stringify(criteria)}`);
+      this.logger.log(
+        `Counting channels with criteria: ${JSON.stringify(criteria)}`,
+      );
 
       const queryBuilder = this.buildCriteriaQuery(criteria);
       return await queryBuilder.getCount();
     } catch (error) {
-      this.handleDatabaseError('countByCriteria', JSON.stringify(criteria), error);
+      this.handleDatabaseError(
+        'countByCriteria',
+        JSON.stringify(criteria),
+        error,
+      );
     }
   }
 
-  private buildCriteriaQuery(criteria: ChannelCriteria): SelectQueryBuilder<PostgreSQLChannelEntity> {
-    let queryBuilder = this.channelRepository
-      .createQueryBuilder('channel')
-      .where('channel.isActive = :isActive', { isActive: true });
+  private buildCriteriaQuery(
+    criteria: Criteria,
+  ): SelectQueryBuilder<PostgreSQLChannelEntity> {
+    let queryBuilder = this.channelRepository.createQueryBuilder('channel');
 
-    if (criteria.userId) {
-      queryBuilder = queryBuilder.andWhere('channel.userId = :userId', { userId: criteria.userId });
+    // Apply filters
+    criteria.filters.filters.forEach((filter, index) => {
+      const paramName = `param_${index}`;
+      const fieldName = `channel.${filter.field.value}`;
+
+      switch (filter.operator.value) {
+        case Operator.EQUAL:
+          if (index === 0) {
+            queryBuilder = queryBuilder.where(`${fieldName} = :${paramName}`, {
+              [paramName]: filter.value.value,
+            });
+          } else {
+            queryBuilder = queryBuilder.andWhere(
+              `${fieldName} = :${paramName}`,
+              { [paramName]: filter.value.value },
+            );
+          }
+          break;
+        case Operator.NOT_EQUAL:
+          if (index === 0) {
+            queryBuilder = queryBuilder.where(`${fieldName} != :${paramName}`, {
+              [paramName]: filter.value.value,
+            });
+          } else {
+            queryBuilder = queryBuilder.andWhere(
+              `${fieldName} != :${paramName}`,
+              { [paramName]: filter.value.value },
+            );
+          }
+          break;
+        case Operator.GT:
+          if (index === 0) {
+            queryBuilder = queryBuilder.where(`${fieldName} > :${paramName}`, {
+              [paramName]: filter.value.value,
+            });
+          } else {
+            queryBuilder = queryBuilder.andWhere(
+              `${fieldName} > :${paramName}`,
+              { [paramName]: filter.value.value },
+            );
+          }
+          break;
+        case Operator.LT:
+          if (index === 0) {
+            queryBuilder = queryBuilder.where(`${fieldName} < :${paramName}`, {
+              [paramName]: filter.value.value,
+            });
+          } else {
+            queryBuilder = queryBuilder.andWhere(
+              `${fieldName} < :${paramName}`,
+              { [paramName]: filter.value.value },
+            );
+          }
+          break;
+        case Operator.CONTAINS:
+          if (index === 0) {
+            queryBuilder = queryBuilder.where(
+              `LOWER(${fieldName}) LIKE LOWER(:${paramName})`,
+              { [paramName]: `%${filter.value.value}%` },
+            );
+          } else {
+            queryBuilder = queryBuilder.andWhere(
+              `LOWER(${fieldName}) LIKE LOWER(:${paramName})`,
+              { [paramName]: `%${filter.value.value}%` },
+            );
+          }
+          break;
+        case Operator.NOT_CONTAINS:
+          if (index === 0) {
+            queryBuilder = queryBuilder.where(
+              `LOWER(${fieldName}) NOT LIKE LOWER(:${paramName})`,
+              { [paramName]: `%${filter.value.value}%` },
+            );
+          } else {
+            queryBuilder = queryBuilder.andWhere(
+              `LOWER(${fieldName}) NOT LIKE LOWER(:${paramName})`,
+              { [paramName]: `%${filter.value.value}%` },
+            );
+          }
+          break;
+      }
+    });
+
+    // Apply ordering
+    if (criteria.order.hasOrder()) {
+      queryBuilder = queryBuilder.orderBy(
+        `channel.${criteria.order.orderBy.value}`,
+        criteria.order.orderType.isAsc() ? 'ASC' : 'DESC',
+      );
     }
-
-    if (criteria.channelType) {
-      queryBuilder = queryBuilder.andWhere('channel.channelType = :channelType', { channelType: criteria.channelType });
-    }
-
-    if (criteria.isActive !== undefined) {
-      queryBuilder = queryBuilder.andWhere('channel.isActive = :isActive', { isActive: criteria.isActive });
-    }
-
-    if (criteria.name) {
-      queryBuilder = queryBuilder.andWhere('channel.name = :name', { name: criteria.name });
-    }
-
-    if (criteria.nameContains) {
-      queryBuilder = queryBuilder.andWhere('LOWER(channel.name) LIKE LOWER(:nameContains)', { 
-        nameContains: `%${criteria.nameContains}%` 
-      });
-    }
-
-    if (criteria.createdAfter) {
-      queryBuilder = queryBuilder.andWhere('channel.createdAt >= :createdAfter', { createdAfter: criteria.createdAfter });
-    }
-
-    if (criteria.createdBefore) {
-      queryBuilder = queryBuilder.andWhere('channel.createdAt <= :createdBefore', { createdBefore: criteria.createdBefore });
-    }
-
-    // Apply sorting
-    const sortField = criteria.sortBy || 'createdAt';
-    const sortOrder = criteria.sortOrder || 'DESC';
-    queryBuilder = queryBuilder.orderBy(`channel.${sortField}`, sortOrder.toUpperCase() as 'ASC' | 'DESC');
 
     // Apply pagination
     if (criteria.limit) {
       queryBuilder = queryBuilder.limit(criteria.limit);
     }
-
     if (criteria.offset) {
       queryBuilder = queryBuilder.offset(criteria.offset);
     }
@@ -232,53 +250,6 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
     entity.updatedAt = new Date();
 
     return entity;
-  }
-
-  async countByUserId(userId: string): Promise<number> {
-    try {
-      this.logger.log(`Counting channels for user: ${userId}`);
-
-      const count = await this.channelRepository.count({
-        where: { userId, isActive: true },
-      });
-
-      this.logger.log(`Found ${count} channels for user: ${userId}`);
-      return count;
-    } catch (error) {
-      this.handleDatabaseError('countByUserId', userId, error);
-    }
-  }
-
-  async findByUserIdAndName(
-    userId: string,
-    name: string,
-  ): Promise<Channel | null> {
-    try {
-      this.logger.log(`Finding channel for user ${userId} with name: ${name}`);
-
-      const entity = await this.channelRepository.findOne({
-        where: { userId, name, isActive: true },
-      });
-
-      if (!entity) {
-        this.logger.log(
-          `No channel found for user ${userId} with name: ${name}`,
-        );
-        return null;
-      }
-
-      const channel = this.mapToDomain(entity);
-      this.logger.log(
-        `Found channel ${channel.id} for user ${userId} with name: ${name}`,
-      );
-      return channel;
-    } catch (error) {
-      this.handleDatabaseError(
-        'findByUserIdAndName',
-        `${userId}:${name}`,
-        error,
-      );
-    }
   }
 
   /**

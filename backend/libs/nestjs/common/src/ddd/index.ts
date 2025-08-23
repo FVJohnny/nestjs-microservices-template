@@ -21,3 +21,17 @@ export * from './domain/events/domain-event.base';
 
 // Repositories
 export * from './domain/repositories/repository.base';
+
+// Criteria Pattern
+export * from './domain/criteria/Criteria';
+export * from './domain/criteria/Filters';
+export * from './domain/criteria/Filter';
+export * from './domain/criteria/FilterField';
+export * from './domain/criteria/FilterOperator';
+export * from './domain/criteria/FilterValue';
+export * from './domain/criteria/Order';
+export * from './domain/criteria/OrderBy';
+export * from './domain/criteria/OrderType';
+
+// Infrastructure
+export * from './infrastructure/MongoCriteriaConverter';

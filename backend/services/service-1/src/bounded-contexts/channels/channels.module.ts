@@ -3,7 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Controllers
-import { ChannelsController } from './interfaces/http/controllers/channels.controller';
+import { 
+  RegisterChannelController,
+  GetChannelsController,
+} from './interfaces/http/controllers/channels';
 
 // Integration Event Handlers (Primary/Driving Adapters)
 import { TradingSignalsIntegrationEventHandler } from './interfaces/integration-events/trading-signals.integration-event-handler';
@@ -13,15 +16,13 @@ import { RegisterChannelCommandHandler } from './application/commands/register-c
 
 // Query Handlers
 import { GetChannelsHandler } from './application/queries/get-channels/get-channels.query-handler';
-import { CountUserChannelsHandler } from './application/queries/count-user-channels/count-user-channels.query-handler';
-import { FindChannelByUserAndNameHandler } from './application/queries/find-channel-by-user-and-name/find-channel-by-user-and-name.query-handler';
 
 // Domain Event Handlers
 import { ChannelRegisteredDomainEventHandler } from './application/domain-event-handlers/channel-registered/channel-registered.domain-event-handler';
 import { MessageReceivedDomainEventHandler } from './application/domain-event-handlers/message-received/message-received.domain-event-handler';
 
 // Infrastructure Redis
-// import { RedisChannelRepository } from './infrastructure/repositories/redis/redis-channel.repository';
+import { RedisChannelRepository } from './infrastructure/repositories/redis/redis-channel.repository';
 
 // Infrastructure PostgreSQL
 import { PostgreSQLChannelRepository } from './infrastructure/repositories/postgresql/postgresql-channel.repository';
@@ -31,22 +32,10 @@ import { PostgreSQLChannelEntity } from './infrastructure/repositories/postgresq
 import { ChannelMongoSchema } from './infrastructure/repositories/mongodb/channel.schema';
 import { MongoDBChannelRepository } from './infrastructure/repositories/mongodb/mongodb-channel.repository';
 
-// Use Cases
-import {
-  RegisterChannelUseCase,
-  RegisterChannelUseCaseImpl,
-} from './application/use-cases/register-channel/register-channel.use-case';
-import {
-  GetChannelsUseCase,
-  GetChannelsUseCaseImpl,
-} from './application/use-cases/get-channels/get-channels.use-case';
-
 
 const CommandHandlers = [RegisterChannelCommandHandler];
 const QueryHandlers = [
   GetChannelsHandler,
-  CountUserChannelsHandler,
-  FindChannelByUserAndNameHandler,
 ];
 const DomainEventHandlers = [
   ChannelRegisteredDomainEventHandler,
@@ -54,17 +43,6 @@ const DomainEventHandlers = [
 ];
 const IntegrationEventHandlers = [TradingSignalsIntegrationEventHandler];
 
-// Use Cases
-const UseCases = [
-  {
-    provide: RegisterChannelUseCase.token,
-    useClass: RegisterChannelUseCaseImpl,
-  },
-  {
-    provide: GetChannelsUseCase.token,
-    useClass: GetChannelsUseCaseImpl,
-  },
-];
 
 @Module({
   imports: [
@@ -75,7 +53,10 @@ const UseCases = [
       { name: 'Channel', schema: ChannelMongoSchema },
     ]),
   ],
-  controllers: [ChannelsController],
+  controllers: [
+    RegisterChannelController,
+    GetChannelsController,
+  ],
   providers: [
     // CQRS
     ...CommandHandlers,
@@ -84,9 +65,6 @@ const UseCases = [
     // Event Handlers
     ...DomainEventHandlers,
     ...IntegrationEventHandlers,
-
-    // Use Cases
-    ...UseCases,
 
     // Repositories
     {

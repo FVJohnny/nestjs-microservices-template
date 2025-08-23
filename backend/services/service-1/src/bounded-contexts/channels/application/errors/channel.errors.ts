@@ -1,15 +1,3 @@
-export interface RegisterChannelUseCaseProps {
-  userId: string;
-  channelType: string;
-  name: string;
-  connectionConfig: Record<string, any>;
-}
-
-export interface RegisterChannelUseCaseResponse {
-  channelId: string;
-  success: boolean;
-}
-
 // Business rule errors
 export class UserNotFoundError extends Error {
   constructor(userId: string) {

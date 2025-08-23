@@ -1,11 +1,7 @@
 import { Channel } from '../entities/channel.entity';
-import { Repository } from '@libs/nestjs-common';
-import { ChannelCriteria } from '../criteria/channel-criteria';
+import { Repository, Criteria } from '@libs/nestjs-common';
 
 export interface ChannelRepository extends Repository<Channel> {
-  findByUserId(userId: string): Promise<Channel[]>;
-  findByCriteria(criteria: ChannelCriteria): Promise<Channel[]>;
-  countByUserId(userId: string): Promise<number>;
-  countByCriteria(criteria: ChannelCriteria): Promise<number>;
-  findByUserIdAndName(userId: string, name: string): Promise<Channel | null>;
+  findByCriteria(criteria: Criteria): Promise<Channel[]>;
+  countByCriteria(criteria: Criteria): Promise<number>;
 }

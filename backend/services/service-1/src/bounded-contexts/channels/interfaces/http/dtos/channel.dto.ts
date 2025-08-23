@@ -8,33 +8,33 @@ export class ChannelDto {
   id: string;
 
   @ApiProperty({
-    description: 'Type of communication channel',
+    description: 'Type of the channel',
     example: 'telegram',
     enum: ['telegram', 'discord', 'whatsapp'],
   })
   channelType: string;
 
   @ApiProperty({
-    description: 'Human-readable name of the channel',
-    example: 'My Trading Signals Channel',
+    description: 'Name of the channel',
+    example: 'Trading Signals',
   })
   name: string;
 
   @ApiProperty({
-    description: 'ID of the user who owns this channel',
+    description: 'User ID who owns the channel',
     example: 'user-123',
   })
   userId: string;
 
   @ApiProperty({
-    description: 'Whether the channel is currently active',
+    description: 'Whether the channel is active',
     example: true,
   })
   isActive: boolean;
 
   @ApiProperty({
-    description: 'ISO timestamp when the channel was created',
-    example: '2025-08-13T10:30:00.000Z',
+    description: 'When the channel was created',
+    example: '2024-01-01T00:00:00.000Z',
   })
   createdAt: string;
 
@@ -44,13 +44,13 @@ export class ChannelDto {
     name: string,
     userId: string,
     isActive: boolean,
-    createdAt: Date,
+    createdAt: string,
   ) {
     this.id = id;
     this.channelType = channelType;
     this.name = name;
     this.userId = userId;
     this.isActive = isActive;
-    this.createdAt = createdAt.toISOString();
+    this.createdAt = createdAt;
   }
 }
