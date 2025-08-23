@@ -28,8 +28,8 @@ import {
 import { EntityNotFoundException } from '@libs/nestjs-common';
 
 // Use Cases
-import type { RegisterChannelUseCase } from '../../../application/use-cases/register-channel/register-channel.use-case';
-import type { GetChannelsUseCase } from '../../../application/use-cases/get-channels/get-channels.use-case';
+import { RegisterChannelUseCase } from '../../../application/use-cases/register-channel/register-channel.use-case';
+import { GetChannelsUseCase } from '../../../application/use-cases/get-channels/get-channels.use-case';
 import {
   UserNotFoundError,
 } from '../../../application/use-cases/register-channel/register-channel.request-response';
@@ -41,9 +41,9 @@ export class ChannelsController {
 
   constructor(
     // Use Cases
-    @Inject('RegisterChannelUseCase')
+    @Inject(RegisterChannelUseCase.token)
     private readonly registerChannelUseCase: RegisterChannelUseCase,
-    @Inject('GetChannelsUseCase')
+    @Inject(GetChannelsUseCase.token)
     private readonly getChannelsUseCase: GetChannelsUseCase,
   ) {}
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { CorrelationLogger, UseCase, UseCaseHandler } from '@libs/nestjs-common';
+import { CorrelationLogger, UseCase } from '@libs/nestjs-common';
 import { GetChannelsQuery } from '../../queries/get-channels/get-channels.query';
 import { ChannelCriteriaBuilder } from '../../../domain/criteria/channel-criteria';
 import {
@@ -13,13 +13,12 @@ import { Channel } from '../../../domain/entities/channel.entity';
 export interface GetChannelsUseCase 
   extends UseCase<GetChannelsRequest, GetChannelsResponse> {}
 
+// Add static token property to the interface namespace
+export namespace GetChannelsUseCase {
+  export const token = Symbol('GetChannelsUseCase');
+}
+
 @Injectable()
-@UseCaseHandler({
-  name: 'GetChannels',
-  description: 'Retrieves channels with configurable filtering options',
-  category: 'channels',
-  trackPerformance: true,
-})
 export class GetChannelsUseCaseImpl implements GetChannelsUseCase {
   private readonly logger = new CorrelationLogger(
     GetChannelsUseCaseImpl.name,

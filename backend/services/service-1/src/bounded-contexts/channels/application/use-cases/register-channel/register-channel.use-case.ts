@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { CorrelationLogger, UseCase, UseCaseHandler } from '@libs/nestjs-common';
+import { CorrelationLogger, UseCase } from '@libs/nestjs-common';
 import { RegisterChannelCommand } from '../../commands/register-channel/register-channel.command';
 import { CountUserChannelsQuery } from '../../queries/count-user-channels/count-user-channels.query';
 import { FindChannelByUserAndNameQuery } from '../../queries/find-channel-by-user-and-name/find-channel-by-user-and-name.query';
@@ -15,13 +15,12 @@ import {
 export interface RegisterChannelUseCase 
   extends UseCase<RegisterChannelUseCaseProps, RegisterChannelUseCaseResponse> {}
 
+// Add static token property to the interface namespace
+export namespace RegisterChannelUseCase {
+  export const token = Symbol('RegisterChannelUseCase');
+}
+
 @Injectable()
-@UseCaseHandler({
-  name: 'RegisterChannel',
-  description: 'Registers a new channel with comprehensive business rule validation',
-  category: 'channels',
-  trackPerformance: true,
-})
 export class RegisterChannelUseCaseImpl implements RegisterChannelUseCase {
   private readonly logger = new CorrelationLogger(
     RegisterChannelUseCaseImpl.name,

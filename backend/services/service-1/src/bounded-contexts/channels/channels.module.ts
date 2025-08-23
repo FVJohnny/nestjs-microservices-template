@@ -57,11 +57,11 @@ const IntegrationEventHandlers = [TradingSignalsIntegrationEventHandler];
 // Use Cases
 const UseCases = [
   {
-    provide: 'RegisterChannelUseCase',
+    provide: RegisterChannelUseCase.token,
     useClass: RegisterChannelUseCaseImpl,
   },
   {
-    provide: 'GetChannelsUseCase',
+    provide: GetChannelsUseCase.token,
     useClass: GetChannelsUseCaseImpl,
   },
 ];

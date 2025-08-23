@@ -18,17 +18,3 @@ export interface UseCase<TRequest = void, TResponse = void> {
    */
   execute(request: TRequest): Promise<TResponse>;
 }
-
-/**
- * Base interface for use cases that don't require input parameters
- */
-export interface QueryUseCase<TResponse = void> extends UseCase<void, TResponse> {
-  execute(): Promise<TResponse>;
-}
-
-/**
- * Base interface for use cases that don't return a response (void operations)
- */
-export interface CommandUseCase<TRequest = void> extends UseCase<TRequest, void> {
-  execute(request: TRequest): Promise<void>;
-}

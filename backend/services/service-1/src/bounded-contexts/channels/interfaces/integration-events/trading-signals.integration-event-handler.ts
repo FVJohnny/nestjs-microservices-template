@@ -3,14 +3,14 @@ import {
   TradingSignalReceivedIntegrationEvent,
 } from '@libs/nestjs-common';
 import { IntegrationEventHandler } from '@libs/nestjs-common/dist/integration-events/integration-event-handler.decorator';
-import type { RegisterChannelUseCase } from '../../application/use-cases/register-channel/register-channel.use-case';
+import { RegisterChannelUseCase } from '../../application/use-cases/register-channel/register-channel.use-case';
 import { RegisterChannelUseCaseProps } from '../../application/use-cases/register-channel/register-channel.request-response';
 
 @IntegrationEventHandler(TradingSignalReceivedIntegrationEvent)
 export class TradingSignalsIntegrationEventHandler {
   
   constructor(
-    @Inject('RegisterChannelUseCase')
+    @Inject(RegisterChannelUseCase.token)
     private readonly registerChannelUseCase: RegisterChannelUseCase,
   ) {}
 
