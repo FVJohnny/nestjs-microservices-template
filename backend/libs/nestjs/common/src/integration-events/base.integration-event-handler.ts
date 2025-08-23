@@ -1,28 +1,53 @@
 import { Injectable, Inject, OnModuleInit, Logger } from '@nestjs/common';
 import { IntegrationEventListener } from '../ddd/index';
 import { INTEGRATION_EVENT_LISTENER_TOKEN } from '.';
+import { BaseIntegrationEvent } from './events/base-integration-event';
+
+interface EventClass<T extends BaseIntegrationEvent> {
+  fromJSON(json: any): T;
+}
 
 /**
  * Base event handler that auto-registers itself with its topic
  * Eliminates the need for separate topic handler classes
+ * 
+ * @template T The specific integration event type this handler processes
  */
 @Injectable()
-export abstract class BaseIntegrationEventHandler implements EventHandler, OnModuleInit {
+export abstract class BaseIntegrationEventHandler<T extends BaseIntegrationEvent = BaseIntegrationEvent> 
+  implements IntegrationEventHandler, OnModuleInit {
   protected readonly logger = new Logger(this.constructor.name);
 
   abstract readonly topicName: string;
+  abstract readonly eventClass: EventClass<T>;
 
-  constructor(@Inject(INTEGRATION_EVENT_LISTENER_TOKEN) private readonly integrationEventListener: IntegrationEventListener) {}
+  constructor(
+    @Inject(INTEGRATION_EVENT_LISTENER_TOKEN) private readonly integrationEventListener: IntegrationEventListener,
+  ) {}
 
   async onModuleInit() {
     // Auto-register this event handler with its topic
     await this.integrationEventListener.registerEventHandler(this.topicName, this);
   }
 
-  abstract handle(payload: Record<string, unknown>, messageId: string): Promise<void>;
+  /**
+   * Internal handler that deserializes the payload and calls the typed handler
+   */
+  async handle(payload: Record<string, unknown>, messageId: string): Promise<void> {
+    const event = this.eventClass.fromJSON(payload);
+    this.logger.log(
+      `Processing ${this.topicName} event [${messageId}] - ${event.eventName}`,
+    );
+    await this.handleEvent(event, messageId);
+  }
+
+  /**
+   * Implement this method to handle the typed event
+   */
+  protected abstract handleEvent(event: T, messageId: string): Promise<void>;
 }
 
-export interface EventHandler {
+export interface IntegrationEventHandler {
   readonly topicName: string;
   handle(payload: Record<string, unknown>, messageId: string): Promise<void>;
 }

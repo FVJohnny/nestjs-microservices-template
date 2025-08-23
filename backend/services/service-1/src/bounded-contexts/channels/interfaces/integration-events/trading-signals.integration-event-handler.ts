@@ -2,16 +2,17 @@ import { Injectable, Inject } from '@nestjs/common';
 import {
   BaseIntegrationEventHandler,
   INTEGRATION_EVENT_LISTENER_TOKEN,
+  TradingSignalReceivedIntegrationEvent,
+  INTEGRATION_EVENT_TOPIC_TRADING_SIGNALS,
 } from '@libs/nestjs-common';
 import type { IntegrationEventListener } from '@libs/nestjs-common';
 import type { RegisterChannelUseCase } from '../../application/use-cases/register-channel/register-channel.use-case';
 import { RegisterChannelUseCaseProps } from '../../application/use-cases/register-channel/register-channel.request-response';
 
-const INTEGRATION_EVENT_TOPIC_TRADING_SIGNALS = 'trading-signals';
-
 @Injectable()
-export class TradingSignalsIntegrationEventHandler extends BaseIntegrationEventHandler {
+export class TradingSignalsIntegrationEventHandler extends BaseIntegrationEventHandler<TradingSignalReceivedIntegrationEvent> {
   readonly topicName = INTEGRATION_EVENT_TOPIC_TRADING_SIGNALS;
+  readonly eventClass = TradingSignalReceivedIntegrationEvent;
 
   constructor(
     @Inject(INTEGRATION_EVENT_LISTENER_TOKEN)
@@ -22,19 +23,15 @@ export class TradingSignalsIntegrationEventHandler extends BaseIntegrationEventH
     super(eventListener);
   }
 
-  async handle(
-    payload: Record<string, unknown>,
+  protected async handleEvent(
+    event: TradingSignalReceivedIntegrationEvent,
     messageId: string,
   ): Promise<void> {
-    this.logger.log(
-      `Processing trading-signals event [${messageId}]`,
-    );
-
     const request: RegisterChannelUseCaseProps = {
-      channelType: payload.channelType as string,
-      name: payload.name as string,
-      userId: payload.userId as string,
-      connectionConfig: (payload.connectionConfig as Record<string, unknown>) || {},
+      channelType: event.channelType,
+      name: event.name,
+      userId: event.userId,
+      connectionConfig: event.connectionConfig,
     };
 
     const response = await this.registerChannelUseCase.execute(request);
