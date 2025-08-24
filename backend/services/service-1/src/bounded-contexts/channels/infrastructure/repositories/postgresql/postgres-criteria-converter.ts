@@ -1,4 +1,4 @@
-import { SelectQueryBuilder } from 'typeorm';
+import { SelectQueryBuilder, ObjectLiteral } from 'typeorm';
 import { Criteria, Operator } from '@libs/nestjs-common';
 
 /**
@@ -8,21 +8,12 @@ export class PostgresCriteriaConverter {
   /**
    * Convert a Criteria object to TypeORM QueryBuilder with filters, ordering, and pagination
    */
-  static convert<T>(
+  static convert<T extends ObjectLiteral>(
     queryBuilder: SelectQueryBuilder<T>,
     criteria: Criteria,
     entityAlias: string = 'entity'
   ): SelectQueryBuilder<T> {
     let builder = queryBuilder;
-
-    // Always filter for active records by default (can be overridden by explicit filter)
-    const hasActiveFilter = criteria.filters.filters.some(
-      filter => filter.field.value === 'isActive'
-    );
-    
-    if (!hasActiveFilter) {
-      builder = builder.where(`${entityAlias}.isActive = :isActive`, { isActive: true });
-    }
 
     // Apply filters from criteria
     criteria.filters.filters.forEach((filter, index) => {
@@ -32,7 +23,7 @@ export class PostgresCriteriaConverter {
       const value = filter.value.value;
 
       // Determine if this is the first filter (need to decide between where/andWhere)
-      const useWhere = !hasActiveFilter && index === 0;
+      const useWhere = index === 0;
       const whereMethod = useWhere ? 'where' : 'andWhere';
 
       switch (operator) {
