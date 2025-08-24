@@ -58,6 +58,9 @@ update-libs:
 	@echo "📦 Updating service-1..."
 	@cd backend/services/service-1 && npm install
 	@echo ""
+	@echo "🔄 Restarting service-1 container..."
+	@docker compose -f $(COMPOSE_DEV) restart service-1
+	@echo ""
 	@echo "✅ All shared libraries updated in all services!"
 	@echo "🎉 Ready to go!"
 

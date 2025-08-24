@@ -51,12 +51,14 @@ export class Channel extends AggregateRoot {
   }
 
   static random(props?: Partial<CreateChannelProps>) {
-    return Channel.create({
-      channelType: props?.channelType || 'telegram',
-      userId: props?.userId || 'user-1',
-      name: props?.name || 'My Beautiful Channel',
-      connectionConfig: props?.connectionConfig || { token: 'abc' },
-    });
+    const id = uuidv4();
+    return new Channel(
+      id,
+      ChannelTypeVO.create(props?.channelType || 'telegram'),
+      props?.name || 'My Beautiful Channel',
+      props?.userId || 'user-1',
+      props?.connectionConfig || { token: 'abc' },
+    );
   }
 
   receiveMessage(

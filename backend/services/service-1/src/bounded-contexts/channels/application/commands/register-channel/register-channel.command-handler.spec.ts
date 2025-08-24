@@ -7,6 +7,7 @@ import { Channel } from '../../../domain/entities/channel.entity';
 import { ChannelType } from '../../../domain/value-objects/channel-type.vo';
 import { ICommandHandler } from '@nestjs/cqrs';
 import { createTestingModule, TestModule } from '../../../../../testing';
+import { Criteria, Filters, Order } from '@libs/nestjs-common';
 
 describe('RegisterChannelCommandHandler', () => {
   describe('when registering a valid channel', () => {
@@ -242,7 +243,7 @@ describe('RegisterChannelCommandHandler', () => {
       );
 
       // Assert - verify the channel was saved (handler saves before publishing events)
-      const allChannels = await testModule.repository.findAll();
+      const allChannels = await testModule.repository.findByCriteria(new Criteria());
       expect(allChannels).toHaveLength(1);
       expect(allChannels[0].name).toBe('Failed Channel');
 
@@ -273,7 +274,7 @@ describe('RegisterChannelCommandHandler', () => {
       expect(results).toHaveLength(10);
       expect(testModule.eventBus.events).toHaveLength(10);
 
-      const allChannels = await testModule.repository.findAll();
+      const allChannels = await testModule.repository.findByCriteria(new Criteria());
       expect(allChannels).toHaveLength(10);
 
       // Verify all channels have unique IDs

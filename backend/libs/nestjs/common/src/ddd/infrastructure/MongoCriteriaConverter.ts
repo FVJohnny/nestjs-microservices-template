@@ -24,7 +24,7 @@ export class MongoCriteriaConverter {
 
       switch (operator) {
         case Operator.EQUAL:
-          filter[fieldName] = value;
+          filter[fieldName] = this.parseValue(value);
           break;
         case Operator.NOT_EQUAL:
           filter[fieldName] = { $ne: value };

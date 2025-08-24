@@ -7,7 +7,7 @@ export class Criteria {
   readonly limit?: number;
   readonly offset?: number;
 
-  constructor(filters: Filters, order: Order, limit?: number, offset?: number) {
+  constructor(filters: Filters = Filters.none(), order: Order = Order.none(), limit?: number, offset?: number) {
     this.filters = filters;
     this.order = order;
     this.limit = limit;

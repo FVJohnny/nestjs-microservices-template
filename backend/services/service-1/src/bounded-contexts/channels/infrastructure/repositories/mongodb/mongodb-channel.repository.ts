@@ -85,7 +85,7 @@ export class MongoDBChannelRepository implements ChannelRepository {
       const channelDocs = await this.collection.find(filter, options).toArray();
       return channelDocs.map((doc: any) => Channel.fromPrimitives(doc));
     } catch (error) {
-      console.error(error)
+      console.error(error) 
       this.handleDatabaseError('findByCriteria', '', error);
     }
   }
