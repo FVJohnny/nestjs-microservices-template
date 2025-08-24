@@ -1,4 +1,3 @@
-import { SelectQueryBuilder, ObjectLiteral } from 'typeorm';
 import { Criteria, Operator } from '@libs/nestjs-common';
 
 /**
@@ -8,11 +7,11 @@ export class PostgresCriteriaConverter {
   /**
    * Convert a Criteria object to TypeORM QueryBuilder with filters, ordering, and pagination
    */
-  static convert<T extends ObjectLiteral>(
-    queryBuilder: SelectQueryBuilder<T>,
+  static convert(
+    queryBuilder: any,
     criteria: Criteria,
     entityAlias: string = 'entity'
-  ): SelectQueryBuilder<T> {
+  ): any {
     let builder = queryBuilder;
 
     // Apply filters from criteria

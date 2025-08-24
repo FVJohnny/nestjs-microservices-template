@@ -37,4 +37,4 @@ export * from './domain/criteria/OrderBy';
 export * from './domain/criteria/OrderType';
 
 // Infrastructure
-export * from './infrastructure/MongoCriteriaConverter';
+// Note: MongoCriteriaConverter moved to @libs/nestjs-mongodb

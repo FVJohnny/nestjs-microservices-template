@@ -9,6 +9,7 @@
     "build:watch": "tsc --watch"
   },
   "peerDependencies": {
+    "@libs/nestjs-common": "^1.0.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/mongoose": "^11.0.3",
     "@nestjs/swagger": "^11.0.0",
@@ -17,6 +18,7 @@
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
+    "@libs/nestjs-common": "file:../common",
     "@types/node": "^22.10.7",
     "typescript": "^5.7.3"
   },

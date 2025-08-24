@@ -8,7 +8,7 @@ import { ChannelTypeVO } from '../../../domain/value-objects/channel-type.vo';
 import { Criteria } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { ChannelPersistenceException } from '../../errors';
-import { PostgresCriteriaConverter } from './postgres-criteria-converter';
+import { PostgresCriteriaConverter } from '@libs/nestjs-postgresql';
 
 @Injectable()
 export class PostgreSQLChannelRepository implements ChannelRepository {

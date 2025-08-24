@@ -9,6 +9,7 @@
     "dev": "tsc --watch"
   },
   "peerDependencies": {
+    "@libs/nestjs-common": "^1.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/swagger": "^11.2.0",
@@ -17,14 +18,9 @@
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@nestjs/common": "^11.0.1",
-    "@nestjs/core": "^11.0.1",
-    "@nestjs/swagger": "^11.2.0",
-    "@nestjs/typeorm": "^11.0.0",
+    "@libs/nestjs-common": "file:../common",
     "@types/node": "^22.10.7",
     "@types/pg": "^8.15.5",
-    "pg": "^8.16.3",
-    "typeorm": "^0.3.25",
     "typescript": "^5.7.3"
   },
   "keywords": [

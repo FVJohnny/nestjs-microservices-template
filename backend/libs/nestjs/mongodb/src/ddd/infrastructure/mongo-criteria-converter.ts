@@ -1,6 +1,4 @@
-import { Criteria } from '../domain/criteria/Criteria';
-import { Filter } from '../domain/criteria/Filter';
-import { Operator } from '../domain/criteria/FilterOperator';
+import { Criteria, Filter, Operator } from '@libs/nestjs-common';
 
 /**
  * Converts DDD Criteria to MongoDB filter objects
