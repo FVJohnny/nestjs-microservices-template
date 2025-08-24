@@ -1,4 +1,6 @@
 import { AggregateRoot as CQRSAggregateRoot, IEvent } from '@nestjs/cqrs';
+import { isDeepStrictEqual } from 'node:util';
+
 export type Primitives = Record<string, any>;
 
 /**
@@ -18,4 +20,12 @@ export abstract class AggregateRoot extends CQRSAggregateRoot<IEvent> {
    * This is used for persistence and serialization
    */
   abstract toPrimitives(): Primitives;
+
+  /**
+   * Compares two aggregate roots for equality based on their primitive values
+   * Uses Node's built-in deep equality check
+   */
+  equals(other?: AggregateRoot | null): boolean {
+    return isDeepStrictEqual(this.toPrimitives(), other?.toPrimitives());
+  }
 }

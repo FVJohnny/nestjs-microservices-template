@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { Channel } from '../../../domain/entities/channel.entity';
 import { ChannelRepository } from '../../../domain/repositories/channel.repository';
 import { Criteria, Operator } from '@libs/nestjs-common';
@@ -11,11 +11,15 @@ export class InMemoryChannelRepository implements ChannelRepository {
     InMemoryChannelRepository.name,
   );
 
-  private channels: Map<string, Channel> = new Map();
+  private channels: Map<string, Channel>;
+
+  constructor(@Optional() channels?: Map<string, Channel>) {
+    this.channels = channels || new Map();
+  }
 
   async save(channel: Channel): Promise<void> {
     try {
-      this.logger.log(`Saving channel: ${channel.id}`);
+      this.logger.debug(`Saving channel: ${channel.id}`);
       this.channels.set(channel.id, channel);
     } catch (error) {
       this.handleDatabaseError('save', channel.id, error);
@@ -24,7 +28,7 @@ export class InMemoryChannelRepository implements ChannelRepository {
 
   async remove(id: string): Promise<void> {
     try {
-      this.logger.log(`Deleting channel: ${id}`);
+      this.logger.debug(`Deleting channel: ${id}`);
       this.channels.delete(id);
     } catch (error) {
       this.handleDatabaseError('remove', id, error);
@@ -41,7 +45,7 @@ export class InMemoryChannelRepository implements ChannelRepository {
 
   async findById(id: string): Promise<Channel | null> {
     try {
-      this.logger.log(`Finding channel by id: ${id}`);
+      this.logger.debug(`Finding channel by id: ${id}`);
       return this.channels.get(id) || null;
     } catch (error) {
       this.handleDatabaseError('findById', id, error);
@@ -50,7 +54,7 @@ export class InMemoryChannelRepository implements ChannelRepository {
 
   async findByCriteria(criteria: Criteria): Promise<Channel[]> {
     try {
-      this.logger.log(`Finding channels with criteria`);
+      this.logger.debug(`Finding channels with criteria`);
       let filtered = Array.from(this.channels.values());
 
       // Apply filters

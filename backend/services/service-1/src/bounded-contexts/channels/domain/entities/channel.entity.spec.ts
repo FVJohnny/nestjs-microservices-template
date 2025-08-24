@@ -6,7 +6,12 @@ import { InvalidOperationException } from '@libs/nestjs-common';
 
 describe('Channel (domain)', () => {
   it('create() raises ChannelRegisteredDomainEvent', () => {
-    const channel = Channel.random();
+    const channel = Channel.create({
+      channelType: 'telegram',
+      name: 'Test Channel',
+      userId: 'user-123',
+      connectionConfig: { token: 'test-token' }
+    });
     const events = channel.getUncommittedEvents();
     expect(events.length).toBe(1);
     expect(events[0]).toBeInstanceOf(ChannelRegisteredDomainEvent);
@@ -19,7 +24,7 @@ describe('Channel (domain)', () => {
     expect(events.some((e) => e instanceof MessageReceivedDomainEvent)).toBe(
       true,
     );
-    expect(events.length).toBe(2);
+    expect(events.length).toBe(1);
   });
 
   it('receiveMessage() on inactive channel throws', () => {

@@ -20,15 +20,15 @@ describe('InMemoryChannelRepository', () => {
   });
 
   describe('save', () => {
-    it('should save a channel successfully', async () => {
+    it('should save and find a channel successfully', async () => {
       const channel = Channel.random();
       
       await repository.save(channel);
       const found = await repository.findById(channel.id);
       
       expect(found).not.toBeNull();
-      expect(found?.id).toBe(channel.id);
-      expect(found?.name).toBe(channel.name);
+      
+      expect(channel.equals(found)).toBe(true);
     });
 
     it('should update an existing channel when saving with same id', async () => {
@@ -37,37 +37,32 @@ describe('InMemoryChannelRepository', () => {
       
       // Modify channel and save again
       const updatedChannel = Channel.random({ 
+        id: channel.id,
         name: 'Updated Name' 
-      });
-      // Manually set the same ID to simulate update
-      Object.defineProperty(updatedChannel, 'id', {
-        value: channel.id,
-        writable: false,
-        configurable: true
       });
       
       await repository.save(updatedChannel);
       const found = await repository.findById(channel.id);
-      
+      expect(found).not.toBeNull();
+      expect(found?.id).toBe(channel.id);
       expect(found?.name).toBe('Updated Name');
     });
 
     it('should save multiple channels', async () => {
       const channels = [
-        Channel.random({ userId: 'user-1' }),
-        Channel.random({ userId: 'user-2' }),
-        Channel.random({ userId: 'user-3' }),
+        Channel.random(),
+        Channel.random(),
+        Channel.random(),
       ];
       
       for (const channel of channels) {
         await repository.save(channel);
       }
       
-      const allChannels = await repository.findByCriteria(
-        new Criteria(Filters.none(), Order.none())
-      );
+      const allChannels = await repository.findByCriteria(new Criteria());
       
-      expect(allChannels).toHaveLength(3);
+      expect(allChannels).toHaveLength(channels.length);
+      expect(allChannels.every(c => channels.some(ch => ch.equals(c)))).toBe(true);
     });
   });
 
@@ -78,25 +73,20 @@ describe('InMemoryChannelRepository', () => {
     });
 
     it('should return the correct channel when it exists', async () => {
-      const channel = Channel.random({
-        name: 'Test Channel',
-        userId: 'user-123',
-        channelType: 'telegram'
-      });
+      const channel = Channel.random();
       
       await repository.save(channel);
       const found = await repository.findById(channel.id);
       
       expect(found).not.toBeNull();
-      expect(found?.id).toBe(channel.id);
-      expect(found?.name).toBe('Test Channel');
-      expect(found?.userId).toBe('user-123');
-      expect(found?.channelType.getValue()).toBe('telegram');
+      expect(found?.equals(channel)).toBe(true);
     });
   });
 
   describe('remove', () => {
     it('should remove an existing channel', async () => {
+
+      // Save a channel
       const channel = Channel.random();
       await repository.save(channel);
       
@@ -157,45 +147,45 @@ describe('InMemoryChannelRepository', () => {
   });
 
   describe('findByCriteria', () => {
+
+     const mockChannels = [
+      Channel.random({ 
+        userId: 'user-1', 
+        name: 'Alpha Channel',
+        channelType: 'telegram' 
+      }),
+      Channel.random({ 
+        userId: 'user-1', 
+        name: 'Beta Signal',
+        channelType: 'discord' 
+      }),
+      Channel.random({ 
+        userId: 'user-2', 
+        name: 'Charlie Trading',
+        channelType: 'telegram' 
+      }),
+      Channel.random({ 
+        userId: 'user-2', 
+        name: 'Delta Signals',
+        channelType: 'whatsapp' 
+      }),
+    ];
     describe('filtering', () => {
       beforeEach(async () => {
-        // Set up test data
-        const channels = [
-          Channel.random({ 
-            userId: 'user-1', 
-            name: 'Alpha Channel',
-            channelType: 'telegram' 
-          }),
-          Channel.random({ 
-            userId: 'user-1', 
-            name: 'Beta Signal',
-            channelType: 'discord' 
-          }),
-          Channel.random({ 
-            userId: 'user-2', 
-            name: 'Charlie Trading',
-            channelType: 'telegram' 
-          }),
-          Channel.random({ 
-            userId: 'user-2', 
-            name: 'Delta Signals',
-            channelType: 'whatsapp' 
-          }),
-        ];
-        
-        for (const channel of channels) {
+       
+        for (const channel of mockChannels) {
           await repository.save(channel);
         }
       });
 
       it('should return all channels with no filters', async () => {
-        const criteria = new Criteria(Filters.none(), Order.none());
+        const criteria = new Criteria();
         const results = await repository.findByCriteria(criteria);
         
-        expect(results).toHaveLength(4);
+        expect(results).toHaveLength(mockChannels.length);
       });
 
-      it('should filter by userId using EQUAL operator', async () => {
+      it('should filter by userId using EQUAL operator', async () => { 
         const filters = new Filters([
           new Filter(
             new FilterField('userId'),
@@ -203,7 +193,7 @@ describe('InMemoryChannelRepository', () => {
             new FilterValue('user-1')
           ),
         ]);
-        const criteria = new Criteria(filters, Order.none());
+        const criteria = new Criteria(filters);
         
         const results = await repository.findByCriteria(criteria);
         
@@ -219,7 +209,7 @@ describe('InMemoryChannelRepository', () => {
             new FilterValue('telegram')
           ),
         ]);
-        const criteria = new Criteria(filters, Order.none());
+        const criteria = new Criteria(filters);
         
         const results = await repository.findByCriteria(criteria);
         
@@ -235,7 +225,7 @@ describe('InMemoryChannelRepository', () => {
             new FilterValue('Signal')
           ),
         ]);
-        const criteria = new Criteria(filters, Order.none());
+        const criteria = new Criteria(filters);
         
         const results = await repository.findByCriteria(criteria);
         
@@ -251,7 +241,7 @@ describe('InMemoryChannelRepository', () => {
             new FilterValue('signal')
           ),
         ]);
-        const criteria = new Criteria(filters, Order.none());
+        const criteria = new Criteria(filters);
         
         const results = await repository.findByCriteria(criteria);
         
@@ -266,7 +256,7 @@ describe('InMemoryChannelRepository', () => {
             new FilterValue('telegram')
           ),
         ]);
-        const criteria = new Criteria(filters, Order.none());
+        const criteria = new Criteria(filters);
         
         const results = await repository.findByCriteria(criteria);
         
@@ -282,7 +272,7 @@ describe('InMemoryChannelRepository', () => {
             new FilterValue('Signal')
           ),
         ]);
-        const criteria = new Criteria(filters, Order.none());
+        const criteria = new Criteria(filters);
         
         const results = await repository.findByCriteria(criteria);
         
@@ -303,7 +293,7 @@ describe('InMemoryChannelRepository', () => {
             new FilterValue('telegram')
           ),
         ]);
-        const criteria = new Criteria(filters, Order.none());
+        const criteria = new Criteria(filters);
         
         const results = await repository.findByCriteria(criteria);
         
@@ -313,13 +303,14 @@ describe('InMemoryChannelRepository', () => {
       });
 
       it('should filter by isActive status', async () => {
-        // Create some channels and deactivate some
-        const activeChannel = Channel.random({ name: 'Active' });
-        const inactiveChannel = Channel.random({ name: 'Inactive' });
-        inactiveChannel.isActive = false;
+        // Use a fresh repository for this test to avoid interference with other channels
+        const cleanRepository = new InMemoryChannelRepository();
         
-        await repository.save(activeChannel);
-        await repository.save(inactiveChannel);
+        const activeChannel = Channel.random({ name: 'Active', isActive: true });
+        const inactiveChannel = Channel.random({ name: 'Inactive', isActive: false });
+        
+        await cleanRepository.save(activeChannel);
+        await cleanRepository.save(inactiveChannel);
         
         const filters = new Filters([
           new Filter(
@@ -328,13 +319,13 @@ describe('InMemoryChannelRepository', () => {
             new FilterValue('false')
           ),
         ]);
-        const criteria = new Criteria(filters, Order.none());
+        const criteria = new Criteria(filters);
         
-        const results = await repository.findByCriteria(criteria);
+        const results = await cleanRepository.findByCriteria(criteria);
         
-        const inactiveResults = results.filter(c => c.name === 'Inactive');
-        expect(inactiveResults).toHaveLength(1);
-        expect(inactiveResults[0].isActive).toBe(false);
+        expect(results).toHaveLength(1);
+        expect(results[0].name).toBe('Inactive');
+        expect(results[0].isActive).toBe(false);
       });
     });
 
@@ -344,19 +335,8 @@ describe('InMemoryChannelRepository', () => {
         const recentDate = new Date('2024-06-01');
         
         // Create channels with specific dates
-        const oldChannel = Channel.random({ name: 'Old Channel' });
-        Object.defineProperty(oldChannel, 'createdAt', {
-          value: oldDate,
-          writable: false,
-          configurable: true
-        });
-        
-        const recentChannel = Channel.random({ name: 'Recent Channel' });
-        Object.defineProperty(recentChannel, 'createdAt', {
-          value: recentDate,
-          writable: false,
-          configurable: true
-        });
+        const oldChannel = Channel.random({ name: 'Old Channel', createdAt: oldDate });
+        const recentChannel = Channel.random({ name: 'Recent Channel', createdAt: recentDate });
         
         await repository.save(oldChannel);
         await repository.save(recentChannel);
@@ -368,31 +348,21 @@ describe('InMemoryChannelRepository', () => {
             new FilterValue('2024-01-01')
           ),
         ]);
-        const criteria = new Criteria(filters, Order.none());
+        
+        const criteria = new Criteria(filters);
         
         const results = await repository.findByCriteria(criteria);
         
         expect(results).toHaveLength(1);
         expect(results[0].name).toBe('Recent Channel');
       });
-
+        
       it('should filter by createdAt using LT operator', async () => {
         const oldDate = new Date('2023-01-01');
         const recentDate = new Date('2024-06-01');
         
-        const oldChannel = Channel.random({ name: 'Old Channel' });
-        Object.defineProperty(oldChannel, 'createdAt', {
-          value: oldDate,
-          writable: false,
-          configurable: true
-        });
-        
-        const recentChannel = Channel.random({ name: 'Recent Channel' });
-        Object.defineProperty(recentChannel, 'createdAt', {
-          value: recentDate,
-          writable: false,
-          configurable: true
-        });
+        const oldChannel = Channel.random({ name: 'Old Channel', createdAt: oldDate });
+        const recentChannel = Channel.random({ name: 'Recent Channel', createdAt: recentDate });
         
         await repository.save(oldChannel);
         await repository.save(recentChannel);
@@ -404,7 +374,7 @@ describe('InMemoryChannelRepository', () => {
             new FilterValue('2024-01-01')
           ),
         ]);
-        const criteria = new Criteria(filters, Order.none());
+        const criteria = new Criteria(filters);
         
         const results = await repository.findByCriteria(criteria);
         
@@ -425,7 +395,7 @@ describe('InMemoryChannelRepository', () => {
             new FilterValue('some-value')
           ),
         ]);
-        const criteria = new Criteria(filters, Order.none());
+        const criteria = new Criteria(filters);
         
         const results = await repository.findByCriteria(criteria);
         
@@ -450,7 +420,7 @@ describe('InMemoryChannelRepository', () => {
             new FilterValue('user-999')
           ),
         ]);
-        const criteria = new Criteria(filters, Order.none());
+        const criteria = new Criteria(filters);
         
         const results = await repository.findByCriteria(criteria);
         
@@ -458,7 +428,7 @@ describe('InMemoryChannelRepository', () => {
       });
 
       it('should handle empty repository', async () => {
-        const criteria = new Criteria(Filters.none(), Order.none());
+        const criteria = new Criteria();
         const results = await repository.findByCriteria(criteria);
         
         expect(results).toEqual([]);
@@ -482,7 +452,7 @@ describe('InMemoryChannelRepository', () => {
     });
 
     it('should count all channels with no filters', async () => {
-      const criteria = new Criteria(Filters.none(), Order.none());
+      const criteria = new Criteria();
       const count = await repository.countByCriteria(criteria);
       
       expect(count).toBe(5);
@@ -496,7 +466,7 @@ describe('InMemoryChannelRepository', () => {
           new FilterValue('user-1')
         ),
       ]);
-      const criteria = new Criteria(filters, Order.none());
+      const criteria = new Criteria(filters);
       
       const count = await repository.countByCriteria(criteria);
       
@@ -511,7 +481,7 @@ describe('InMemoryChannelRepository', () => {
           new FilterValue('telegram')
         ),
       ]);
-      const criteria = new Criteria(filters, Order.none());
+      const criteria = new Criteria(filters);
       
       const count = await repository.countByCriteria(criteria);
       
@@ -531,7 +501,7 @@ describe('InMemoryChannelRepository', () => {
           new FilterValue('telegram')
         ),
       ]);
-      const criteria = new Criteria(filters, Order.none());
+      const criteria = new Criteria(filters);
       
       const count = await repository.countByCriteria(criteria);
       
@@ -546,7 +516,7 @@ describe('InMemoryChannelRepository', () => {
           new FilterValue('non-existent-user')
         ),
       ]);
-      const criteria = new Criteria(filters, Order.none());
+      const criteria = new Criteria(filters);
       
       const count = await repository.countByCriteria(criteria);
       
@@ -556,13 +526,13 @@ describe('InMemoryChannelRepository', () => {
     it('should return 0 for empty repository', async () => {
       // Clear the repository
       const allChannels = await repository.findByCriteria(
-        new Criteria(Filters.none(), Order.none())
+        new Criteria()
       );
       for (const channel of allChannels) {
         await repository.remove(channel.id);
       }
       
-      const criteria = new Criteria(Filters.none(), Order.none());
+      const criteria = new Criteria();
       const count = await repository.countByCriteria(criteria);
       
       expect(count).toBe(0);
@@ -573,85 +543,63 @@ describe('InMemoryChannelRepository', () => {
     it('should handle errors in save operation', async () => {
       const channel = Channel.random();
       
-      // Mock the internal Map to throw an error
-      const mockSet = jest.fn().mockImplementation(() => {
+      // Create a mock Map that throws on set
+      const mockMap = new Map<string, Channel>();
+      mockMap.set = jest.fn().mockImplementation(() => {
         throw new Error('Storage error');
       });
       
-      // Access private property for testing
-      (repository as any).channels = {
-        set: mockSet,
-        get: jest.fn(),
-        has: jest.fn(),
-        delete: jest.fn(),
-        values: jest.fn().mockReturnValue([]),
-      };
+      const repository = new InMemoryChannelRepository(mockMap);
       
       await expect(repository.save(channel)).rejects.toThrow(ChannelPersistenceException);
     });
 
     it('should handle errors in findById operation', async () => {
-      const mockGet = jest.fn().mockImplementation(() => {
+      // Create a mock Map that throws on get
+      const mockMap = new Map<string, Channel>();
+      mockMap.get = jest.fn().mockImplementation(() => {
         throw new Error('Retrieval error');
       });
       
-      (repository as any).channels = {
-        get: mockGet,
-        set: jest.fn(),
-        has: jest.fn(),
-        delete: jest.fn(),
-        values: jest.fn().mockReturnValue([]),
-      };
+      const repository = new InMemoryChannelRepository(mockMap);
       
       await expect(repository.findById('test-id')).rejects.toThrow(ChannelPersistenceException);
     });
 
     it('should handle errors in remove operation', async () => {
-      const mockDelete = jest.fn().mockImplementation(() => {
+      // Create a mock Map that throws on delete
+      const mockMap = new Map<string, Channel>();
+      mockMap.delete = jest.fn().mockImplementation(() => {
         throw new Error('Deletion error');
       });
       
-      (repository as any).channels = {
-        delete: mockDelete,
-        set: jest.fn(),
-        get: jest.fn(),
-        has: jest.fn(),
-        values: jest.fn().mockReturnValue([]),
-      };
+      const repository = new InMemoryChannelRepository(mockMap);
       
       await expect(repository.remove('test-id')).rejects.toThrow(ChannelPersistenceException);
     });
 
     it('should handle errors in exists operation', async () => {
-      const mockHas = jest.fn().mockImplementation(() => {
+      // Create a mock Map that throws on has
+      const mockMap = new Map<string, Channel>();
+      mockMap.has = jest.fn().mockImplementation(() => {
         throw new Error('Check error');
       });
       
-      (repository as any).channels = {
-        has: mockHas,
-        set: jest.fn(),
-        get: jest.fn(),
-        delete: jest.fn(),
-        values: jest.fn().mockReturnValue([]),
-      };
+      const repository = new InMemoryChannelRepository(mockMap);
       
       await expect(repository.exists('test-id')).rejects.toThrow(ChannelPersistenceException);
     });
 
     it('should handle errors in findByCriteria operation', async () => {
-      const mockValues = jest.fn().mockImplementation(() => {
+      // Create a mock Map that throws on values
+      const mockMap = new Map<string, Channel>();
+      mockMap.values = jest.fn().mockImplementation(() => {
         throw new Error('Query error');
       });
       
-      (repository as any).channels = {
-        values: mockValues,
-        set: jest.fn(),
-        get: jest.fn(),
-        has: jest.fn(),
-        delete: jest.fn(),
-      };
+      const repository = new InMemoryChannelRepository(mockMap);
       
-      const criteria = new Criteria(Filters.none(), Order.none());
+      const criteria = new Criteria();
       await expect(repository.findByCriteria(criteria)).rejects.toThrow(ChannelPersistenceException);
     });
   });
@@ -682,7 +630,7 @@ describe('InMemoryChannelRepository', () => {
       
       // Count remaining
       const count = await repository.countByCriteria(
-        new Criteria(Filters.none(), Order.none())
+        new Criteria()
       );
       expect(count).toBe(2);
     });

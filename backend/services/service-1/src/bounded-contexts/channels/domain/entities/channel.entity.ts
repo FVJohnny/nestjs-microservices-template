@@ -11,6 +11,7 @@ interface CreateChannelProps {
   userId: string;
   connectionConfig: Record<string, any>;
 }
+
 export class Channel extends AggregateRoot {
   constructor(
     public readonly id: string,
@@ -50,14 +51,16 @@ export class Channel extends AggregateRoot {
     return channel;
   }
 
-  static random(props?: Partial<CreateChannelProps>) {
-    const id = uuidv4();
+  static random(props?: Partial<CreateChannelProps> & { id?: string, isActive?: boolean, createdAt?: Date }) {
+    const id = props?.id || uuidv4();
     return new Channel(
       id,
       ChannelTypeVO.create(props?.channelType || 'telegram'),
       props?.name || 'My Beautiful Channel',
       props?.userId || 'user-1',
       props?.connectionConfig || { token: 'abc' },
+      props?.isActive ?? true,
+      props?.createdAt || new Date(),
     );
   }
 
