@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Channel } from '../../../domain/entities/channel.entity';
 import { ChannelRepository } from '../../../domain/repositories/channel.repository';
 import { PostgreSQLChannelEntity } from './channel.schema';
 import { ChannelTypeVO } from '../../../domain/value-objects/channel-type.vo';
-import { Criteria, Operator } from '@libs/nestjs-common';
+import { Criteria } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { ChannelPersistenceException } from '../../errors';
+import { PostgresCriteriaConverter } from './postgres-criteria-converter';
 
 @Injectable()
 export class PostgreSQLChannelRepository implements ChannelRepository {
@@ -38,13 +39,9 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
     try {
       this.logger.log(`Removing channel with id: ${id}`);
 
-      // Soft delete by setting isActive to false
-      await this.channelRepository.update(
-        { id },
-        { isActive: false, updatedAt: new Date() },
-      );
+      await this.channelRepository.delete({ id });
 
-      this.logger.log(`Soft deleted channel: ${id}`);
+      this.logger.log(`Removed channel: ${id}`);
     } catch (error) {
       this.handleDatabaseError('remove', id, error);
     }
@@ -55,7 +52,7 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
       this.logger.log(`Checking if channel exists with id: ${id}`);
 
       const count = await this.channelRepository.count({
-        where: { id, isActive: true },
+        where: { id },
       });
 
       return count > 0;
@@ -68,7 +65,7 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
     try {
       this.logger.log(`Finding channel by id: ${id}`);
       const entity = await this.channelRepository.findOne({
-        where: { id, isActive: true },
+        where: { id },
       });
       return entity ? this.mapToDomain(entity) : null;
     } catch (error) {
@@ -82,7 +79,8 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
         `Finding channels with criteria: ${JSON.stringify(criteria)}`,
       );
 
-      const queryBuilder = this.buildCriteriaQuery(criteria);
+      const baseQueryBuilder = this.channelRepository.createQueryBuilder('channel');
+      const queryBuilder = PostgresCriteriaConverter.convert(baseQueryBuilder, criteria, 'channel');
       const entities = await queryBuilder.getMany();
 
       return entities.map((entity) => this.mapToDomain(entity));
@@ -101,7 +99,8 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
         `Counting channels with criteria: ${JSON.stringify(criteria)}`,
       );
 
-      const queryBuilder = this.buildCriteriaQuery(criteria);
+      const baseQueryBuilder = this.channelRepository.createQueryBuilder('channel');
+      const queryBuilder = PostgresCriteriaConverter.convert(baseQueryBuilder, criteria, 'channel');
       return await queryBuilder.getCount();
     } catch (error) {
       this.handleDatabaseError(
@@ -110,113 +109,6 @@ export class PostgreSQLChannelRepository implements ChannelRepository {
         error,
       );
     }
-  }
-
-  private buildCriteriaQuery(
-    criteria: Criteria,
-  ): SelectQueryBuilder<PostgreSQLChannelEntity> {
-    let queryBuilder = this.channelRepository.createQueryBuilder('channel');
-
-    // Apply filters
-    criteria.filters.filters.forEach((filter, index) => {
-      const paramName = `param_${index}`;
-      const fieldName = `channel.${filter.field.value}`;
-
-      switch (filter.operator.value) {
-        case Operator.EQUAL:
-          if (index === 0) {
-            queryBuilder = queryBuilder.where(`${fieldName} = :${paramName}`, {
-              [paramName]: filter.value.value,
-            });
-          } else {
-            queryBuilder = queryBuilder.andWhere(
-              `${fieldName} = :${paramName}`,
-              { [paramName]: filter.value.value },
-            );
-          }
-          break;
-        case Operator.NOT_EQUAL:
-          if (index === 0) {
-            queryBuilder = queryBuilder.where(`${fieldName} != :${paramName}`, {
-              [paramName]: filter.value.value,
-            });
-          } else {
-            queryBuilder = queryBuilder.andWhere(
-              `${fieldName} != :${paramName}`,
-              { [paramName]: filter.value.value },
-            );
-          }
-          break;
-        case Operator.GT:
-          if (index === 0) {
-            queryBuilder = queryBuilder.where(`${fieldName} > :${paramName}`, {
-              [paramName]: filter.value.value,
-            });
-          } else {
-            queryBuilder = queryBuilder.andWhere(
-              `${fieldName} > :${paramName}`,
-              { [paramName]: filter.value.value },
-            );
-          }
-          break;
-        case Operator.LT:
-          if (index === 0) {
-            queryBuilder = queryBuilder.where(`${fieldName} < :${paramName}`, {
-              [paramName]: filter.value.value,
-            });
-          } else {
-            queryBuilder = queryBuilder.andWhere(
-              `${fieldName} < :${paramName}`,
-              { [paramName]: filter.value.value },
-            );
-          }
-          break;
-        case Operator.CONTAINS:
-          if (index === 0) {
-            queryBuilder = queryBuilder.where(
-              `LOWER(${fieldName}) LIKE LOWER(:${paramName})`,
-              { [paramName]: `%${filter.value.value}%` },
-            );
-          } else {
-            queryBuilder = queryBuilder.andWhere(
-              `LOWER(${fieldName}) LIKE LOWER(:${paramName})`,
-              { [paramName]: `%${filter.value.value}%` },
-            );
-          }
-          break;
-        case Operator.NOT_CONTAINS:
-          if (index === 0) {
-            queryBuilder = queryBuilder.where(
-              `LOWER(${fieldName}) NOT LIKE LOWER(:${paramName})`,
-              { [paramName]: `%${filter.value.value}%` },
-            );
-          } else {
-            queryBuilder = queryBuilder.andWhere(
-              `LOWER(${fieldName}) NOT LIKE LOWER(:${paramName})`,
-              { [paramName]: `%${filter.value.value}%` },
-            );
-          }
-          break;
-      }
-    });
-
-    // Apply ordering
-    if (criteria.order.hasOrder()) {
-      queryBuilder = queryBuilder.orderBy(
-        `channel.${criteria.order.orderBy.value}`,
-        criteria.order.orderType.isAsc() ? 'ASC' : 'DESC',
-      );
-    }
-
-    // Apply pagination
-    if (criteria.limit) {
-      queryBuilder = queryBuilder.limit(criteria.limit);
-    }
-    if (criteria.offset) {
-      queryBuilder = queryBuilder.offset(criteria.offset);
-    }
-
-    return queryBuilder;
   }
 
   /**

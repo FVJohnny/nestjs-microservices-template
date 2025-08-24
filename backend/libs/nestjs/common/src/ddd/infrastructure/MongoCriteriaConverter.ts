@@ -46,8 +46,14 @@ export class MongoCriteriaConverter {
 
     // Apply sorting from criteria
     if (criteria.order && criteria.order.orderBy && criteria.order.orderType) {
-      const sortOrder = criteria.order.orderType.value.toLowerCase() === 'desc' ? -1 : 1;
-      options.sort = { [criteria.order.orderBy.value]: sortOrder };
+      const orderByValue = criteria.order.orderBy.value;
+      const orderTypeValue = criteria.order.orderType.value;
+      
+      // Only add sort if orderBy field is not empty and orderType is not 'none'
+      if (orderByValue?.trim() !== '' && orderTypeValue !== 'none') {
+        const sortOrder = orderTypeValue.toLowerCase() === 'desc' ? -1 : 1;
+        options.sort = { [orderByValue]: sortOrder };
+      }
     }
 
     // Apply pagination from criteria

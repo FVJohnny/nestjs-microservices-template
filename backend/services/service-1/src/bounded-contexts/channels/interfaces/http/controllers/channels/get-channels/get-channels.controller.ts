@@ -4,7 +4,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { CorrelationLogger } from '@libs/nestjs-common';
 import {
   ApiOperation,
   ApiQuery,
