@@ -36,10 +36,8 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
 
     this.isListeningFlag = true;
 
-    // Subscribe to all registered topics
-    for (const topicName of this.eventHandlers.keys()) {
-      await this.subscribeToTopic(topicName);
-    }
+    // Topics are already subscribed when handlers are registered
+    // No need to subscribe again here
 
     this.logger.log(`${this.constructor.name} started listening`);
   }

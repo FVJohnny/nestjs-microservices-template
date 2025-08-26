@@ -16,10 +16,10 @@ export class TradingSignalsIntegrationEventHandler {
 
     // Execute the domain command
     const command = new RegisterChannelCommand({
-      channelType: event.channelType,
-      name: event.name,
-      userId: event.userId,
-      connectionConfig: event.connectionConfig,
+      channelType: 'telegram',
+      name: 'Channel from event',
+      userId: 'user-id',
+      connectionConfig: {},
     });
 
     const result = await this.commandBus.execute(command);

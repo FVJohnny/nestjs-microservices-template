@@ -25,7 +25,10 @@ export class SwaggerUtility {
     }
     
     const swaggerConfig = builder.build();
-    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    const document = SwaggerModule.createDocument(app, swaggerConfig, {
+      include: [],
+      deepScanRoutes: true,
+    });
     
     // Setup Swagger UI
     const swaggerPath = config.path || 'docs';

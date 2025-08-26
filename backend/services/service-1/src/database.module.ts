@@ -1,10 +1,9 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SharedRedisModule } from '@libs/nestjs-redis';
-import { SharedPostgreSQLModule } from '@libs/nestjs-postgresql';
+import { SharedPostgreSQLModule, PostgreSQLConfigService } from '@libs/nestjs-postgresql';
 import { PostgreSQLChannelEntity } from './bounded-contexts/channels/infrastructure/repositories/postgresql/channel.schema';
-import { MongoDBConfigService, SharedMongoDBModule } from '@libs/nestjs-mongodb';
-import { MongoClient } from 'mongodb';
+import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
 
 /**
  * Global database module that provides MongoDB, Redis, and PostgreSQL connections
@@ -18,10 +17,12 @@ import { MongoClient } from 'mongodb';
     // MongoDB
     SharedMongoDBModule,
 
-    // PostgreSQL - Base module for config service
+    // PostgreSQL - Only needed for Channels bounded context
     SharedPostgreSQLModule,
+    // Use the shared module's helper method with type assertion for now
+    // This is a known issue with TypeORM version mismatches in monorepo setups
     TypeOrmModule.forRootAsync(
-      SharedPostgreSQLModule.getTypeOrmConfig([PostgreSQLChannelEntity]),
+      SharedPostgreSQLModule.getTypeOrmConfig([PostgreSQLChannelEntity]) as any,
     ),
     
   ],

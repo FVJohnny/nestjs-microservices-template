@@ -25,6 +25,11 @@ export class KafkaIntegrationEventListener extends BaseIntegrationEventListener 
   }
 
   protected async subscribeToTopic(topicName: string): Promise<void> {
+    // Log call stack to understand where this is being called from
+    const stack = new Error().stack;
+    const callerLine = stack?.split('\n')[2] || 'unknown';
+    this.logger.debug(`subscribeToTopic called for ${topicName} from: ${callerLine.trim()}`);
+    
     // Create a Kafka handler that delegates to our base handleMessage method
     const kafkaHandler = {
       topicName,

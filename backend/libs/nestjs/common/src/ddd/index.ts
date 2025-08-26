@@ -20,7 +20,11 @@ export * from '../integration-events/events';
 export * from './domain/events/domain-event.base';
 
 // Aggregate Root
-export * from './domain/AggregateRoot';
+export * from './domain/entities/AggregateRoot';
+
+// Value Objects
+export { ValueObject } from './domain/value-object/ValueObject';
+export { InvalidArgumentError } from './domain/value-object/InvalidArgumentError';
 
 // Repositories
 export * from './domain/repositories/repository.base';

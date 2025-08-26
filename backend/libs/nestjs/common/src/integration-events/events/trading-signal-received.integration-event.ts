@@ -1,5 +1,5 @@
 import { BaseIntegrationEvent, BaseIntegrationEventProps } from './base-integration-event';
-import { INTEGRATION_EVENT_TOPIC_TRADING_SIGNALS } from './topics';
+import { Topics } from './topics';
 
 /**
  * Integration event received from trading signals service.
@@ -7,27 +7,15 @@ import { INTEGRATION_EVENT_TOPIC_TRADING_SIGNALS } from './topics';
  */
 
 export interface TradingSignalReceivedIntegrationEventProps extends BaseIntegrationEventProps {
-  channelType: string;
-  name: string;
-  userId: string;
-  connectionConfig?: Record<string, unknown>;
 }
 export class TradingSignalReceivedIntegrationEvent extends BaseIntegrationEvent {
   readonly eventVersion = '1.0';
-  readonly eventName = 'trading-signal.received';
-  readonly topic = INTEGRATION_EVENT_TOPIC_TRADING_SIGNALS;
+  readonly eventName = Topics.TRADING_SIGNALS.events.TRADING_SIGNAL_RECEIVED;
+  readonly topic = Topics.TRADING_SIGNALS.topic;
 
-  public readonly channelType: string;
-  public readonly name: string;
-  public readonly userId: string;
-  public readonly connectionConfig: Record<string, unknown>;
 
   constructor(props: TradingSignalReceivedIntegrationEventProps) {
     super(props.occurredOn);
-    this.channelType = props.channelType;
-    this.name = props.name;
-    this.userId = props.userId;
-    this.connectionConfig = props.connectionConfig || {};
 
     this.validate();
   }
@@ -37,10 +25,6 @@ export class TradingSignalReceivedIntegrationEvent extends BaseIntegrationEvent 
    */
   protected getEventData(): Record<string, any> {
     return {
-      channelType: this.channelType,
-      name: this.name,
-      userId: this.userId,
-      connectionConfig: this.connectionConfig,
     };
   }
 
@@ -49,16 +33,6 @@ export class TradingSignalReceivedIntegrationEvent extends BaseIntegrationEvent 
    */
   validate(): void {
     super.validate();
-    
-    if (!this.channelType) {
-      throw new Error('channelType is required');
-    }
-    if (!this.name) {
-      throw new Error('name is required');
-    }
-    if (!this.userId) {
-      throw new Error('userId is required');
-    }
   }
 
   /**
@@ -66,11 +40,6 @@ export class TradingSignalReceivedIntegrationEvent extends BaseIntegrationEvent 
    */
   static fromJSON(json: any): TradingSignalReceivedIntegrationEvent {
     const event = new TradingSignalReceivedIntegrationEvent({
-      channelType: json.channelType,
-      name: json.name,
-      userId: json.userId,
-      connectionConfig: json.connectionConfig,
-      occurredOn: json.occurredOn ? new Date(json.occurredOn) : new Date(),
     });
     event.validate();
     return event;

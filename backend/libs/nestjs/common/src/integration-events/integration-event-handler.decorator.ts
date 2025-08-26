@@ -63,6 +63,7 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
       async onModuleInit() {
         // Auto-register this event handler with its topic
         if (this.integrationEventListener && this.topicName) {
+          this.logger.log(`[${constructor.name}] onModuleInit called, registering for topic: ${this.topicName}`);
           const handler = this as unknown as HandlerForRegistration;
           await this.integrationEventListener.registerEventHandler(this.topicName, handler);
         }
@@ -77,6 +78,11 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
         await instance.handleEvent(event, messageId);
       }
     }
+    
+    // Preserve the original class name
+    Object.defineProperty(IntegrationEventHandlerClass, 'name', {
+      value: constructor.name
+    });
     
     return IntegrationEventHandlerClass as any;
   };

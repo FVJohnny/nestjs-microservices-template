@@ -68,7 +68,6 @@ The Channels bounded context serves as a **reference implementation** showing ho
 - **Application Layer**
   - `commands/` - Command handlers (RegisterChannel)
   - `queries/` - Query handlers (GetChannels, CountUserChannels)
-  - `use-cases/` - Business use cases
   - `domain-event-handlers/` - Domain event handlers
 
 - **Infrastructure Layer**
@@ -76,7 +75,7 @@ The Channels bounded context serves as a **reference implementation** showing ho
   - `adapters/` - External service adapters
 
 - **Interface Layer**
-  - `http/controllers/` - REST API controllers
+  - `http/controllers/` - REST API controllers (use CommandBus/QueryBus directly)
   - `http/dtos/` - Data transfer objects
   - `integration-events/` - External event handlers
 
@@ -84,8 +83,8 @@ The Channels bounded context serves as a **reference implementation** showing ho
 
 #### Core DDD Components
 - `ddd/domain/` - Base domain classes and interfaces
-- `ddd/application/` - Use case interfaces and decorators
 - Repository base classes and domain event handling
+- CQRS command and query patterns
 
 #### Cross-Cutting Concerns
 - **Audit Module** - Request/response logging

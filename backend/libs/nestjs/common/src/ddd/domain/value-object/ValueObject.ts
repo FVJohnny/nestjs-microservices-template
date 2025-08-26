@@ -23,4 +23,8 @@ export abstract class ValueObject<T extends Primitives> {
   toString(): string {
     return this.value.toString();
   }
+
+  toValue(): T {
+    return this.value;
+  }
 }

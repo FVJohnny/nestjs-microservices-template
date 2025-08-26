@@ -214,7 +214,7 @@ async function triggerKafkaEvent(serviceNumber) {
         payload = {
           topic: "trading-signals",
           message: {
-            eventName: "channel.create",
+            eventName: "trading-signal.received",
             channelType: "telegram",
             name: "nombresito",
             userId: "usuariooo",
@@ -228,11 +228,7 @@ async function triggerKafkaEvent(serviceNumber) {
         payload = {
           topic: "trading-signals",
           message: {
-            eventName: "channel.create",
-            channelType: "telegram", 
-            name: "nombresito",
-            userId: "usuariooo",
-            connectionConfig: {}
+            eventName: "trading-signal.received",
           }
         }
         break;
