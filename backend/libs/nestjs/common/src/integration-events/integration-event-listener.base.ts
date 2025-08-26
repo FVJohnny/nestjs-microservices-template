@@ -1,5 +1,12 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { IIntegrationEventHandler } from './integration-event-handler.base';
+import { EventTrackerService } from './event-tracker.service';
+
+interface HandlerInfo {
+  handler: IIntegrationEventHandler;
+  eventType: string;
+  handlerName: string;
+}
 
 /**
  * Abstract base class for EventListener implementations
@@ -8,7 +15,7 @@ import { IIntegrationEventHandler } from './integration-event-handler.base';
 @Injectable()
 export abstract class BaseIntegrationEventListener implements IntegrationEventListener, OnModuleInit, OnModuleDestroy {
   protected readonly logger = new Logger(this.constructor.name);
-  protected readonly eventHandlers = new Map<string, IIntegrationEventHandler>();
+  protected readonly eventHandlers = new Map<string, HandlerInfo[]>(); // topic -> array of handlers
   protected readonly messageStats = new Map<string, {
     messagesProcessed: number;
     messagesSucceeded: number;
@@ -17,6 +24,8 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
     lastProcessedAt: Date | null;
   }>();
   protected isListeningFlag = false;
+
+  constructor() {}
 
   async onModuleInit() {
     // Subclasses can override this for initialization
@@ -63,30 +72,79 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
   }
 
   async registerEventHandler(topicName: string, handler: IIntegrationEventHandler): Promise<void> {
-    const currentHandler = this.eventHandlers.get(topicName);
-    if (currentHandler) {
+    // Extract event type from handler's event class
+    let eventType = 'Unknown';
+    try {
+      const eventClass = (handler as any).eventClass;
+      if (eventClass) {
+        try {
+          let tempInstance;
+          try {
+            tempInstance = new eventClass({});
+          } catch {
+            tempInstance = new eventClass({}, new Date());
+          }
+          eventType = tempInstance.eventName;
+        } catch {
+          this.logger.warn(`Could not extract event type for handler ${handler.constructor.name}`);
+        }
+      }
+    } catch (error) {
+      this.logger.warn(`Failed to extract event type: ${error}`);
+    }
+
+    // Get existing handlers for this topic or create new array
+    let topicHandlers = this.eventHandlers.get(topicName);
+    if (!topicHandlers) {
+      topicHandlers = [];
+      this.eventHandlers.set(topicName, topicHandlers);
+    }
+
+    // Check if handler for this specific event type already exists
+    const existingHandler = topicHandlers.find(info => info.eventType === eventType);
+    if (existingHandler) {
       this.logger.warn(
-        `Tried to register handler '${handler.constructor.name}' for topic '${topicName}' ` +
-        `but it already exists on handler '${currentHandler.constructor.name}'`
+        `Tried to register handler '${handler.constructor.name}' for event type '${eventType}' on topic '${topicName}' ` +
+        `but it already exists on handler '${existingHandler.handlerName}'`
       );
       return;
     }
 
-    this.eventHandlers.set(topicName, handler);
-
-    // Initialize message stats for this topic
-    this.messageStats.set(topicName, {
-      messagesProcessed: 0,
-      messagesSucceeded: 0,
-      messagesFailed: 0,
-      totalProcessingTime: 0,
-      lastProcessedAt: null,
+    // Add handler to the topic's handler list
+    topicHandlers.push({
+      handler,
+      eventType,
+      handlerName: handler.constructor.name
     });
 
-    // Always subscribe to the topic when registering a handler
-    await this.subscribeToTopic(topicName);
+    // Initialize message stats for this topic if not exists
+    if (!this.messageStats.has(topicName)) {
+      this.messageStats.set(topicName, {
+        messagesProcessed: 0,
+        messagesSucceeded: 0,
+        messagesFailed: 0,
+        totalProcessingTime: 0,
+        lastProcessedAt: null,
+      });
+    }
 
-    this.logger.log(`Registered event handler '${handler.constructor.name}' for topic '${topicName}'`);
+    // Pre-register the event in the tracker with 0 count only when a handler exists
+    try {
+      const eventTracker = EventTrackerService.getInstance();
+      if (eventTracker) {
+        this.logger.log(`Pre-registering event: ${eventType} for topic: ${topicName} (handler exists)`);
+        eventTracker.preRegisterEvent(eventType, topicName);
+      }
+    } catch (trackingError) {
+      this.logger.error(`Pre-registration failed: ${trackingError}`);
+    }
+
+    // Subscribe to topic if this is the first handler for this topic
+    if (topicHandlers.length === 1) {
+      await this.subscribeToTopic(topicName);
+    }
+
+    this.logger.log(`Registered event handler '${handler.constructor.name}' for event type '${eventType}' on topic '${topicName}' (${topicHandlers.length} handlers total)`);
   }
 
   /**
@@ -100,12 +158,37 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
     try {
       const { parsedMessage, messageId } = this.parseMessage(rawMessage);
 
-      // Find the appropriate event handler
-      const eventHandler = this.eventHandlers.get(topicName);
+      // Find the appropriate event handler based on event type
+      const topicHandlers = this.eventHandlers.get(topicName);
 
-      if (!eventHandler) {
-        this.logger.debug(`No handler registered for topic '${topicName}', skipping message [${messageId}]`);
+      if (!topicHandlers || topicHandlers.length === 0) {
+        this.logger.debug(`No handlers registered for topic '${topicName}', skipping message [${messageId}]`);
         return;
+      }
+
+      const eventType = parsedMessage.eventName || 'Unknown';
+      const handlerInfo = topicHandlers.find(info => info.eventType === eventType);
+
+      if (!handlerInfo) {
+        this.logger.debug(`No handler registered for event type '${eventType}' on topic '${topicName}', skipping message [${messageId}]`);
+        this.logger.debug(`Available handlers for topic: ${topicHandlers.map(h => h.eventType).join(', ')}`);
+        return;
+      }
+
+      // Track the event ONLY if we have a handler for it
+      try {
+        const eventTracker = EventTrackerService.getInstance();
+        if (eventTracker && parsedMessage) {
+          // Create a mock event object for tracking
+          const mockEvent = {
+            eventName: parsedMessage.eventName || 'Unknown',
+            topic: parsedMessage.topic || topicName,
+          };
+          eventTracker.trackEvent(mockEvent as any);
+          this.logger.debug(`Tracked handled event: ${mockEvent.eventName} from topic: ${mockEvent.topic}`);
+        }
+      } catch (trackingError) {
+        this.logger.warn(`Failed to track event: ${trackingError}`);
       }
 
       // Update message stats - increment processed count
@@ -114,8 +197,8 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
         stats.lastProcessedAt = new Date();
       }
 
-      // Delegate to the event handler
-      await eventHandler.handle(parsedMessage, messageId);
+      // Delegate to the appropriate event handler
+      await handlerInfo.handler.handle(parsedMessage, messageId);
       
       // Update success stats
       if (stats) {

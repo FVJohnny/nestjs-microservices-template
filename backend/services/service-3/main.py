@@ -20,11 +20,19 @@ class PublishEventRequest(BaseModel):
 async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Service-3...")
-    messaging_service.start()
+    try:
+        messaging_service.start()
+        logger.info("Service-3 messaging service started successfully")
+    except Exception as e:
+        logger.error(f"Failed to start messaging service: {e}")
+        # Don't block startup if messaging fails
     yield
     # Shutdown
     logger.info("Shutting down Service-3...")
-    messaging_service.stop()
+    try:
+        messaging_service.stop()
+    except Exception as e:
+        logger.error(f"Error stopping messaging service: {e}")
 
 app = FastAPI(lifespan=lifespan)
 
@@ -90,34 +98,40 @@ async def messaging_listener_status():
 @app.get("/integration-events/listener/stats")
 async def messaging_listener_stats():
     """Get detailed messaging listener statistics"""
-    basic_stats = event_counter.get_stats()
-    
-    subscribed_topics = messaging_service.get_subscribed_topics()
-    
-    return {
-        "listening": messaging_service.is_connected(),
-        "backend": messaging_service.get_backend_class_name(),
-        "subscribedTopics": subscribed_topics,
-        "handlerCount": 1,
-        "handlers": [
-            {
-                "topic": subscribed_topics[0] if subscribed_topics else "unknown",
-                "handlerName": "ChannelNotificationHandler",
-                "messagesProcessed": basic_stats.get("eventsProcessed", 0),
-                "messagesSucceeded": basic_stats.get("eventsProcessed", 0),
-                "messagesFailed": 0,
-                "averageProcessingTime": 100,
-                "lastProcessedAt": basic_stats.get("timestamp")
+    try:
+        basic_stats = event_counter.get_stats()
+        subscribed_topics = messaging_service.get_subscribed_topics()
+        
+        # Return new eventsByType format matching NestJS Service-1
+        return {
+            # New event tracking format
+            "service": basic_stats.get("service", "service-3"),
+            "totalEventsProcessed": basic_stats.get("totalEventsProcessed", 0),
+            "eventsByType": basic_stats.get("eventsByType", []),
+            "timestamp": basic_stats.get("timestamp"),
+            
+            # Legacy format for backward compatibility
+            "listening": messaging_service.is_connected(),
+            "backend": messaging_service.get_backend_class_name(),
+            "subscribedTopics": subscribed_topics,
+            "handlerCount": len(basic_stats.get("eventsByType", [])),
+            "handlers": basic_stats.get("eventsByType", []),
+            "totalStats": {
+                "totalMessages": basic_stats.get("totalEventsProcessed", 0),
+                "totalSuccesses": basic_stats.get("totalEventsProcessed", 0),
+                "totalFailures": 0,
+                "averageProcessingTime": 0
             }
-        ],
-        "totalStats": {
-            "totalMessages": basic_stats.get("eventsProcessed", 0),
-            "totalSuccesses": basic_stats.get("eventsProcessed", 0),
-            "totalFailures": 0,
-            "averageProcessingTime": 100
-        },
-        "timestamp": basic_stats.get("timestamp")
-    }
+        }
+    except Exception as e:
+        logger.error(f"Error in messaging_listener_stats: {e}")
+        return {
+            "error": str(e),
+            "service": "service-3",
+            "totalEventsProcessed": 0,
+            "eventsByType": [],
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
 
 @app.post("/integration-events/listener/start")
 async def messaging_listener_start():

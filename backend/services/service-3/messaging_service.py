@@ -74,9 +74,9 @@ class MessagingServiceManager:
     def get_subscribed_topics(self) -> list:
         """Get list of subscribed topics/channels"""
         if self.backend_type == 'redis':
-            return ['channels']  # Redis channels
+            return ['users']  # Redis channels
         else:
-            return ['channel-events']  # Kafka topics
+            return ['users']  # Kafka topics
 
 # Global instance
 messaging_service = MessagingServiceManager()

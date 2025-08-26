@@ -13,3 +13,8 @@ export * from './integration-events.controller';
 
 // Events
 export * from './events';
+
+// Event Tracking
+export * from './event-tracker.service';
+export * from './integration-event-tracking.service';
+export * from './integration-events.module';

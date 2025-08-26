@@ -1,4 +1,4 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { RegisterUserCommand } from './register-user.command';
 import type { UserRepository } from '../../domain/repositories/user.repository';
@@ -13,6 +13,7 @@ export class RegisterUserCommandHandler
   constructor(
     @Inject('UserRepository')
     private readonly userRepository: UserRepository,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: RegisterUserCommand): Promise<User> {
@@ -38,6 +39,11 @@ export class RegisterUserCommandHandler
     });
 
     await this.userRepository.save(user);
+
+    // Send Domain Events 
+    const events = user.getUncommittedEvents();
+    this.eventBus.publishAll(events);
+    user.commit();
 
     return user;
   }

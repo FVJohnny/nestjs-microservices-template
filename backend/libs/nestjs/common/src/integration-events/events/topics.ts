@@ -15,6 +15,7 @@ export class Topics {
     topic: "users",
     events: {
       USER_CREATED: "user.created",
+      USER_EXAMPLE: "user.example",
     }
   };
 }

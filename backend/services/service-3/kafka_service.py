@@ -66,17 +66,15 @@ class KafkaService:
             self.producer = KafkaProducer(**producer_config)
             logger.info("[Service-3] Kafka producer initialized")
             
-            self.consumer = KafkaConsumer('channels', **consumer_config)
-            logger.info("[Service-3] Kafka consumer initialized")
-            
+            # Initialize consumer in background to avoid blocking startup
             self.running = True
             
             # Start consumer in separate thread
-            self.consumer_thread = threading.Thread(target=self._consume_messages)
+            self.consumer_thread = threading.Thread(target=self._initialize_and_consume, args=(consumer_config,))
             self.consumer_thread.daemon = True
             self.consumer_thread.start()
             
-            logger.info("[Service-3] Kafka connected and consuming messages")
+            logger.info("[Service-3] Kafka initialization started in background")
             
         except Exception as e:
             logger.error(f"[Service-3] Failed to initialize Kafka: {e}")
@@ -103,6 +101,22 @@ class KafkaService:
         """Check if Kafka service is connected and running"""
         return self.running and self.producer is not None and self.consumer is not None
     
+    def _initialize_and_consume(self, consumer_config):
+        """Initialize consumer and start consuming in background"""
+        try:
+            logger.info("[Service-3] Initializing Kafka consumer in background...")
+            self.consumer = KafkaConsumer('users', **consumer_config)
+            logger.info("[Service-3] Kafka consumer initialized")
+            logger.info("[Service-3] Kafka connected and consuming messages")
+            
+            # Pre-register events that have handlers (so they show at 0 count)
+            self._pre_register_handled_events()
+            
+            self._consume_messages()
+        except Exception as e:
+            logger.error(f"[Service-3] Failed to initialize consumer: {e}")
+            self.running = False
+    
     def _consume_messages(self):
         """Consumer loop running in separate thread"""
         try:
@@ -121,7 +135,11 @@ class KafkaService:
                                 
                                 # Process different event types
                                 if message.value:
-                                    self._handle_event(message.value)
+                                    # Add topic information to event data for tracking
+                                    event_data = message.value.copy() if isinstance(message.value, dict) else message.value
+                                    if isinstance(event_data, dict):
+                                        event_data['_kafkaTopic'] = message.topic
+                                    self._handle_event(event_data)
                                     
                 except Exception as e:
                     logger.error(f"[Service-3] Error polling messages: {e}")
@@ -133,44 +151,49 @@ class KafkaService:
         finally:
             logger.info("[Service-3] Consumer loop ended")
     
-    def _handle_event(self, event_data: Dict[str, Any]):
-        """Handle events from Service-2"""
-        event_name = event_data.get('eventName', 'Unknown')
-        logger.info(f"[Service-3] Processing event: {event_name}")
+    def _pre_register_handled_events(self):
+        """Pre-register events that have handlers so they show at 0 count"""
+        # Only register events that actually have handler methods
+        handled_events = [
+            {"eventName": "user.created", "topic": "users"},
+            # Add more handled events here as needed
+        ]
         
-        # Handle ChannelNotificationEvent from Service-2
-        if event_name == 'ChannelNotificationEvent':
-            self._handle_channel_notification(event_data)
-        else:
-            logger.warn(f"[Service-3] Unknown event type: {event_name}")
-        
-        # Increment the event counter
-        event_counter.increment()
-        logger.info(f"[Service-3] Event counter incremented to {event_counter.get_count()}")
+        for event_info in handled_events:
+            event_counter.track_event_with_zero_count(
+                event_info["eventName"], 
+                event_info["topic"]
+            )
+            logger.info(f"[Service-3] Pre-registered handler event: {event_info['eventName']}@{event_info['topic']}")
     
-    def _handle_channel_notification(self, event_data: Dict[str, Any]):
-        """Handle channel notification events from Service-2"""
-        channel_id = event_data.get('channelId')
-        channel_name = event_data.get('channelName')
-        channel_type = event_data.get('channelType')
-        user_id = event_data.get('userId')
-        notification_type = event_data.get('notificationType')
-        message = event_data.get('message')
+    def _handle_event(self, event_data: Dict[str, Any]):
+        event_name = event_data.get('eventName', 'Unknown')
+        # Use kafka topic if available, otherwise fall back to event topic or default
+        topic = event_data.get('_kafkaTopic', event_data.get('topic', 'channels'))
+        logger.info(f"[Service-3] Processing event: {event_name} from topic: {topic}")
         
-        logger.info(f"[Service-3] Processing channel notification - Channel: {channel_name} ({channel_type}), User: {user_id}, Type: {notification_type}")
-        logger.info(f"[Service-3] Notification message: {message}")
+        if event_name == 'user.created':
+            self._handle_user_created(event_data)
+            # Track the event ONLY if we handled it
+            event_counter.track_event(event_name, topic)
+            logger.info(f"[Service-3] Event tracked: {event_name}@{topic}, total count: {event_counter.get_count()}")
+        else:
+            logger.warning(f"[Service-3] Unknown event type (not tracking): {event_name}")
+    
+    def _handle_user_created(self, event_data: Dict[str, Any]):
+        """Handle user created events from Service-1"""
+        # Extract userId from nested data structure
+        user_data = event_data.get('data', {})
+        user_id = user_data.get('userId')
+        email = user_data.get('email')
+        username = user_data.get('username')
         
-        # Service-3 business logic for notifications:
-        # - Send email notifications
-        # - Update user dashboards
-        # - Log notification events
-        # - Create notification records
+        logger.info(f"[Service-3] Processing user created - User ID: {user_id}, Email: {email}, Username: {username}")
         
-        # Simulate notification processing
         import time
         time.sleep(0.1)  # Simulate processing time
         
-        logger.info(f"[Service-3] ✅ Channel notification processed successfully for channel {channel_id}")
+        logger.info(f"[Service-3] ✅ User created processed successfully for user {user_id} ({email})")
     
     def publish_message(self, topic: str, message: Dict[str, Any], key: str = None):
         """Publish a message to Kafka topic"""

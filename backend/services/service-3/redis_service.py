@@ -156,35 +156,21 @@ class RedisService:
         event_name = event_data.get('eventName', 'Unknown')
         logger.info(f"[Service-3] Processing event: {event_name}")
         
-        # Handle ChannelNotificationEvent
-        if event_name == 'ChannelNotificationEvent':
-            self._handle_channel_notification(event_data)
+        if event_name == 'user.created':
+            self._handle_user_created(event_data)
         else:
-            logger.warn(f"[Service-3] Unknown event type: {event_name}")
+            logger.warning(f"[Service-3] Unknown event type: {event_name}")
         
         # Increment the event counter
         event_counter.increment()
         logger.info(f"[Service-3] Event counter incremented to {event_counter.get_count()}")
     
-    def _handle_channel_notification(self, event_data: Dict[str, Any]):
-        """Handle channel notification events"""
-        channel_id = event_data.get('channelId')
-        channel_name = event_data.get('channelName')
-        channel_type = event_data.get('channelType')
+    def _handle_user_created(self, event_data: Dict[str, Any]):
+        """Handle user created events"""
         user_id = event_data.get('userId')
-        notification_type = event_data.get('notificationType')
-        message = event_data.get('message')
         
-        logger.info(f"[Service-3] Processing channel notification - Channel: {channel_name} ({channel_type}), User: {user_id}, Type: {notification_type}")
-        logger.info(f"[Service-3] Notification message: {message}")
+        logger.info(f"[Service-3] Processing user created - User: {user_id}")
         
-        # Service-3 business logic for notifications:
-        # - Send email notifications
-        # - Update user dashboards
-        # - Log notification events
-        # - Create notification records
-        
-        # Simulate notification processing
         time.sleep(0.1)  # Simulate processing time
         
         logger.info(f"[Service-3] ✅ Channel notification processed successfully for channel {channel_id}")

@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { IntegrationEventPublisher } from './event-publisher.interface';
 import { BaseIntegrationEventListener, IntegrationEventListener } from './integration-event-listener.base';
 import { INTEGRATION_EVENT_LISTENER_TOKEN, INTEGRATION_EVENT_PUBLISHER_TOKEN } from '.';
+import { EventTrackerService } from './event-tracker.service';
 
 /**
  * Generic messaging controller that works with any event source implementation
@@ -180,7 +181,10 @@ export class MessagingController {
     const isListening = this.integrationEventListener.isListening();
     const backend = this.integrationEventListener.constructor.name.replace('IntegrationEventListener', '');
     
-    // Try to get detailed stats if the listener is a BaseEventListener
+    // Get new event tracking stats using singleton
+    const trackingStats = EventTrackerService.getInstance().getStats();
+    
+    // Try to get detailed stats if the listener is a BaseEventListener (legacy support)
     let subscribedTopics: string[] = [];
     let handlers: any[] = [];
     let totalStats: any = {};
@@ -223,14 +227,39 @@ export class MessagingController {
       }
     }
     
+    // Use the tracked events directly - EventTrackerService already includes all events with 0 counts
+    const allEventsByType = [...trackingStats.eventsByType];
+
+    // Return only the new event tracking format - no legacy merging
     return {
+      // New event tracking format
+      service: trackingStats.service,
+      totalEventsProcessed: trackingStats.totalEventsProcessed,
+      eventsByType: allEventsByType.sort((a, b) => b.count - a.count),
+      timestamp: trackingStats.timestamp,
+      
+      // Legacy format for backward compatibility - but derive from tracked events only
       listening: isListening,
       backend,
-      subscribedTopics,
-      handlerCount: subscribedTopics.length,
-      handlers,
-      totalStats,
-      timestamp: new Date().toISOString(),
+      subscribedTopics: allEventsByType.length > 0 
+        ? [...new Set(allEventsByType.map(e => e.topic))]
+        : subscribedTopics,
+      handlerCount: allEventsByType.length,
+      handlers: allEventsByType.map(event => ({
+        topic: event.topic,
+        handlerName: `${event.eventType}Handler`,
+        messagesProcessed: event.count,
+        messagesSucceeded: event.count,
+        messagesFailed: 0,
+        averageProcessingTime: 0,
+        lastProcessedAt: event.lastProcessed ? new Date(event.lastProcessed).toISOString() : null,
+      })),
+      totalStats: {
+        totalMessages: trackingStats.totalEventsProcessed,
+        totalSuccesses: trackingStats.totalEventsProcessed,
+        totalFailures: 0,
+        averageProcessingTime: 0,
+      },
     };
   }
 
@@ -263,6 +292,29 @@ export class MessagingController {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to start listener',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  @Post('listener/reset-tracker')
+  @ApiOperation({ 
+    summary: 'Reset event tracker (debug only)',
+    description: 'Resets the event tracker to clear all counts' 
+  })
+  async resetTracker() {
+    try {
+      const eventTracker = EventTrackerService.getInstance();
+      eventTracker.reset();
+      return {
+        success: true,
+        message: 'Event tracker reset',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to reset tracker',
         timestamp: new Date().toISOString(),
       };
     }

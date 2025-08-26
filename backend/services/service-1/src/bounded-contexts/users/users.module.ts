@@ -25,7 +25,7 @@ import { UserInMemoryRepository } from './infrastructure/repositories/in-memory/
 import { UsersController } from './interface/http/controllers/users.controller';
 
 // Interface - Integration Events
-import { UserCreatedIntegrationEventHandler } from './interface/integration-events/user-created.integration-event-handler';
+import { UserExampleIntegrationEventHandler } from './interface/integration-events/user-example.integration-event-handler';
 
 const CommandHandlers = [
   RegisterUserCommandHandler,
@@ -43,7 +43,7 @@ const EventHandlers = [
 ];
 
 const IntegrationEventHandlers = [
-  UserCreatedIntegrationEventHandler,
+  UserExampleIntegrationEventHandler,
 ];
 
 // No use cases
@@ -51,9 +51,7 @@ const IntegrationEventHandlers = [
 const Repositories = [
   {
     provide: 'UserRepository',
-    useClass: process.env.USE_IN_MEMORY_DB === 'true' 
-      ? UserInMemoryRepository 
-      : UserMongodbRepository,
+    useClass: UserMongodbRepository,
   },
 ];
 

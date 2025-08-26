@@ -60,8 +60,22 @@ async function updateServiceStatus(service) {
 
 // Function to update detailed event breakdown
 function updateEventDetails(statsData, container, envData = null) {
-  if (!statsData.handlers || statsData.handlers.length === 0) {
-    container.innerHTML = '<div class="no-events">No events processed yet</div>';
+  console.log('updateEventDetails called:', {
+    hasEventsByType: !!(statsData.eventsByType && statsData.eventsByType.length > 0),
+    hasHandlers: !!(statsData.handlers && statsData.handlers.length > 0),
+    handlers: statsData.handlers,
+    container: container.id
+  });
+  
+  // Handle both new structure (with eventsByType) and legacy structure (with handlers)
+  const hasNewEvents = statsData.eventsByType && statsData.eventsByType.length > 0;
+  const hasHandlers = statsData.handlers && statsData.handlers.length > 0;
+  
+  // Show UI if we have new event tracking, or if we have handlers (even with 0 messages)
+  const hasEvents = hasNewEvents || hasHandlers;
+  
+  if (!hasEvents) {
+    container.innerHTML = '<div class="no-events">No integration event handlers configured</div>';
     return;
   }
 
@@ -81,7 +95,28 @@ function updateEventDetails(statsData, container, envData = null) {
   const environment = envData?.environment || 'unknown';
   const envClass = environment === 'production' ? 'env-production' : 'env-development';
   
+  // Get topics info - support both new and legacy structure
+  let topicsInfo = 'None';
+  if (statsData.topicSummary) {
+    topicsInfo = Object.keys(statsData.topicSummary).join(', ');
+  } else if (statsData.subscribedTopics) {
+    topicsInfo = statsData.subscribedTopics.join(', ');
+  }
+  
+  // Total events from new or legacy structure
+  const totalEvents = statsData.totalEventsProcessed || 
+                     (statsData.totalStats?.totalMessages) || 
+                     (statsData.eventsProcessed) || 0;
+  
   summary.innerHTML = `
+    <div class="summary-item">
+      <span class="summary-label">Service:</span>
+      <span class="summary-value">${statsData.service || 'Unknown'}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Total Events:</span>
+      <span class="summary-value">${totalEvents}</span>
+    </div>
     <div class="summary-item">
       <span class="summary-label">Environment:</span>
       <span class="summary-value environment-type ${envClass}">${environment}</span>
@@ -92,67 +127,104 @@ function updateEventDetails(statsData, container, envData = null) {
     </div>
     <div class="summary-item">
       <span class="summary-label">Listening:</span>
-      <span class="summary-value">${statsData.listening ? '✅ Yes' : '❌ No'}</span>
-    </div>
-    <div class="summary-item">
-      <span class="summary-label">Success Rate:</span>
-      <span class="summary-value">${statsData.totalStats?.totalMessages > 0 ? Math.round((statsData.totalStats.totalSuccesses / statsData.totalStats.totalMessages) * 100) : 0}%</span>
-    </div>
-    <div class="summary-item">
-      <span class="summary-label">Avg Time:</span>
-      <span class="summary-value">${statsData.totalStats?.averageProcessingTime || 0}ms</span>
+      <span class="summary-value">${statsData.listening !== false ? '✅ Yes' : '❌ No'}</span>
     </div>
     <div class="summary-item">
       <span class="summary-label">Topics:</span>
-      <span class="summary-value">${statsData.subscribedTopics ? statsData.subscribedTopics.join(', ') : 'None'}</span>
+      <span class="summary-value" style="font-size: 0.8rem;">${topicsInfo}</span>
     </div>
   `;
   breakdown.appendChild(summary);
 
-  // Add topic details
-  const topicsContainer = document.createElement('div');
-  topicsContainer.className = 'topics-container';
+  // Add event details - support both new and legacy structures
+  const eventsContainer = document.createElement('div');
+  eventsContainer.className = 'events-container';
   
-  statsData.handlers.forEach(handler => {
-    const topicElement = document.createElement('div');
-    topicElement.className = 'topic-item';
+  if (statsData.eventsByType) {
+    // New structure: individual events tracking
+    const eventsHeader = document.createElement('div');
+    eventsHeader.innerHTML = '<h4 style="margin: 1rem 0 0.5rem 0; color: var(--text-primary);">Integration Events</h4>';
+    eventsContainer.appendChild(eventsHeader);
     
-    const lastProcessed = handler.lastProcessedAt ? new Date(handler.lastProcessedAt).toLocaleTimeString() : 'Never';
+    statsData.eventsByType.forEach(event => {
+      const eventElement = document.createElement('div');
+      eventElement.className = 'event-item';
+      
+      // Style events with 0 counts slightly dimmed
+      if (event.count === 0) {
+        eventElement.style.opacity = '0.7';
+      }
+      
+      const lastProcessed = event.lastProcessed ? new Date(event.lastProcessed).toLocaleTimeString() : 'Never';
+      
+      eventElement.innerHTML = `
+        <div class="event-header">
+          <div class="event-name-topic">
+            <span class="event-name" title="${event.eventType}">${event.eventType}</span>
+            <span class="event-topic" style="color: var(--text-muted); font-size: 0.7rem;">@ ${event.topic}</span>
+          </div>
+          <span class="event-count">${event.count}</span>
+        </div>
+        ${event.lastProcessed ? `
+          <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 0.3rem; text-align: right;">
+            Last: ${lastProcessed}
+          </div>
+        ` : ''}
+      `;
+      
+      eventsContainer.appendChild(eventElement);
+    });
     
-    topicElement.innerHTML = `
-      <div class="topic-header">
-        <span class="topic-name">${handler.topic}</span>
-        <span class="topic-count">${handler.messagesProcessed}</span>
-      </div>
-      <div class="handler-name" style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 0.4rem; font-style: italic;">
-        ${handler.handlerName}
-      </div>
-      <div class="topic-details">
-        <div class="topic-stat">
-          <span class="stat-label">✓ Success</span>
-          <span class="stat-value">${handler.messagesSucceeded}</span>
+  } else if (statsData.handlers) {
+    // Legacy structure: handler-based tracking
+    statsData.handlers.forEach(handler => {
+      const topicElement = document.createElement('div');
+      topicElement.className = 'topic-item';
+      
+      const lastProcessed = handler.lastProcessedAt ? new Date(handler.lastProcessedAt).toLocaleTimeString() : 'Never';
+      
+      topicElement.innerHTML = `
+        <div class="topic-header">
+          <span class="topic-name">${handler.topic}</span>
+          <span class="topic-count">${handler.messagesProcessed}</span>
         </div>
-        <div class="topic-stat">
-          <span class="stat-label">✗ Failed</span>
-          <span class="stat-value">${handler.messagesFailed}</span>
+        <div class="handler-name" style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 0.4rem; font-style: italic;">
+          ${handler.handlerName}
         </div>
-        <div class="topic-stat">
-          <span class="stat-label">⚡ Avg</span>
-          <span class="stat-value">${handler.averageProcessingTime}ms</span>
+        <div class="topic-details">
+          <div class="topic-stat">
+            <span class="stat-label">✓ Success</span>
+            <span class="stat-value">${handler.messagesSucceeded}</span>
+          </div>
+          <div class="topic-stat">
+            <span class="stat-label">✗ Failed</span>
+            <span class="stat-value">${handler.messagesFailed}</span>
+          </div>
+          <div class="topic-stat">
+            <span class="stat-label">⚡ Avg</span>
+            <span class="stat-value">${handler.averageProcessingTime}ms</span>
+          </div>
         </div>
-      </div>
-      ${handler.lastProcessedAt ? `
-        <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 0.3rem; text-align: right;">
-          Last: ${lastProcessed}
-        </div>
-      ` : ''}
-    `;
-    
-    topicsContainer.appendChild(topicElement);
-  });
+        ${handler.lastProcessedAt ? `
+          <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 0.3rem; text-align: right;">
+            Last: ${lastProcessed}
+          </div>
+        ` : ''}
+      `;
+      
+      eventsContainer.appendChild(topicElement);
+    });
+  }
   
-  breakdown.appendChild(topicsContainer);
-  container.querySelector('.topics-breakdown').replaceWith(breakdown);
+  breakdown.appendChild(eventsContainer);
+  
+  // Replace existing content or create new if none exists
+  const existingBreakdown = container.querySelector('.topics-breakdown');
+  if (existingBreakdown) {
+    existingBreakdown.replaceWith(breakdown);
+  } else {
+    container.appendChild(breakdown);
+  }
 }
 
 // Update service status with independent polling cycle
@@ -212,13 +284,9 @@ async function triggerKafkaEvent(serviceNumber) {
         // Service 1: Use generic messaging endpoint
         endpoint = `/api/service-1/integration-events/publish`;
         payload = {
-          topic: "trading-signals",
+          topic: "users",
           message: {
-            eventName: "trading-signal.received",
-            channelType: "telegram",
-            name: "nombresito",
-            userId: "usuariooo",
-            connectionConfig: {}
+            eventName: "user.example",
           }
         }
         break;

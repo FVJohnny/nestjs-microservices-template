@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BaseIntegrationEventListener } from '@libs/nestjs-common';
 import { RedisService } from './redis.service';
 
@@ -8,9 +8,7 @@ import { RedisService } from './redis.service';
  */
 @Injectable()
 export class RedisIntegrationEventListener extends BaseIntegrationEventListener {
-  constructor(
-    private readonly redisService: RedisService,
-  ) {
+  constructor(private readonly redisService: RedisService) {
     super();
   }
 
