@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE, APP_INTERCEPTOR } from '@nestjs/core';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ChannelsModule } from './bounded-contexts/channels/channels.module';
 import { UsersModule } from './bounded-contexts/users/users.module';
 import {
   HeartbeatModule,
@@ -59,7 +58,6 @@ import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
     MetricsModule,
 
     // DDD Bounded Contexts
-    ChannelsModule,
     UsersModule,
   ],
   controllers: [MessagingController],
