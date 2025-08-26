@@ -13,6 +13,9 @@ services:
         value: /api/service-1
       - key: KAFKA_SERVICE_ID
         value: service-1
+      - key: SERVICE_NAME
+        value: service-1
+
 
 
   - type: pserv
