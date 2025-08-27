@@ -5,9 +5,8 @@ import {
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { GetUsersQuery } from '../../../../../application/queries/get-users.query';
-import { GetUsersQueryDto } from './get-users.query';
-import { GetUsersResponseDto } from './get-users.response';
+import { GetUsersQuery, GetUsersQueryResponse } from '../../../../../application/queries';
+import { GetUsersQueryParams } from './get-users.query-params';
 
 @ApiTags('users')
 @Controller('users')
@@ -29,10 +28,10 @@ export class GetUsersController {
   @ApiQuery({ name: 'onlyActive', required: false, description: 'Legacy: filter only active users', type: Boolean })
   @ApiResponse({
     status: 200,
-    description: 'Users retrieved successfully',
-    type: [GetUsersResponseDto],
+    description: 'User IDs retrieved successfully',
+    type: GetUsersQueryResponse,
   })
-  async getUsers(@Query() queryDto: GetUsersQueryDto): Promise<GetUsersResponseDto[]> {
+  async getUsers(@Query() queryDto: GetUsersQueryParams): Promise<GetUsersQueryResponse> {
     const query = new GetUsersQuery(
       queryDto.status,
       queryDto.roles,
@@ -47,7 +46,6 @@ export class GetUsersController {
       queryDto.onlyActive
     );
 
-    const users = await this.queryBus.execute(query);
-    return users.map(user => GetUsersResponseDto.fromEntity(user));
+    return await this.queryBus.execute(query);
   }
 }

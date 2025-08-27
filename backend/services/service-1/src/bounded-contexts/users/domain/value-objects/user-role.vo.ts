@@ -1,4 +1,4 @@
-import { ValueObject } from '@libs/nestjs-common';
+import { EnumValueObject, InvalidArgumentError } from '@libs/nestjs-common';
 
 export enum UserRoleEnum {
   ADMIN = 'admin',
@@ -6,32 +6,13 @@ export enum UserRoleEnum {
   MODERATOR = 'moderator',
 }
 
-export class UserRole extends ValueObject<UserRoleEnum> {
-  static readonly ADMIN = new UserRole(UserRoleEnum.ADMIN);
-  static readonly USER = new UserRole(UserRoleEnum.USER);
-  static readonly MODERATOR = new UserRole(UserRoleEnum.MODERATOR);
-
-  static fromString(role: string): UserRole {
-    const validRoles = Object.values(UserRoleEnum);
-    if (!validRoles.includes(role as UserRoleEnum)) {
-      throw new Error(`Invalid user role: ${role}`);
-    }
-    return new UserRole(role as UserRoleEnum);
+export class UserRole extends EnumValueObject<UserRoleEnum> {
+  constructor(value: UserRoleEnum) {
+    super(value, Object.values(UserRoleEnum));
   }
 
-  isAdmin(): boolean {
-    return this.value === UserRoleEnum.ADMIN;
+  protected throwErrorForInvalidValue(value: UserRoleEnum): void {
+    throw new InvalidArgumentError(`Invalid user role: ${value}`);
   }
 
-  isUser(): boolean {
-    return this.value === UserRoleEnum.USER;
-  }
-
-  isModerator(): boolean {
-    return this.value === UserRoleEnum.MODERATOR;
-  }
-
-  hasElevatedPrivileges(): boolean {
-    return this.value === UserRoleEnum.ADMIN || this.value === UserRoleEnum.MODERATOR;
-  }
 }

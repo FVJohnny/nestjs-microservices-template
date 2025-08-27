@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { IntegrationEventHandler, UserExampleIntegrationEvent } from '@libs/nestjs-common';
-import { RegisterUserCommand } from '../../application/commands/register-user.command';
+import { RegisterUserCommand } from '../../application/commands';
 import { UserRoleEnum } from '../../domain/value-objects/user-role.vo';
 
 @IntegrationEventHandler(UserExampleIntegrationEvent)

@@ -1,19 +1,19 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Inject, NotFoundException } from '@nestjs/common';
 import { UpdateUserProfileCommand } from './update-user-profile.command';
-import type { UserRepository } from '../../domain/repositories/user.repository';
-import { User } from '../../domain/entities/user.entity';
+import type { UserRepository } from '../../../domain/repositories/user.repository';
+import { User } from '../../../domain/entities/user.entity';
 
 @CommandHandler(UpdateUserProfileCommand)
 export class UpdateUserProfileCommandHandler
-  implements ICommandHandler<UpdateUserProfileCommand>
+  implements ICommandHandler<UpdateUserProfileCommand, void>
 {
   constructor(
     @Inject('UserRepository')
     private readonly userRepository: UserRepository,
   ) {}
 
-  async execute(command: UpdateUserProfileCommand): Promise<User> {
+  async execute(command: UpdateUserProfileCommand): Promise<void> {
     const user = await this.userRepository.findById(command.userId);
     
     if (!user) {
@@ -27,7 +27,5 @@ export class UpdateUserProfileCommandHandler
     });
 
     await this.userRepository.save(user);
-
-    return user;
   }
 }

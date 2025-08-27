@@ -1,4 +1,4 @@
-import { ValueObject } from '@libs/nestjs-common';
+import { EnumValueObject, InvalidArgumentError } from '@libs/nestjs-common';
 
 export enum UserStatusEnum {
   ACTIVE = 'active',
@@ -7,16 +7,22 @@ export enum UserStatusEnum {
   DELETED = 'deleted',
 }
 
-export class UserStatus extends ValueObject<UserStatusEnum> {
+export class UserStatus extends EnumValueObject<UserStatusEnum> {
   static readonly ACTIVE = new UserStatus(UserStatusEnum.ACTIVE);
   static readonly INACTIVE = new UserStatus(UserStatusEnum.INACTIVE);
-  static readonly SUSPENDED = new UserStatus(UserStatusEnum.SUSPENDED);
-  static readonly DELETED = new UserStatus(UserStatusEnum.DELETED);
+
+  constructor(value: UserStatusEnum) {
+    super(value, Object.values(UserStatusEnum));
+  }
+
+  protected throwErrorForInvalidValue(value: UserStatusEnum): void {
+    throw new InvalidArgumentError(`Invalid user status: ${value}`);
+  }
 
   static fromString(status: string): UserStatus {
     const validStatuses = Object.values(UserStatusEnum);
     if (!validStatuses.includes(status as UserStatusEnum)) {
-      throw new Error(`Invalid user status: ${status}`);
+      throw new InvalidArgumentError(`Invalid user status: ${status}`);
     }
     return new UserStatus(status as UserStatusEnum);
   }

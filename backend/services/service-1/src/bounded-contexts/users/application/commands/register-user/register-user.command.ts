@@ -1,5 +1,5 @@
 import { ICommand } from '@nestjs/cqrs';
-import { UserRoleEnum } from '../../domain/value-objects/user-role.vo';
+import { UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 
 export class RegisterUserCommand implements ICommand {
   constructor(

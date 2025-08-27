@@ -4,12 +4,10 @@ import { CqrsModule } from '@nestjs/cqrs';
 // Domain - removing Mongoose schema imports
 
 // Application - Commands
-import { RegisterUserCommandHandler } from './application/commands/register-user.command-handler';
-import { UpdateUserProfileCommandHandler } from './application/commands/update-user-profile.command-handler';
+import { RegisterUserCommandHandler, UpdateUserProfileCommandHandler } from './application/commands';
 
 // Application - Queries
-import { GetUsersQueryHandler } from './application/queries/get-users.query-handler';
-import { GetUserByIdQueryHandler } from './application/queries/get-user-by-id.query-handler';
+import { GetUsersQueryHandler, GetUserByIdQueryHandler } from './application/queries';
 
 // No use cases - controllers use CommandBus/QueryBus directly
 

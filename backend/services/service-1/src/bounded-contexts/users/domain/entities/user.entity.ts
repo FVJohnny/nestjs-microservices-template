@@ -38,12 +38,12 @@ export class User extends AggregateRoot {
     
     const user = new User(
       id,
-      Email.fromString(props.email),
+      new Email(props.email),
       props.username,
       props.firstName,
       props.lastName,
       UserStatus.ACTIVE,
-      props.roles ? props.roles.map(r => UserRole.fromString(r)) : [UserRole.USER],
+      props.roles ? props.roles.map(r => new UserRole(r)) : [new UserRole(UserRoleEnum.USER)],
       props.metadata,
       undefined,
       now,
@@ -75,24 +75,17 @@ export class User extends AggregateRoot {
     
     return new User(
       id,
-      Email.fromString(props?.email || 'user@example.com'),
+      new Email(props?.email || 'user@example.com'),
       props?.username || 'user' + Math.floor(Math.random() * 10000),
       props?.firstName || 'John',
       props?.lastName || 'Doe',
       props?.status ? UserStatus.fromString(props.status) : UserStatus.ACTIVE,
-      props?.roles ? props.roles.map(r => UserRole.fromString(r)) : [UserRole.USER],
+      props?.roles ? props.roles.map(r => new UserRole(r)) : [new UserRole(UserRoleEnum.USER)],
       props?.metadata || {},
       props?.lastLoginAt,
       props?.createdAt || now,
       props?.updatedAt || now,
     );
-  }
-
-  getFullName(): string {
-    const parts: string[] = [];
-    if (this.firstName) parts.push(this.firstName);
-    if (this.lastName) parts.push(this.lastName);
-    return parts.join(' ') || this.username;
   }
 
   updateProfile(props: {
@@ -136,32 +129,11 @@ export class User extends AggregateRoot {
     this.updatedAt = new Date();
   }
 
-  suspend(): void {
-    if (this.status.equals(UserStatus.SUSPENDED)) {
-      return;
-    }
-    this.status = UserStatus.SUSPENDED;
-    this.updatedAt = new Date();
-  }
-
   deactivate(): void {
     if (this.status.equals(UserStatus.INACTIVE)) {
       return;
     }
     this.status = UserStatus.INACTIVE;
-    this.updatedAt = new Date();
-  }
-
-  delete(): void {
-    if (this.status.equals(UserStatus.DELETED)) {
-      return;
-    }
-    this.status = UserStatus.DELETED;
-    this.updatedAt = new Date();
-  }
-
-  updateLastLogin(): void {
-    this.lastLoginAt = new Date();
     this.updatedAt = new Date();
   }
 
@@ -191,12 +163,12 @@ export class User extends AggregateRoot {
   static fromPrimitives(primitives: Primitives): User {
     return new User(
       primitives.id,
-      Email.fromString(primitives.email),
+      new Email(primitives.email),
       primitives.username,
       primitives.firstName,
       primitives.lastName,
       UserStatus.fromString(primitives.status),
-      primitives.roles.map((r: string) => UserRole.fromString(r)),
+      primitives.roles.map((r: UserRoleEnum) => new UserRole(r)),
       primitives.metadata,
       primitives.lastLoginAt ? new Date(primitives.lastLoginAt) : undefined,
       new Date(primitives.createdAt),

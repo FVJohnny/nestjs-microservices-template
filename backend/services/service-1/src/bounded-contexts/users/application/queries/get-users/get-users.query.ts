@@ -9,7 +9,7 @@ export class GetUsersQuery implements IQuery {
     public readonly firstName?: string,
     public readonly lastName?: string,
     public readonly orderBy?: string,
-    public readonly orderType?: 'asc' | 'desc',
+    public readonly orderType?: string,
     public readonly limit?: number,
     public readonly offset?: number,
     public readonly onlyActive?: boolean,

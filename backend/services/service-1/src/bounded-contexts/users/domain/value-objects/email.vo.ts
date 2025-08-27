@@ -1,6 +1,6 @@
-import { ValueObject, InvalidArgumentError } from '@libs/nestjs-common';
+import { StringValueObject, InvalidArgumentError } from '@libs/nestjs-common';
 
-export class Email extends ValueObject<string> {
+export class Email extends StringValueObject {
   constructor(value: string) {
     Email.validate(value);
     super(value.toLowerCase());
@@ -11,10 +11,6 @@ export class Email extends ValueObject<string> {
     if (!emailRegex.test(email)) {
       throw new InvalidArgumentError(`Invalid email format: ${email}`);
     }
-  }
-
-  static fromString(email: string): Email {
-    return new Email(email);
   }
 
   getDomain(): string {

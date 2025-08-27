@@ -13,4 +13,16 @@ export abstract class EnumValueObject<T> {
   }
 
   protected abstract throwErrorForInvalidValue(value: T): void;
+
+  equals(other: EnumValueObject<T>): boolean {
+    return other.constructor.name === this.constructor.name && other.value === this.value;
+  }
+
+  toString(): string {
+    return this.value?.toString() || '';
+  }
+
+  toValue(): T {
+    return this.value;
+  }
 }

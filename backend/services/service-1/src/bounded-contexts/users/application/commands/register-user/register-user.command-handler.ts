@@ -1,14 +1,15 @@
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { RegisterUserCommand } from './register-user.command';
-import type { UserRepository } from '../../domain/repositories/user.repository';
-import { User } from '../../domain/entities/user.entity';
-import { Email } from '../../domain/value-objects/email.vo';
+import { RegisterUserResponse } from './register-user.response';
+import type { UserRepository } from '../../../domain/repositories/user.repository';
+import { User } from '../../../domain/entities/user.entity';
+import { Email } from '../../../domain/value-objects/email.vo';
 import { BadRequestException } from '@nestjs/common';
 
 @CommandHandler(RegisterUserCommand)
 export class RegisterUserCommandHandler
-  implements ICommandHandler<RegisterUserCommand>
+  implements ICommandHandler<RegisterUserCommand, RegisterUserResponse>
 {
   constructor(
     @Inject('UserRepository')
@@ -16,8 +17,8 @@ export class RegisterUserCommandHandler
     private readonly eventBus: EventBus,
   ) {}
 
-  async execute(command: RegisterUserCommand): Promise<User> {
-    const email = Email.fromString(command.email);
+  async execute(command: RegisterUserCommand): Promise<RegisterUserResponse> {
+    const email = new Email(command.email);
 
     const emailExists = await this.userRepository.existsByEmail(email);
     if (emailExists) {
@@ -45,6 +46,6 @@ export class RegisterUserCommandHandler
     this.eventBus.publishAll(events);
     user.commit();
 
-    return user;
+    return { id: user.id };
   }
 }

@@ -7,9 +7,8 @@ import {
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { RegisterUserCommand } from '../../../../../application/commands/register-user.command';
+import { RegisterUserCommand, RegisterUserResponse } from '../../../../../application/commands';
 import { RegisterUserBodyDto } from './register-user.body';
-import { RegisterUserResponseDto } from './register-user.response';
 
 @ApiTags('users')
 @Controller('users')
@@ -22,13 +21,13 @@ export class RegisterUserController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'User successfully created',
-    type: RegisterUserResponseDto,
+    type: RegisterUserResponse,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid input or user already exists',
   })
-  async registerUser(@Body() dto: RegisterUserBodyDto): Promise<RegisterUserResponseDto> {
+  async registerUser(@Body() dto: RegisterUserBodyDto): Promise<RegisterUserResponse> {
     const command = new RegisterUserCommand(
       dto.email,
       dto.username,
@@ -38,7 +37,6 @@ export class RegisterUserController {
       dto.metadata,
     );
 
-    const user = await this.commandBus.execute(command);
-    return RegisterUserResponseDto.fromEntity(user);
+    return await this.commandBus.execute(command);
   }
 }
