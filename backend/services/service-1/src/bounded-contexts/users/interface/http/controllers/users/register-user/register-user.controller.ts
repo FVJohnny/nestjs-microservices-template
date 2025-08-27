@@ -9,7 +9,6 @@ import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RegisterUserCommand, RegisterUserResponse } from '../../../../../application/commands';
 import { RegisterUserBodyDto } from './register-user.body';
-
 @ApiTags('users')
 @Controller('users')
 export class RegisterUserController {

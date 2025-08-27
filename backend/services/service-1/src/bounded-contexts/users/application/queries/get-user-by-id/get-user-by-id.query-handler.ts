@@ -3,7 +3,6 @@ import { Inject, NotFoundException } from '@nestjs/common';
 import { GetUserByIdQuery } from './get-user-by-id.query';
 import { GetUserByIdQueryResponse } from './get-user-by-id.response';
 import type { UserRepository } from '../../../domain/repositories/user.repository';
-import { User } from '../../../domain/entities/user.entity';
 
 @QueryHandler(GetUserByIdQuery)
 export class GetUserByIdQueryHandler implements IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse> {

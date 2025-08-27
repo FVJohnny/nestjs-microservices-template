@@ -35,4 +35,7 @@ export * from './ddd/application';
 // Integration events
 export * from './integration-events';
 
+// Utility exports
+export * from './utils/runtime-auto-discovery.util';
+
 

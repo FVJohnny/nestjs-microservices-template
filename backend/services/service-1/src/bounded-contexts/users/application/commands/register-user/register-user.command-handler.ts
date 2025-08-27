@@ -6,7 +6,6 @@ import type { UserRepository } from '../../../domain/repositories/user.repositor
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { BadRequestException } from '@nestjs/common';
-
 @CommandHandler(RegisterUserCommand)
 export class RegisterUserCommandHandler
   implements ICommandHandler<RegisterUserCommand, RegisterUserResponse>

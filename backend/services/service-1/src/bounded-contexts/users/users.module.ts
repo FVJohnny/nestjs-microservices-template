@@ -1,72 +1,29 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-
-// Domain - removing Mongoose schema imports
-
-// Application - Commands
-import { RegisterUserCommandHandler, UpdateUserProfileCommandHandler } from './application/commands';
-
-// Application - Queries
-import { GetUsersQueryHandler, GetUserByIdQueryHandler } from './application/queries';
-
-// No use cases - controllers use CommandBus/QueryBus directly
-
-// Application - Domain Event Handlers
-import { UserRegisteredDomainEventHandler } from './application/domain-event-handlers/user-registered.domain-event-handler';
-import { UserProfileUpdatedDomainEventHandler } from './application/domain-event-handlers/user-profile-updated.domain-event-handler';
+import { RuntimeAutoDiscovery } from '@libs/nestjs-common';
 
 // Infrastructure - Repositories
 import { UserMongodbRepository } from './infrastructure/repositories/mongodb/user-mongodb.repository';
 import { UserInMemoryRepository } from './infrastructure/repositories/in-memory/user-in-memory.repository';
 
-// Interface - HTTP
-import { RegisterUserController, GetUserController, GetUsersController, UpdateUserProfileController } from './interface/http/controllers/users';
+// 🚀 RUNTIME AUTO-DISCOVERY - NO FILES NEEDED!
+const discoveredComponents = RuntimeAutoDiscovery.discoverAllComponents(__dirname);
 
-// Interface - Integration Events
-import { UserExampleIntegrationEventHandler } from './interface/integration-events/user-example.integration-event-handler';
-
-const CommandHandlers = [
-  RegisterUserCommandHandler,
-  UpdateUserProfileCommandHandler,
-];
-
-const QueryHandlers = [
-  GetUsersQueryHandler,
-  GetUserByIdQueryHandler,
-];
-
-const EventHandlers = [
-  UserRegisteredDomainEventHandler,
-  UserProfileUpdatedDomainEventHandler,
-];
-
-const IntegrationEventHandlers = [
-  UserExampleIntegrationEventHandler,
-];
-
-// No use cases
-
-const Repositories = [
-  {
-    provide: 'UserRepository',
-    useClass: UserInMemoryRepository,
-  },
-];
-
+/**
+ * Users module with PURE runtime auto-discovery
+ * Just create handlers and controllers - they get discovered automatically!
+ * NO decorators, NO imports, NO generated files needed!
+ */
 @Module({
-  imports: [
-    CqrsModule,
-  ],
-  controllers: [RegisterUserController, GetUserController, GetUsersController, UpdateUserProfileController],
+  imports: [CqrsModule],
+  controllers: [...discoveredComponents.controllers], // 🎯 Auto-discovered at runtime
   providers: [
-    ...CommandHandlers,
-    ...QueryHandlers,
-    ...EventHandlers,
-    ...IntegrationEventHandlers,
-    ...Repositories,
+    ...discoveredComponents.handlers, // 🎯 Auto-discovered at runtime
+    {
+      provide: 'UserRepository',
+      useClass: UserInMemoryRepository,
+    },
   ],
-  exports: [
-    'UserRepository',
-  ],
+  exports: ['UserRepository'],
 })
 export class UsersModule {}
