@@ -104,28 +104,6 @@ export class UserMongodbRepository implements UserRepository {
     }
   }
 
-  async findActiveUsers(): Promise<User[]> {
-    try {
-      const documents = await this.collection
-        .find({ status: UserStatusEnum.ACTIVE })
-        .toArray();
-
-      return documents.map(doc => User.fromPrimitives(doc));
-    } catch (error) {
-      this.logger.error('Failed to find active users', error);
-      throw error;
-    }
-  }
-
-  async countActiveUsers(): Promise<number> {
-    try {
-      return await this.collection.countDocuments({ status: UserStatusEnum.ACTIVE });
-    } catch (error) {
-      this.logger.error('Failed to count active users', error);
-      throw error;
-    }
-  }
-
   async findAll(): Promise<User[]> {
     try {
       const documents = await this.collection.find().toArray();
@@ -163,6 +141,22 @@ export class UserMongodbRepository implements UserRepository {
       return documents.map(doc => User.fromPrimitives(doc));
     } catch (error) {
       this.logger.error('Failed to find users by criteria', error);
+      throw error;
+    }
+  }
+
+  async countByCriteria(criteria: Criteria | any): Promise<number> {
+    try {
+      let filter = {};
+
+      if (criteria.filters) {
+        filter = MongoCriteriaConverter.convert(criteria);
+      }
+
+      const count = await this.collection.countDocuments(filter);
+      return count;
+    } catch (error) {
+      this.logger.error('Failed to count users by criteria', error);
       throw error;
     }
   }

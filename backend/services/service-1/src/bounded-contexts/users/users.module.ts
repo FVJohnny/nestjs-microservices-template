@@ -22,7 +22,7 @@ import { UserMongodbRepository } from './infrastructure/repositories/mongodb/use
 import { UserInMemoryRepository } from './infrastructure/repositories/in-memory/user-in-memory.repository';
 
 // Interface - HTTP
-import { UsersController } from './interface/http/controllers/users.controller';
+import { RegisterUserController, GetUserController, GetUsersController, UpdateUserProfileController } from './interface/http/controllers/users';
 
 // Interface - Integration Events
 import { UserExampleIntegrationEventHandler } from './interface/integration-events/user-example.integration-event-handler';
@@ -51,7 +51,7 @@ const IntegrationEventHandlers = [
 const Repositories = [
   {
     provide: 'UserRepository',
-    useClass: UserMongodbRepository,
+    useClass: UserInMemoryRepository,
   },
 ];
 
@@ -59,7 +59,7 @@ const Repositories = [
   imports: [
     CqrsModule,
   ],
-  controllers: [UsersController],
+  controllers: [RegisterUserController, GetUserController, GetUsersController, UpdateUserProfileController],
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
-import { UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
 import { Criteria } from '@libs/nestjs-common';
 
 @Injectable()
@@ -11,10 +10,6 @@ export class UserInMemoryRepository implements UserRepository {
 
   async save(user: User): Promise<void> {
     this.users.set(user.id, user);
-    
-    // Dispatch domain events
-    // Note: pullDomainEvents() comes from AggregateRoot which User extends
-    // In a real implementation, you would publish these events
   }
 
   async findById(id: string): Promise<User | null> {
@@ -57,14 +52,6 @@ export class UserInMemoryRepository implements UserRepository {
     return false;
   }
 
-  async findActiveUsers(): Promise<User[]> {
-    return Array.from(this.users.values()).filter(user => user.isActive());
-  }
-
-  async countActiveUsers(): Promise<number> {
-    return Array.from(this.users.values()).filter(user => user.isActive()).length;
-  }
-
   async findAll(): Promise<User[]> {
     return Array.from(this.users.values());
   }
@@ -105,6 +92,11 @@ export class UserInMemoryRepository implements UserRepository {
     return users;
   }
 
+  async countByCriteria(criteria: Criteria | any): Promise<number> {
+    const users = await this.findByCriteria(criteria);
+    return users.length;
+  }
+
   async delete(id: string): Promise<void> {
     this.users.delete(id);
   }
@@ -117,13 +109,4 @@ export class UserInMemoryRepository implements UserRepository {
     return this.users.has(id);
   }
 
-  // Helper method for testing
-  clear(): void {
-    this.users.clear();
-  }
-
-  // Helper method for testing
-  seed(users: User[]): void {
-    users.forEach(user => this.users.set(user.id, user));
-  }
 }
