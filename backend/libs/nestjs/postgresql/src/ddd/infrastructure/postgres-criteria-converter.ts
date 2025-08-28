@@ -17,9 +17,9 @@ export class PostgresCriteriaConverter {
     // Apply filters from criteria
     criteria.filters.filters.forEach((filter, index) => {
       const paramName = `param_${index}`;
-      const fieldName = `${entityAlias}.${filter.field.value}`;
-      const operator = filter.operator.value;
-      const value = filter.value.value;
+      const fieldName = `${entityAlias}.${filter.field.toValue()}`;
+      const operator = filter.operator.toValue();
+      const value = filter.value.toValue();
 
       // Determine if this is the first filter (need to decide between where/andWhere)
       const useWhere = index === 0;
@@ -72,8 +72,8 @@ export class PostgresCriteriaConverter {
 
     // Apply ordering from criteria
     if (criteria.order && criteria.order.orderBy && criteria.order.orderType) {
-      const orderByValue = criteria.order.orderBy.value;
-      const orderTypeValue = criteria.order.orderType.value;
+      const orderByValue = criteria.order.orderBy.toValue();
+      const orderTypeValue = criteria.order.orderType.toValue();
       
       // Only add sort if orderBy field is not empty and orderType is not 'none'
       if (orderByValue?.trim() !== '' && orderTypeValue !== 'none') {

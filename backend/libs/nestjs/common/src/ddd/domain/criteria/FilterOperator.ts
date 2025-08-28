@@ -26,7 +26,7 @@ export class FilterOperator extends EnumValueObject<Operator> {
   }
 
   public isPositive(): boolean {
-    return this.value !== Operator.NOT_EQUAL && this.value !== Operator.NOT_CONTAINS;
+    return this.toValue() !== Operator.NOT_EQUAL && this.toValue() !== Operator.NOT_CONTAINS;
   }
 
   protected throwErrorForInvalidValue(value: Operator): void {

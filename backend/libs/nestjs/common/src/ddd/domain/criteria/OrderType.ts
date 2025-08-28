@@ -23,11 +23,11 @@ export class OrderType extends EnumValueObject<OrderTypes> {
   }
 
   public isNone(): boolean {
-    return this.value === OrderTypes.NONE;
+    return this.toValue() === OrderTypes.NONE;
   }
 
   public isAsc(): boolean {
-    return this.value === OrderTypes.ASC;
+    return this.toValue() === OrderTypes.ASC;
   }
 
   protected throwErrorForInvalidValue(value: OrderTypes): void {

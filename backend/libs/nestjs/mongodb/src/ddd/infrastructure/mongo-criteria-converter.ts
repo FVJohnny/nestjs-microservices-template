@@ -16,9 +16,9 @@ export class MongoCriteriaConverter {
 
     // Apply filters from criteria
     criteria.filters.filters.forEach((filterObj: Filter) => {
-      const fieldName = filterObj.field.value;
-      const operator = filterObj.operator.value;
-      const value = filterObj.value.value;
+      const fieldName = filterObj.field.toValue();
+      const operator = filterObj.operator.toValue();
+      const value = filterObj.value.toValue();
 
       switch (operator) {
         case Operator.EQUAL:
@@ -44,8 +44,8 @@ export class MongoCriteriaConverter {
 
     // Apply sorting from criteria
     if (criteria.order && criteria.order.orderBy && criteria.order.orderType) {
-      const orderByValue = criteria.order.orderBy.value;
-      const orderTypeValue = criteria.order.orderType.value;
+      const orderByValue = criteria.order.orderBy.toValue();
+      const orderTypeValue = criteria.order.orderType.toValue();
       
       // Only add sort if orderBy field is not empty and orderType is not 'none'
       if (orderByValue?.trim() !== '' && orderTypeValue !== 'none') {
