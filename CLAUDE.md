@@ -177,6 +177,21 @@ When creating new services, duplicate the service configuration and update the s
 - `make update-libs` - Update all shared libraries
 - `make dev-restart-service1` - Restart service-1 only
 
+### 🚨 CRITICAL DEVELOPMENT RULE
+**ALWAYS run `make update-libs` after modifying ANY file in `backend/libs/`**
+
+When you change any shared library code in `/backend/libs/nestjs/`, you MUST execute:
+```bash
+make update-libs
+```
+
+This command:
+1. Rebuilds all shared libraries (`@libs/nestjs-common`, `@libs/nestjs-kafka`, etc.)
+2. Updates dependencies in all services (service-1, service-3, etc.)
+3. Restarts affected containers to apply changes
+
+**Without this step, your changes will NOT be reflected in the running services!**
+
 ### Service 1 Commands
 Located in `backend/services/service-1/`:
 - `npm run start:dev` - Development with hot reload

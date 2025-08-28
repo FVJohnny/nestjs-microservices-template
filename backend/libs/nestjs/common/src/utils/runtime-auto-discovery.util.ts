@@ -27,11 +27,11 @@ export class RuntimeAutoDiscovery {
         ...this.discoverHandlers(boundedContextPath, 'application/commands', '.command-handler.js'),
         ...this.discoverHandlers(boundedContextPath, 'application/queries', '.query-handler.js'),
         ...this.discoverHandlers(boundedContextPath, 'application/domain-event-handlers', '.domain-event-handler.js'),
-        ...this.discoverHandlers(boundedContextPath, 'interface/integration-events', '.integration-event-handler.js'),
+        ...this.discoverHandlers(boundedContextPath, 'interfaces/integration-events', '.integration-event-handler.js'),
       ];
 
       // Discover controllers
-      result.controllers = this.discoverControllers(boundedContextPath, 'interface/http/controllers', '.controller.js');
+      result.controllers = this.discoverControllers(boundedContextPath, 'interfaces/http/controllers', '.controller.js');
 
       console.log('✅ Runtime auto-discovery complete:', {
         handlers: result.handlers.length,
@@ -52,20 +52,28 @@ export class RuntimeAutoDiscovery {
     const handlers: Type<any>[] = [];
     const fullPath = path.join(basePath, subPath);
 
+    console.log(`🔍 Looking for handlers in: ${fullPath} with suffix: ${suffix}`);
+    
     if (!fs.existsSync(fullPath)) {
+      console.log(`⚠️  Path does not exist: ${fullPath}`);
       return handlers;
     }
 
     try {
       const files = this.getAllFilesRecursively(fullPath, suffix);
+      console.log(`📁 Found ${files.length} files with suffix ${suffix}:`, files);
       
       for (const filePath of files) {
+        console.log(`🔍 Processing file: ${filePath}`);
         try {
           // Clear require cache to ensure fresh load
           delete require.cache[require.resolve(filePath)];
           
           const module = require(filePath);
+          console.log(`📦 Module exports:`, Object.keys(module));
+          
           const handlerClass = this.extractComponentFromModule(module, 'Handler');
+          console.log(`🎯 Extracted handler class:`, handlerClass?.name || 'null');
           
           if (handlerClass) {
             handlers.push(handlerClass);
