@@ -4,15 +4,13 @@ import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
 import { Criteria } from '@libs/nestjs-common';
 import { MongoCriteriaConverter } from '@libs/nestjs-mongodb';
 import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
-import { CorrelationLogger } from '@libs/nestjs-common';
+import { UserPersistenceException } from '../../errors';
 
 @Injectable()
 export class UserMongodbRepository implements UserRepository {
-  private readonly logger = new CorrelationLogger(UserMongodbRepository.name);
   private readonly collection: Collection;
 
   constructor(
@@ -31,8 +29,7 @@ export class UserMongodbRepository implements UserRepository {
         { upsert: true }
       );
     } catch (error) {
-      this.logger.error(`Failed to save user ${user.id}`, error);
-      throw error;
+      this.handleDatabaseError('save', user.id, error);
     }
   }
 
@@ -46,8 +43,7 @@ export class UserMongodbRepository implements UserRepository {
 
       return User.fromPrimitives(document);
     } catch (error) {
-      this.logger.error(`Failed to find user by id ${id}`, error);
-      throw error;
+      this.handleDatabaseError('findById', id, error);
     }
   }
 
@@ -61,8 +57,7 @@ export class UserMongodbRepository implements UserRepository {
 
       return User.fromPrimitives(document);
     } catch (error) {
-      this.logger.error(`Failed to find user by email ${email.toValue()}`, error);
-      throw error;
+      this.handleDatabaseError('findByEmail', email.toValue(), error);
     }
   }
 
@@ -76,8 +71,7 @@ export class UserMongodbRepository implements UserRepository {
 
       return User.fromPrimitives(document);
     } catch (error) {
-      this.logger.error(`Failed to find user by username ${username}`, error);
-      throw error;
+      this.handleDatabaseError('findByUsername', username.toValue(), error);
     }
   }
 
@@ -86,8 +80,7 @@ export class UserMongodbRepository implements UserRepository {
       const count = await this.collection.countDocuments({ email: email.toValue() });
       return count > 0;
     } catch (error) {
-      this.logger.error(`Failed to check if email exists ${email.toValue()}`, error);
-      throw error;
+      this.handleDatabaseError('existsByEmail', email.toValue(), error);
     }
   }
 
@@ -96,8 +89,7 @@ export class UserMongodbRepository implements UserRepository {
       const count = await this.collection.countDocuments({ username: username.toValue() });
       return count > 0;
     } catch (error) {
-      this.logger.error(`Failed to check if username exists ${username}`, error);
-      throw error;
+      this.handleDatabaseError('existsByUsername', username.toValue(), error);
     }
   }
 
@@ -106,8 +98,7 @@ export class UserMongodbRepository implements UserRepository {
       const documents = await this.collection.find().toArray();
       return documents.map(doc => User.fromPrimitives(doc));
     } catch (error) {
-      this.logger.error('Failed to find all users', error);
-      throw error;
+      this.handleDatabaseError('findAll', '', error);
     }
   }
 
@@ -138,8 +129,7 @@ export class UserMongodbRepository implements UserRepository {
       const documents = await query.toArray();
       return documents.map(doc => User.fromPrimitives(doc));
     } catch (error) {
-      this.logger.error('Failed to find users by criteria', error);
-      throw error;
+      this.handleDatabaseError('findByCriteria', '', error);
     }
   }
 
@@ -154,8 +144,7 @@ export class UserMongodbRepository implements UserRepository {
       const count = await this.collection.countDocuments(filter);
       return count;
     } catch (error) {
-      this.logger.error('Failed to count users by criteria', error);
-      throw error;
+      this.handleDatabaseError('countByCriteria', 'criteria', error);
     }
   }
 
@@ -163,8 +152,7 @@ export class UserMongodbRepository implements UserRepository {
     try {
       await this.collection.deleteOne({ id });
     } catch (error) {
-      this.logger.error(`Failed to delete user ${id}`, error);
-      throw error;
+      this.handleDatabaseError('delete', id, error);
     }
   }
 
@@ -177,8 +165,20 @@ export class UserMongodbRepository implements UserRepository {
       const count = await this.collection.countDocuments({ id });
       return count > 0;
     } catch (error) {
-      this.logger.error(`Failed to check if user exists ${id}`, error);
-      throw error;
+      this.handleDatabaseError('exists', id, error);
     }
+  }
+
+  /**
+   * Handle database errors consistently
+   */
+  private handleDatabaseError(
+    operation: string,
+    id: string,
+    error: unknown,
+  ): never {
+    const cause =
+      error instanceof Error ? error : new Error('Unknown database error');
+    throw new UserPersistenceException(operation, id, cause);
   }
 }
