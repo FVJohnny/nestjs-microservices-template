@@ -1,5 +1,4 @@
 import { TradingSignalReceivedIntegrationEvent } from '@libs/nestjs-common';
-import { IntegrationEventHandler } from '@libs/nestjs-common/dist/integration-events/integration-event-handler.decorator';
 import { CommandBus } from '@nestjs/cqrs';
 import { RegisterChannelCommand } from '../../application/commands/register-channel/register-channel.command';
 

@@ -16,10 +16,15 @@ export class KafkaIntegrationEventListener extends BaseIntegrationEventListener 
     await super.onModuleInit();
     // Auto-start listening when the module initializes
     // This ensures handlers registered in onModuleInit are ready
+    this.logger.log(`KafkaIntegrationEventListener onModuleInit called, current handlers: ${this.eventHandlers.size}, isListening: ${this.isListeningFlag}`);
     setTimeout(async () => {
+      this.logger.log(`KafkaIntegrationEventListener setTimeout callback executed, handlers: ${this.eventHandlers.size}, isListening: ${this.isListeningFlag}`);
       if (this.eventHandlers.size > 0 && !this.isListeningFlag) {
         this.logger.log(`Auto-starting listener with ${this.eventHandlers.size} registered handlers`);
         await this.startListening();
+        this.logger.log(`KafkaIntegrationEventListener auto-start completed, isListening: ${this.isListeningFlag}`);
+      } else {
+        this.logger.log(`KafkaIntegrationEventListener auto-start skipped - handlers: ${this.eventHandlers.size}, already listening: ${this.isListeningFlag}`);
       }
     }, 100); // Small delay to allow all handlers to register
   }
