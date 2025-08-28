@@ -163,7 +163,12 @@ function updateEventDetails(statsData, container, envData = null) {
             <span class="event-name" title="${event.eventType}">${event.eventType}</span>
             <span class="event-topic" style="color: var(--text-muted); font-size: 0.7rem;">@ ${event.topic}</span>
           </div>
-          <span class="event-count">${event.count}</span>
+          <div class="event-actions">
+            <span class="event-count">${event.count}</span>
+            <button class="trigger-event-btn" data-topic="${event.topic}" data-event="${event.eventType}" data-service-url="${statsData.service}">
+              🚀 Trigger
+            </button>
+          </div>
         </div>
         ${event.lastProcessed ? `
           <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 0.3rem; text-align: right;">
@@ -267,6 +272,66 @@ async function updateAllServices() {
   lastUpdated.textContent = new Date().toLocaleTimeString();
 }
 
+// Function to trigger a specific event for a specific topic and event type
+async function triggerSpecificEvent(topic, eventName, serviceUrl, buttonElement) {
+  const button = buttonElement;
+  const originalText = button.textContent;
+  
+  try {
+    button.textContent = '⏳ Sending...';
+    button.disabled = true;
+    
+    // Determine endpoint based on service
+    let endpoint;
+    if (serviceUrl.toLowerCase().includes('service-1') || serviceUrl.toLowerCase().includes('nestjs')) {
+      endpoint = `/api/service-1/integration-events/publish`;
+    } else if (serviceUrl.toLowerCase().includes('service-3') || serviceUrl.toLowerCase().includes('fastapi')) {
+      endpoint = `/api/service-3/integration-events/publish`;
+    } else {
+      throw new Error(`Unable to determine service endpoint for: ${serviceUrl}`);
+    }
+    
+    const payload = {
+      topic: topic,
+      message: {
+        eventName: eventName,
+      }
+    };
+    
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      button.textContent = '✅ Sent!';
+      console.log(`Event ${eventName} on topic ${topic} sent successfully:`, result);
+      
+      // Update service status to reflect the new event count
+      const serviceId = serviceUrl.toLowerCase().includes('service-1') ? 1 : 3;
+      const service = services.find(s => s.id === serviceId);
+      if (service) {
+        setTimeout(() => updateServiceStatus(service), 1000);
+      }
+    } else {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+  } catch (error) {
+    button.textContent = '❌ Failed';
+    console.error(`Failed to trigger event ${eventName} on topic ${topic}:`, error);
+  } finally {
+    // Reset button after 2 seconds
+    setTimeout(() => {
+      button.textContent = originalText;
+      button.disabled = false;
+    }, 2000);
+  }
+}
+
 // Function to trigger messaging event for a specific service using generic endpoints
 async function triggerKafkaEvent(serviceNumber) {
   const button = document.querySelector(`[data-service="${serviceNumber}"]`);
@@ -344,6 +409,17 @@ kafkaBtns.forEach(button => {
     const serviceNumber = button.getAttribute('data-service');
     triggerKafkaEvent(serviceNumber);
   });
+});
+
+// Add event listeners to individual trigger event buttons (using event delegation)
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('trigger-event-btn')) {
+    e.preventDefault();
+    const topic = e.target.getAttribute('data-topic');
+    const eventName = e.target.getAttribute('data-event');
+    const serviceUrl = e.target.getAttribute('data-service-url');
+    triggerSpecificEvent(topic, eventName, serviceUrl, e.target);
+  }
 });
 
 // Initialize dashboard with independent polling for each service

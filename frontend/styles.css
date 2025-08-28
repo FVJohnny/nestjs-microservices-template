@@ -591,6 +591,12 @@ p {
   font-family: 'Courier New', monospace;
 }
 
+.event-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .event-count {
   background: var(--gradient-gold);
   color: var(--primary-black);
@@ -600,6 +606,35 @@ p {
   font-weight: 700;
   min-width: 20px;
   text-align: center;
+}
+
+.trigger-event-btn {
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--accent-gold);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 60px;
+}
+
+.trigger-event-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.5);
+  transform: translateY(-1px);
+}
+
+.trigger-event-btn:active {
+  transform: translateY(0);
+}
+
+.trigger-event-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .topic-summary-item {
