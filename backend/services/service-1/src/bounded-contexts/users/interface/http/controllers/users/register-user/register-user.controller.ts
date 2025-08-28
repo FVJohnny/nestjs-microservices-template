@@ -33,7 +33,6 @@ export class RegisterUserController {
       dto.firstName,
       dto.lastName,
       dto.roles,
-      dto.metadata,
     );
 
     return await this.commandBus.execute(command);

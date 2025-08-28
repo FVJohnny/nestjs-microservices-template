@@ -22,9 +22,6 @@ export class GetUserByIdQueryResponse {
   @ApiProperty({ example: ['user'], type: [String] })
   roles: string[];
 
-  @ApiProperty({ example: { source: 'registration' }, required: false })
-  metadata?: Record<string, any>;
-
   @ApiProperty({ example: '2023-01-01T00:00:00.000Z', required: false })
   lastLoginAt?: Date;
 

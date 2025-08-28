@@ -33,12 +33,4 @@ export class RegisterUserBodyDto {
   @IsArray()
   @IsNotEmpty()
   roles: UserRoleEnum[];
-
-  @ApiProperty({ 
-    example: { source: 'web', referral: 'campaign123' }, 
-    description: 'Additional metadata',
-    required: false 
-  })
-  @IsOptional()
-  metadata?: Record<string, any>;
 }

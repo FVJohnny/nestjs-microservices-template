@@ -33,7 +33,6 @@ export class UpdateUserProfileController {
       id,
       dto.firstName,
       dto.lastName,
-      dto.metadata,
     );
 
     await this.commandBus.execute(command);

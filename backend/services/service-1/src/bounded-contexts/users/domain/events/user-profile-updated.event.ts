@@ -8,7 +8,6 @@ export class UserProfileUpdatedEvent extends DomainEvent {
       previousLastName?: string;
       firstName?: string;
       lastName?: string;
-      metadata?: Record<string, any>;
       occurredOn: Date;
     },
   ) {

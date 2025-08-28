@@ -29,12 +29,7 @@ export class UserExampleIntegrationEventHandler {
         username,
         firstName,
         lastName,
-        [UserRoleEnum.USER], // Default role
-        {
-          source: 'UserExampleIntegrationEvent',
-          messageId,
-          createdAt: new Date().toISOString()
-        }
+        [UserRoleEnum.USER] // Default role
       );
 
       await this.commandBus.execute(command);

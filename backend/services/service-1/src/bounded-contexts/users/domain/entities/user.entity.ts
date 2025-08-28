@@ -5,6 +5,9 @@ import { UserProfileUpdatedEvent } from '../events/user-profile-updated.event';
 import { UserStatus, UserStatusEnum } from '../value-objects/user-status.vo';
 import { UserRole, UserRoleEnum } from '../value-objects/user-role.vo';
 import { Email } from '../value-objects/email.vo';
+import { Username } from '../value-objects/username.vo';
+import { Name } from '../value-objects/name.vo';
+import { Profile } from '../value-objects/profile.vo';
 
 interface CreateUserProps {
   email: string;
@@ -12,19 +15,16 @@ interface CreateUserProps {
   firstName?: string;
   lastName?: string;
   roles?: UserRoleEnum[];
-  metadata?: Record<string, any>;
 }
 
 export class User extends AggregateRoot {
   constructor(
     public readonly id: string,
     public readonly email: Email,
-    public readonly username: string,
-    public firstName: string | undefined,
-    public lastName: string | undefined,
+    public readonly username: Username,
+    public profile: Profile,
     public status: UserStatus,
     public roles: UserRole[],
-    public metadata: Record<string, any> | undefined,
     public lastLoginAt: Date | undefined,
     public readonly createdAt: Date,
     public updatedAt: Date,
@@ -39,12 +39,13 @@ export class User extends AggregateRoot {
     const user = new User(
       id,
       new Email(props.email),
-      props.username,
-      props.firstName,
-      props.lastName,
-      UserStatus.ACTIVE,
+      new Username(props.username),
+      new Profile(
+        new Name(props.firstName || ''),
+        new Name(props.lastName || '')
+      ),
+      new UserStatus(UserStatusEnum.ACTIVE),
       props.roles ? props.roles.map(r => new UserRole(r)) : [new UserRole(UserRoleEnum.USER)],
-      props.metadata,
       undefined,
       now,
       now,
@@ -55,7 +56,7 @@ export class User extends AggregateRoot {
         userId: id,
         email: props.email,
         username: props.username,
-        roles: user.roles.map(r => r.value),
+        roles: user.roles.map(r => r.toValue()),
         occurredOn: now,
       }),
     );
@@ -76,12 +77,13 @@ export class User extends AggregateRoot {
     return new User(
       id,
       new Email(props?.email || 'user@example.com'),
-      props?.username || 'user' + Math.floor(Math.random() * 10000),
-      props?.firstName || 'John',
-      props?.lastName || 'Doe',
-      props?.status ? UserStatus.fromString(props.status) : UserStatus.ACTIVE,
+      new Username(props?.username || 'user' + Math.floor(Math.random() * 10000)),
+      new Profile(
+        new Name(props?.firstName || 'John'),
+        new Name(props?.lastName || 'Doe')
+      ),
+      props?.status ? new UserStatus(props.status) : new UserStatus(UserStatusEnum.ACTIVE),
       props?.roles ? props.roles.map(r => new UserRole(r)) : [new UserRole(UserRoleEnum.USER)],
-      props?.metadata || {},
       props?.lastLoginAt,
       props?.createdAt || now,
       props?.updatedAt || now,
@@ -91,49 +93,42 @@ export class User extends AggregateRoot {
   updateProfile(props: {
     firstName?: string;
     lastName?: string;
-    metadata?: Record<string, any>;
   }): void {
-    const previousFirstName = this.firstName;
-    const previousLastName = this.lastName;
-
-    if (props.firstName !== undefined) {
-      this.firstName = props.firstName;
-    }
-    if (props.lastName !== undefined) {
-      this.lastName = props.lastName;
-    }
-    if (props.metadata !== undefined) {
-      this.metadata = { ...this.metadata, ...props.metadata };
-    }
-
+    const previousProfile = this.profile.toPrimitives();
+    
+    this.profile = new Profile(
+      new Name(props.firstName || this.profile.firstName.toValue()),
+      new Name(props.lastName || this.profile.lastName.toValue())
+    );
     this.updatedAt = new Date();
 
+    const newProfile = this.profile.toPrimitives();
+    
     this.apply(
       new UserProfileUpdatedEvent({
         userId: this.id,
-        previousFirstName,
-        previousLastName,
-        firstName: this.firstName,
-        lastName: this.lastName,
-        metadata: this.metadata,
+        previousFirstName: previousProfile.firstName,
+        previousLastName: previousProfile.lastName,
+        firstName: newProfile.firstName,
+        lastName: newProfile.lastName,
         occurredOn: this.updatedAt,
       }),
     );
   }
 
   activate(): void {
-    if (this.status.equals(UserStatus.ACTIVE)) {
+    if (this.status.equals(new UserStatus(UserStatusEnum.ACTIVE))) {
       return;
     }
-    this.status = UserStatus.ACTIVE;
+    this.status = new UserStatus(UserStatusEnum.ACTIVE);
     this.updatedAt = new Date();
   }
 
   deactivate(): void {
-    if (this.status.equals(UserStatus.INACTIVE)) {
+    if (this.status.equals(new UserStatus(UserStatusEnum.INACTIVE))) {
       return;
     }
-    this.status = UserStatus.INACTIVE;
+    this.status = new UserStatus(UserStatusEnum.INACTIVE);
     this.updatedAt = new Date();
   }
 
@@ -157,19 +152,17 @@ export class User extends AggregateRoot {
   }
 
   isActive(): boolean {
-    return this.status.isActive();
+    return this.status.equals(new UserStatus(UserStatusEnum.ACTIVE));
   }
 
   static fromPrimitives(primitives: Primitives): User {
     return new User(
       primitives.id,
       new Email(primitives.email),
-      primitives.username,
-      primitives.firstName,
-      primitives.lastName,
-      UserStatus.fromString(primitives.status),
+      new Username(primitives.username),
+      Profile.fromPrimitives({ firstName: primitives.firstName, lastName: primitives.lastName }),
+      new UserStatus(primitives.status),
       primitives.roles.map((r: UserRoleEnum) => new UserRole(r)),
-      primitives.metadata,
       primitives.lastLoginAt ? new Date(primitives.lastLoginAt) : undefined,
       new Date(primitives.createdAt),
       new Date(primitives.updatedAt),
@@ -177,15 +170,15 @@ export class User extends AggregateRoot {
   }
 
   toPrimitives(): Primitives {
+    const profileData = this.profile.toPrimitives();
     return {
       id: this.id,
-      email: this.email.value,
-      username: this.username,
-      firstName: this.firstName,
-      lastName: this.lastName,
-      status: this.status.value,
-      roles: this.roles.map(r => r.value),
-      metadata: this.metadata,
+      email: this.email.toValue(),
+      username: this.username.toValue(),
+      firstName: profileData.firstName,
+      lastName: profileData.lastName,
+      status: this.status.toValue(),
+      roles: this.roles.map(r => r.toValue()),
       lastLoginAt: this.lastLoginAt,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

@@ -3,6 +3,7 @@ import { MongoClient, Collection } from 'mongodb';
 import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
+import { Username } from '../../../domain/value-objects/username.vo';
 import { UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
 import { Criteria } from '@libs/nestjs-common';
 import { MongoCriteriaConverter } from '@libs/nestjs-mongodb';
@@ -29,10 +30,6 @@ export class UserMongodbRepository implements UserRepository {
         { $set: { ...primitives, updatedAt: new Date() } },
         { upsert: true }
       );
-
-      // Dispatch domain events
-      // Note: pullDomainEvents() comes from AggregateRoot which User extends
-      // In a real implementation, you would publish these events
     } catch (error) {
       this.logger.error(`Failed to save user ${user.id}`, error);
       throw error;
@@ -56,7 +53,7 @@ export class UserMongodbRepository implements UserRepository {
 
   async findByEmail(email: Email): Promise<User | null> {
     try {
-      const document = await this.collection.findOne({ email: email.value });
+      const document = await this.collection.findOne({ email: email.toValue() });
       
       if (!document) {
         return null;
@@ -64,14 +61,14 @@ export class UserMongodbRepository implements UserRepository {
 
       return User.fromPrimitives(document);
     } catch (error) {
-      this.logger.error(`Failed to find user by email ${email.value}`, error);
+      this.logger.error(`Failed to find user by email ${email.toValue()}`, error);
       throw error;
     }
   }
 
-  async findByUsername(username: string): Promise<User | null> {
+  async findByUsername(username: Username): Promise<User | null> {
     try {
-      const document = await this.collection.findOne({ username });
+      const document = await this.collection.findOne({ username: username.toValue() });
       
       if (!document) {
         return null;
@@ -86,17 +83,17 @@ export class UserMongodbRepository implements UserRepository {
 
   async existsByEmail(email: Email): Promise<boolean> {
     try {
-      const count = await this.collection.countDocuments({ email: email.value });
+      const count = await this.collection.countDocuments({ email: email.toValue() });
       return count > 0;
     } catch (error) {
-      this.logger.error(`Failed to check if email exists ${email.value}`, error);
+      this.logger.error(`Failed to check if email exists ${email.toValue()}`, error);
       throw error;
     }
   }
 
-  async existsByUsername(username: string): Promise<boolean> {
+  async existsByUsername(username: Username): Promise<boolean> {
     try {
-      const count = await this.collection.countDocuments({ username });
+      const count = await this.collection.countDocuments({ username: username.toValue() });
       return count > 0;
     } catch (error) {
       this.logger.error(`Failed to check if username exists ${username}`, error);
@@ -114,7 +111,8 @@ export class UserMongodbRepository implements UserRepository {
     }
   }
 
-  async findByCriteria(criteria: Criteria | any): Promise<User[]> {
+  async findByCriteria(criteria: Criteria): Promise<User[]> {
+
     try {
       let query = this.collection.find();
 
@@ -125,7 +123,7 @@ export class UserMongodbRepository implements UserRepository {
 
       if (criteria.order) {
         const sortOptions: any = {};
-        sortOptions[criteria.order.orderBy] = criteria.order.orderType === 'ASC' ? 1 : -1;
+        sortOptions[criteria.order.orderBy.toValue()] = criteria.order.orderType.isAsc() ? 1 : -1;
         query = query.sort(sortOptions);
       }
 
@@ -145,7 +143,7 @@ export class UserMongodbRepository implements UserRepository {
     }
   }
 
-  async countByCriteria(criteria: Criteria | any): Promise<number> {
+  async countByCriteria(criteria: Criteria): Promise<number> {
     try {
       let filter = {};
 

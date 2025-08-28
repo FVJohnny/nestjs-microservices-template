@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
+import { Username } from '../../../domain/value-objects/username.vo';
 import { Criteria } from '@libs/nestjs-common';
 
 @Injectable()
@@ -25,9 +26,9 @@ export class UserInMemoryRepository implements UserRepository {
     return null;
   }
 
-  async findByUsername(username: string): Promise<User | null> {
+  async findByUsername(username: Username): Promise<User | null> {
     for (const user of this.users.values()) {
-      if (user.username === username) {
+      if (user.username.equals(username)) {
         return user;
       }
     }
@@ -43,9 +44,9 @@ export class UserInMemoryRepository implements UserRepository {
     return false;
   }
 
-  async existsByUsername(username: string): Promise<boolean> {
+  async existsByUsername(username: Username): Promise<boolean> {
     for (const user of this.users.values()) {
-      if (user.username === username) {
+      if (user.username.equals(username)) {
         return true;
       }
     }
@@ -56,7 +57,7 @@ export class UserInMemoryRepository implements UserRepository {
     return Array.from(this.users.values());
   }
 
-  async findByCriteria(criteria: Criteria | any): Promise<User[]> {
+  async findByCriteria(criteria: Criteria): Promise<User[]> {
     let users = Array.from(this.users.values());
 
     if (criteria.filters) {
@@ -70,10 +71,10 @@ export class UserInMemoryRepository implements UserRepository {
 
     if (criteria.order) {
       users.sort((a, b) => {
-        const aValue = (a as any)[criteria.order.orderBy];
-        const bValue = (b as any)[criteria.order.orderBy];
+        const aValue = (a)[criteria.order.orderBy.toValue()];
+        const bValue = (b)[criteria.order.orderBy.toValue()];
         
-        if (criteria.order.orderType === 'ASC') {
+        if (criteria.order.orderType.isAsc()) {
           return aValue > bValue ? 1 : -1;
         } else {
           return aValue < bValue ? 1 : -1;

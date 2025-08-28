@@ -21,9 +21,8 @@ const discoveredComponents = RuntimeAutoDiscovery.discoverAllComponents(__dirnam
     ...discoveredComponents.handlers, // 🎯 Auto-discovered at runtime
     {
       provide: 'UserRepository',
-      useClass: UserInMemoryRepository,
+      useClass: UserMongodbRepository,
     },
   ],
-  exports: ['UserRepository'],
 })
 export class UsersModule {}

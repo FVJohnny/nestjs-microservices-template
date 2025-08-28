@@ -23,7 +23,6 @@ export class UpdateUserProfileCommandHandler
     user.updateProfile({
       firstName: command.firstName,
       lastName: command.lastName,
-      metadata: command.metadata,
     });
 
     await this.userRepository.save(user);

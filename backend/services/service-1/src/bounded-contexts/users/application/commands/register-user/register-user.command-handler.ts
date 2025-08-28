@@ -5,6 +5,7 @@ import { RegisterUserResponse } from './register-user.response';
 import type { UserRepository } from '../../../domain/repositories/user.repository';
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
+import { Username } from '../../../domain/value-objects/username.vo';
 import { BadRequestException } from '@nestjs/common';
 @CommandHandler(RegisterUserCommand)
 export class RegisterUserCommandHandler
@@ -18,13 +19,14 @@ export class RegisterUserCommandHandler
 
   async execute(command: RegisterUserCommand): Promise<RegisterUserResponse> {
     const email = new Email(command.email);
+    const username = new Username(command.username);
 
     const emailExists = await this.userRepository.existsByEmail(email);
     if (emailExists) {
       throw new BadRequestException(`Email ${command.email} is already registered`);
     }
 
-    const usernameExists = await this.userRepository.existsByUsername(command.username);
+    const usernameExists = await this.userRepository.existsByUsername(username);
     if (usernameExists) {
       throw new BadRequestException(`Username ${command.username} is already taken`);
     }
@@ -35,7 +37,6 @@ export class RegisterUserCommandHandler
       firstName: command.firstName,
       lastName: command.lastName,
       roles: command.roles,
-      metadata: command.metadata,
     });
 
     await this.userRepository.save(user);

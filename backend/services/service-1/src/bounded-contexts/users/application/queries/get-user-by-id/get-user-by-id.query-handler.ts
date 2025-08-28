@@ -18,15 +18,16 @@ export class GetUserByIdQueryHandler implements IQueryHandler<GetUserByIdQuery, 
       throw new NotFoundException(`User with ID ${query.userId} not found`);
     }
 
+    const profileData = user.profile.toPrimitives();
+    
     return {
       id: user.id,
-      email: user.email.value,
-      username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      status: user.status.value,
-      roles: user.roles.map(role => role.value),
-      metadata: user.metadata,
+      email: user.email.toValue(),
+      username: user.username.toValue(),
+      firstName: profileData.firstName,
+      lastName: profileData.lastName,
+      status: user.status.toValue(),
+      roles: user.roles.map(role => role.toValue()),
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,

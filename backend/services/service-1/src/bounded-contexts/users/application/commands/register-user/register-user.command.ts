@@ -8,6 +8,5 @@ export class RegisterUserCommand implements ICommand {
     public readonly firstName?: string,
     public readonly lastName?: string,
     public readonly roles?: UserRoleEnum[],
-    public readonly metadata?: Record<string, any>,
   ) {}
 }

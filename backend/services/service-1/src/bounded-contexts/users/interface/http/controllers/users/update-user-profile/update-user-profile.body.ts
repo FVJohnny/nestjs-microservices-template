@@ -19,12 +19,4 @@ export class UpdateUserProfileBodyDto {
   @IsString()
   @IsOptional()
   lastName?: string;
-
-  @ApiProperty({ 
-    example: { bio: 'Software developer', location: 'San Francisco' }, 
-    description: 'Additional metadata',
-    required: false 
-  })
-  @IsOptional()
-  metadata?: Record<string, any>;
 }
