@@ -74,11 +74,11 @@ describe('User Entity', () => {
       expect(domainEvents[0]).toBeInstanceOf(UserRegisteredEvent);
       
       const event = domainEvents[0] as UserRegisteredEvent;
-      expect(event.payload.userId).toBe(user.id);
-      expect(event.payload.email).toBe(props.email);
-      expect(event.payload.username).toBe(props.username);
-      expect(event.payload.roles).toEqual(user.roles);
-      expect(event.payload.occurredOn).toBeInstanceOf(Date);
+      expect(event.userId).toBe(user.id);
+      expect(event.email).toBe(props.email);
+      expect(event.username).toBe(props.username);
+      expect(event.roles).toEqual(user.roles);
+      expect(event.occurredOn).toBeInstanceOf(Date);
     });
   });
 
@@ -177,11 +177,11 @@ describe('User Entity', () => {
       expect(domainEvents[0]).toBeInstanceOf(UserProfileUpdatedEvent);
 
       const event = domainEvents[0] as UserProfileUpdatedEvent;
-      expect(event.payload.userId).toBe(user.id);
-      expect(event.payload.previousFirstName).toBe('Original');
-      expect(event.payload.previousLastName).toBe('Name');
-      expect(event.payload.firstName).toBe('Updated');
-      expect(event.payload.lastName).toBe('Updated Last');
+      expect(event.userId).toBe(user.id);
+      expect(event.previousFirstName).toBe('Original');
+      expect(event.previousLastName).toBe('Name');
+      expect(event.firstName).toBe('Updated');
+      expect(event.lastName).toBe('Updated Last');
     });
 
     it('should handle empty string names in profile update', () => {

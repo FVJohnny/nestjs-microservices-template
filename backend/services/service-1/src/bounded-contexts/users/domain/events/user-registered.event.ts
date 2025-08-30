@@ -19,7 +19,7 @@ export class UserRegisteredEvent extends DomainEvent {
   public readonly roles: UserRole[];
 
   constructor(
-    public readonly payload: UserRegisteredEventPayload,
+    payload: UserRegisteredEventPayload,
   ) {
     super(payload.userId);
 

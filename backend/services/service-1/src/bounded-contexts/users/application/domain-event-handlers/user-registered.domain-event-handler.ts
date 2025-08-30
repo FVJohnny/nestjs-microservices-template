@@ -26,10 +26,10 @@ export class UserRegisteredDomainEventHandler
 
     // Transform domain event to integration event
     const integrationEvent = new UserCreatedIntegrationEvent({
-      userId: event.payload.userId,
-      email: event.payload.email,
-      username: event.payload.username,
-      roles: event.payload.roles,
+      userId: event.userId,
+      email: event.email.toValue(),
+      username: event.username.toValue(),
+      roles: event.roles.map(role => role.toValue()),
     });
 
     try {

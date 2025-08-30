@@ -17,7 +17,7 @@ export class UserProfileUpdatedEvent extends DomainEvent {
   public readonly occurredOn: Date;
 
   constructor(
-    public readonly payload: UserProfileUpdatedEventPayload,
+    payload: UserProfileUpdatedEventPayload,
   ) {
     super(payload.userId);
 

@@ -9,7 +9,7 @@ export class UserProfileUpdatedDomainEventHandler
   private readonly logger = new Logger(UserProfileUpdatedDomainEventHandler.name);
 
   async handle(event: UserProfileUpdatedEvent): Promise<void> {
-    this.logger.log(`User profile updated for user: ${event.payload.userId}`);
+    this.logger.log(`User profile updated for user: ${event.userId}`);
     
     // Here you could add additional logic like:
     // - Update search indices
