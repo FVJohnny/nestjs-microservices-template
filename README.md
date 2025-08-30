@@ -155,14 +155,11 @@ cp -r backend/services/service-3 backend/services/my-python-service
 ### Development
 ```env
 NODE_ENV=development
-MESSAGING_BACKEND=redis
-POSTGRES_SYNCHRONIZE=true
 ```
 
 ### Production
 ```env
 NODE_ENV=production
-MESSAGING_BACKEND=kafka
 POSTGRES_SYNCHRONIZE=false
 ```
 

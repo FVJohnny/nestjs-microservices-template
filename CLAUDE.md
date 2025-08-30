@@ -222,11 +222,6 @@ Located in `backend/services/service-1/`:
 
 ## Event-Driven Architecture
 
-### Messaging Backends
-Configurable via `MESSAGING_BACKEND` environment variable:
-- `kafka` - Apache Kafka (production)
-- `redis` - Redis pub/sub (development)
-
 ### Event Types
 - **Domain Events** - Internal bounded context events
 - **Integration Events** - Cross-service communication events
@@ -287,7 +282,6 @@ Configurable via `MESSAGING_BACKEND` environment variable:
 
 ### Core Configuration
 - `NODE_ENV` - Environment (development/production)
-- `MESSAGING_BACKEND` - Message broker (kafka/redis)
 - `SERVICE_NAME` - Service identifier
 
 ### Database Configuration

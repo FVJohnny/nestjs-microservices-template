@@ -1,9 +1,10 @@
 import { Global, Module, DynamicModule, Logger, Type } from '@nestjs/common';
 import { INTEGRATION_EVENT_PUBLISHER_TOKEN, INTEGRATION_EVENT_LISTENER_TOKEN } from '@libs/nestjs-common';
 
-export type MessagingBackend = 'kafka' | 'redis';
+export type MessagingTool = 'kafka' | 'redis';
 
 export interface MessagingModule {
+  tool: MessagingTool;
   sharedModule: Type<any>;
   service: Type<any>;
   integrationEventPublisher: Type<any>;
@@ -15,21 +16,20 @@ export interface MessagingModule {
 export class ConfigurableEventsModule {
   private static readonly logger = new Logger(ConfigurableEventsModule.name);
 
-  static forRoot(module?: MessagingModule): DynamicModule {
-    const messagingBackend = (process.env.MESSAGING_BACKEND?.toLowerCase() || 'redis') as MessagingBackend;
+  static forRoot(module: MessagingModule): DynamicModule {
 
-    this.logger.log(`Using ${messagingBackend.toUpperCase()} messaging backend`);
+    this.logger.log(`Using ${module.tool.toUpperCase()} messaging tool`);
     if (!module) {
       throw new Error('Messaging module not provided. Please import Kafka or Redis dependencies.');
     }
 
-    if (messagingBackend === 'kafka') {
+    if (module.tool === 'kafka') {
       return this.createKafkaModule(module);
-    } else if (messagingBackend === 'redis') {
+    } else if (module.tool === 'redis') {
       return this.createRedisModule(module);
     }
 
-    const errorMessage = `Unknown messaging backend '${messagingBackend}'. Supported options: 'kafka', 'redis'`;
+    const errorMessage = `Unknown messaging tool '${module.tool}'. Supported options: 'kafka', 'redis'`;
     this.logger.error(errorMessage);
     throw new Error(errorMessage);
   }

@@ -13,7 +13,6 @@ services:
       - PORT=3000
       - CHOKIDAR_USEPOLLING=1
       - WATCHPACK_POLLING=true
-      - MESSAGING_BACKEND=${MESSAGING_BACKEND:-redis}
       - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
       - KAFKA_USERNAME=${KAFKA_USERNAME:-}
       - KAFKA_PASSWORD=${KAFKA_PASSWORD:-}
@@ -62,7 +61,6 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=8000
-      - MESSAGING_BACKEND=${MESSAGING_BACKEND:-redis}
       - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
       - KAFKA_USERNAME=${KAFKA_USERNAME:-}
       - KAFKA_PASSWORD=${KAFKA_PASSWORD:-}

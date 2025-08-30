@@ -18,7 +18,7 @@ class MessagingServiceManager:
     """Manager that provides a unified interface for Kafka or Redis messaging"""
     
     def __init__(self):
-        self.backend_type = os.getenv('MESSAGING_BACKEND', 'kafka').lower()
+        self.backend_type = 'kafka' # kafka, redis
         self.service: MessagingServiceProtocol = None
         self._initialize_service()
     

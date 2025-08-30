@@ -9,7 +9,6 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - MESSAGING_BACKEND=${MESSAGING_BACKEND:-redis}
       - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
       - KAFKA_USERNAME=${KAFKA_USERNAME:-}
       - KAFKA_PASSWORD=${KAFKA_PASSWORD:-}
@@ -55,7 +54,6 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=8000
-      - MESSAGING_BACKEND=${MESSAGING_BACKEND:-kafka}
       - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
       - KAFKA_USERNAME=${KAFKA_USERNAME:-}
       - KAFKA_PASSWORD=${KAFKA_PASSWORD:-}

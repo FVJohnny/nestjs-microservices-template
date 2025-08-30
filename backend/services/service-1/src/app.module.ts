@@ -10,14 +10,8 @@ import {
   AuditModule,
   MessagingController,
 } from '@libs/nestjs-common';
-import { ConfigurableEventsModule } from '@libs/nestjs-events';
-import {
-  SharedKafkaModule,
-  KafkaService,
-  KafkaIntegrationEventPublisher,
-  KafkaIntegrationEventListener,
-} from '@libs/nestjs-kafka';
 import { DatabaseModule } from './database.module';
+import { IntegrationEventsModule } from './integration-events.module';
 import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
 
 @Module({
@@ -26,12 +20,7 @@ import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
     DatabaseModule,
 
     // Event Modules
-    ConfigurableEventsModule.forRoot({
-      sharedModule: SharedKafkaModule,
-      service: KafkaService,
-      integrationEventPublisher: KafkaIntegrationEventPublisher,
-      integrationEventListener: KafkaIntegrationEventListener,
-    }),
+    IntegrationEventsModule,
 
     // CQRS (Global for all bounded contexts)
     CqrsModule.forRoot(),
