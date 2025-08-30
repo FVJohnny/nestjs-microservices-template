@@ -1,17 +1,24 @@
 import { Filters } from './Filters';
 import { Order } from './Order';
 
+
+interface CriteriaProps {
+  filters?: Filters;
+  order?: Order;
+  limit?: number;
+  offset?: number;
+}
 export class Criteria {
   readonly filters: Filters;
   readonly order: Order;
   readonly limit?: number;
   readonly offset?: number;
 
-  constructor(filters: Filters = Filters.none(), order: Order = Order.none(), limit?: number, offset?: number) {
-    this.filters = filters;
-    this.order = order;
-    this.limit = limit;
-    this.offset = offset;
+  constructor(props: CriteriaProps = {}) {
+    this.filters = props.filters || Filters.none();
+    this.order = props.order || Order.none();
+    this.limit = props.limit;
+    this.offset = props.offset;
   }
 
   public hasFilters(): boolean {

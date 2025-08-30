@@ -99,12 +99,12 @@ export class GetUsersQueryHandler implements IQueryHandler<GetUsersQuery, GetUse
       order = Order.fromValues(query.orderBy, query.orderType || OrderTypes.ASC);
     }
 
-    const criteria = new Criteria(
+    const criteria = new Criteria({
       filters,
       order,
-      query.limit,
-      query.offset
-    );
+      limit: query.limit,
+      offset: query.offset
+    });
 
     const users = await this.userRepository.findByCriteria(criteria);
     

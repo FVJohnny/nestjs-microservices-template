@@ -1,13 +1,16 @@
 import { DomainEvent } from '@libs/nestjs-common';
-import { UserRoleEnum } from '../value-objects/user-role.vo';
+import { UserRole, UserRoleEnum } from '../value-objects/user-role.vo';
+import { Email } from '../value-objects/email.vo';
+import { Username } from '../value-objects/username.vo';
+import { User } from '../entities/user.entity';
 
 export class UserRegisteredEvent extends DomainEvent {
   constructor(
     public readonly payload: {
       userId: string;
-      email: string;
-      username: string;
-      roles: UserRoleEnum[];
+      email: Email;
+      username: Username;
+      roles: UserRole[];
       occurredOn: Date;
     },
   ) {

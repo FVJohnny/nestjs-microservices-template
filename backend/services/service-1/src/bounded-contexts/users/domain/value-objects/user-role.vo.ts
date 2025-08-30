@@ -14,5 +14,6 @@ export class UserRole extends EnumValueObject<UserRoleEnum> {
   protected throwErrorForInvalidValue(value: UserRoleEnum): void {
     throw new DomainValidationException('userRole', value, `Invalid user role: ${value}`);
   }
-
 }
+
+  

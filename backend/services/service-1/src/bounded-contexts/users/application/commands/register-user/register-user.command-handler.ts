@@ -6,6 +6,8 @@ import type { UserRepository } from '../../../domain/repositories/user.repositor
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
+import { Name } from '../../../domain/value-objects/name.vo';
+import { UserRole } from '../../../domain/value-objects/user-role.vo';
 import { BadRequestException } from '@nestjs/common';
 @CommandHandler(RegisterUserCommand)
 export class RegisterUserCommandHandler
@@ -32,11 +34,11 @@ export class RegisterUserCommandHandler
     }
 
     const user = User.create({
-      email: command.email,
-      username: command.username,
-      firstName: command.firstName,
-      lastName: command.lastName,
-      roles: command.roles,
+      email: new Email(command.email),
+      username: new Username(command.username),
+      firstName: new Name(command.firstName || ''),
+      lastName: new Name(command.lastName || ''),
+      roles: (command.roles || []).map(role => new UserRole(role)),
     });
 
     await this.userRepository.save(user);

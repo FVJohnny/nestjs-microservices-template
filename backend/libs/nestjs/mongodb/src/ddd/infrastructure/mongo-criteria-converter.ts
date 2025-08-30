@@ -1,21 +1,36 @@
 import { Criteria, Filter, Operator } from '@libs/nestjs-common';
 
 /**
+ * MongoDB query options interface
+ */
+interface MongoQueryOptions {
+  sort?: Record<string, 1 | -1>;
+  limit?: number;
+  skip?: number;
+}
+
+/**
+ * MongoDB criteria conversion result
+ */
+interface MongoCriteriaResult {
+  filter: Record<string, any>;
+  options: MongoQueryOptions;
+}
+
+/**
  * Converts DDD Criteria to MongoDB filter objects
  */
 export class MongoCriteriaConverter {
   /**
    * Convert a Criteria object to MongoDB filter and options
    */
-  static convert(criteria: Criteria): {
-    filter: Record<string, any>;
-    options: Record<string, any>;
-  } {
+  static convert(criteria: Criteria): MongoCriteriaResult {
     const filter: Record<string, any> = {};
-    const options: Record<string, any> = {};
+    const options: MongoQueryOptions = {};
 
     // Apply filters from criteria
-    criteria.filters.filters.forEach((filterObj: Filter) => {
+    if (criteria.filters && criteria.filters.filters) {
+      criteria.filters.filters.forEach((filterObj: Filter) => {
       const fieldName = filterObj.field.toValue();
       const operator = filterObj.operator.toValue();
       const value = filterObj.value.toValue();
@@ -41,6 +56,7 @@ export class MongoCriteriaConverter {
           break;
       }
     });
+    }
 
     // Apply sorting from criteria
     if (criteria.order && criteria.order.orderBy && criteria.order.orderType) {

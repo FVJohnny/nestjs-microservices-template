@@ -25,7 +25,7 @@ export class UserMongodbRepository implements UserRepository {
       
       await this.collection.updateOne(
         { id: user.id },
-        { $set: { ...primitives, updatedAt: new Date() } },
+        { $set: { ...primitives } },
         { upsert: true }
       );
     } catch (error) {
@@ -105,25 +105,19 @@ export class UserMongodbRepository implements UserRepository {
   async findByCriteria(criteria: Criteria): Promise<User[]> {
 
     try {
-      let query = this.collection.find();
-
-      if (criteria.filters) {
-        const mongoFilter = MongoCriteriaConverter.convert(criteria);
-        query = this.collection.find(mongoFilter);
+      const {filter, options} = MongoCriteriaConverter.convert(criteria);
+      let query = this.collection.find(filter);
+      
+      if (options.sort) {
+        query = query.sort(options.sort);
       }
-
-      if (criteria.order) {
-        const sortOptions: any = {};
-        sortOptions[criteria.order.orderBy.toValue()] = criteria.order.orderType.isAsc() ? 1 : -1;
-        query = query.sort(sortOptions);
+      
+      if (options.limit) {
+        query = query.limit(options.limit);
       }
-
-      if (criteria.limit) {
-        query = query.limit(criteria.limit);
-      }
-
-      if (criteria.offset) {
-        query = query.skip(criteria.offset);
+      
+      if (options.skip) {
+        query = query.skip(options.skip);
       }
 
       const documents = await query.toArray();
@@ -135,13 +129,9 @@ export class UserMongodbRepository implements UserRepository {
 
   async countByCriteria(criteria: Criteria): Promise<number> {
     try {
-      let filter = {};
+      const convertedCriteria = MongoCriteriaConverter.convert(criteria);
 
-      if (criteria.filters) {
-        filter = MongoCriteriaConverter.convert(criteria);
-      }
-
-      const count = await this.collection.countDocuments(filter);
+      const count = await this.collection.countDocuments(convertedCriteria?.filter || {});
       return count;
     } catch (error) {
       this.handleDatabaseError('countByCriteria', 'criteria', error);

@@ -15,7 +15,8 @@ export class PostgresCriteriaConverter {
     let builder = queryBuilder;
 
     // Apply filters from criteria
-    criteria.filters.filters.forEach((filter, index) => {
+    if (criteria.filters && criteria.filters.filters) {
+      criteria.filters.filters.forEach((filter, index) => {
       const paramName = `param_${index}`;
       const fieldName = `${entityAlias}.${filter.field.toValue()}`;
       const operator = filter.operator.toValue();
@@ -69,6 +70,7 @@ export class PostgresCriteriaConverter {
           break;
       }
     });
+    }
 
     // Apply ordering from criteria
     if (criteria.order && criteria.order.orderBy && criteria.order.orderType) {

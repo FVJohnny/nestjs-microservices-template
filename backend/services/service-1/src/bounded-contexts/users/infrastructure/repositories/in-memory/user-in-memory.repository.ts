@@ -3,7 +3,7 @@ import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { Criteria } from '@libs/nestjs-common';
+import { Criteria, InMemoryCriteriaConverter } from '@libs/nestjs-common';
 
 @Injectable()
 export class UserInMemoryRepository implements UserRepository {
@@ -58,44 +58,25 @@ export class UserInMemoryRepository implements UserRepository {
   }
 
   async findByCriteria(criteria: Criteria): Promise<User[]> {
-    let users = Array.from(this.users.values());
+    const users = Array.from(this.users.values());
+    const { filterFn, sortFn, paginationFn } = InMemoryCriteriaConverter.convert<User>(criteria);
 
-    if (criteria.filters) {
-      // Apply filters manually for in-memory implementation
-      users = users.filter(user => {
-        const primitives = user.toPrimitives();
-        // Simple filter implementation - can be enhanced as needed
-        return true; // For now, return all until proper filtering is implemented
-      });
+    let result = filterFn(users);
+    
+    if (sortFn) {
+      result.sort(sortFn);
     }
-
-    if (criteria.order) {
-      users.sort((a, b) => {
-        const aValue = (a)[criteria.order.orderBy.toValue()];
-        const bValue = (b)[criteria.order.orderBy.toValue()];
-        
-        if (criteria.order.orderType.isAsc()) {
-          return aValue > bValue ? 1 : -1;
-        } else {
-          return aValue < bValue ? 1 : -1;
-        }
-      });
-    }
-
-    if (criteria.offset) {
-      users = users.slice(criteria.offset);
-    }
-
-    if (criteria.limit) {
-      users = users.slice(0, criteria.limit);
-    }
-
-    return users;
+    
+    return paginationFn(result);
   }
 
-  async countByCriteria(criteria: Criteria | any): Promise<number> {
-    const users = await this.findByCriteria(criteria);
-    return users.length;
+  async countByCriteria(criteria: Criteria): Promise<number> {
+    const users = Array.from(this.users.values());
+    const { filterFn, sortFn } = InMemoryCriteriaConverter.convert<User>(criteria);
+
+    // Apply only filters, ignore pagination for count
+    const filteredUsers = filterFn(users);
+    return filteredUsers.length;
   }
 
   async delete(id: string): Promise<void> {

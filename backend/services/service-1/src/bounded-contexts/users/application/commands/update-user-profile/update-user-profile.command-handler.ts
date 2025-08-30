@@ -3,6 +3,7 @@ import { Inject, NotFoundException } from '@nestjs/common';
 import { UpdateUserProfileCommand } from './update-user-profile.command';
 import type { UserRepository } from '../../../domain/repositories/user.repository';
 import { User } from '../../../domain/entities/user.entity';
+import { Name } from '../../../domain/value-objects/name.vo';
 
 @CommandHandler(UpdateUserProfileCommand)
 export class UpdateUserProfileCommandHandler
@@ -21,8 +22,8 @@ export class UpdateUserProfileCommandHandler
     }
 
     user.updateProfile({
-      firstName: command.firstName,
-      lastName: command.lastName,
+      firstName: new Name(command.firstName || ''),
+      lastName: new Name(command.lastName || ''),
     });
 
     await this.userRepository.save(user);
