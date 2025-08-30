@@ -3,8 +3,7 @@ import { Inject } from '@nestjs/common';
 import { GetUsersQuery } from './get-users.query';
 import { GetUsersQueryResponse } from './get-users.response';
 import type { UserRepository } from '../../../domain/repositories/user.repository';
-import { User } from '../../../domain/entities/user.entity';
-import { Criteria, Filters, Filter, FilterField, FilterOperator, FilterValue, Order, OrderBy, OrderType, Operator, OrderTypes } from '@libs/nestjs-common';
+import { Criteria, Filters, Filter, FilterField, FilterOperator, FilterValue, Operator, OrderTypes, Order } from '@libs/nestjs-common';
 import { UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
 
 @QueryHandler(GetUsersQuery)
