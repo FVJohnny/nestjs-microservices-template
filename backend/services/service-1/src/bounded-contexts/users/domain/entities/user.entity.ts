@@ -166,11 +166,8 @@ export class User extends AggregateRoot {
   }
 
   removeRole(role: UserRole): void {
-    const index = this.roles.findIndex(r => r.equals(role));
-    if (index > -1) {
-      this.roles.splice(index, 1);
+      this.roles = this.roles.filter(r => !r.equals(role));
       this.updatedAt = new Date();
-    }
   }
 
   isActive(): boolean {
