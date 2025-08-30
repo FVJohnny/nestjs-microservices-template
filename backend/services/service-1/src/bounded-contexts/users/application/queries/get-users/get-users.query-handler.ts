@@ -1,19 +1,24 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { GetUsersQuery } from './get-users.query';
 import { GetUsersQueryResponse } from './get-users.response';
 import type { UserRepository } from '../../../domain/repositories/user.repository';
-import { Criteria, Filters, Filter, FilterField, FilterOperator, FilterValue, Operator, OrderTypes, Order } from '@libs/nestjs-common';
+import { Criteria, Filters, Filter, FilterField, FilterOperator, FilterValue, Operator, OrderTypes, Order, BaseQueryHandler } from '@libs/nestjs-common';
 import { UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
 
 @QueryHandler(GetUsersQuery)
-export class GetUsersQueryHandler implements IQueryHandler<GetUsersQuery, GetUsersQueryResponse> {
+export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUsersQueryResponse> {
   constructor(
     @Inject('UserRepository')
     private readonly userRepository: UserRepository,
-  ) {}
+  ) {
+    super();
+  }
+
+
 
   async execute(query: GetUsersQuery): Promise<GetUsersQueryResponse> {
+    await this.authorize(query);
     const filterList: Filter[] = [];
     
     // Handle legacy onlyActive parameter
@@ -108,5 +113,10 @@ export class GetUsersQueryHandler implements IQueryHandler<GetUsersQuery, GetUse
     const users = await this.userRepository.findByCriteria(criteria);
     
     return { ids: users.map(user => user.id) };
+  }
+
+  protected async authorize(query: GetUsersQuery): Promise<boolean> {
+    // TODO: Implement authorization logic
+    return true; 
   }
 }

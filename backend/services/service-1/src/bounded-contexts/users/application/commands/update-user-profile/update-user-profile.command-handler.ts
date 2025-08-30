@@ -1,21 +1,24 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler } from '@nestjs/cqrs';
 import { Inject, NotFoundException } from '@nestjs/common';
 import { UpdateUserProfileCommand } from './update-user-profile.command';
 import type { UserRepository } from '../../../domain/repositories/user.repository';
 import { Name } from '../../../domain/value-objects/name.vo';
 import { EventBus } from '@nestjs/cqrs';
+import { BaseCommandHandler } from '@libs/nestjs-common';
 
 @CommandHandler(UpdateUserProfileCommand)
-export class UpdateUserProfileCommandHandler
-  implements ICommandHandler<UpdateUserProfileCommand, void>
-{
+export class UpdateUserProfileCommandHandler extends BaseCommandHandler<UpdateUserProfileCommand, void> {
   constructor(
     @Inject('UserRepository')
     private readonly userRepository: UserRepository,
-    private readonly eventBus: EventBus,
-  ) {}
+    eventBus: EventBus,
+  ) {
+    super(eventBus);
+  }
 
   async execute(command: UpdateUserProfileCommand): Promise<void> {
+    await this.authorize(command);
+    
     const user = await this.userRepository.findById(command.userId);
     
     if (!user) {
@@ -29,8 +32,12 @@ export class UpdateUserProfileCommandHandler
 
     await this.userRepository.save(user);
 
-    const events = user.getUncommittedEvents();
-    this.eventBus.publishAll(events);
-    user.commit();
+    // Use the base class method to send domain events
+    await this.sendDomainEvents(user);
+  }
+
+  protected async authorize(command: UpdateUserProfileCommand): Promise<boolean> {
+    // TODO: Implement authorization logic
+    return true;
   }
 }

@@ -1,4 +1,4 @@
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { RegisterUserCommand, RegisterUserCommandResponse } from './register-user.command';
 import type { UserRepository } from '../../../domain/repositories/user.repository';
@@ -8,17 +8,21 @@ import { Username } from '../../../domain/value-objects/username.vo';
 import { Name } from '../../../domain/value-objects/name.vo';
 import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { BadRequestException } from '@nestjs/common';
+import { BaseCommandHandler } from '@libs/nestjs-common';
+
 @CommandHandler(RegisterUserCommand)
-export class RegisterUserCommandHandler
-  implements ICommandHandler<RegisterUserCommand, RegisterUserCommandResponse>
-{
+export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserCommand, RegisterUserCommandResponse> {
   constructor(
     @Inject('UserRepository')
     private readonly userRepository: UserRepository,
-    private readonly eventBus: EventBus,
-  ) {}
+    eventBus: EventBus,
+  ) {
+    super(eventBus);
+  }
 
   async execute(command: RegisterUserCommand): Promise<RegisterUserCommandResponse> {
+    await this.authorize(command);
+    
     const email = new Email(command.email);
     const username = new Username(command.username);
 
@@ -42,10 +46,14 @@ export class RegisterUserCommandHandler
 
     await this.userRepository.save(user);
 
-    const events = user.getUncommittedEvents();
-    this.eventBus.publishAll(events);
-    user.commit();
+    // Use the base class method to send domain events
+    await this.sendDomainEvents(user);
 
     return { id: user.id };
+  }
+
+  protected async authorize(command: RegisterUserCommand): Promise<boolean> {
+    // TODO: Implement authorization logic
+    return true;
   }
 }
