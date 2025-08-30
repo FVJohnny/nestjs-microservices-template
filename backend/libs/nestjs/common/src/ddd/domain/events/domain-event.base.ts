@@ -22,22 +22,4 @@ export abstract class DomainEvent implements IEvent {
   get eventName(): string {
     return this.constructor.name;
   }
-
-  /**
-   * Converts the event to a plain object for serialization
-   */
-  toPlainObject(): Record<string, any> {
-    return {
-      eventId: this.eventId,
-      eventName: this.eventName,
-      aggregateId: this.aggregateId,
-      occurredOn: this.occurredOn.toISOString(),
-      ...this.getPayload(),
-    };
-  }
-
-  /**
-   * Override this method to provide event-specific payload
-   */
-  protected abstract getPayload(): Record<string, any>;
 }

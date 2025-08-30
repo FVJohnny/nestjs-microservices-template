@@ -1,20 +1,32 @@
 import { DomainEvent } from '@libs/nestjs-common';
 
+interface UserProfileUpdatedEventPayload {
+  userId: string;
+  previousFirstName?: string;
+  previousLastName?: string;
+  firstName?: string;
+  lastName?: string;
+  occurredOn: Date;
+}
 export class UserProfileUpdatedEvent extends DomainEvent {
+  public readonly userId: string;
+  public readonly previousFirstName?: string;
+  public readonly previousLastName?: string;
+  public readonly firstName?: string;
+  public readonly lastName?: string;
+  public readonly occurredOn: Date;
+
   constructor(
-    public readonly payload: {
-      userId: string;
-      previousFirstName?: string;
-      previousLastName?: string;
-      firstName?: string;
-      lastName?: string;
-      occurredOn: Date;
-    },
+    public readonly payload: UserProfileUpdatedEventPayload,
   ) {
     super(payload.userId);
+
+    this.userId = payload.userId;
+    this.previousFirstName = payload.previousFirstName;
+    this.previousLastName = payload.previousLastName;
+    this.firstName = payload.firstName;
+    this.lastName = payload.lastName;
+    this.occurredOn = payload.occurredOn;
   }
 
-  protected getPayload(): Record<string, any> {
-    return this.payload;
-  }
 }

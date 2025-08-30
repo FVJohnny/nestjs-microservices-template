@@ -7,7 +7,7 @@ import { UserMongodbRepository } from './infrastructure/repositories/mongodb/use
 import { UserInMemoryRepository } from './infrastructure/repositories/in-memory/user-in-memory.repository';
 
 // 🚀 RUNTIME AUTO-DISCOVERY - NO FILES NEEDED!
-const discoveredComponents = RuntimeAutoDiscovery.discoverAllComponents(__dirname);
+const {controllers, handlers} = RuntimeAutoDiscovery.discoverAllComponents(__dirname);
 
 /**
  * Users module with PURE runtime auto-discovery
@@ -16,9 +16,9 @@ const discoveredComponents = RuntimeAutoDiscovery.discoverAllComponents(__dirnam
  */
 @Module({
   imports: [CqrsModule],
-  controllers: [...discoveredComponents.controllers], // 🎯 Auto-discovered at runtime
+  controllers: [...controllers], // 🎯 Auto-discovered at runtime
   providers: [
-    ...discoveredComponents.handlers, // 🎯 Auto-discovered at runtime
+    ...handlers, // 🎯 Auto-discovered at runtime
     {
       provide: 'UserRepository',
       useClass: UserMongodbRepository,
