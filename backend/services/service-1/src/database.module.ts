@@ -16,10 +16,8 @@ import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
     // MongoDB
     SharedMongoDBModule,
 
-    // PostgreSQL - Only needed for Channels bounded context
+    // PostgreSQL
     SharedPostgreSQLModule,
-    // Use the shared module's helper method with type assertion for now
-    // This is a known issue with TypeORM version mismatches in monorepo setups
     // TypeOrmModule.forRootAsync(
     //   SharedPostgreSQLModule.getTypeOrmConfig([PostgreSQLChannelEntity]) as any,
     // ),

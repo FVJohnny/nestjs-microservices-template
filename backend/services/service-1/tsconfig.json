@@ -20,6 +20,14 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@libs/nestjs-common": ["../../libs/nestjs/common/src"],
+      "@libs/nestjs-events": ["../../libs/nestjs/events/src"],
+      "@libs/nestjs-kafka": ["../../libs/nestjs/kafka/src"],
+      "@libs/nestjs-mongodb": ["../../libs/nestjs/mongodb/src"],
+      "@libs/nestjs-postgresql": ["../../libs/nestjs/postgresql/src"],
+      "@libs/nestjs-redis": ["../../libs/nestjs/redis/src"]
+    }
   }
 }

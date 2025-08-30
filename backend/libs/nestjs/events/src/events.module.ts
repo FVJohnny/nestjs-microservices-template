@@ -3,7 +3,7 @@ import { INTEGRATION_EVENT_PUBLISHER_TOKEN, INTEGRATION_EVENT_LISTENER_TOKEN } f
 
 export type MessagingBackend = 'kafka' | 'redis';
 
-export interface MessagingModules {
+export interface MessagingModule {
   sharedModule: Type<any>;
   service: Type<any>;
   integrationEventPublisher: Type<any>;
@@ -15,24 +15,18 @@ export interface MessagingModules {
 export class ConfigurableEventsModule {
   private static readonly logger = new Logger(ConfigurableEventsModule.name);
 
-  static forRoot(modules: {
-    kafka?: MessagingModules;
-    redis?: MessagingModules;
-  }, backend?: MessagingBackend): DynamicModule {
-    const messagingBackend = (backend || process.env.MESSAGING_BACKEND?.toLowerCase() || 'redis') as MessagingBackend;
+  static forRoot(module?: MessagingModule): DynamicModule {
+    const messagingBackend = (process.env.MESSAGING_BACKEND?.toLowerCase() || 'redis') as MessagingBackend;
 
     this.logger.log(`Using ${messagingBackend.toUpperCase()} messaging backend`);
+    if (!module) {
+      throw new Error('Messaging module not provided. Please import Kafka or Redis dependencies.');
+    }
 
     if (messagingBackend === 'kafka') {
-      if (!modules.kafka) {
-        throw new Error('Kafka backend selected but Kafka modules not provided. Please import Kafka dependencies.');
-      }
-      return this.createKafkaModule(modules.kafka);
+      return this.createKafkaModule(module);
     } else if (messagingBackend === 'redis') {
-      if (!modules.redis) {
-        throw new Error('Redis backend selected but Redis modules not provided. Please import Redis dependencies.');
-      }
-      return this.createRedisModule(modules.redis);
+      return this.createRedisModule(module);
     }
 
     const errorMessage = `Unknown messaging backend '${messagingBackend}'. Supported options: 'kafka', 'redis'`;
@@ -40,7 +34,7 @@ export class ConfigurableEventsModule {
     throw new Error(errorMessage);
   }
 
-  private static createKafkaModule(modules: MessagingModules): DynamicModule {
+  private static createKafkaModule(modules: MessagingModule): DynamicModule {
     return {
       module: ConfigurableEventsModule,
       imports: [modules.sharedModule],
@@ -60,7 +54,7 @@ export class ConfigurableEventsModule {
     };
   }
 
-  private static createRedisModule(modules: MessagingModules): DynamicModule {
+  private static createRedisModule(modules: MessagingModule): DynamicModule {
     return {
       module: ConfigurableEventsModule,
       imports: [modules.sharedModule],
