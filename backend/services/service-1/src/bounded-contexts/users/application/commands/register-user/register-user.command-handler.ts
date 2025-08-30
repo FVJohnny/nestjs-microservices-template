@@ -1,17 +1,16 @@
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { RegisterUserCommand } from './register-user.command';
-import { RegisterUserResponse } from './register-user.response';
+import { RegisterUserCommand, RegisterUserCommandResponse } from './register-user.command';
 import type { UserRepository } from '../../../domain/repositories/user.repository';
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Name } from '../../../domain/value-objects/name.vo';
-import { UserRole } from '../../../domain/value-objects/user-role.vo';
+import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { BadRequestException } from '@nestjs/common';
 @CommandHandler(RegisterUserCommand)
 export class RegisterUserCommandHandler
-  implements ICommandHandler<RegisterUserCommand, RegisterUserResponse>
+  implements ICommandHandler<RegisterUserCommand, RegisterUserCommandResponse>
 {
   constructor(
     @Inject('UserRepository')
@@ -19,7 +18,7 @@ export class RegisterUserCommandHandler
     private readonly eventBus: EventBus,
   ) {}
 
-  async execute(command: RegisterUserCommand): Promise<RegisterUserResponse> {
+  async execute(command: RegisterUserCommand): Promise<RegisterUserCommandResponse> {
     const email = new Email(command.email);
     const username = new Username(command.username);
 
@@ -38,12 +37,11 @@ export class RegisterUserCommandHandler
       username: new Username(command.username),
       firstName: new Name(command.firstName || ''),
       lastName: new Name(command.lastName || ''),
-      roles: (command.roles || []).map(role => new UserRole(role)),
+      roles: (command.roles || []).map(role => new UserRole(role as UserRoleEnum)),
     });
 
     await this.userRepository.save(user);
 
-    // Send Domain Events 
     const events = user.getUncommittedEvents();
     this.eventBus.publishAll(events);
     user.commit();
