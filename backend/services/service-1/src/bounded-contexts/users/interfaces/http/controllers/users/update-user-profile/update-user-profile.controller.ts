@@ -7,7 +7,7 @@ import {
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { UpdateUserProfileCommand } from '../../../../../application/commands';
-import { UpdateUserProfileBodyDto } from './update-user-profile.body';
+import { UpdateUserProfileControllerParams } from './update-user-profile.params';
 
 @ApiTags('users')
 @Controller('users')
@@ -27,12 +27,12 @@ export class UpdateUserProfileController {
   })
   async updateUserProfile(
     @Param('id') id: string,
-    @Body() dto: UpdateUserProfileBodyDto,
+    @Body() body: UpdateUserProfileControllerParams,
   ): Promise<void> {
     const command = new UpdateUserProfileCommand({
       userId: id,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
+      firstName: body.firstName,
+      lastName: body.lastName,
     });
 
     await this.commandBus.execute(command);

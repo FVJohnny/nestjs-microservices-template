@@ -1,4 +1,5 @@
 export interface CqrsMetadata {
   correlationId: string;
-  userId?: string;
+  causationId: string;
+  userId: string;
 }

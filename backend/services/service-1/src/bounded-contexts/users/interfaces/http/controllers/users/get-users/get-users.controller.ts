@@ -32,20 +32,7 @@ export class GetUsersController {
     type: GetUsersQueryResponse,
   })
   async getUsers(@Query() params: GetUsersControllerParams): Promise<GetUsersQueryResponse> {
-    const query = new GetUsersQuery({
-      status: params.status,
-      roles: params.roles,
-      email: params.email,
-      username: params.username,
-      firstName: params.firstName,
-      lastName: params.lastName,
-      orderBy: params.orderBy,
-      orderType: params.orderType,
-      limit: params.limit,
-      offset: params.offset,
-      onlyActive: params.onlyActive
-    });
-
+    const query = new GetUsersQuery(params);
     return await this.queryBus.execute(query);
   }
 }

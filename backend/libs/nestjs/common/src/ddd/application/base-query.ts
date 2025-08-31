@@ -1,7 +1,7 @@
 import { CqrsMetadata } from './cqrs-metadata';
 
 export abstract class BaseQuery {
-  public readonly metadata?: CqrsMetadata;
+  public metadata?: CqrsMetadata;
 
   constructor(metadata?: CqrsMetadata) {
     this.metadata = metadata;

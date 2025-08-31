@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional } from 'class-validator';
 
-export class UpdateUserProfileBodyDto {
+export class UpdateUserProfileControllerParams {
   @ApiProperty({ 
     example: 'John', 
     description: 'First name',

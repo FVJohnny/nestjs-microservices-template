@@ -1,9 +1,14 @@
+import { CorrelationService } from '../../correlation/correlation.service';
 import { CqrsMetadata } from './cqrs-metadata';
 
 export abstract class BaseCommand {
-  public readonly metadata?: CqrsMetadata;
+  public metadata?: CqrsMetadata;
 
   constructor(metadata?: CqrsMetadata) {
-    this.metadata = metadata;
+    this.metadata = {
+      correlationId: metadata?.correlationId ?? CorrelationService.getCorrelationId() ?? 'none',
+      causationId: metadata?.causationId ?? 'none',
+      userId: metadata?.userId ?? 'anonymous'
+    };
   }
 }
