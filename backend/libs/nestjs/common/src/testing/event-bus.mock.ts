@@ -1,3 +1,5 @@
+import { IntegrationEventPublisher } from "../integration-events";
+
 export interface MockEventBus {
   events: any[];
   shouldFail: boolean;
@@ -75,4 +77,48 @@ export function createFailingEventBusMock(): MockEventBus {
  */
 export function createSuccessfulEventBusMock(): MockEventBus {
   return createEventBusMock({ shouldFail: false });
+}
+
+export interface MockIntegrationEventPublisher extends IntegrationEventPublisher {
+  publishedEvents: Array<{ topic: string; message: any }>;
+}
+
+
+/**
+ * Creates a mock IntegrationEventPublisher for testing purposes
+ * 
+ * @param options Configuration options for the mock
+ * @param options.shouldFail If true, publish/publishBatch methods will throw errors
+ * @returns MockIntegrationEventPublisher instance with captured events and configurable failure behavior
+ */
+export function createIntegrationEventPublisherMock(
+  options: { shouldFail: boolean }
+): MockIntegrationEventPublisher {
+  
+  const publishedEvents: Array<{ topic: string; message: any }> = [];
+  
+  // Create mock functions without jest dependency
+  const publishMock = (topic: string, message: any) => {
+    if (options.shouldFail) {
+      throw new Error('IntegrationEventPublisher publish failed');
+    }
+    publishedEvents.push({ topic, message });
+    return Promise.resolve();
+  };
+  
+  const publishBatchMock = (topic: string, messages: any[]) => {
+    if (options.shouldFail) {
+      throw new Error('IntegrationEventPublisher publishBatch failed');
+    }
+    messages.forEach(message => publishedEvents.push({ topic, message }));
+    return Promise.resolve();
+  };
+  
+  const mockPublisher: MockIntegrationEventPublisher = {
+    publishedEvents,
+    publish: publishMock,
+    publishBatch: publishBatchMock,
+  };
+  
+  return mockPublisher;
 }
