@@ -23,7 +23,7 @@ export class GetUserByIdQueryHandler extends BaseQueryHandler<GetUserByIdQuery, 
       throw new NotFoundException(`User with ID ${query.userId} not found`);
     }
 
-    const profileData = user.profile.toPrimitives();
+    const profileData = user.profile.toValue();
     
     return {
       id: user.id,

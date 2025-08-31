@@ -21,7 +21,7 @@ export class UserMongodbRepository implements UserRepository {
 
   async save(user: User): Promise<void> {
     try {
-      const primitives = user.toPrimitives();
+      const primitives = user.toValue();
       
       await this.collection.updateOne(
         { id: user.id },
@@ -41,7 +41,7 @@ export class UserMongodbRepository implements UserRepository {
         return null;
       }
 
-      return User.fromPrimitives(document);
+      return User.fromValue(document);
     } catch (error) {
       this.handleDatabaseError('findById', id, error);
     }
@@ -55,7 +55,7 @@ export class UserMongodbRepository implements UserRepository {
         return null;
       }
 
-      return User.fromPrimitives(document);
+      return User.fromValue(document);
     } catch (error) {
       this.handleDatabaseError('findByEmail', email.toValue(), error);
     }
@@ -69,7 +69,7 @@ export class UserMongodbRepository implements UserRepository {
         return null;
       }
 
-      return User.fromPrimitives(document);
+      return User.fromValue(document);
     } catch (error) {
       this.handleDatabaseError('findByUsername', username.toValue(), error);
     }
@@ -96,7 +96,7 @@ export class UserMongodbRepository implements UserRepository {
   async findAll(): Promise<User[]> {
     try {
       const documents = await this.collection.find().toArray();
-      return documents.map(doc => User.fromPrimitives(doc));
+      return documents.map(doc => User.fromValue(doc));
     } catch (error) {
       this.handleDatabaseError('findAll', '', error);
     }
@@ -121,7 +121,7 @@ export class UserMongodbRepository implements UserRepository {
       }
 
       const documents = await query.toArray();
-      return documents.map(doc => User.fromPrimitives(doc));
+      return documents.map(doc => User.fromValue(doc));
     } catch (error) {
       this.handleDatabaseError('findByCriteria', '', error);
     }

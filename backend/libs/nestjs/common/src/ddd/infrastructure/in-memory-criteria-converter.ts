@@ -10,13 +10,13 @@ export interface InMemoryFilterResult<T> {
 
 /**
  * Converts DDD Criteria to in-memory filtering, sorting and pagination functions
- * Generic implementation that works with any entity that has toPrimitives() method
+ * Generic implementation that works with any entity that has toValue() method
  */
 export class InMemoryCriteriaConverter {
   /**
    * Convert a Criteria object to in-memory filter functions
    */
-  static convert<T extends { toPrimitives(): any }>(criteria: Criteria): InMemoryFilterResult<T> {
+  static convert<T extends { toValue(): any }>(criteria: Criteria): InMemoryFilterResult<T> {
     return {
       filterFn: (items: T[]) => this.applyFilters(items, criteria),
       sortFn: criteria.order ? (a: T, b: T) => this.applySorting(a, b, criteria.order!) : undefined,
@@ -24,13 +24,13 @@ export class InMemoryCriteriaConverter {
     };
   }
 
-  private static applyFilters<T extends { toPrimitives(): any }>(items: T[], criteria: Criteria): T[] {
+  private static applyFilters<T extends { toValue(): any }>(items: T[], criteria: Criteria): T[] {
     if (!criteria.hasFilters()) {
       return items;
     }
 
     return items.filter(item => {
-      const primitives = item.toPrimitives();
+      const primitives = item.toValue();
       
       return criteria.filters.filters.every((filter: Filter) => {
         const field = filter.field.toValue();
@@ -43,7 +43,8 @@ export class InMemoryCriteriaConverter {
   }
 
   private static matchesFilter(primitives: any, field: string, operator: string, filterValue: any): boolean {
-    let userValue = primitives[field];
+    // Get value from nested path
+    let userValue = this.getNestedValue(primitives, field);
     
     if (userValue === undefined || userValue === null) {
       return false;
@@ -54,6 +55,20 @@ export class InMemoryCriteriaConverter {
     }
 
     return this.applyOperator(userValue, operator, filterValue, field);
+  }
+
+  private static getNestedValue(obj: any, path: string): any {
+    const keys = path.split('.');
+    let current = obj;
+    
+    for (const key of keys) {
+      if (current === null || current === undefined) {
+        return undefined;
+      }
+      current = current[key];
+    }
+    
+    return current;
   }
 
   private static applyOperator(userValue: any, operator: string, filterValue: any, field: string): boolean {
@@ -94,13 +109,13 @@ export class InMemoryCriteriaConverter {
     return dateFieldPatterns.some(pattern => pattern.test(field));
   }
 
-  private static applySorting<T extends { toPrimitives(): any }>(a: T, b: T, order: any): number {
-    const aPrimitives = a.toPrimitives();
-    const bPrimitives = b.toPrimitives();
+  private static applySorting<T extends { toValue(): any }>(a: T, b: T, order: any): number {
+    const aPrimitives = a.toValue();
+    const bPrimitives = b.toValue();
     const orderBy = order.orderBy.toValue();
     
-    const aValue = aPrimitives[orderBy];
-    const bValue = bPrimitives[orderBy];
+    const aValue = this.getNestedValue(aPrimitives, orderBy);
+    const bValue = this.getNestedValue(bPrimitives, orderBy);
     
     if (aValue === null || aValue === undefined) return 1;
     if (bValue === null || bValue === undefined) return -1;

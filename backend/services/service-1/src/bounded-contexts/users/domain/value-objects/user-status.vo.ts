@@ -15,4 +15,20 @@ export class UserStatus extends EnumValueObject<UserStatusEnum> {
   protected throwErrorForInvalidValue(value: UserStatusEnum): void {
     throw new DomainValidationException('userStatus', value, `Invalid user status: ${value}`);
   }
+
+  static active(): UserStatus {
+    return new UserStatus(UserStatusEnum.ACTIVE);
+  }
+
+  static inactive(): UserStatus {
+    return new UserStatus(UserStatusEnum.INACTIVE);
+  }
+
+  static suspended(): UserStatus {
+    return new UserStatus(UserStatusEnum.SUSPENDED);
+  }
+
+  static deleted(): UserStatus {
+    return new UserStatus(UserStatusEnum.DELETED);
+  }
 }

@@ -26,6 +26,7 @@ export * from './domain/entities/AggregateRoot';
 export { ValueObject } from './domain/value-object/ValueObject';
 export { StringValueObject } from './domain/value-object/StringValueObject';
 export { EnumValueObject } from './domain/value-object/EnumValueObject';
+export { CompositeValueObject } from './domain/value-object/CompositeValueObject';
 export { InvalidArgumentError } from './domain/value-object/InvalidArgumentError';
 
 // Repositories

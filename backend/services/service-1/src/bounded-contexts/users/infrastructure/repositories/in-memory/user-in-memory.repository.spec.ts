@@ -4,7 +4,7 @@ import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Name } from '../../../domain/value-objects/name.vo';
 import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
-import { UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
+import { UserStatus, UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
 import {
   Criteria,
   Filters,
@@ -18,6 +18,7 @@ import {
   OrderTypes,
   Operator,
 } from '@libs/nestjs-common';
+import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
 
 describe('UserInMemoryRepository', () => {
   let repository: UserInMemoryRepository;
@@ -355,7 +356,7 @@ describe('UserInMemoryRepository', () => {
       it('should filter by firstName (EQUAL)', async () => {
         // Arrange
         const filter = new Filter(
-          new FilterField('firstName'),
+          new FilterField('profile.firstName'),
           new FilterOperator(Operator.EQUAL),
           new FilterValue('John')
         );
@@ -374,7 +375,7 @@ describe('UserInMemoryRepository', () => {
       it('should filter by lastName (EQUAL)', async () => {
         // Arrange
         const filter = new Filter(
-          new FilterField('lastName'),
+          new FilterField('profile.lastName'),
           new FilterOperator(Operator.EQUAL),
           new FilterValue('Smith')
         );
@@ -392,7 +393,7 @@ describe('UserInMemoryRepository', () => {
 
       it('should filter by status (EQUAL)', async () => {
         // Arrange
-        const inactiveUser = User.random({ status: UserStatusEnum.INACTIVE });
+        const inactiveUser = User.random({ status: UserStatus .inactive() });
         await repository.save(inactiveUser);
 
         const filter = new Filter(
@@ -474,7 +475,7 @@ describe('UserInMemoryRepository', () => {
       it('should filter with NOT_CONTAINS operator', async () => {
         // Arrange
         const filter = new Filter(
-          new FilterField('firstName'),
+          new FilterField('profile.firstName'),
           new FilterOperator(Operator.NOT_CONTAINS),
           new FilterValue('John')
         );
@@ -534,12 +535,12 @@ describe('UserInMemoryRepository', () => {
         // Arrange
         const filters = [
           new Filter(
-            new FilterField('firstName'),
+            new FilterField('profile.firstName'),
             new FilterOperator(Operator.CONTAINS),
             new FilterValue('J') // Should match John and Jane
           ),
           new Filter(
-            new FilterField('lastName'),
+            new FilterField('profile.lastName'),
             new FilterOperator(Operator.EQUAL),
             new FilterValue('Doe') // Should match only John Doe
           ),
@@ -579,7 +580,7 @@ describe('UserInMemoryRepository', () => {
     describe('findByCriteria - Sorting', () => {
       it('should sort by firstName ascending', async () => {
         // Arrange
-        const order = new Order(new OrderBy('firstName'), new OrderType(OrderTypes.ASC));
+        const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.ASC));
         const criteria = new Criteria({ order });
 
         // Act
@@ -594,7 +595,7 @@ describe('UserInMemoryRepository', () => {
 
       it('should sort by firstName descending', async () => {
         // Arrange
-        const order = new Order(new OrderBy('firstName'), new OrderType(OrderTypes.DESC));
+        const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.DESC));
         const criteria = new Criteria({ order });
 
         // Act
@@ -702,11 +703,11 @@ describe('UserInMemoryRepository', () => {
       it('should combine filters, sorting, and pagination', async () => {
         // Arrange
         const filter = new Filter(
-          new FilterField('firstName'),
+          new FilterField('profile.firstName'),
           new FilterOperator(Operator.CONTAINS),
           new FilterValue('J') // Should match John and Jane
         );
-        const order = new Order(new OrderBy('firstName'), new OrderType(OrderTypes.DESC));
+        const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.DESC));
         const criteria = new Criteria({
           filters: new Filters([filter]),
           order,
@@ -728,7 +729,7 @@ describe('UserInMemoryRepository', () => {
           new FilterOperator(Operator.EQUAL),
           new FilterValue('nonexistent@example.com')
         );
-        const order = new Order(new OrderBy('firstName'), new OrderType(OrderTypes.ASC));
+        const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.ASC));
         const criteria = new Criteria({
           filters: new Filters([filter]),
           order,
@@ -759,7 +760,7 @@ describe('UserInMemoryRepository', () => {
       it('should count filtered users', async () => {
         // Arrange
         const filter = new Filter(
-          new FilterField('firstName'),
+          new FilterField('profile.firstName'),
           new FilterOperator(Operator.CONTAINS),
           new FilterValue('J')
         );
@@ -795,7 +796,7 @@ describe('UserInMemoryRepository', () => {
       it('should ignore pagination in count', async () => {
         // Arrange
         const filter = new Filter(
-          new FilterField('firstName'),
+          new FilterField('profile.firstName'),
           new FilterOperator(Operator.CONTAINS),
           new FilterValue('J')
         );
@@ -822,9 +823,11 @@ describe('UserInMemoryRepository', () => {
       const originalUser = User.random({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        firstName: new Name('Test'),
-        lastName: new Name('User'),
-        roles: [new UserRole(UserRoleEnum.ADMIN), new UserRole(UserRoleEnum.USER)],
+        profile: new UserProfile(
+          new Name('Test'),
+          new Name('User')
+        ),
+        roles: [UserRole.admin(), UserRole.user()],
       });
 
       // Modify some properties
@@ -903,14 +906,16 @@ describe('UserInMemoryRepository', () => {
       // Arrange
       const user = User.random({ 
         username: new Username('testuser123'),
-        firstName: new Name('John-Paul'),
-        lastName: new Name('Van Berg')
+        profile: new UserProfile(
+          new Name('John-Paul'),
+          new Name('Van Berg')
+        )
       });
       await repository.save(user);
 
       // Act & Assert - Hyphen in name
       const filter1 = new Filter(
-        new FilterField('firstName'),
+        new FilterField('profile.firstName'),
         new FilterOperator(Operator.CONTAINS),
         new FilterValue('-')
       );
@@ -921,7 +926,7 @@ describe('UserInMemoryRepository', () => {
 
       // Act & Assert - Space in last name
       const filter2 = new Filter(
-        new FilterField('lastName'),
+        new FilterField('profile.lastName'),
         new FilterOperator(Operator.CONTAINS),
         new FilterValue(' ')
       );
@@ -936,14 +941,16 @@ describe('UserInMemoryRepository', () => {
       const user = User.random({
         email: new Email('empty@test.com'),
         username: new Username('emptyuser'),
-        firstName: new Name(''), // Empty first name
-        lastName: new Name('Test')
+        profile: new UserProfile(
+          new Name(''), // Empty first name
+          new Name('Test')
+        )
       });
       await repository.save(user);
 
       // Act
       const filter = new Filter(
-        new FilterField('firstName'),
+        new FilterField('profile.firstName'),
         new FilterOperator(Operator.EQUAL),
         new FilterValue('')
       );
@@ -962,7 +969,10 @@ describe('UserInMemoryRepository', () => {
         User.random({ 
           username: new Username(`user${i}`),
           email: new Email(`user${i}@example.com`),
-          firstName: new Name(i % 2 === 0 ? 'Even' : 'Odd')
+          profile: new UserProfile(
+            new Name(i % 2 === 0 ? 'Even' : 'Odd'),
+            new Name('User')
+          )
         })
       );
 
@@ -970,7 +980,7 @@ describe('UserInMemoryRepository', () => {
 
       // Act - Filter and paginate
       const filter = new Filter(
-        new FilterField('firstName'),
+        new FilterField('profile.firstName'),
         new FilterOperator(Operator.EQUAL),
         new FilterValue('Even')
       );
@@ -993,22 +1003,28 @@ describe('UserInMemoryRepository', () => {
     User.random({
       email: new Email('admin@example.com'),
       username: new Username('admin'),
-      firstName: new Name('Admin'),
-      lastName: new Name('User'),
+      profile: new UserProfile(
+        new Name('Admin'),
+        new Name('User')
+      ),
       roles: [new UserRole(UserRoleEnum.ADMIN)],
     }),
     User.random({
       email: new Email('user1@example.com'),
       username: new Username('user1'),
-      firstName: new Name('John'),
-      lastName: new Name('Doe'),
+      profile: new UserProfile(
+        new Name('John'),
+        new Name('Doe')
+      ),
       roles: [new UserRole(UserRoleEnum.USER)],
     }),
     User.random({
       email: new Email('user2@example.com'),
       username: new Username('user2'),
-      firstName: new Name('Jane'),
-      lastName: new Name('Smith'),
+      profile: new UserProfile(
+        new Name('Jane'),
+        new Name('Smith')
+      ),
       roles: [new UserRole(UserRoleEnum.USER)],
     }),
   ];

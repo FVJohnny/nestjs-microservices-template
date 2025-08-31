@@ -7,6 +7,7 @@ import { UserPersistenceException } from '../../errors';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Name } from '../../../domain/value-objects/name.vo';
+import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
 import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 
 describe('UserMongodbRepository (Integration)', () => {
@@ -323,7 +324,7 @@ describe('UserMongodbRepository (Integration)', () => {
     it('should filter by firstName', async () => {
       // Arrange
       const filter = new Filter(
-        new FilterField('firstName'),
+        new FilterField('profile.firstName'),
         new FilterOperator(Operator.EQUAL),
         new FilterValue('John')
       );
@@ -342,7 +343,7 @@ describe('UserMongodbRepository (Integration)', () => {
     it('should filter by lastName', async () => {
       // Arrange
       const filter = new Filter(
-        new FilterField('lastName'),
+        new FilterField('profile.lastName'),
         new FilterOperator(Operator.EQUAL),
         new FilterValue('Doe')
       );
@@ -422,7 +423,7 @@ describe('UserMongodbRepository (Integration)', () => {
     it('should count filtered users', async () => {
       // Arrange
       const filter = new Filter(
-        new FilterField('firstName'),
+        new FilterField('profile.firstName'),
         new FilterOperator(Operator.EQUAL),
         new FilterValue('John')
       );
@@ -525,8 +526,10 @@ describe('UserMongodbRepository (Integration)', () => {
       const originalUser = User.random({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        firstName: new Name('Test'),
-        lastName: new Name('User'),
+        profile: new UserProfile(
+          new Name('Test'),
+          new Name('User')
+        ),
         roles: [new UserRole(UserRoleEnum.ADMIN), new UserRole(UserRoleEnum.USER)],
       });
 
@@ -614,22 +617,28 @@ describe('UserMongodbRepository (Integration)', () => {
     User.random({
       email: new Email('admin@example.com'),
       username: new Username('admin'),
-      firstName: new Name('Admin'),
-      lastName: new Name('User'),
+      profile: new UserProfile(
+        new Name('Admin'),
+        new Name('User')
+      ),
       roles: [new UserRole(UserRoleEnum.ADMIN)],
     }),
     User.random({
       email: new Email('user1@example.com'),
       username: new Username('user1'),
-      firstName: new Name('John'),
-      lastName: new Name('Doe'),
+      profile: new UserProfile(
+        new Name('John'),
+        new Name('Doe')
+      ),
       roles: [new UserRole(UserRoleEnum.USER)],
     }),
     User.random({
       email: new Email('user2@example.com'),
       username: new Username('user2'),
-      firstName: new Name('Jane'),
-      lastName: new Name('Smith'),
+      profile: new UserProfile(
+        new Name('Jane'),
+        new Name('Smith')
+      ),
       roles: [new UserRole(UserRoleEnum.USER)],
     }),
   ];

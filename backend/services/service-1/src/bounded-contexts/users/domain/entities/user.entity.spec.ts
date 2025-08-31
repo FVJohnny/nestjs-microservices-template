@@ -3,9 +3,10 @@ import { Email } from '../value-objects/email.vo';
 import { Username } from '../value-objects/username.vo';
 import { Name } from '../value-objects/name.vo';
 import { UserRole, UserRoleEnum } from '../value-objects/user-role.vo';
-import { UserStatusEnum } from '../value-objects/user-status.vo';
+import { UserStatus, UserStatusEnum } from '../value-objects/user-status.vo';
 import { UserRegisteredEvent } from '../events/user-registered.event';
 import { UserProfileUpdatedEvent } from '../events/user-profile-updated.event';
+import { UserProfile } from '../value-objects/user-profile.vo';
 
 describe('User Entity', () => {
   describe('create', () => {
@@ -115,10 +116,9 @@ describe('User Entity', () => {
       const user = User.random({
         email: customEmail,
         username: customUsername,
-        firstName: customFirstName,
-        lastName: customLastName,
+        profile: new UserProfile(customFirstName, customLastName),
         roles: customRoles,
-        status: customStatus,
+        status: UserStatus.inactive(),
         lastLoginAt: customLastLogin,
         createdAt: customCreatedAt,
         updatedAt: customUpdatedAt
@@ -139,8 +139,7 @@ describe('User Entity', () => {
     it('should handle empty string names correctly with nullish coalescing', () => {
       // Act
       const user = User.random({
-        firstName: new Name(''),
-        lastName: new Name('')
+        profile: new UserProfile(new Name(''), new Name(''))
       });
 
       // Assert
@@ -153,8 +152,7 @@ describe('User Entity', () => {
     it('should update user profile and emit domain event', () => {
       // Arrange
       const user = User.random({
-        firstName: new Name('Original'),
-        lastName: new Name('Name')
+        profile: new UserProfile(new Name('Original'), new Name('Name'))
       });
       user.commit(); // Clear initial events
 
@@ -203,7 +201,7 @@ describe('User Entity', () => {
   describe('activate', () => {
     it('should activate inactive user', async () => {
       // Arrange
-      const user = User.random({ status: UserStatusEnum.INACTIVE });
+      const user = User.random({ status: UserStatus.inactive() });
 
       // Wait to ensure timestamp difference
       await new Promise(resolve => setTimeout(resolve, 10));
@@ -218,7 +216,7 @@ describe('User Entity', () => {
 
     it('should not change active user', () => {
       // Arrange
-      const user = User.random({ status: UserStatusEnum.ACTIVE });
+      const user = User.random({ status: UserStatus.active() });
       const originalUpdatedAt = user.updatedAt;
 
       // Act
@@ -233,7 +231,7 @@ describe('User Entity', () => {
   describe('deactivate', () => {
     it('should deactivate active user', async () => {
       // Arrange
-      const user = User.random({ status: UserStatusEnum.ACTIVE });
+      const user = User.random({ status: UserStatus.active() });
 
       // Wait to ensure timestamp difference
       await new Promise(resolve => setTimeout(resolve, 10));
@@ -248,7 +246,7 @@ describe('User Entity', () => {
 
     it('should not change inactive user', () => {
       // Arrange
-      const user = User.random({ status: UserStatusEnum.INACTIVE });
+      const user = User.random({ status: UserStatus.inactive() });
       const originalUpdatedAt = user.updatedAt;
 
       // Act
@@ -345,7 +343,7 @@ describe('User Entity', () => {
   describe('isActive', () => {
     it('should return true for active user', () => {
       // Arrange
-      const user = User.random({ status: UserStatusEnum.ACTIVE });
+      const user = User.random({ status: UserStatus.active() });
 
       // Act & Assert
       expect(user.isActive()).toBe(true);
@@ -353,7 +351,7 @@ describe('User Entity', () => {
 
     it('should return false for inactive user', () => {
       // Arrange
-      const user = User.random({ status: UserStatusEnum.INACTIVE });
+      const user = User.random({ status: UserStatus.inactive() });
 
       // Act & Assert
       expect(user.isActive()).toBe(false);
@@ -366,23 +364,24 @@ describe('User Entity', () => {
       const user = User.random({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        firstName: new Name('John'),
-        lastName: new Name('Doe'),
-        roles: [new UserRole(UserRoleEnum.ADMIN), new UserRole(UserRoleEnum.USER)],
-        status: UserStatusEnum.ACTIVE,
+        profile: new UserProfile(new Name('John'), new Name('Doe')),
+        roles: [UserRole.admin(), UserRole.user()],
+        status: UserStatus.active(),
         lastLoginAt: new Date('2024-01-01T12:00:00Z')
       });
 
       // Act
-      const primitives = user.toPrimitives();
+      const value = user.toValue();
 
       // Assert
-      expect(primitives).toEqual({
+      expect(value).toEqual({
         id: user.id,
         email: 'test@example.com',
         username: 'testuser',
-        firstName: 'John',
-        lastName: 'Doe',
+        profile: {
+          firstName: 'John',
+          lastName: 'Doe'
+        },
         status: UserStatusEnum.ACTIVE,
         roles: [UserRoleEnum.ADMIN, UserRoleEnum.USER],
         lastLoginAt: new Date('2024-01-01T12:00:00Z'),
@@ -397,8 +396,10 @@ describe('User Entity', () => {
         id: '123e4567-e89b-12d3-a456-426614174000',
         email: 'test@example.com',
         username: 'testuser',
-        firstName: 'John',
-        lastName: 'Doe',
+        profile: {
+          firstName: 'John',
+          lastName: 'Doe'
+        },
         status: UserStatusEnum.INACTIVE,
         roles: [UserRoleEnum.ADMIN, UserRoleEnum.USER],
         lastLoginAt: new Date('2024-01-01T12:00:00Z'),
@@ -407,7 +408,7 @@ describe('User Entity', () => {
       };
 
       // Act
-      const user = User.fromPrimitives(primitives);
+      const user = User.fromValue(primitives);
 
       // Assert
       expect(user.id).toBe('123e4567-e89b-12d3-a456-426614174000');
@@ -429,8 +430,8 @@ describe('User Entity', () => {
       const user = User.random();
 
       // Act
-      const primitives = user.toPrimitives();
-      const reconstructed = User.fromPrimitives(primitives);
+      const primitives = user.toValue();
+      const reconstructed = User.fromValue(primitives);
 
       // Assert
       expect(primitives.lastLoginAt).toBeUndefined();
@@ -442,8 +443,10 @@ describe('User Entity', () => {
     it('should handle user with empty name components', () => {
       // Arrange & Act
       const user = User.random({
-        firstName: new Name(''),
-        lastName: new Name('')
+        profile: new UserProfile(
+          new Name(''),
+          new Name('')
+        )
       });
 
       // Assert
@@ -451,8 +454,8 @@ describe('User Entity', () => {
       expect(user.profile.lastName.toValue()).toBe('');
       
       // Should still serialize/deserialize correctly
-      const primitives = user.toPrimitives();
-      const reconstructed = User.fromPrimitives(primitives);
+      const primitives = user.toValue();
+      const reconstructed = User.fromValue(primitives);
       expect(reconstructed.profile.firstName.toValue()).toBe('');
       expect(reconstructed.profile.lastName.toValue()).toBe('');
     });
@@ -532,7 +535,7 @@ describe('User Entity', () => {
 
     it('should update timestamp on state changes', async () => {
       // Arrange
-      const user = User.random({ status: UserStatusEnum.INACTIVE });
+      const user = User.random({ status: UserStatus.inactive() });
       const originalUpdatedAt = user.updatedAt;
 
       // Wait to ensure timestamp difference
