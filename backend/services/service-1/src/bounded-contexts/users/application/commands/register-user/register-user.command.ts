@@ -2,14 +2,6 @@ import { ICommand } from '@nestjs/cqrs';
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseCommand, CqrsMetadata } from '@libs/nestjs-common';
 
-interface RegisterUserCommandProps {
-  email: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  roles: string[];
-}
-
 export class RegisterUserCommand extends BaseCommand implements ICommand {
 
   public readonly email: string;
@@ -18,7 +10,7 @@ export class RegisterUserCommand extends BaseCommand implements ICommand {
   public readonly lastName: string;
   public readonly roles: string[];
 
-  constructor(props: RegisterUserCommandProps, metadata?: CqrsMetadata) {
+  constructor(props: RegisterUserCommand, metadata?: CqrsMetadata) {
     super(metadata);
     this.email = props.email;
     this.username = props.username;
