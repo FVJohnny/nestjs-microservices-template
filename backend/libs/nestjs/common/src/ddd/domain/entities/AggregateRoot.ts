@@ -5,12 +5,7 @@ import { isDeepStrictEqual } from 'node:util';
  * Base class for aggregate roots in Domain-Driven Design
  */
 export abstract class AggregateRoot extends CQRSAggregateRoot<IEvent> {
-  public id: string;
 
-  constructor(id: string) {
-    super();
-    this.id = id;
-  }
   /**
    * Convert the aggregate to its primitive representation
    * This is used for persistence and serialization
