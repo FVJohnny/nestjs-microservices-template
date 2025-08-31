@@ -1007,7 +1007,7 @@ describe('UserInMemoryRepository', () => {
         new Name('Admin'),
         new Name('User')
       ),
-      roles: [new UserRole(UserRoleEnum.ADMIN)],
+      roles: [UserRole.admin()],
     }),
     User.random({
       email: new Email('user1@example.com'),
@@ -1016,7 +1016,7 @@ describe('UserInMemoryRepository', () => {
         new Name('John'),
         new Name('Doe')
       ),
-      roles: [new UserRole(UserRoleEnum.USER)],
+      roles: [UserRole.user()],
     }),
     User.random({
       email: new Email('user2@example.com'),
@@ -1025,7 +1025,7 @@ describe('UserInMemoryRepository', () => {
         new Name('Jane'),
         new Name('Smith')
       ),
-      roles: [new UserRole(UserRoleEnum.USER)],
+      roles: [UserRole.user()],
     }),
   ];
 

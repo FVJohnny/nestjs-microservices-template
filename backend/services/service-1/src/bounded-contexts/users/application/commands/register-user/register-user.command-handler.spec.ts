@@ -50,7 +50,10 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       // Arrange
       const command = new RegisterUserCommand({
         email: 'minimal@example.com',
-        username: 'minimaluser'
+        username: 'minimaluser',
+        firstName: '',
+        lastName: '',
+        roles: []
       });
 
       // Act
@@ -65,25 +68,6 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       expect(savedUser!.profile.firstName.toValue()).toBe('');
       expect(savedUser!.profile.lastName.toValue()).toBe('');
       expect(savedUser!.roles).toHaveLength(0);
-    });
-
-    it('should handle undefined firstName and lastName gracefully', async () => {
-      // Arrange
-      const command = new RegisterUserCommand({
-        email: 'undefined@example.com',
-        username: 'undefineduser',
-        firstName: undefined,
-        lastName: undefined,
-        roles: []
-      });
-
-      // Act
-      const result = await commandHandler.execute(command);
-
-      // Assert
-      const savedUser = await repository.findById(result.id);
-      expect(savedUser!.profile.firstName.toValue()).toBe('');
-      expect(savedUser!.profile.lastName.toValue()).toBe('');
     });
 
     it('should assign multiple roles correctly', async () => {
@@ -115,7 +99,8 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         email: 'events@example.com',
         username: 'eventsuser',
         firstName: 'Events',
-        lastName: 'User'
+        lastName: 'User',
+        roles: []
       });
 
       // Act
@@ -131,7 +116,10 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       // Arrange
       const command = new RegisterUserCommand({
         email: 'active@example.com',
-        username: 'activeuser'
+        username: 'activeuser',
+        firstName: 'Active',
+        lastName: 'User',
+        roles: []
       });
 
       // Act
@@ -146,7 +134,10 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       // Arrange
       const command = new RegisterUserCommand({
         email: 'timestamp@example.com',
-        username: 'timestampuser'
+        username: 'timestampuser',
+        firstName: 'Timestamp',
+        lastName: 'User',
+        roles: []
       });
       const beforeCreation = new Date();
 
@@ -188,11 +179,17 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       // Arrange
       const command1 = new RegisterUserCommand({
         email: 'user1@example.com',
-        username: 'user1'
+        username: 'user1',
+        firstName: 'User',
+        lastName: 'One',
+        roles: []
       });
       const command2 = new RegisterUserCommand({
         email: 'user2@example.com',
-        username: 'user2'
+        username: 'user2',
+        firstName: 'User',
+        lastName: 'Two',
+        roles: []
       });
 
       // Act
@@ -214,7 +211,10 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       
       const command = new RegisterUserCommand({
         email: 'failing@example.com',
-        username: 'failinguser'
+        username: 'failinguser',
+        firstName: 'Failing',
+        lastName: 'User',
+        roles: []
       });
 
       // Act & Assert
@@ -227,13 +227,19 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       // Arrange
       const existingCommand = new RegisterUserCommand({
         email: 'existing@example.com',
-        username: 'user1'
+        username: 'user1',
+        firstName: 'Existing',
+        lastName: 'User',
+        roles: []
       });
       await commandHandler.execute(existingCommand);
 
       const duplicateEmailCommand = new RegisterUserCommand({
         email: 'existing@example.com',
-        username: 'user2'
+        username: 'user2',
+        firstName: 'Duplicate',
+        lastName: 'User',
+        roles: []
       });
 
       // Act & Assert
@@ -250,13 +256,19 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       // Arrange
       const existingCommand = new RegisterUserCommand({
         email: 'user1@example.com',
-        username: 'existinguser'
+        username: 'existinguser',
+        firstName: 'Existing',
+        lastName: 'User',
+        roles: []
       });
       await commandHandler.execute(existingCommand);
 
       const duplicateUsernameCommand = new RegisterUserCommand({
         email: 'user2@example.com',
-        username: 'existinguser'
+        username: 'existinguser',
+        firstName: 'Existing',
+        lastName: 'User',
+        roles: []
       });
 
       // Act & Assert

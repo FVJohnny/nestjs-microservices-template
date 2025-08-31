@@ -17,12 +17,12 @@ export class RegisterUserBodyDto {
   @ApiProperty({ example: 'John', description: 'First name', required: false })
   @IsString()
   @IsOptional()
-  firstName?: string;
+  firstName: string;
 
   @ApiProperty({ example: 'Doe', description: 'Last name', required: false })
   @IsString()
   @IsOptional()
-  lastName?: string;
+  lastName: string;
 
   @ApiProperty({ 
     example: ['user'], 

@@ -20,9 +20,28 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserC
     super(eventBus);
   }
 
-  async execute(command: RegisterUserCommand): Promise<RegisterUserCommandResponse> {
-    await this.authorize(command);
-    
+  protected async handle(command: RegisterUserCommand): Promise<RegisterUserCommandResponse> {
+    const user = User.create({
+      email: new Email(command.email),
+      username: new Username(command.username),
+      firstName: new Name(command.firstName || ''),
+      lastName: new Name(command.lastName || ''),
+      roles: (command.roles || []).map(role => new UserRole(role as UserRoleEnum)),
+    });
+
+    await this.userRepository.save(user);
+
+    await this.sendDomainEvents(user);
+
+    return { id: user.id };
+  }
+
+  protected async authorize(command: RegisterUserCommand): Promise<boolean> {
+    // TODO: Implement authorization logic
+    return true;
+  }
+
+  protected async validate(command: RegisterUserCommand): Promise<void> {
     const email = new Email(command.email);
     const username = new Username(command.username);
 
@@ -35,25 +54,5 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserC
     if (usernameExists) {
       throw new BadRequestException(`Username ${command.username} is already taken`);
     }
-
-    const user = User.create({
-      email: new Email(command.email),
-      username: new Username(command.username),
-      firstName: new Name(command.firstName || ''),
-      lastName: new Name(command.lastName || ''),
-      roles: (command.roles || []).map(role => new UserRole(role as UserRoleEnum)),
-    });
-
-    await this.userRepository.save(user);
-
-    // Use the base class method to send domain events
-    await this.sendDomainEvents(user);
-
-    return { id: user.id };
-  }
-
-  protected async authorize(command: RegisterUserCommand): Promise<boolean> {
-    // TODO: Implement authorization logic
-    return true;
   }
 }

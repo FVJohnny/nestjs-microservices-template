@@ -1,5 +1,5 @@
 import { UserProfileUpdatedDomainEventHandler } from './user-profile-updated.domain-event-handler';
-import { UserProfileUpdatedEvent } from '../../domain/events/user-profile-updated.event';
+import { UserProfileUpdatedEvent } from '../../../domain/events/user-profile-updated.event';
 
 describe('UserProfileUpdatedDomainEventHandler (Unit)', () => {
   let eventHandler: UserProfileUpdatedDomainEventHandler;

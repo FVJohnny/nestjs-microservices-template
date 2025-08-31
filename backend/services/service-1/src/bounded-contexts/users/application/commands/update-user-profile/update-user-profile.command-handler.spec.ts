@@ -29,7 +29,7 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
         new Name('Original'),
         new Name('User')
       ),
-      roles: [new UserRole(UserRoleEnum.USER)],
+      roles: [UserRole.user()],
     });
     
     await repository.save(existingUser);

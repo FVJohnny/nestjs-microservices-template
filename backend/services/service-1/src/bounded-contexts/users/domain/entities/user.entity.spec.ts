@@ -17,7 +17,7 @@ describe('User Entity', () => {
         username: new Username('testuser'),
         firstName: new Name('John'),
         lastName: new Name('Doe'),
-        roles: [new UserRole(UserRoleEnum.USER)]
+        roles: [UserRole.user()]
       };
 
       // Act
@@ -44,7 +44,7 @@ describe('User Entity', () => {
         username: new Username('admin'),
         firstName: new Name('Admin'),
         lastName: new Name('User'),
-        roles: [new UserRole(UserRoleEnum.ADMIN), new UserRole(UserRoleEnum.USER)]
+        roles: [UserRole.admin(), UserRole.user()]
       };
 
       // Act
@@ -63,7 +63,7 @@ describe('User Entity', () => {
         username: new Username('testuser'),
         firstName: new Name('John'),
         lastName: new Name('Doe'),
-        roles: [new UserRole(UserRoleEnum.USER)]
+        roles: [UserRole.user()]
       };
 
       // Act
@@ -106,7 +106,7 @@ describe('User Entity', () => {
       const customUsername = new Username('customuser');
       const customFirstName = new Name('Jane');
       const customLastName = new Name('Smith');
-      const customRoles = [new UserRole(UserRoleEnum.ADMIN)];
+      const customRoles = [UserRole.admin()];
       const customStatus = UserStatusEnum.INACTIVE;
       const customLastLogin = new Date('2024-01-01');
       const customCreatedAt = new Date('2024-01-02');
@@ -261,8 +261,8 @@ describe('User Entity', () => {
   describe('role management', () => {
     it('should check if user has role', () => {
       // Arrange
-      const adminRole = new UserRole(UserRoleEnum.ADMIN);
-      const userRole = new UserRole(UserRoleEnum.USER);
+      const adminRole = UserRole.admin();
+      const userRole = UserRole.user();
       const user = User.random({ roles: [adminRole] });
 
       // Act & Assert
@@ -272,9 +272,9 @@ describe('User Entity', () => {
 
     it('should add role when user does not have it', async () => {
       // Arrange
-      const user = User.random({ roles: [new UserRole(UserRoleEnum.USER)] });
+      const user = User.random({ roles: [UserRole.user()] });
       const originalUpdatedAt = user.updatedAt;
-      const adminRole = new UserRole(UserRoleEnum.ADMIN);
+      const adminRole = UserRole.admin();
 
       // Wait to ensure timestamp difference
       await new Promise(resolve => setTimeout(resolve, 10));
@@ -290,12 +290,12 @@ describe('User Entity', () => {
 
     it('should not add duplicate role', () => {
       // Arrange
-      const userRole = new UserRole(UserRoleEnum.USER);
+      const userRole = UserRole.user();
       const user = User.random({ roles: [userRole] });
       const originalUpdatedAt = user.updatedAt;
 
       // Act
-      user.addRole(new UserRole(UserRoleEnum.USER));
+      user.addRole(UserRole.user());
 
       // Assert
       expect(user.roles).toHaveLength(1);
@@ -304,8 +304,8 @@ describe('User Entity', () => {
 
     it('should remove role when user has it', async () => {
       // Arrange
-      const adminRole = new UserRole(UserRoleEnum.ADMIN);
-      const userRole = new UserRole(UserRoleEnum.USER);
+      const adminRole = UserRole.admin();
+      const userRole = UserRole.user();
       const user = User.random({ roles: [adminRole, userRole] });
       const originalUpdatedAt = user.updatedAt;
 
@@ -324,7 +324,7 @@ describe('User Entity', () => {
 
     it('should update timestamp when removing non-existent role', async () => {
       // Arrange
-      const userRole = new UserRole(UserRoleEnum.USER);
+      const userRole = UserRole.user();
       const user = User.random({ roles: [userRole] });
       const originalUpdatedAt = user.updatedAt;
 
@@ -332,7 +332,7 @@ describe('User Entity', () => {
       await new Promise(resolve => setTimeout(resolve, 10));
 
       // Act
-      user.removeRole(new UserRole(UserRoleEnum.ADMIN));
+      user.removeRole(UserRole.admin());
 
       // Assert
       expect(user.roles).toHaveLength(1);
@@ -466,10 +466,10 @@ describe('User Entity', () => {
 
       // Act & Assert
       expect(user.roles).toHaveLength(0);
-      expect(user.hasRole(new UserRole(UserRoleEnum.USER))).toBe(false);
+      expect(user.hasRole(UserRole.user())).toBe(false);
       
       // Should be able to add roles
-      user.addRole(new UserRole(UserRoleEnum.USER));
+      user.addRole(UserRole.user());
       expect(user.roles).toHaveLength(1);
     });
 
@@ -524,7 +524,7 @@ describe('User Entity', () => {
         lastName: new Name('Name')
       });
       user.activate();
-      user.addRole(new UserRole(UserRoleEnum.ADMIN));
+      user.addRole(UserRole.admin());
 
       // Assert - core identifiers should remain unchanged
       expect(user.id).toBe(originalId);
@@ -555,7 +555,7 @@ describe('User Entity', () => {
         username: new Username('testuser'),
         firstName: new Name('John'),
         lastName: new Name('Doe'),
-        roles: [new UserRole(UserRoleEnum.USER)]
+        roles: [UserRole.user()]
       });
 
       // Act

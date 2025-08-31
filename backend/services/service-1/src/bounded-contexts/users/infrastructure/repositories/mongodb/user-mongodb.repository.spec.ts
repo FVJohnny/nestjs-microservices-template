@@ -530,7 +530,7 @@ describe('UserMongodbRepository (Integration)', () => {
           new Name('Test'),
           new Name('User')
         ),
-        roles: [new UserRole(UserRoleEnum.ADMIN), new UserRole(UserRoleEnum.USER)],
+        roles: [UserRole.admin(), UserRole.user()],
       });
 
       // Modify some properties to test different states
@@ -621,7 +621,7 @@ describe('UserMongodbRepository (Integration)', () => {
         new Name('Admin'),
         new Name('User')
       ),
-      roles: [new UserRole(UserRoleEnum.ADMIN)],
+      roles: [UserRole.admin()],
     }),
     User.random({
       email: new Email('user1@example.com'),
@@ -630,7 +630,7 @@ describe('UserMongodbRepository (Integration)', () => {
         new Name('John'),
         new Name('Doe')
       ),
-      roles: [new UserRole(UserRoleEnum.USER)],
+      roles: [UserRole.user()],
     }),
     User.random({
       email: new Email('user2@example.com'),
@@ -639,7 +639,7 @@ describe('UserMongodbRepository (Integration)', () => {
         new Name('Jane'),
         new Name('Smith')
       ),
-      roles: [new UserRole(UserRoleEnum.USER)],
+      roles: [UserRole.user()],
     }),
   ];
 

@@ -1,8 +1,8 @@
 import { UserRegisteredDomainEventHandler } from './user-registered.domain-event-handler';
-import { UserRegisteredEvent } from '../../domain/events/user-registered.event';
-import { Email } from '../../domain/value-objects/email.vo';
-import { Username } from '../../domain/value-objects/username.vo';
-import { UserRole, UserRoleEnum } from '../../domain/value-objects/user-role.vo';
+import { UserRegisteredEvent } from '../../../domain/events/user-registered.event';
+import { Email } from '../../../domain/value-objects/email.vo';
+import { Username } from '../../../domain/value-objects/username.vo';
+import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import {
   Topics,
   UserCreatedIntegrationEvent,
@@ -26,7 +26,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
         userId: 'test-user-id',
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        roles: [new UserRole(UserRoleEnum.USER)],
+        roles: [UserRole.user()],
         occurredOn: new Date(),
       });
 
@@ -53,9 +53,9 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
         email: new Email('admin@example.com'),
         username: new Username('adminuser'),
         roles: [
-          new UserRole(UserRoleEnum.ADMIN),
-          new UserRole(UserRoleEnum.USER),
-          new UserRole(UserRoleEnum.MODERATOR),
+          UserRole.admin(),
+          UserRole.user(),
+          UserRole.moderator(),
         ],
         occurredOn: new Date(),
       });
@@ -98,7 +98,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
         userId: 'special-chars-user',
         email: new Email('test.user+tag@example-domain.com'),
         username: new Username('user_name-123'),
-        roles: [new UserRole(UserRoleEnum.USER)],
+        roles: [UserRole.user()],
         occurredOn: new Date(),
       });
 

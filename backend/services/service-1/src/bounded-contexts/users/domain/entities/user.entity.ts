@@ -92,7 +92,7 @@ export class User extends AggregateRoot {
         new Name('Doe')
       ),
       status: props?.status ?? new UserStatus(UserStatusEnum.ACTIVE),
-      roles: props?.roles ?? [new UserRole(UserRoleEnum.USER)],
+      roles: props?.roles ?? [UserRole.user()],
       lastLoginAt: props?.lastLoginAt,
       createdAt: props?.createdAt || now,
       updatedAt: props?.updatedAt || now,

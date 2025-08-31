@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
-import { UserProfileUpdatedEvent } from '../../domain/events/user-profile-updated.event';
+import { UserProfileUpdatedEvent } from '../../../domain/events/user-profile-updated.event';
 
 @EventsHandler(UserProfileUpdatedEvent)
 export class UserProfileUpdatedDomainEventHandler

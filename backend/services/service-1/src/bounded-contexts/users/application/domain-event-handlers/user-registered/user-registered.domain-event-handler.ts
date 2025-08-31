@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { UserRegisteredEvent } from '../../domain/events/user-registered.event';
+import { UserRegisteredEvent } from '../../../domain/events/user-registered.event';
 import {
   UserCreatedIntegrationEvent,
   type IntegrationEventPublisher,

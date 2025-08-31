@@ -4,18 +4,36 @@ import { AggregateRoot } from '../domain/entities/AggregateRoot';
 /**
  * Base class for all command handlers
  * 
- * Provides common functionality including authorization and domain event publishing
+ * Provides common functionality including authorization, validation and domain event publishing
+ * Implements the template method pattern with: authorize → validate → handle
  */
 export abstract class BaseCommandHandler<TCommand extends ICommand, TResult = any> {
   
   constructor(protected readonly eventBus: EventBus) {}
 
   /**
-   * Executes the command
+   * Executes the command following the template method pattern:
+   * 1. Authorize the command
+   * 2. Validate business rules
+   * 3. Handle the command (implemented by subclasses)
    */
-  abstract execute(command: TCommand): Promise<TResult>;
+  async execute(command: TCommand): Promise<TResult> {
+    await this.authorize(command);
+    await this.validate(command);
+    return await this.handle(command);
+  }
 
-  
+  /**
+   * Handles the command business logic
+   * 
+   * This method must be implemented by all command handlers
+   * to define the specific business logic for the command
+   * 
+   * @param command - The command to handle
+   * @returns The result of handling the command
+   */
+  protected abstract handle(command: TCommand): Promise<TResult>;
+
   /**
    * Authorization check that must be implemented by all command handlers
    * 
@@ -23,6 +41,17 @@ export abstract class BaseCommandHandler<TCommand extends ICommand, TResult = an
    * @throws {Error} Should throw an error if authorization fails
    */
   protected abstract authorize(command: TCommand): Promise<boolean>;
+
+  /**
+   * Business validation that must be implemented by all command handlers
+   * 
+   * This method is called during command execution to perform business rule validation
+   * such as uniqueness checks, business invariants, etc.
+   * 
+   * @param command - The command to validate
+   * @throws {Error} Should throw an error if validation fails
+   */
+  protected abstract validate(command: TCommand): Promise<void>;
 
   /**
    * Publishes all domain events from an aggregate root

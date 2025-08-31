@@ -17,8 +17,7 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
 
 
 
-  async execute(query: GetUsersQuery): Promise<GetUsersQueryResponse> {
-    await this.authorize(query);
+  protected async handle(query: GetUsersQuery): Promise<GetUsersQueryResponse> {
     const filterList: Filter[] = [];
     
     // Handle legacy onlyActive parameter
@@ -118,5 +117,10 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
   protected async authorize(query: GetUsersQuery): Promise<boolean> {
     // TODO: Implement authorization logic
     return true; 
+  }
+
+  protected async validate(query: GetUsersQuery): Promise<void> {
+    // TODO: Implement validation logic
+    // For example: validate limit/offset ranges, orderBy field names, etc.
   }
 }

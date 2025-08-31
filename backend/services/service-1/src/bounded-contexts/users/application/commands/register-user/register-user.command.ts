@@ -4,18 +4,18 @@ import { ApiProperty } from '@nestjs/swagger';
 interface RegisterUserCommandProps {
   email: string;
   username: string;
-  firstName?: string;
-  lastName?: string;
-  roles?: string[];
+  firstName: string;
+  lastName: string;
+  roles: string[];
 }
 
 export class RegisterUserCommand implements ICommand {
 
   public readonly email: string;
   public readonly username: string;
-  public readonly firstName?: string;
-  public readonly lastName?: string;
-  public readonly roles?: string[];
+  public readonly firstName: string;
+  public readonly lastName: string;
+  public readonly roles: string[];
 
   constructor(props: RegisterUserCommandProps) {
     Object.assign(this, props);

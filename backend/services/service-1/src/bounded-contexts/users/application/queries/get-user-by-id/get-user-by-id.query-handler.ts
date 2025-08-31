@@ -14,9 +14,7 @@ export class GetUserByIdQueryHandler extends BaseQueryHandler<GetUserByIdQuery, 
     super();
   }
 
-  async execute(query: GetUserByIdQuery): Promise<GetUserByIdQueryResponse> {
-    await this.authorize(query);
-    
+  protected async handle(query: GetUserByIdQuery): Promise<GetUserByIdQueryResponse> {
     const user = await this.userRepository.findById(query.userId);
     
     if (!user) {
@@ -40,8 +38,12 @@ export class GetUserByIdQueryHandler extends BaseQueryHandler<GetUserByIdQuery, 
   }
 
   protected async authorize(query: GetUserByIdQuery): Promise<boolean> {
-    // TODO: Implement authorization logic
     return true;
+  }
+
+  protected async validate(query: GetUserByIdQuery): Promise<void> {
+    // TODO: Implement validation logic
+    // For example: validate userId format, ensure it's not empty, etc.
   }
 
 }

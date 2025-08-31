@@ -16,9 +16,7 @@ export class UpdateUserProfileCommandHandler extends BaseCommandHandler<UpdateUs
     super(eventBus);
   }
 
-  async execute(command: UpdateUserProfileCommand): Promise<void> {
-    await this.authorize(command);
-    
+  protected async handle(command: UpdateUserProfileCommand): Promise<void> {
     const user = await this.userRepository.findById(command.userId);
     
     if (!user) {
@@ -39,5 +37,10 @@ export class UpdateUserProfileCommandHandler extends BaseCommandHandler<UpdateUs
   protected async authorize(command: UpdateUserProfileCommand): Promise<boolean> {
     // TODO: Implement authorization logic
     return true;
+  }
+
+  protected async validate(command: UpdateUserProfileCommand): Promise<void> {
+    // TODO: Implement validation logic
+    // For example: validate firstName/lastName length, format, etc.
   }
 }
