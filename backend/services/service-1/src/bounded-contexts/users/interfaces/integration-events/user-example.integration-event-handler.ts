@@ -23,19 +23,16 @@ export class UserExampleIntegrationEventHandler {
       const firstName = this.getRandomFirstName();
       const lastName = this.getRandomLastName();
       
-      // Create the user using the RegisterUserCommand
-      const command = new RegisterUserCommand(
+      const command = new RegisterUserCommand({
         email,
         username,
         firstName,
         lastName,
-        [UserRoleEnum.USER] // Default role
-      );
-
+        roles: [UserRoleEnum.USER]
+      });
       await this.commandBus.execute(command);
       
       this.logger.log(`✅ Created example user: ${email} (${firstName} ${lastName}) via UserExample integration event [${messageId}]`);
-      
     } catch (error) {
       this.logger.error(`❌ Failed to create example user via UserExample integration event [${messageId}]: ${error.message}`);
       throw error;

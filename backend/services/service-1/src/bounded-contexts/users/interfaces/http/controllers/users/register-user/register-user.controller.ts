@@ -27,13 +27,13 @@ export class RegisterUserController {
     description: 'Invalid input or user already exists',
   })
   async registerUser(@Body() dto: RegisterUserBodyDto): Promise<RegisterUserCommandResponse> {
-    const command = new RegisterUserCommand(
-      dto.email,
-      dto.username,
-      dto.firstName,
-      dto.lastName,
-      dto.roles,
-    );
+    const command = new RegisterUserCommand({
+      email: dto.email,
+      username: dto.username,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      roles: dto.roles,
+    });
 
     return await this.commandBus.execute(command);
   }

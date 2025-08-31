@@ -26,8 +26,7 @@ export * from './metrics/metrics.controller';
 export * from './metrics/metrics.interceptor';
 
 // Testing utilities
-export * from './testing/cqrs-event-handler';
-export * from './testing/cqrs-event-bus';
+export * from './testing';
 
 // Use Case interface and decorators
 export * from './ddd/application';
