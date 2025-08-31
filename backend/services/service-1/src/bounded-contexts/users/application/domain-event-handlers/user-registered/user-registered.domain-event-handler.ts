@@ -33,7 +33,6 @@ export class UserRegisteredDomainEventHandler
     });
 
     try {
-      // Publish integration event to Kafka using the event's topic
       await this.integrationEventPublisher.publish(
         integrationEvent.getTopic(),
         integrationEvent.toJSON(),

@@ -10,20 +10,20 @@ import { SharedRedisModule, RedisService, RedisIntegrationEventPublisher, RedisI
 
 @Module({
   imports: [
-    // ConfigurableEventsModule.forRoot({
-    //   tool: 'kafka',
-    //   sharedModule: SharedKafkaModule,
-    //   service: KafkaService,
-    //   integrationEventPublisher: KafkaIntegrationEventPublisher,
-    //   integrationEventListener: KafkaIntegrationEventListener,
-    // }),
     ConfigurableEventsModule.forRoot({
-      tool: 'redis',
-      sharedModule: SharedRedisModule,
-      service: RedisService,
-      integrationEventPublisher: RedisIntegrationEventPublisher,
-      integrationEventListener: RedisIntegrationEventListener,
+      tool: 'kafka',
+      sharedModule: SharedKafkaModule,
+      service: KafkaService,
+      integrationEventPublisher: KafkaIntegrationEventPublisher,
+      integrationEventListener: KafkaIntegrationEventListener,
     }),
+    // ConfigurableEventsModule.forRoot({
+    //   tool: 'redis',
+    //   sharedModule: SharedRedisModule,
+    //   service: RedisService,
+    //   integrationEventPublisher: RedisIntegrationEventPublisher,
+    //   integrationEventListener: RedisIntegrationEventListener,
+    // }),
   ],
   exports: [ConfigurableEventsModule],
 })
