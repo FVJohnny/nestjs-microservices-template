@@ -32,19 +32,19 @@ export class GetUsersController {
     type: GetUsersQueryResponse,
   })
   async getUsers(@Query() queryDto: GetUsersQueryParams): Promise<GetUsersQueryResponse> {
-    const query = new GetUsersQuery(
-      queryDto.status,
-      queryDto.roles,
-      queryDto.email,
-      queryDto.username,
-      queryDto.firstName,
-      queryDto.lastName,
-      queryDto.orderBy,
-      queryDto.orderType,
-      queryDto.limit,
-      queryDto.offset,
-      queryDto.onlyActive
-    );
+    const query = new GetUsersQuery({
+      status: queryDto.status,
+      roles: queryDto.roles,
+      email: queryDto.email,
+      username: queryDto.username,
+      firstName: queryDto.firstName,
+      lastName: queryDto.lastName,
+      orderBy: queryDto.orderBy,
+      orderType: queryDto.orderType,
+      limit: queryDto.limit,
+      offset: queryDto.offset,
+      onlyActive: queryDto.onlyActive
+    });
 
     return await this.queryBus.execute(query);
   }

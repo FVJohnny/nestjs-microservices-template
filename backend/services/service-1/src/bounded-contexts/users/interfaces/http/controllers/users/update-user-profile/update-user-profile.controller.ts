@@ -29,11 +29,11 @@ export class UpdateUserProfileController {
     @Param('id') id: string,
     @Body() dto: UpdateUserProfileBodyDto,
   ): Promise<void> {
-    const command = new UpdateUserProfileCommand(
-      id,
-      dto.firstName,
-      dto.lastName,
-    );
+    const command = new UpdateUserProfileCommand({
+      userId: id,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+    });
 
     await this.commandBus.execute(command);
   }
