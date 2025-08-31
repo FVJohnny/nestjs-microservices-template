@@ -6,7 +6,7 @@ import {
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { GetUsersQuery, GetUsersQueryResponse } from '../../../../../application/queries';
-import { GetUsersQueryParams } from './get-users.query-params';
+import { GetUsersControllerParams } from './get-users.params';
 
 @ApiTags('users')
 @Controller('users')
@@ -31,19 +31,19 @@ export class GetUsersController {
     description: 'User IDs retrieved successfully',
     type: GetUsersQueryResponse,
   })
-  async getUsers(@Query() queryDto: GetUsersQueryParams): Promise<GetUsersQueryResponse> {
+  async getUsers(@Query() params: GetUsersControllerParams): Promise<GetUsersQueryResponse> {
     const query = new GetUsersQuery({
-      status: queryDto.status,
-      roles: queryDto.roles,
-      email: queryDto.email,
-      username: queryDto.username,
-      firstName: queryDto.firstName,
-      lastName: queryDto.lastName,
-      orderBy: queryDto.orderBy,
-      orderType: queryDto.orderType,
-      limit: queryDto.limit,
-      offset: queryDto.offset,
-      onlyActive: queryDto.onlyActive
+      status: params.status,
+      roles: params.roles,
+      email: params.email,
+      username: params.username,
+      firstName: params.firstName,
+      lastName: params.lastName,
+      orderBy: params.orderBy,
+      orderType: params.orderType,
+      limit: params.limit,
+      offset: params.offset,
+      onlyActive: params.onlyActive
     });
 
     return await this.queryBus.execute(query);

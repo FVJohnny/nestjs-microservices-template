@@ -3,7 +3,7 @@ import { Transform, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { OrderTypes } from '@libs/nestjs-common';
 
-export class GetUsersQueryParams {
+export class GetUsersControllerParams {
   @ApiProperty({ required: false, description: 'Filter by user status' })
   @IsOptional()
   @IsString()
