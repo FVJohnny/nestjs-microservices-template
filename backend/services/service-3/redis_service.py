@@ -68,11 +68,14 @@ class RedisService:
             logger.info("[Service-3] Redis publisher client initialized")
             logger.info("[Service-3] Redis subscriber client initialized")
             
-            # Initialize pubsub
+            # Initialize pubsub and subscribe to users channel (matching Kafka)
             self.pubsub = self.subscriber_client.pubsub()
-            self.pubsub.subscribe('channels')
+            self.pubsub.subscribe('users')  # Subscribe to users channel like Kafka
             
             self.running = True
+            
+            # Pre-register events that have handlers (so they show at 0 count)
+            self._pre_register_handled_events()
             
             # Start subscriber in separate thread
             self.subscriber_thread = threading.Thread(target=self._consume_messages)
@@ -133,6 +136,10 @@ class RedisService:
                             event_data = json.loads(message['data'])
                             logger.info(f"[Service-3] Received message from {message['channel']}: {event_data}")
                             
+                            # Add channel information to event data for tracking
+                            if isinstance(event_data, dict):
+                                event_data['_redisChannel'] = message['channel']
+                            
                             # Process the event
                             self._handle_event(event_data)
                             
@@ -151,29 +158,48 @@ class RedisService:
         finally:
             logger.info("[Service-3] Subscriber loop ended")
     
+    def _pre_register_handled_events(self):
+        """Pre-register events that have handlers so they show at 0 count"""
+        # Only register events that actually have handler methods
+        handled_events = [
+            {"eventName": "user.created", "topic": "users"},
+            # Add more handled events here as needed
+        ]
+        
+        for event_info in handled_events:
+            event_counter.track_event_with_zero_count(
+                event_info["eventName"], 
+                event_info["topic"]
+            )
+            logger.info(f"[Service-3] Pre-registered handler event: {event_info['eventName']}@{event_info['topic']}")
+    
     def _handle_event(self, event_data: Dict[str, Any]):
-        """Handle events from other services"""
         event_name = event_data.get('eventName', 'Unknown')
-        logger.info(f"[Service-3] Processing event: {event_name}")
+        # Use redis channel if available, otherwise fall back to event topic or default
+        topic = event_data.get('_redisChannel', event_data.get('topic', 'users'))
+        logger.info(f"[Service-3] Processing event: {event_name} from topic: {topic}")
         
         if event_name == 'user.created':
             self._handle_user_created(event_data)
+            # Track the event ONLY if we handled it
+            event_counter.track_event(event_name, topic)
+            logger.info(f"[Service-3] Event tracked: {event_name}@{topic}, total count: {event_counter.get_count()}")
         else:
-            logger.warning(f"[Service-3] Unknown event type: {event_name}")
-        
-        # Increment the event counter
-        event_counter.increment()
-        logger.info(f"[Service-3] Event counter incremented to {event_counter.get_count()}")
+            logger.warning(f"[Service-3] Unknown event type (not tracking): {event_name}")
     
     def _handle_user_created(self, event_data: Dict[str, Any]):
-        """Handle user created events"""
-        user_id = event_data.get('userId')
+        """Handle user created events from Service-1"""
+        # Extract userId from nested data structure
+        user_data = event_data.get('data', {})
+        user_id = user_data.get('userId')
+        email = user_data.get('email')
+        username = user_data.get('username')
         
-        logger.info(f"[Service-3] Processing user created - User: {user_id}")
+        logger.info(f"[Service-3] Processing user created - User ID: {user_id}, Email: {email}, Username: {username}")
         
         time.sleep(0.1)  # Simulate processing time
         
-        logger.info(f"[Service-3] ✅ Channel notification processed successfully for channel {channel_id}")
+        logger.info(f"[Service-3] ✅ User created processed successfully for user {user_id} ({email})")
     
     def publish_message(self, channel: str, message: Dict[str, Any]):
         """Publish a message to Redis channel"""

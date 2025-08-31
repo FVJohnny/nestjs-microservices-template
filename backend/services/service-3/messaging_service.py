@@ -1,8 +1,6 @@
 import os
 import logging
 from typing import Dict, Any, Protocol
-from kafka_service import kafka_service
-from redis_service import redis_service
 
 logger = logging.getLogger(__name__)
 
@@ -18,21 +16,24 @@ class MessagingServiceManager:
     """Manager that provides a unified interface for Kafka or Redis messaging"""
     
     def __init__(self):
-        self.backend_type = 'kafka' # kafka, redis
+        self.backend_type = 'redis' # kafka, redis
         self.service: MessagingServiceProtocol = None
         self._initialize_service()
     
     def _initialize_service(self):
-        """Initialize the appropriate messaging service based on environment variable"""
+        """Initialize the appropriate messaging service based on backend type"""
         if self.backend_type == 'redis':
             logger.info("[Service-3] Using Redis messaging backend")
+            from redis_service import redis_service
             self.service = redis_service
         elif self.backend_type == 'kafka':
             logger.info("[Service-3] Using Kafka messaging backend")
+            from kafka_service import kafka_service
             self.service = kafka_service
         else:
             logger.warning(f"[Service-3] Unknown messaging backend '{self.backend_type}', defaulting to Kafka")
             self.backend_type = 'kafka'
+            from kafka_service import kafka_service
             self.service = kafka_service
     
     def get_backend_type(self) -> str:

@@ -143,7 +143,7 @@ function updateEventDetails(statsData, container, envData = null) {
   if (statsData.eventsByType) {
     // New structure: individual events tracking
     const eventsHeader = document.createElement('div');
-    eventsHeader.innerHTML = '<h4 style="margin: 1rem 0 0.5rem 0; color: var(--text-primary);">Integration Events</h4>';
+    eventsHeader.innerHTML = '<h4 style="margin: 1rem 0 0.5rem 0; color: var(--text-primary);">Integration Event Handlers</h4>';
     eventsContainer.appendChild(eventsHeader);
     
     statsData.eventsByType.forEach(event => {

@@ -12,17 +12,26 @@ logger = logging.getLogger(__name__)
 
 class KafkaService:
     def __init__(self):
-        self.kafka_brokers = os.getenv('KAFKA_BROKERS', 'localhost:9092').split(',')
-        self.kafka_username = os.getenv('KAFKA_USERNAME')
-        self.kafka_password = os.getenv('KAFKA_PASSWORD')
+        # Only set configuration, don't initialize connections on import
+        self.kafka_brokers = None
+        self.kafka_username = None
+        self.kafka_password = None
         self.producer = None
         self.consumer = None
         self.consumer_thread = None
         self.running = False
+        self.initialized = False
         
     def start(self):
         """Initialize Kafka producer and consumer"""
         try:
+            # Initialize configuration only when starting
+            if not self.initialized:
+                self.kafka_brokers = os.getenv('KAFKA_BROKERS', 'localhost:9092').split(',')
+                self.kafka_username = os.getenv('KAFKA_USERNAME')
+                self.kafka_password = os.getenv('KAFKA_PASSWORD')
+                self.initialized = True
+            
             # Base configuration
             producer_config = {
                 'bootstrap_servers': self.kafka_brokers,
