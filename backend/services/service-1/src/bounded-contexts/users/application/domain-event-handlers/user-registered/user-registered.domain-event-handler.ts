@@ -26,7 +26,7 @@ export class UserRegisteredDomainEventHandler
 
     // Transform domain event to integration event
     const integrationEvent = new UserCreatedIntegrationEvent({
-      userId: event.userId,
+      userId: event.aggregateId,
       email: event.email.toValue(),
       username: event.username.toValue(),
       roles: event.roles.map(role => role.toValue()),

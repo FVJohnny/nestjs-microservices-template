@@ -8,40 +8,13 @@ import { Email } from '../value-objects/email.vo';
 import { Username } from '../value-objects/username.vo';
 import { Name } from '../value-objects/name.vo';
 import { UserProfile } from '../value-objects/user-profile.vo';
-import { Primitives } from '@libs/nestjs-common/dist/ddd/domain/value-object/ValueObject';
+import { CreateUserProps, UserAttributes } from './user.types';
 
-interface CreateUserProps {
-  email: Email;
-  username: Username;
-  firstName: Name;
-  lastName: Name;
-  roles: UserRole[];
-}
-interface UserConstructorProps {
-  id: string;
-  email: Email;
-  username: Username;
-  profile: UserProfile;
-  status: UserStatus;
-  roles: UserRole[];
-  lastLoginAt: Date | undefined;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export class User extends AggregateRoot {
-  public readonly id: string;
-  public readonly email: Email;
-  public readonly username: Username;
-  public profile: UserProfile;
-  public status: UserStatus;
-  public roles: UserRole[];
-  public lastLoginAt: Date | undefined;
-  public readonly createdAt: Date;
-  public updatedAt: Date
+export interface User extends UserAttributes {}
+export class User extends AggregateRoot implements UserAttributes {
 
   constructor(
-    props: UserConstructorProps
+    props: UserAttributes
   ) {
     super();
     Object.assign(this, props)
@@ -79,7 +52,7 @@ export class User extends AggregateRoot {
     return user;
   }
 
-  static random(props?: Partial<UserConstructorProps>): User {
+  static random(props?: Partial<UserAttributes>): User {
     const id = props?.id || uuidv4();
     const now = new Date();
     
@@ -92,7 +65,7 @@ export class User extends AggregateRoot {
         new Name('Doe')
       ),
       status: props?.status ?? new UserStatus(UserStatusEnum.ACTIVE),
-      roles: props?.roles ?? [UserRole.user()],
+      roles: props?.roles ?? [UserRole.random()],
       lastLoginAt: props?.lastLoginAt,
       createdAt: props?.createdAt || now,
       updatedAt: props?.updatedAt || now,
@@ -153,8 +126,10 @@ export class User extends AggregateRoot {
   }
 
   removeRole(role: UserRole): void {
+    if (this.hasRole(role)) {
       this.roles = this.roles.filter(r => !r.equals(role));
       this.updatedAt = new Date();
+    }
   }
 
   isActive(): boolean {

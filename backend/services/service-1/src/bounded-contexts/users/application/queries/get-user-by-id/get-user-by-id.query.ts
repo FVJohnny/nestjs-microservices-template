@@ -1,5 +1,12 @@
 import { IQuery } from '@nestjs/cqrs';
 
 export class GetUserByIdQuery implements IQuery {
-  constructor(public readonly userId: string) {}
+
+  public readonly userId: string;
+
+  constructor(
+    props: GetUserByIdQuery
+  ) {
+    Object.assign(this, props);
+  }
 }

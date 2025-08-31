@@ -1,0 +1,25 @@
+import { Email } from "../value-objects/email.vo";
+import { Username } from "../value-objects/username.vo";
+import { Name } from "../value-objects/name.vo";
+import { UserRole } from "../value-objects/user-role.vo";
+import { UserStatus } from "../value-objects/user-status.vo";
+import { UserProfile } from "../value-objects/user-profile.vo";
+
+export interface CreateUserProps {
+    email: Email;
+    username: Username;
+    firstName: Name;
+    lastName: Name;
+    roles: UserRole[];
+  }
+export interface UserAttributes {
+    id: string;
+    email: Email;
+    username: Username;
+    profile: UserProfile;
+    status: UserStatus;
+    roles: UserRole[];
+    lastLoginAt: Date | undefined;
+    createdAt: Date;
+    updatedAt: Date;
+  };

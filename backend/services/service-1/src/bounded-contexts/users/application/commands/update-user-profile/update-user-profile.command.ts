@@ -1,9 +1,13 @@
 import { ICommand } from '@nestjs/cqrs';
 
 export class UpdateUserProfileCommand implements ICommand {
+  public readonly userId: string;
+  public readonly firstName?: string;
+  public readonly lastName?: string;
+
   constructor(
-    public readonly userId: string,
-    public readonly firstName?: string,
-    public readonly lastName?: string,
-  ) {}
+    props: UpdateUserProfileCommand
+  ) {
+    Object.assign(this, props);
+  }
 }

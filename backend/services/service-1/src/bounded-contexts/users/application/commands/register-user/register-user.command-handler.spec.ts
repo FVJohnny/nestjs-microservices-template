@@ -1,9 +1,10 @@
 import { RegisterUserCommandHandler } from './register-user.command-handler';
 import { RegisterUserCommand } from './register-user.command';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
-import { UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
+import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { BadRequestException } from '@nestjs/common';
 import { createEventBusMock, MockEventBus } from '@libs/nestjs-common';
+import { UserRegisteredEvent } from '../../../domain/events/user-registered.event';
 
 describe('RegisterUserCommandHandler (Unit)', () => {
   let commandHandler: RegisterUserCommandHandler;
@@ -53,7 +54,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'minimaluser',
         firstName: '',
         lastName: '',
-        roles: []
+        roles: [UserRoleEnum.USER] // At least one role is now required
       });
 
       // Act
@@ -67,7 +68,8 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       expect(savedUser!.username.toValue()).toBe('minimaluser');
       expect(savedUser!.profile.firstName.toValue()).toBe('');
       expect(savedUser!.profile.lastName.toValue()).toBe('');
-      expect(savedUser!.roles).toHaveLength(0);
+      expect(savedUser!.roles).toHaveLength(1);
+      expect(savedUser!.roles[0].toValue()).toBe(UserRoleEnum.USER);
     });
 
     it('should assign multiple roles correctly', async () => {
@@ -93,23 +95,39 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       expect(roleValues).toContain(UserRoleEnum.MODERATOR);
     });
 
-    it('should call publishAll for domain events after user creation', async () => {
+    it('should publish UserRegisteredEvent after user creation', async () => {
       // Arrange
       const command = new RegisterUserCommand({
         email: 'events@example.com',
         username: 'eventsuser',
         firstName: 'Events',
         lastName: 'User',
-        roles: []
+        roles: [UserRoleEnum.USER, UserRoleEnum.ADMIN]
       });
 
       // Act
-      await commandHandler.execute(command);
+      const result = await commandHandler.execute(command);
 
       // Assert - Verify that domain events were published to the mock EventBus
       expect(eventBus.events).toBeDefined();
-      // Note: Events are captured in the mock's events array before they're committed
-      // The exact verification depends on the timing of when events are published vs committed
+      expect(eventBus.events).toHaveLength(1);
+      
+      // Verify the exact event type
+      const publishedEvent = eventBus.events[0] as UserRegisteredEvent;
+      expect(publishedEvent).toBeInstanceOf(UserRegisteredEvent);
+      
+      // Verify event properties match exactly with the created user
+      expect(publishedEvent.aggregateId).toBe(result.id);
+      expect(publishedEvent.email.toValue()).toBe('events@example.com');
+      expect(publishedEvent.username.toValue()).toBe('eventsuser');
+      expect(publishedEvent.occurredOn).toBeInstanceOf(Date);
+
+      
+      // Verify roles are correct
+      expect(publishedEvent.roles).toHaveLength(2);
+      const roleValues = publishedEvent.roles.map(r => r.toValue());
+      expect(roleValues).toContain(UserRoleEnum.USER);
+      expect(roleValues).toContain(UserRoleEnum.ADMIN);
     });
 
     it('should create user with default active status', async () => {
@@ -119,7 +137,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'activeuser',
         firstName: 'Active',
         lastName: 'User',
-        roles: []
+        roles: [UserRole.user().toValue()]
       });
 
       // Act
@@ -137,7 +155,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'timestampuser',
         firstName: 'Timestamp',
         lastName: 'User',
-        roles: []
+        roles: [UserRole.user().toValue()]
       });
       const beforeCreation = new Date();
 
@@ -155,26 +173,6 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       expect(savedUser!.lastLoginAt).toBeUndefined();
     });
 
-    it('should handle empty roles array', async () => {
-      // Arrange
-      const command = new RegisterUserCommand(
-        {
-          email: 'noroles@example.com',
-          username: 'norolesuser',
-          firstName: 'No',
-          lastName: 'Roles',
-          roles: []
-        }
-      );
-
-      // Act
-      const result = await commandHandler.execute(command);
-
-      // Assert
-      const savedUser = await repository.findById(result.id);
-      expect(savedUser!.roles).toHaveLength(0);
-    });
-
     it('should create unique user IDs for different registrations', async () => {
       // Arrange
       const command1 = new RegisterUserCommand({
@@ -182,14 +180,14 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'user1',
         firstName: 'User',
         lastName: 'One',
-        roles: []
+        roles: [UserRole.user().toValue()]
       });
       const command2 = new RegisterUserCommand({
         email: 'user2@example.com',
         username: 'user2',
         firstName: 'User',
         lastName: 'Two',
-        roles: []
+        roles: [UserRole.user().toValue()]
       });
 
       // Act
@@ -214,7 +212,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'failinguser',
         firstName: 'Failing',
         lastName: 'User',
-        roles: []
+        roles: [UserRole.user().toValue()]
       });
 
       // Act & Assert
@@ -230,7 +228,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'user1',
         firstName: 'Existing',
         lastName: 'User',
-        roles: []
+        roles: [UserRole.user().toValue()]
       });
       await commandHandler.execute(existingCommand);
 
@@ -239,7 +237,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'user2',
         firstName: 'Duplicate',
         lastName: 'User',
-        roles: []
+        roles: [UserRole.user().toValue()]
       });
 
       // Act & Assert
@@ -259,7 +257,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'existinguser',
         firstName: 'Existing',
         lastName: 'User',
-        roles: []
+        roles: [UserRole.user().toValue()]
       });
       await commandHandler.execute(existingCommand);
 
@@ -268,7 +266,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'existinguser',
         firstName: 'Existing',
         lastName: 'User',
-        roles: []
+        roles: [UserRole.user().toValue()]
       });
 
       // Act & Assert
@@ -279,6 +277,22 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       await expect(commandHandler.execute(duplicateUsernameCommand))
         .rejects
         .toThrow('Username existinguser is already taken');
+    });
+
+    it('should throw error when empty roles array is provided', async () => {
+      // Arrange
+      const command = new RegisterUserCommand({
+        email: 'noroles@example.com',
+        username: 'norolesuser',
+        firstName: 'No',
+        lastName: 'Roles',
+        roles: []
+      });
+
+      // Act & Assert
+      await expect(commandHandler.execute(command))
+        .rejects
+        .toThrow();
     });
   });
 });

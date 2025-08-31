@@ -39,11 +39,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
     it('should successfully update user profile with both names', async () => {
       // Arrange
       const oldUpdatedAt = existingUser.updatedAt;
-      const command = new UpdateUserProfileCommand(
-        existingUser.id,
-        'Updated',
-        'Name'
-      );
+      const command = new UpdateUserProfileCommand({
+        userId: existingUser.id,
+        firstName: 'Updated',
+        lastName: 'Name'
+      });
 
       // Act
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -61,11 +61,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
 
     it('should update only firstName when lastName is not provided', async () => {
       // Arrange
-      const command = new UpdateUserProfileCommand(
-        existingUser.id,
-        'NewFirst',
-        undefined
-      );
+      const command = new UpdateUserProfileCommand({
+        userId: existingUser.id,
+        firstName: 'NewFirst',
+        lastName: undefined
+      });
 
       // Act
       await commandHandler.execute(command);
@@ -78,11 +78,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
 
     it('should update only lastName when firstName is not provided', async () => {
       // Arrange
-      const command = new UpdateUserProfileCommand(
-        existingUser.id,
-        undefined,
-        'NewLast'
-      );
+      const command = new UpdateUserProfileCommand({
+        userId: existingUser.id,
+        firstName: undefined,
+        lastName: 'NewLast'
+      });
 
       // Act
       await commandHandler.execute(command);
@@ -95,11 +95,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
 
     it('should handle empty strings for names', async () => {
       // Arrange
-      const command = new UpdateUserProfileCommand(
-        existingUser.id,
-        '',
-        ''
-      );
+      const command = new UpdateUserProfileCommand({
+        userId: existingUser.id,
+        firstName: '',
+        lastName: ''
+      });
 
       // Act
       await commandHandler.execute(command);
@@ -112,11 +112,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
 
     it('should publish domain events after profile update', async () => {
       // Arrange
-      const command = new UpdateUserProfileCommand(
-        existingUser.id,
-        'EventTest',
-        'User'
-      );
+      const command = new UpdateUserProfileCommand({
+        userId: existingUser.id,
+        firstName: 'EventTest',
+        lastName: 'User'
+      });
 
       // Act
       await commandHandler.execute(command);
@@ -133,11 +133,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       const originalRoles = existingUser.roles.map(r => r.toValue());
       const originalStatus = existingUser.status.toValue();
       
-      const command = new UpdateUserProfileCommand(
-        existingUser.id,
-        'PreserveTest',
-        'User'
-      );
+      const command = new UpdateUserProfileCommand({
+        userId: existingUser.id,
+        firstName: 'PreserveTest',
+        lastName: 'User'
+      });
 
       // Act
       await commandHandler.execute(command);
@@ -153,11 +153,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
 
     it('should handle names with special characters', async () => {
       // Arrange
-      const command = new UpdateUserProfileCommand(
-        existingUser.id,
-        'José-María',
-        "O'Connor"
-      );
+      const command = new UpdateUserProfileCommand({
+        userId: existingUser.id,
+        firstName: 'José-María',
+        lastName: "O'Connor"
+      });
 
       // Act
       await commandHandler.execute(command);
@@ -173,11 +173,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
     it('should throw NotFoundException when user does not exist', async () => {
       // Arrange
       const nonExistentUserId = 'non-existent-id';
-      const command = new UpdateUserProfileCommand(
-        nonExistentUserId,
-        'Test',
-        'User'
-      );
+      const command = new UpdateUserProfileCommand({
+        userId: nonExistentUserId,
+        firstName: 'Test',
+        lastName: 'User'
+      });
 
       // Act & Assert
       await expect(commandHandler.execute(command))
@@ -194,11 +194,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       const failingEventBus = createEventBusMock({ shouldFail: true });
       const handlerWithFailingEventBus = new UpdateUserProfileCommandHandler(repository, failingEventBus as any);
       
-      const command = new UpdateUserProfileCommand(
-        existingUser.id,
-        'Failing',
-        'Test'
-      );
+      const command = new UpdateUserProfileCommand({
+        userId: existingUser.id,
+        firstName: 'Failing',
+        lastName: 'Test'
+      });
 
       // Act & Assert
       await expect(handlerWithFailingEventBus.execute(command))
@@ -224,11 +224,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       const longFirstName = 'A'.repeat(50); // Max length for Name VO
       const longLastName = 'B'.repeat(50);
       
-      const command = new UpdateUserProfileCommand(
-        existingUser.id,
-        longFirstName,
-        longLastName
-      );
+      const command = new UpdateUserProfileCommand({
+        userId: existingUser.id,
+        firstName: longFirstName,
+        lastName: longLastName
+      });
 
       // Act
       await commandHandler.execute(command);
@@ -241,11 +241,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
 
     it('should handle whitespace-only names by trimming to empty', async () => {
       // Arrange
-      const command = new UpdateUserProfileCommand(
-        existingUser.id,
-        '   ',
-        '   '
-      );
+      const command = new UpdateUserProfileCommand({
+        userId: existingUser.id,
+        firstName: '   ',
+        lastName: '   '
+      });
 
       // Act
       await commandHandler.execute(command);

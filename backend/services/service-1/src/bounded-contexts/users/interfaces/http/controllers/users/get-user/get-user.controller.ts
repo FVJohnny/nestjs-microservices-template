@@ -25,7 +25,7 @@ export class GetUserController {
     description: 'User not found',
   })
   async getUser(@Param('id') id: string): Promise<GetUserByIdQueryResponse> {
-    const query = new GetUserByIdQuery(id);
+    const query = new GetUserByIdQuery({ userId: id });
     return await this.queryBus.execute(query);
   }
 }

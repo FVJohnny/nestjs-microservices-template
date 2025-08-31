@@ -15,6 +15,12 @@ export class UserRole extends EnumValueObject<UserRoleEnum> {
     throw new DomainValidationException('userRole', value, `Invalid user role: ${value}`);
   }
 
+  // random user role
+  static random(): UserRole {
+    const roles = Object.values(UserRoleEnum);
+    return new UserRole(roles[Math.floor(Math.random() * roles.length)]);
+  }
+
   static admin(): UserRole {
     return new UserRole(UserRoleEnum.ADMIN);
   }

@@ -9,7 +9,6 @@ interface UserProfileUpdatedEventPayload {
   occurredOn: Date;
 }
 export class UserProfileUpdatedEvent extends DomainEvent {
-  public readonly userId: string;
   public readonly previousFirstName?: string;
   public readonly previousLastName?: string;
   public readonly firstName?: string;
@@ -21,7 +20,6 @@ export class UserProfileUpdatedEvent extends DomainEvent {
   ) {
     super(payload.userId);
 
-    this.userId = payload.userId;
     this.previousFirstName = payload.previousFirstName;
     this.previousLastName = payload.previousLastName;
     this.firstName = payload.firstName;

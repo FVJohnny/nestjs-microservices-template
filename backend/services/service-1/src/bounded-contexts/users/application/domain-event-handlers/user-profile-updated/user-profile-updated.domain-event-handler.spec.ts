@@ -136,7 +136,7 @@ describe('UserProfileUpdatedDomainEventHandler (Unit)', () => {
       await eventHandler.handle(event);
 
       // Assert - Verify all properties are accessible
-      expect(event.userId).toBe('property-test-user');
+      expect(event.aggregateId).toBe('property-test-user');
       expect(event.previousFirstName).toBe('PrevFirst');
       expect(event.previousLastName).toBe('PrevLast');
       expect(event.firstName).toBe('NewFirst');
@@ -155,7 +155,7 @@ describe('UserProfileUpdatedDomainEventHandler (Unit)', () => {
       await eventHandler.handle(event);
 
       // Assert
-      expect(event.userId).toBe('undefined-props-user');
+      expect(event.aggregateId).toBe('undefined-props-user');
       expect(event.previousFirstName).toBeUndefined();
       expect(event.previousLastName).toBeUndefined();
       expect(event.firstName).toBeUndefined();

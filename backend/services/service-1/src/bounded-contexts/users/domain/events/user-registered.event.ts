@@ -13,7 +13,6 @@ interface UserRegisteredEventPayload {
 
 export class UserRegisteredEvent extends DomainEvent {
 
-  public readonly userId: string;
   public readonly email: Email;
   public readonly username: Username;
   public readonly roles: UserRole[];
@@ -23,7 +22,6 @@ export class UserRegisteredEvent extends DomainEvent {
   ) {
     super(payload.userId);
 
-    this.userId = payload.userId;
     this.email = payload.email;
     this.username = payload.username;
     this.roles = payload.roles;
