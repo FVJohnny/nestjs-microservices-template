@@ -357,6 +357,25 @@ describe('UserMongodbRepository (Integration)', () => {
       expect(result[0].profile.firstName.toValue()).toBe('John');
     });
 
+    it('should filter by role (EQUAL)', async () => {
+      // Arrange
+      const filter = new Filter(
+        new FilterField('role'),
+        new FilterOperator(Operator.EQUAL),
+        new FilterValue('admin')
+      );
+      const criteria = new Criteria({
+        filters: new Filters([filter]),
+      });
+
+      // Act
+      const result = await repository.findByCriteria(criteria);
+
+      // Assert
+      expect(result).toHaveLength(1);
+      expect(result[0].role.toValue()).toBe('admin');
+    });
+
     it('should apply limit', async () => {
       // Arrange
       const criteria = new Criteria({
