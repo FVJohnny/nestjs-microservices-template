@@ -44,7 +44,7 @@ export class EventTrackerService {
     
     try {
       this.operationInProgress = true;
-      const eventType = event.eventName;
+      const eventType = event.name;
       const topic = event.topic;
       
       this.logger.debug(`Tracking event ${eventType} for topic ${topic}`);
@@ -109,22 +109,22 @@ export class EventTrackerService {
     }
   }
 
-  preRegisterEvent(eventName: string, topic: string): void {
+  preRegisterEvent(name: string, topic: string): void {
     if (this.operationInProgress) return;
     
     try {
       this.operationInProgress = true;
-      const key = `${eventName}@${topic}`;
+      const key = `${name}@${topic}`;
       
       // Only add if it doesn't already exist
       if (!this.eventCounts.has(key)) {
         this.eventCounts.set(key, {
-          eventType: eventName,
+          eventType: name,
           topic,
           count: 0,
           lastProcessed: undefined,
         });
-        this.logger.debug(`Pre-registered event ${eventName}@${topic}`);
+        this.logger.debug(`Pre-registered event ${name}@${topic}`);
       }
     } finally {
       this.operationInProgress = false;

@@ -23,7 +23,7 @@ export class RedisIntegrationEventPublisher implements IntegrationEventPublisher
       
       if (client) {
         await client.publish(topic, messageStr);
-        this.logger.debug(`[Redis] Event published to ${topic}: ${message.eventName || 'unknown'}`);
+        this.logger.debug(`[Redis] Event published to ${topic}: ${message.name || 'unknown'}`);
       } else {
         // Fallback for when Redis is not configured
         this.logger.warn(`[Redis] No Redis publisher client available, event not published to ${topic}`);

@@ -84,7 +84,7 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
           } catch {
             tempInstance = new eventClass({}, new Date());
           }
-          eventType = tempInstance.eventName;
+          eventType = tempInstance.name;
         } catch {
           this.logger.warn(`Could not extract event type for handler ${handler.constructor.name}`);
         }
@@ -166,7 +166,7 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
         return;
       }
 
-      const eventType = parsedMessage.eventName || 'Unknown';
+      const eventType = parsedMessage.name || 'Unknown';
       const handlerInfo = topicHandlers.find(info => info.eventType === eventType);
 
       if (!handlerInfo) {
@@ -181,11 +181,11 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
         if (eventTracker && parsedMessage) {
           // Create a mock event object for tracking
           const mockEvent = {
-            eventName: parsedMessage.eventName || 'Unknown',
+            name: parsedMessage.name || 'Unknown',
             topic: parsedMessage.topic || topicName,
           };
           eventTracker.trackEvent(mockEvent as any);
-          this.logger.debug(`Tracked handled event: ${mockEvent.eventName} from topic: ${mockEvent.topic}`);
+          this.logger.debug(`Tracked handled event: ${mockEvent.name} from topic: ${mockEvent.topic}`);
         }
       } catch (trackingError) {
         this.logger.warn(`Failed to track event: ${trackingError}`);

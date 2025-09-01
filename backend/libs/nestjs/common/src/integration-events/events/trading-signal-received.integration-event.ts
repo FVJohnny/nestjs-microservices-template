@@ -10,8 +10,8 @@ import { Topics } from './topics';
 export interface TradingSignalReceivedIntegrationEventProps extends BaseIntegrationEventProps {
 }
 export class TradingSignalReceivedIntegrationEvent extends BaseIntegrationEvent {
-  readonly eventVersion = '1.0';
-  readonly eventName = Topics.TRADING_SIGNALS.events.TRADING_SIGNAL_RECEIVED;
+  readonly version = '1.0';
+  readonly name = Topics.TRADING_SIGNALS.events.TRADING_SIGNAL_RECEIVED;
   readonly topic = Topics.TRADING_SIGNALS.topic;
 
 

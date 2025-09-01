@@ -162,19 +162,19 @@ class RedisService:
         """Pre-register events that have handlers so they show at 0 count"""
         # Only register events that actually have handler methods
         handled_events = [
-            {"eventName": "user.created", "topic": "users"},
+            {"name": "user.created", "topic": "users"},
             # Add more handled events here as needed
         ]
         
         for event_info in handled_events:
             event_counter.track_event_with_zero_count(
-                event_info["eventName"], 
+                event_info["name"], 
                 event_info["topic"]
             )
-            logger.info(f"[Service-3] Pre-registered handler event: {event_info['eventName']}@{event_info['topic']}")
+            logger.info(f"[Service-3] Pre-registered handler event: {event_info['name']}@{event_info['topic']}")
     
     def _handle_event(self, event_data: Dict[str, Any]):
-        event_name = event_data.get('eventName', 'Unknown')
+        event_name = event_data.get('name', 'Unknown')
         # Use redis channel if available, otherwise fall back to event topic or default
         topic = event_data.get('_redisChannel', event_data.get('topic', 'users'))
         logger.info(f"[Service-3] Processing event: {event_name} from topic: {topic}")

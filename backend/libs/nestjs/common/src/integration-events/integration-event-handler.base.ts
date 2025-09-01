@@ -34,7 +34,7 @@ export abstract class BaseIntegrationEventHandler<T extends BaseIntegrationEvent
   async handle(payload: Record<string, unknown>, messageId: string): Promise<void> {
     const event = this.eventClass.fromJSON(payload);
     this.logger.log(
-      `Processing ${this.topicName} event [${messageId}] - ${event.eventName}`,
+      `Processing ${this.topicName} event [${messageId}] - ${event.name}`,
     );
     await this.handleEvent(event, messageId);
   }

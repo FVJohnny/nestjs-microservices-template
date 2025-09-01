@@ -6,8 +6,8 @@ export interface UserExampleIntegrationEventProps extends BaseIntegrationEventPr
 }
 
 export class UserExampleIntegrationEvent extends BaseIntegrationEvent {
-  readonly eventVersion = '1.0';
-  readonly eventName = Topics.USERS.events.USER_EXAMPLE;
+  readonly version = '1.0';
+  readonly name = Topics.USERS.events.USER_EXAMPLE;
   readonly topic = Topics.USERS.topic;
   
   constructor(

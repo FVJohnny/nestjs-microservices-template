@@ -36,9 +36,8 @@ export class MessagingController {
         message: { 
           type: 'object',
           example: {
-            eventName: 'channel.create',
+            name: 'channel.create',
             channelType: 'telegram',
-            name: 'Test Channel',
             userId: 'user123',
             connectionConfig: {}
           },

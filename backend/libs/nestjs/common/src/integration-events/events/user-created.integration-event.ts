@@ -10,8 +10,8 @@ interface UserCreatedIntegrationEventProps extends BaseIntegrationEventProps {
 }
 
 export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
-  readonly eventVersion = '1.0';
-  readonly eventName = Topics.USERS.events.USER_CREATED;
+  readonly version = '1.0';
+  readonly name = Topics.USERS.events.USER_CREATED;
   readonly topic = Topics.USERS.topic;
   
   public readonly userId: string;

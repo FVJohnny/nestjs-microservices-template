@@ -39,7 +39,7 @@ export class IntegrationEventTrackingService implements OnModuleInit {
             // Track the event automatically
             this.eventTracker.trackEvent(event);
             
-            this.logger.debug(`Auto-tracked integration event: ${event.eventName} from ${className}`);
+            this.logger.debug(`Auto-tracked integration event: ${event.name} from ${className}`);
             
             // Call the original handler
             return await originalMethod(event, messageId);

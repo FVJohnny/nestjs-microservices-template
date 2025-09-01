@@ -273,7 +273,7 @@ async function updateAllServices() {
 }
 
 // Function to trigger a specific event for a specific topic and event type
-async function triggerSpecificEvent(topic, eventName, serviceUrl, buttonElement) {
+async function triggerSpecificEvent(topic, name, serviceUrl, buttonElement) {
   const button = buttonElement;
   const originalText = button.textContent;
   
@@ -294,7 +294,7 @@ async function triggerSpecificEvent(topic, eventName, serviceUrl, buttonElement)
     const payload = {
       topic: topic,
       message: {
-        eventName: eventName,
+        name: name,
       }
     };
     
@@ -309,7 +309,7 @@ async function triggerSpecificEvent(topic, eventName, serviceUrl, buttonElement)
     if (response.ok) {
       const result = await response.json();
       button.textContent = '✅ Sent!';
-      console.log(`Event ${eventName} on topic ${topic} sent successfully:`, result);
+      console.log(`Event ${name} on topic ${topic} sent successfully:`, result);
       
       // Update service status to reflect the new event count
       const serviceId = serviceUrl.toLowerCase().includes('service-1') ? 1 : 3;
@@ -322,7 +322,7 @@ async function triggerSpecificEvent(topic, eventName, serviceUrl, buttonElement)
     }
   } catch (error) {
     button.textContent = '❌ Failed';
-    console.error(`Failed to trigger event ${eventName} on topic ${topic}:`, error);
+    console.error(`Failed to trigger event ${name} on topic ${topic}:`, error);
   } finally {
     // Reset button after 2 seconds
     setTimeout(() => {
@@ -351,7 +351,7 @@ async function triggerKafkaEvent(serviceNumber) {
         payload = {
           topic: "users",
           message: {
-            eventName: "user.example",
+            name: "user.example",
           }
         }
         break;
@@ -361,7 +361,7 @@ async function triggerKafkaEvent(serviceNumber) {
         payload = {
           topic: "trading-signals",
           message: {
-            eventName: "trading-signal.received",
+            name: "trading-signal.received",
           }
         }
         break;
@@ -416,9 +416,9 @@ document.addEventListener('click', (e) => {
   if (e.target.classList.contains('trigger-event-btn')) {
     e.preventDefault();
     const topic = e.target.getAttribute('data-topic');
-    const eventName = e.target.getAttribute('data-event');
+    const name = e.target.getAttribute('data-event');
     const serviceUrl = e.target.getAttribute('data-service-url');
-    triggerSpecificEvent(topic, eventName, serviceUrl, e.target);
+    triggerSpecificEvent(topic, name, serviceUrl, e.target);
   }
 });
 

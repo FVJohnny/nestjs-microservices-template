@@ -20,7 +20,7 @@ export abstract class DomainEvent implements IEvent {
   /**
    * Gets the name of the event class
    */
-  get eventName(): string {
+  get name(): string {
     return this.constructor.name;
   }
 }

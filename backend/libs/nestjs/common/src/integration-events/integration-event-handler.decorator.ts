@@ -79,7 +79,7 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
         const event = eventClass.fromJSON(payload);
         const instance = this as unknown as IntegrationEventHandlerInstance;
         this.logger.log(
-          `Processing ${this.topicName} event [${messageId}] - ${event.eventName}`,
+          `Processing ${this.topicName} event [${messageId}] - ${event.name}`,
         );
         await instance.handleEvent(event, messageId);
       }
