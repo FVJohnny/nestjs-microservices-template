@@ -4,7 +4,7 @@ import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-
 import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { BadRequestException } from '@nestjs/common';
 import { createEventBusMock, MockEventBus } from '@libs/nestjs-common';
-import { UserRegisteredEvent } from '../../../domain/events/user-registered.event';
+import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 
 describe('RegisterUserCommandHandler (Unit)', () => {
   let commandHandler: RegisterUserCommandHandler;
@@ -113,8 +113,8 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       expect(eventBus.events).toHaveLength(1);
       
       // Verify the exact event type
-      const publishedEvent = eventBus.events[0] as UserRegisteredEvent;
-      expect(publishedEvent).toBeInstanceOf(UserRegisteredEvent);
+      const publishedEvent = eventBus.events[0] as UserRegisteredDomainEvent;
+      expect(publishedEvent).toBeInstanceOf(UserRegisteredDomainEvent);
       
       // Verify event properties match exactly with the created user
       expect(publishedEvent.aggregateId).toBe(result.id);

@@ -1,11 +1,10 @@
 import { UserRegisteredDomainEventHandler } from './user-registered.domain-event-handler';
-import { UserRegisteredEvent } from '../../../domain/events/user-registered.event';
+import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
+import { UserRole } from '../../../domain/value-objects/user-role.vo';
 import {
   Topics,
-  UserCreatedIntegrationEvent,
   createIntegrationEventPublisherMock,
   MockIntegrationEventPublisher,
 } from '@libs/nestjs-common';
@@ -22,12 +21,11 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
   describe('Happy Path', () => {
     it('should handle UserRegisteredEvent and publish integration event successfully', async () => {
       // Arrange
-      const event = new UserRegisteredEvent({
+      const event = new UserRegisteredDomainEvent({
         userId: 'test-user-id',
         email: new Email('test@example.com'),
         username: new Username('testuser'),
         roles: [UserRole.user()],
-        occurredOn: new Date(),
       });
 
       // Act
@@ -48,7 +46,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
     it('should handle user with multiple roles', async () => {
       // Arrange
-      const event = new UserRegisteredEvent({
+      const event = new UserRegisteredDomainEvent({
         userId: 'multi-role-user-id',
         email: new Email('admin@example.com'),
         username: new Username('adminuser'),
@@ -57,7 +55,6 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
           UserRole.user(),
           UserRole.moderator(),
         ],
-        occurredOn: new Date(),
       });
 
       // Act
@@ -74,12 +71,11 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
     it('should handle user with no roles', async () => {
       // Arrange
-      const event = new UserRegisteredEvent({
+      const event = new UserRegisteredDomainEvent({
         userId: 'no-roles-user-id',
         email: new Email('noroles@example.com'),
         username: new Username('noroles'),
         roles: [],
-        occurredOn: new Date(),
       });
 
       // Act
@@ -94,12 +90,11 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
     it('should handle special characters in email and username', async () => {
       // Arrange
-      const event = new UserRegisteredEvent({
+      const event = new UserRegisteredDomainEvent({
         userId: 'special-chars-user',
         email: new Email('test.user+tag@example-domain.com'),
         username: new Username('user_name-123'),
         roles: [UserRole.user()],
-        occurredOn: new Date(),
       });
 
       // Act
@@ -115,12 +110,11 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
     it('should publish UserCreatedIntegrationEvent', async () => {
       // Arrange
-      const event = new UserRegisteredEvent({
+      const event = new UserRegisteredDomainEvent({
         userId: 'integration-event-test',
         email: new Email('integration@example.com'),
         username: new Username('integration'),
         roles: [UserRole.user()],
-        occurredOn: new Date(),
       });
 
       // Act
@@ -151,19 +145,17 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
     it('should handle multiple events sequentially', async () => {
       // Arrange
       const events = [
-        new UserRegisteredEvent({
+        new UserRegisteredDomainEvent({
           userId: 'user-1',
           email: new Email('user1@example.com'),
           username: new Username('user1'),
           roles: [UserRole.user()],
-          occurredOn: new Date(),
         }),
-        new UserRegisteredEvent({
+        new UserRegisteredDomainEvent({
           userId: 'user-2',
           email: new Email('user2@example.com'),
           username: new Username('user2'),
           roles: [UserRole.admin()],
-          occurredOn: new Date(),
         }),
       ];
 
@@ -183,12 +175,11 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       const failingPublisher = createIntegrationEventPublisherMock({ shouldFail: true });
       const failingEventHandler = new UserRegisteredDomainEventHandler(failingPublisher);
       
-      const event = new UserRegisteredEvent({
+      const event = new UserRegisteredDomainEvent({
         userId: 'failing-user-id',
         email: new Email('failing@example.com'),
         username: new Username('failing'),
         roles: [UserRole.user()],
-        occurredOn: new Date(),
       });
 
       // Act & Assert
@@ -200,12 +191,11 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       const failingPublisher = createIntegrationEventPublisherMock({ shouldFail: true });
       const failingEventHandler = new UserRegisteredDomainEventHandler(failingPublisher);
       
-      const event = new UserRegisteredEvent({
+      const event = new UserRegisteredDomainEvent({
         userId: 'network-error-user',
         email: new Email('network@example.com'),
         username: new Username('network'),
         roles: [UserRole.user()],
-        occurredOn: new Date(),
       });
 
       // Act & Assert
@@ -217,12 +207,11 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       const failingPublisher = createIntegrationEventPublisherMock({ shouldFail: true });
       const failingEventHandler = new UserRegisteredDomainEventHandler(failingPublisher);
       
-      const event = new UserRegisteredEvent({
+      const event = new UserRegisteredDomainEvent({
         userId: 'timeout-user',
         email: new Email('timeout@example.com'),
         username: new Username('timeout'),
         roles: [UserRole.user()],
-        occurredOn: new Date(),
       });
 
       // Act & Assert

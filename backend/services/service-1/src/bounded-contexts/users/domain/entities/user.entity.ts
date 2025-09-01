@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { AggregateRoot } from '@libs/nestjs-common';
-import { UserRegisteredEvent } from '../events/user-registered.event';
-import { UserProfileUpdatedEvent } from '../events/user-profile-updated.event';
+import { UserRegisteredDomainEvent } from '../events/user-registered.domain-event';
+import { UserProfileUpdatedDomainEvent } from '../events/user-profile-updated.domain-event';
 import { UserStatus, UserStatusEnum } from '../value-objects/user-status.vo';
 import { UserRole, UserRoleEnum } from '../value-objects/user-role.vo';
 import { Email } from '../value-objects/email.vo';
@@ -40,12 +40,11 @@ export class User extends AggregateRoot implements UserAttributes {
     });
 
     user.apply(
-      new UserRegisteredEvent({
+      new UserRegisteredDomainEvent({
         userId: id,
         email: props.email,
         username: props.username,
         roles: user.roles,
-        occurredOn: now,
       }),
     );
 
@@ -87,13 +86,12 @@ export class User extends AggregateRoot implements UserAttributes {
     const newProfile = this.profile.toValue();
     
     this.apply(
-      new UserProfileUpdatedEvent({
+      new UserProfileUpdatedDomainEvent({
         userId: this.id,
         previousFirstName: previousProfile.firstName,
         previousLastName: previousProfile.lastName,
         firstName: newProfile.firstName,
         lastName: newProfile.lastName,
-        occurredOn: this.updatedAt,
       }),
     );
   }

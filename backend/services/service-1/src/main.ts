@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerUtility } from '@libs/nestjs-common';
+import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +14,16 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
   });
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+    forbidUnknownValues: true,
+  }));
+  // Security
+  app.enableShutdownHooks();
+  app.use(helmet());
 
   // Setup Swagger using shared utility
   SwaggerUtility.setupSwagger({

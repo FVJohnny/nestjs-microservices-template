@@ -4,8 +4,8 @@ import { Username } from '../value-objects/username.vo';
 import { Name } from '../value-objects/name.vo';
 import { UserRole, UserRoleEnum } from '../value-objects/user-role.vo';
 import { UserStatus, UserStatusEnum } from '../value-objects/user-status.vo';
-import { UserRegisteredEvent } from '../events/user-registered.event';
-import { UserProfileUpdatedEvent } from '../events/user-profile-updated.event';
+import { UserRegisteredDomainEvent } from '../events/user-registered.domain-event';
+import { UserProfileUpdatedDomainEvent } from '../events/user-profile-updated.domain-event';
 import { UserProfile } from '../value-objects/user-profile.vo';
 
 describe('User Entity', () => {
@@ -72,9 +72,9 @@ describe('User Entity', () => {
       // Assert
       const domainEvents = user.getUncommittedEvents();
       expect(domainEvents).toHaveLength(1);
-      expect(domainEvents[0]).toBeInstanceOf(UserRegisteredEvent);
+      expect(domainEvents[0]).toBeInstanceOf(UserRegisteredDomainEvent);
       
-      const event = domainEvents[0] as UserRegisteredEvent;
+      const event = domainEvents[0] as UserRegisteredDomainEvent;
       expect(event.aggregateId).toBe(user.id);
       expect(event.email).toBe(props.email);
       expect(event.username).toBe(props.username);
@@ -171,9 +171,9 @@ describe('User Entity', () => {
 
       const domainEvents = user.getUncommittedEvents();
       expect(domainEvents).toHaveLength(1);
-      expect(domainEvents[0]).toBeInstanceOf(UserProfileUpdatedEvent);
+      expect(domainEvents[0]).toBeInstanceOf(UserProfileUpdatedDomainEvent);
 
-      const event = domainEvents[0] as UserProfileUpdatedEvent;
+      const event = domainEvents[0] as UserProfileUpdatedDomainEvent;
       expect(event.aggregateId).toBe(user.id);
       expect(event.previousFirstName).toBe('Original');
       expect(event.previousLastName).toBe('Name');
@@ -504,7 +504,7 @@ describe('User Entity', () => {
       
       const events = user.getUncommittedEvents();
       expect(events).toHaveLength(2);
-      expect(events.every(e => e instanceof UserProfileUpdatedEvent)).toBe(true);
+      expect(events.every(e => e instanceof UserProfileUpdatedDomainEvent)).toBe(true);
     });
   });
 
@@ -566,8 +566,8 @@ describe('User Entity', () => {
       // Assert
       const events = user.getUncommittedEvents();
       expect(events).toHaveLength(2);
-      expect(events[0]).toBeInstanceOf(UserRegisteredEvent);
-      expect(events[1]).toBeInstanceOf(UserProfileUpdatedEvent);
+      expect(events[0]).toBeInstanceOf(UserRegisteredDomainEvent);
+      expect(events[1]).toBeInstanceOf(UserProfileUpdatedDomainEvent);
     });
   });
 });

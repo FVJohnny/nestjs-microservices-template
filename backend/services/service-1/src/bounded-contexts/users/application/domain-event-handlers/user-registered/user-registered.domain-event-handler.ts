@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { UserRegisteredEvent } from '../../../domain/events/user-registered.event';
+import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 import {
   UserCreatedIntegrationEvent,
   type IntegrationEventPublisher,
@@ -8,9 +8,9 @@ import {
   INTEGRATION_EVENT_PUBLISHER_TOKEN,
 } from '@libs/nestjs-common';
 
-@EventsHandler(UserRegisteredEvent)
+@EventsHandler(UserRegisteredDomainEvent)
 export class UserRegisteredDomainEventHandler
-  implements IEventHandler<UserRegisteredEvent>
+  implements IEventHandler<UserRegisteredDomainEvent>
 {
   private readonly logger = new TracingLogger(
     UserRegisteredDomainEventHandler.name,
@@ -21,7 +21,7 @@ export class UserRegisteredDomainEventHandler
     private readonly integrationEventPublisher: IntegrationEventPublisher,
   ) {}
 
-  async handle(event: UserRegisteredEvent): Promise<void> {
+  async handle(event: UserRegisteredDomainEvent): Promise<void> {
     this.logger.log('Handling UserRegisteredEvent...');
 
     const integrationEvent = new UserCreatedIntegrationEvent({

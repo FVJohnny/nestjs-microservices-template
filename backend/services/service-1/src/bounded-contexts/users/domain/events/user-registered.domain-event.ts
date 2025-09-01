@@ -3,28 +3,27 @@ import { UserRole, UserRoleEnum } from '../value-objects/user-role.vo';
 import { Email } from '../value-objects/email.vo';
 import { Username } from '../value-objects/username.vo';
 
-interface UserRegisteredEventPayload {
+interface UserRegisteredDomainEventParams {
   userId: string;
   email: Email;
   username: Username;
   roles: UserRole[];
-  occurredOn: Date;
 }
 
-export class UserRegisteredEvent extends DomainEvent {
+export class UserRegisteredDomainEvent extends DomainEvent {
 
   public readonly email: Email;
   public readonly username: Username;
   public readonly roles: UserRole[];
 
   constructor(
-    payload: UserRegisteredEventPayload,
+    params: UserRegisteredDomainEventParams,
   ) {
-    super(payload.userId);
+    super(params.userId);
 
-    this.email = payload.email;
-    this.username = payload.username;
-    this.roles = payload.roles;
+    this.email = params.email;
+    this.username = params.username;
+    this.roles = params.roles;
   }
 
 }

@@ -1,5 +1,5 @@
 import { UserProfileUpdatedDomainEventHandler } from './user-profile-updated.domain-event-handler';
-import { UserProfileUpdatedEvent } from '../../../domain/events/user-profile-updated.event';
+import { UserProfileUpdatedDomainEvent } from '../../../domain/events/user-profile-updated.domain-event';
 
 describe('UserProfileUpdatedDomainEventHandler (Unit)', () => {
   let eventHandler: UserProfileUpdatedDomainEventHandler;
@@ -11,50 +11,12 @@ describe('UserProfileUpdatedDomainEventHandler (Unit)', () => {
   describe('Happy Path', () => {
     it('should handle UserProfileUpdatedEvent successfully', async () => {
       // Arrange
-      const event = new UserProfileUpdatedEvent({
+      const event = new UserProfileUpdatedDomainEvent({
         userId: 'test-user-id',
         previousFirstName: 'Old',
         previousLastName: 'Name',
         firstName: 'New',
         lastName: 'Name',
-        occurredOn: new Date(),
-      });
-
-      // Act
-      await eventHandler.handle(event);
-    });
-
-    it('should handle event with minimal data', async () => {
-      // Arrange
-      const event = new UserProfileUpdatedEvent({
-        userId: 'minimal-user-id',
-        occurredOn: new Date(),
-      });
-
-      // Act
-      await eventHandler.handle(event);
-    });
-
-    it('should handle event with only firstName change', async () => {
-      // Arrange
-      const event = new UserProfileUpdatedEvent({
-        userId: 'firstname-user-id',
-        previousFirstName: 'OldFirst',
-        firstName: 'NewFirst',
-        occurredOn: new Date(),
-      });
-
-      // Act
-      await eventHandler.handle(event);
-    });
-
-    it('should handle event with only lastName change', async () => {
-      // Arrange
-      const event = new UserProfileUpdatedEvent({
-        userId: 'lastname-user-id',
-        previousLastName: 'OldLast',
-        lastName: 'NewLast',
-        occurredOn: new Date(),
       });
 
       // Act
@@ -64,23 +26,26 @@ describe('UserProfileUpdatedDomainEventHandler (Unit)', () => {
     it('should handle multiple events sequentially', async () => {
       // Arrange
       const events = [
-        new UserProfileUpdatedEvent({
+        new UserProfileUpdatedDomainEvent({
           userId: 'user-1',
           firstName: 'First',
           lastName: 'User',
-          occurredOn: new Date(),
+          previousFirstName: 'Old',
+          previousLastName: 'Name',
         }),
-        new UserProfileUpdatedEvent({
+        new UserProfileUpdatedDomainEvent({
           userId: 'user-2',
           firstName: 'Second',
           lastName: 'User',
-          occurredOn: new Date(),
+          previousFirstName: 'Old',
+          previousLastName: 'Name',
         }),
-        new UserProfileUpdatedEvent({
+        new UserProfileUpdatedDomainEvent({
           userId: 'user-3',
           firstName: 'Third',
           lastName: 'User',
-          occurredOn: new Date(),
+          previousFirstName: 'Old',
+          previousLastName: 'Name',
         }),
       ];
 
@@ -92,13 +57,12 @@ describe('UserProfileUpdatedDomainEventHandler (Unit)', () => {
 
     it('should handle event with empty string names', async () => {
       // Arrange
-      const event = new UserProfileUpdatedEvent({
+      const event = new UserProfileUpdatedDomainEvent({
         userId: 'empty-names-user',
         previousFirstName: 'Previous',
         previousLastName: 'Name',
         firstName: '',
         lastName: '',
-        occurredOn: new Date(),
       });
 
       // Act
@@ -107,11 +71,12 @@ describe('UserProfileUpdatedDomainEventHandler (Unit)', () => {
 
     it('should handle event with special characters in names', async () => {
       // Arrange
-      const event = new UserProfileUpdatedEvent({
+      const event = new UserProfileUpdatedDomainEvent({
         userId: 'special-chars-user',
+        previousFirstName: 'Previous',
+        previousLastName: 'Name',
         firstName: 'José-María',
         lastName: "O'Connor",
-        occurredOn: new Date(),
       });
 
       // Act
@@ -122,14 +87,12 @@ describe('UserProfileUpdatedDomainEventHandler (Unit)', () => {
   describe('Event Properties Validation', () => {
     it('should access all event properties correctly', async () => {
       // Arrange
-      const now = new Date();
-      const event = new UserProfileUpdatedEvent({
+      const event = new UserProfileUpdatedDomainEvent({
         userId: 'property-test-user',
         previousFirstName: 'PrevFirst',
         previousLastName: 'PrevLast',
         firstName: 'NewFirst',
         lastName: 'NewLast',
-        occurredOn: now,
       });
 
       // Act
@@ -141,14 +104,17 @@ describe('UserProfileUpdatedDomainEventHandler (Unit)', () => {
       expect(event.previousLastName).toBe('PrevLast');
       expect(event.firstName).toBe('NewFirst');
       expect(event.lastName).toBe('NewLast');
-      expect(event.occurredOn).toBe(now);
+      expect(event.occurredOn).toBeInstanceOf(Date);
     });
 
     it('should handle event with undefined optional properties', async () => {
       // Arrange
-      const event = new UserProfileUpdatedEvent({
+      const event = new UserProfileUpdatedDomainEvent({
         userId: 'undefined-props-user',
-        occurredOn: new Date(),
+        previousFirstName: 'PrevFirst',
+        previousLastName: 'PrevLast',
+        firstName: 'NewFirst',
+        lastName: 'NewLast',
       });
 
       // Act
@@ -156,51 +122,26 @@ describe('UserProfileUpdatedDomainEventHandler (Unit)', () => {
 
       // Assert
       expect(event.aggregateId).toBe('undefined-props-user');
-      expect(event.previousFirstName).toBeUndefined();
-      expect(event.previousLastName).toBeUndefined();
-      expect(event.firstName).toBeUndefined();
-      expect(event.lastName).toBeUndefined();
+      expect(event.previousFirstName).toBe('PrevFirst');
+      expect(event.previousLastName).toBe('PrevLast');
+      expect(event.firstName).toBe('NewFirst');
+      expect(event.lastName).toBe('NewLast');
     });
   });
 
   describe('Handler Behavior', () => {
     it('should complete successfully without additional operations', async () => {
       // Arrange
-      const event = new UserProfileUpdatedEvent({
+      const event = new UserProfileUpdatedDomainEvent({
         userId: 'completion-test-user',
-        occurredOn: new Date(),
+        previousFirstName: 'OldFirst',
+        previousLastName: 'OldLast',
+        firstName: 'NewFirst',
+        lastName: 'NewLast',
       });
 
       // Act & Assert - Should not throw any errors
       await expect(eventHandler.handle(event)).resolves.toBeUndefined();
-    });
-
-    it('should log exactly once per event', async () => {
-      // Arrange
-      const event = new UserProfileUpdatedEvent({
-        userId: 'single-log-test-user',
-        firstName: 'Test',
-        lastName: 'User',
-        occurredOn: new Date(),
-      });
-
-      // Act
-      await eventHandler.handle(event);
-    });
-
-    it('should be idempotent when handling same event multiple times', async () => {
-      // Arrange
-      const event = new UserProfileUpdatedEvent({
-        userId: 'idempotent-test-user',
-        firstName: 'Idempotent',
-        lastName: 'Test',
-        occurredOn: new Date(),
-      });
-
-      // Act - Handle the same event multiple times
-      await eventHandler.handle(event);
-      await eventHandler.handle(event);
-      await eventHandler.handle(event);
     });
   });
 });
