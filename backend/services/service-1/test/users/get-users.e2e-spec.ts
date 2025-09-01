@@ -1,0 +1,181 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import request from 'supertest';
+import { CqrsModule } from '@nestjs/cqrs';
+import { GetUsersController } from '../../src/bounded-contexts/users/interfaces/http/controllers/users/get-users/get-users.controller';
+import { GetUsersQueryHandler } from '../../src/bounded-contexts/users/application/queries/get-users/get-users.query-handler';
+import { USER_REPOSITORY, UserRepository } from '../../src/bounded-contexts/users/domain/repositories/user.repository';
+import { UserInMemoryRepository } from '../../src/bounded-contexts/users/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { User } from '../../src/bounded-contexts/users/domain/entities/user.entity';
+import { Email } from '../../src/bounded-contexts/users/domain/value-objects/email.vo';
+import { Username } from '../../src/bounded-contexts/users/domain/value-objects/username.vo';
+import { UserProfile } from '../../src/bounded-contexts/users/domain/value-objects/user-profile.vo';
+import { Name } from '../../src/bounded-contexts/users/domain/value-objects/name.vo';
+import { UserRole } from '../../src/bounded-contexts/users/domain/value-objects/user-role.vo';
+import { UserStatus } from '../../src/bounded-contexts/users/domain/value-objects/user-status.vo';
+
+describe('GET /users (E2E)', () => {
+  let app: INestApplication;
+  let repository: UserRepository;
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [CqrsModule],
+      controllers: [GetUsersController],
+      providers: [
+        GetUsersQueryHandler,
+        { provide: USER_REPOSITORY, useClass: UserInMemoryRepository },
+      ],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
+    await app.init();
+    repository = app.get<UserRepository>(USER_REPOSITORY);
+  });
+
+  const clearRepo = async () => {
+    const all = await repository.findAll();
+    await Promise.all(all.map(u => repository.delete(u.id)));
+  };
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(async () => {
+    await clearRepo();
+  });
+
+  it('returns all users when no filters provided', async () => {
+    // Arrange: seed a few users
+    const users = [
+      User.random({
+        email: new Email('admin@example.com'),
+        username: new Username('admin'),
+        profile: new UserProfile(new Name('Admin'), new Name('User')),
+        role: UserRole.admin(),
+      }),
+      User.random({
+        email: new Email('user1@example.com'),
+        username: new Username('user1'),
+        profile: new UserProfile(new Name('John'), new Name('Doe')),
+        role: UserRole.user(),
+      }),
+      User.random({
+        email: new Email('user2@example.com'),
+        username: new Username('user2'),
+        profile: new UserProfile(new Name('Jane'), new Name('Smith')),
+        role: UserRole.user(),
+      }),
+    ];
+    for (const u of users) await repository.save(u);
+
+    // Act
+    const res = await request(app.getHttpServer()).get('/users').expect(200);
+
+    // Assert
+    expect(Array.isArray(res.body.users)).toBe(true);
+    expect(res.body.users).toHaveLength(3);
+    const usernames = res.body.users.map((u: any) => u.username).sort();
+    expect(usernames).toEqual(['admin', 'user1', 'user2']);
+  });
+
+  it('filters only active users when onlyActive=true', async () => {
+    // Arrange
+    const active1 = User.random({ username: new Username('userA') });
+    const active2 = User.random({ username: new Username('userB') });
+    const inactive = User.random({ username: new Username('inactive'), status: UserStatus.inactive() });
+    await repository.save(active1);
+    await repository.save(active2);
+    await repository.save(inactive);
+
+    // Act
+    const res = await request(app.getHttpServer()).get('/users').query({ onlyActive: true }).expect(200);
+
+    // Assert
+    const names = res.body.users.map((u: any) => u.username);
+    expect(names).toEqual(expect.arrayContaining(['usera', 'userb']));
+    expect(names).not.toContain('inactive');
+  });
+
+  it('filters by status=inactive', async () => {
+    const inactive = User.random({ username: new Username('inactive'), status: UserStatus.inactive() });
+    const active = User.random({ username: new Username('active') });
+    await repository.save(inactive);
+    await repository.save(active);
+
+    const res = await request(app.getHttpServer()).get('/users').query({ status: 'inactive' }).expect(200);
+    expect(res.body.users).toHaveLength(1);
+    expect(res.body.users[0].username).toBe('inactive');
+  });
+
+  it('supports contains filters: email, username, firstName, lastName', async () => {
+    const admin = User.random({
+      email: new Email('admin@example.com'),
+      username: new Username('admin'),
+      profile: new UserProfile(new Name('Admin'), new Name('User')),
+    });
+    const u1 = User.random({
+      email: new Email('user1@example.com'),
+      username: new Username('user1'),
+      profile: new UserProfile(new Name('John'), new Name('Doe')),
+    });
+    const u2 = User.random({
+      email: new Email('user2@example.com'),
+      username: new Username('user2'),
+      profile: new UserProfile(new Name('Jane'), new Name('Smith')),
+    });
+    await Promise.all([admin, u1, u2].map(u => repository.save(u)));
+
+    const byEmail = await request(app.getHttpServer()).get('/users').query({ email: 'admin@' }).expect(200);
+    expect(byEmail.body.users).toHaveLength(1);
+    expect(byEmail.body.users[0].username).toBe('admin');
+
+    const byUsername = await request(app.getHttpServer()).get('/users').query({ username: 'user1' }).expect(200);
+    expect(byUsername.body.users).toHaveLength(1);
+    expect(byUsername.body.users[0].username).toBe('user1');
+
+    const byFirst = await request(app.getHttpServer()).get('/users').query({ firstName: 'Jane' }).expect(200);
+    expect(byFirst.body.users).toHaveLength(1);
+    expect(byFirst.body.users[0].username).toBe('user2');
+
+    const byLast = await request(app.getHttpServer()).get('/users').query({ lastName: 'Doe' }).expect(200);
+    expect(byLast.body.users).toHaveLength(1);
+    expect(byLast.body.users[0].username).toBe('user1');
+  });
+
+  it('filters by role equality', async () => {
+    const admin = User.random({ username: new Username('admin'), role: UserRole.admin() });
+    const user = User.random({ username: new Username('user'), role: UserRole.user() });
+    await repository.save(admin);
+    await repository.save(user);
+
+    const onlyAdmins = await request(app.getHttpServer()).get('/users').query({ role: 'admin' }).expect(200);
+    expect(onlyAdmins.body.users).toHaveLength(1);
+    expect(onlyAdmins.body.users[0].username).toBe('admin');
+
+    const onlyUsers = await request(app.getHttpServer()).get('/users').query({ role: 'user' }).expect(200);
+    expect(onlyUsers.body.users).toHaveLength(1);
+    expect(onlyUsers.body.users[0].username).toBe('user');
+  });
+
+  it('orders by username asc and paginates with limit/offset', async () => {
+    const a = User.random({ username: new Username('admin') });
+    const b = User.random({ username: new Username('user1') });
+    const c = User.random({ username: new Username('user2') });
+    await Promise.all([a, b, c].map(u => repository.save(u)));
+
+    const ordered = await request(app.getHttpServer()).get('/users').query({ orderBy: 'username', orderType: 'asc' }).expect(200);
+    expect(ordered.body.users.map((u: any) => u.username)).toEqual(['admin', 'user1', 'user2']);
+
+    const page = await request(app.getHttpServer()).get('/users').query({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 1 }).expect(200);
+    expect(page.body.users.map((u: any) => u.username)).toEqual(['user1', 'user2']);
+  });
+
+  it('rejects invalid orderType with 400 (validation)', async () => {
+    const u = User.random({ username: new Username('alpha') });
+    await repository.save(u);
+    await request(app.getHttpServer()).get('/users').query({ orderBy: 'username', orderType: 'ASC' }).expect(400);
+  });
+});
