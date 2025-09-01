@@ -165,6 +165,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       ...(correlationId ? [`[correlationId: ${correlationId}]`] : []),
       ...(exception instanceof BaseException ? [`[code: ${exception.code}]`] : []),
       ...(exception instanceof BaseException && exception.metadata ? [`[metadata: ${JSON.stringify(exception.metadata)}]`] : []),
+      
       ...(this.shouldIncludeStack() && error.stack ? [`[stack: ${error.stack}]`] : []),
     ];
 

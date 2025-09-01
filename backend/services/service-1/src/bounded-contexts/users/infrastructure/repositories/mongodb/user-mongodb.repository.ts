@@ -4,10 +4,9 @@ import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { Criteria } from '@libs/nestjs-common';
+import { Criteria, InfrastructureException } from '@libs/nestjs-common';
 import { MongoCriteriaConverter } from '@libs/nestjs-mongodb';
 import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
-import { UserPersistenceException } from '../../errors';
 
 @Injectable()
 export class UserMongodbRepository implements UserRepository {
@@ -169,6 +168,6 @@ export class UserMongodbRepository implements UserRepository {
   ): never {
     const cause =
       error instanceof Error ? error : new Error('Unknown database error');
-    throw new UserPersistenceException(operation, id, cause);
+    throw new InfrastructureException(operation, id, cause);
   }
 }

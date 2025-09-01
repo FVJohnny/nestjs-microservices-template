@@ -28,3 +28,20 @@ export class AlreadyExistsException extends BaseException {
     );
   }
 }
+
+export class InfrastructureException extends BaseException {
+  constructor(
+    operation: string,
+    details: string,
+    metadata?: Record<string, any>,
+    cause?: Error,
+  ) {
+    super(
+      `Infrastructure operation '${operation}' failed: ${details}`,
+      'INFRASTRUCTURE_ERROR',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      { operation, details, ...metadata },
+      cause,
+    );
+  }
+}

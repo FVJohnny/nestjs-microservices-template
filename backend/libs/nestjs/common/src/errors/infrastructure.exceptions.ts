@@ -6,25 +6,6 @@ import { BaseException } from './base.exception';
  * These represent technical/infrastructure failures
  */
 
-/**
- * Thrown when database operations fail
- */
-export class DatabaseException extends BaseException {
-  constructor(
-    operation: string,
-    details: string,
-    metadata?: Record<string, any>,
-    cause?: Error,
-  ) {
-    super(
-      `Database operation '${operation}' failed: ${details}`,
-      'DATABASE_ERROR',
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      { operation, details, ...metadata },
-      cause,
-    );
-  }
-}
 
 /**
  * Thrown when message broker operations fail
