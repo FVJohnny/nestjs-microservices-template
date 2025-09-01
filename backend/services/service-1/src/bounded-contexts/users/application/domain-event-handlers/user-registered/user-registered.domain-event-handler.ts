@@ -4,7 +4,7 @@ import { UserRegisteredEvent } from '../../../domain/events/user-registered.even
 import {
   UserCreatedIntegrationEvent,
   type IntegrationEventPublisher,
-  CorrelationLogger,
+  TracingLogger,
   INTEGRATION_EVENT_PUBLISHER_TOKEN,
 } from '@libs/nestjs-common';
 
@@ -12,7 +12,7 @@ import {
 export class UserRegisteredDomainEventHandler
   implements IEventHandler<UserRegisteredEvent>
 {
-  private readonly logger = new CorrelationLogger(
+  private readonly logger = new TracingLogger(
     UserRegisteredDomainEventHandler.name,
   );
 

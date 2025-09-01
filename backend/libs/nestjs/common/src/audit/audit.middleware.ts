@@ -2,7 +2,7 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { AuditService } from './audit.service';
 import { AuditLog } from './audit-log.interface';
-import { CorrelationService } from '../correlation/correlation.service';
+import { TracingService } from '../tracing/tracing.service';
 
 @Injectable()
 export class AuditMiddleware implements NestMiddleware {
@@ -16,7 +16,7 @@ export class AuditMiddleware implements NestMiddleware {
     }
 
     const startTime = Date.now();
-    const correlationId = CorrelationService.getCorrelationId() || 'no-correlation-id';
+    const correlationId = TracingService.getCorrelationId() || 'no-correlation-id';
 
     // Log request arrival immediately
     const requestLog: AuditLog = {

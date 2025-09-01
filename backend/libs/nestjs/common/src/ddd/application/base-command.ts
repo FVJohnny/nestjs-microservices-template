@@ -1,14 +1,9 @@
-import { CorrelationService } from '../../correlation/correlation.service';
-import { CqrsMetadata } from './cqrs-metadata';
+import { TracingMetadata, TracingMetadataParams } from '../../tracing/tracing-metadata';
 
 export abstract class BaseCommand {
-  public metadata?: CqrsMetadata;
+  public metadata?: TracingMetadata;
 
-  constructor(metadata?: CqrsMetadata) {
-    this.metadata = {
-      correlationId: metadata?.correlationId ?? CorrelationService.getCorrelationId() ?? 'none',
-      causationId: metadata?.causationId ?? 'none',
-      userId: metadata?.userId ?? 'anonymous'
-    };
+  constructor(metadataParams?: TracingMetadataParams) {
+    this.metadata = new TracingMetadata(metadataParams);
   }
 }

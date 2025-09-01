@@ -1,3 +1,4 @@
+import { TracingMetadataParams } from '../../tracing/tracing-metadata';
 import { BaseIntegrationEvent, BaseIntegrationEventProps } from './base-integration-event';
 import { Topics } from './topics';
 
@@ -14,8 +15,8 @@ export class TradingSignalReceivedIntegrationEvent extends BaseIntegrationEvent 
   readonly topic = Topics.TRADING_SIGNALS.topic;
 
 
-  constructor(props: TradingSignalReceivedIntegrationEventProps) {
-    super(props.occurredOn);
+  constructor(props: TradingSignalReceivedIntegrationEventProps, metadata?: TracingMetadataParams) {
+    super(props, metadata);
 
     this.validate();
   }
@@ -23,9 +24,8 @@ export class TradingSignalReceivedIntegrationEvent extends BaseIntegrationEvent 
   /**
    * Returns the event-specific data payload
    */
-  protected getEventData(): Record<string, any> {
-    return {
-    };
+  protected toEventJSON(): Record<string, any> {
+    return {}
   }
 
   /**
@@ -40,7 +40,8 @@ export class TradingSignalReceivedIntegrationEvent extends BaseIntegrationEvent 
    */
   static fromJSON(json: any): TradingSignalReceivedIntegrationEvent {
     const event = new TradingSignalReceivedIntegrationEvent({
-    });
+      occurredOn: new Date(json.occurredOn),
+    }, json.metadata);
     event.validate();
     return event;
   }

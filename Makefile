@@ -16,7 +16,7 @@ dev-down:
 	@docker compose -f $(COMPOSE_DEV) down
 
 dev-logs:
-	@docker compose -f $(COMPOSE_DEV) logs -f
+	@docker compose -f $(COMPOSE_DEV) logs -f service-1
 
 ## Production (multi-stage images)
 prod:

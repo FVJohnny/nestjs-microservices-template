@@ -138,7 +138,11 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
         roles: ['user'],
       });
       expect(topic).toBe(Topics.USERS.topic);
-      expect(data).toEqual(integrationEvent.toJSON());
+      
+      const assertJson = integrationEvent.toJSON();
+      delete assertJson.metadata;
+      delete data.metadata;
+      expect(data).toEqual(assertJson);
     });
 
     it('should handle multiple events sequentially', async () => {

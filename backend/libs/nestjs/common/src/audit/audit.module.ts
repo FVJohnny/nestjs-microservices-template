@@ -1,10 +1,10 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { AuditService } from './audit.service';
 import { AuditMiddleware } from './audit.middleware';
-import { CorrelationModule } from '../correlation/correlation.module';
+import { TracingModule } from '../tracing/tracing.module';
 
 @Module({
-  imports: [CorrelationModule],
+  imports: [TracingModule],
   providers: [AuditService, AuditMiddleware],
   exports: [AuditService],
 })

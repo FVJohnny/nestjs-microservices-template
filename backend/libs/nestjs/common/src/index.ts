@@ -2,10 +2,10 @@ export * from './heartbeat/heartbeat.module';
 export * from './heartbeat/heartbeat.controller';
 export * from './swagger/swagger.utility';
 export * from './swagger/swagger-config.interface';
-export * from './correlation/correlation.service';
-export * from './correlation/correlation.middleware';
-export * from './correlation/correlation.logger';
-export * from './correlation/correlation.module';
+export * from './tracing/tracing.service';
+export * from './tracing/tracing.middleware';
+export * from './tracing/tracing.logger';
+export * from './tracing/tracing.module';
 
 // Error handling exports
 export * from './errors';

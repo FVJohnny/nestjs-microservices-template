@@ -33,6 +33,7 @@ export class GetUsersController {
   })
   async getUsers(@Query() params: GetUsersControllerParams): Promise<GetUsersQueryResponse> {
     const query = new GetUsersQuery(params);
+    console.log("query is ", query);
     return await this.queryBus.execute(query);
   }
 }

@@ -1,3 +1,5 @@
+import { TracingMetadata, TracingMetadataParams } from "../../ddd";
+
 /**
  * Base interface for all integration event props.
  * All integration events should extend this for their constructor props.
@@ -15,9 +17,11 @@ export abstract class BaseIntegrationEvent {
   abstract readonly eventName: string;
   abstract readonly topic: string;
   readonly occurredOn: Date;
+  readonly metadata?: TracingMetadata;
 
-  constructor(occurredOn?: Date) {
-    this.occurredOn = occurredOn || new Date();
+  constructor(props: BaseIntegrationEventProps, metadata?: TracingMetadataParams) {
+    this.occurredOn = props.occurredOn || new Date();
+    this.metadata = new TracingMetadata(metadata);
   }
 
   /**
@@ -36,7 +40,8 @@ export abstract class BaseIntegrationEvent {
       eventVersion: this.eventVersion,
       topic: this.topic,
       occurredOn: this.occurredOn.toISOString(),
-      data: this.getEventData(),
+      metadata: this.metadata?.toJSON(),
+      data: this.toEventJSON(),
     };
   }
 
@@ -65,11 +70,14 @@ export abstract class BaseIntegrationEvent {
     if (!this.occurredOn) {
       throw new Error('occurredOn is required');
     }
+    if (!this.metadata) {
+      throw new Error('metadata is required');
+    }
   }
 
   /**
    * Subclasses must implement this to return their specific event data.
    */
-  protected abstract getEventData(): Record<string, any>;
+  protected abstract toEventJSON(): Record<string, any>;
 
 }

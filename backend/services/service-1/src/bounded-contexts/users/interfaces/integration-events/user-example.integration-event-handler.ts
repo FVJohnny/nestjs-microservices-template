@@ -13,7 +13,7 @@ export class UserExampleIntegrationEventHandler {
   ) {}
 
   async handleEvent(event: UserExampleIntegrationEvent, messageId: string): Promise<void> {
-    this.logger.log(`Handling UserExample integration event [${messageId}]: ${JSON.stringify(event.payload)}`);
+    this.logger.log(`Handling UserExample integration event [${messageId}]: ${JSON.stringify(event.toJSON())}`);
     
     try {
       // Generate random user data

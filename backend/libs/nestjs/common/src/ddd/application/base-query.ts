@@ -1,9 +1,9 @@
-import { CqrsMetadata } from './cqrs-metadata';
+import { TracingMetadata, TracingMetadataParams } from '../../tracing/tracing-metadata';
 
 export abstract class BaseQuery {
-  public metadata?: CqrsMetadata;
+  public metadata?: TracingMetadata;
 
-  constructor(metadata?: CqrsMetadata) {
-    this.metadata = metadata;
+  constructor(metadataParams?: TracingMetadataParams) {
+    this.metadata = new TracingMetadata(metadataParams);
   }
 }

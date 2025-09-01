@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { BaseException } from './base.exception';
-import { CorrelationService } from '../correlation/correlation.service';
+import { TracingService } from '../tracing/tracing.service';
 
 /**
  * Standard error response format
@@ -42,7 +42,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const correlationId = CorrelationService.getCorrelationId();
+    const correlationId = TracingService.getCorrelationId();
     const path = request.url;
     const timestamp = new Date().toISOString();
 

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { AuditLog, AuditConfig } from './audit-log.interface';
-import { CorrelationLogger } from '../correlation/correlation.logger';
+import { TracingLogger } from '../tracing/tracing.logger';
 
 @Injectable()
 export class AuditService {
-  private readonly logger = new CorrelationLogger(AuditService.name);
+  private readonly logger = new TracingLogger(AuditService.name);
   private readonly config: AuditConfig;
 
   constructor() {

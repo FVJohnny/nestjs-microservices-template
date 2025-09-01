@@ -1,7 +1,8 @@
-import { BaseIntegrationEvent } from './base-integration-event';
+import { TracingMetadataParams } from '../../tracing/tracing-metadata';
+import { BaseIntegrationEvent, BaseIntegrationEventProps } from './base-integration-event';
 import { Topics } from './topics';
 
-export interface UserExamplePayload {
+export interface UserExampleIntegrationEventProps extends BaseIntegrationEventProps {
 }
 
 export class UserExampleIntegrationEvent extends BaseIntegrationEvent {
@@ -10,21 +11,24 @@ export class UserExampleIntegrationEvent extends BaseIntegrationEvent {
   readonly topic = Topics.USERS.topic;
   
   constructor(
-    public readonly payload: UserExamplePayload,
-    occurredOn?: Date
+    props: UserExampleIntegrationEventProps,
+    metadata?: TracingMetadataParams
   ) {
-    super(occurredOn);
+    super(props, metadata);
   }
   
-  protected getEventData(): Record<string, any> {
-    return this.payload;
+  protected toEventJSON(): Record<string, any> {
+    return {}
   }
   
   static fromJSON(json: any): UserExampleIntegrationEvent {
-    return new UserExampleIntegrationEvent(
+    const event = new UserExampleIntegrationEvent(
       {
+        occurredOn: new Date(json.occurredOn),
       },
-      new Date(json.occurredOn)
+      json.metadata
     );
+    event.validate();
+    return event;
   }
 }

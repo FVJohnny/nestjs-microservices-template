@@ -9,7 +9,7 @@ export interface CorrelationContext {
 }
 
 @Injectable()
-export class CorrelationService {
+export class TracingService {
   private static asyncLocalStorage = new AsyncLocalStorage<CorrelationContext>();
 
   static getCorrelationId(): string | undefined {

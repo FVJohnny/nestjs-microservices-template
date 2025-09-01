@@ -5,7 +5,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { UsersModule } from './bounded-contexts/users/users.module';
 import {
   HeartbeatModule,
-  CorrelationModule,
+  TracingModule,
   ErrorHandlingModule,
   AuditModule,
   MessagingController,
@@ -27,7 +27,7 @@ import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
 
     // Common Modules
     HeartbeatModule,
-    CorrelationModule,
+    TracingModule,
     ErrorHandlingModule,
     AuditModule,
     MetricsModule,

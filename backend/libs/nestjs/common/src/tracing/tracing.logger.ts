@@ -1,14 +1,14 @@
 import { Logger, LoggerService } from '@nestjs/common';
-import { CorrelationService } from './correlation.service';
+import { TracingService } from './tracing.service';
 
-export class CorrelationLogger extends Logger implements LoggerService {
+export class TracingLogger extends Logger implements LoggerService {
   constructor(context?: string) {
-    super(context || 'CorrelationLogger');
+    super(context || 'TracingLogger');
   }
 
   private formatMessage(message: any): string {
-    const correlationId = CorrelationService.getCorrelationId();
-    const context = CorrelationService.getContext();
+    const correlationId = TracingService.getCorrelationId();
+    const context = TracingService.getContext();
     
     const prefix = correlationId ? `[${correlationId}]` : '';
     const userInfo = context?.userId ? `[UserId: ${context.userId}]` : '';
