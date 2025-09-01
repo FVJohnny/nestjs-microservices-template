@@ -413,7 +413,7 @@ describe('UserInMemoryRepository', () => {
         expect(result[0].status.toValue()).toBe(UserStatusEnum.INACTIVE);
       });
 
-      it('should filter by roles (EQUAL)', async () => {
+      it('should filter by role (EQUAL)', async () => {
         // Arrange
         const filter = new Filter(
           new FilterField('role'),

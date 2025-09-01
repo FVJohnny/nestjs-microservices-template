@@ -41,18 +41,14 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
       filterList.push(statusFilter);
     }
     
-    // Handle roles filter
-    if (query.roles && query.roles.length > 0) {
-      // For simplicity, we'll check if user has any of the specified roles
-      // In a more complex scenario, you might want to use an "in" operator
-      for (const role of query.roles) {
-        const roleFilter = new Filter(
-          new FilterField('roles'),
-          FilterOperator.fromValue(Operator.CONTAINS),
-          new FilterValue(role)
-        );
-        filterList.push(roleFilter);
-      }
+    // Handle role filter (single value equality)
+    if (query.role) {
+      const roleFilter = new Filter(
+        new FilterField('role'),
+        FilterOperator.fromValue(Operator.EQUAL),
+        new FilterValue(query.role)
+      );
+      filterList.push(roleFilter);
     }
     
     // Handle email filter (partial match)
@@ -78,7 +74,7 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
     // Handle firstName filter (partial match)
     if (query.firstName) {
       const firstNameFilter = new Filter(
-        new FilterField('firstName'),
+        new FilterField('profile.firstName'),
         FilterOperator.fromValue(Operator.CONTAINS),
         new FilterValue(query.firstName)
       );
@@ -88,7 +84,7 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
     // Handle lastName filter (partial match)
     if (query.lastName) {
       const lastNameFilter = new Filter(
-        new FilterField('lastName'),
+        new FilterField('profile.lastName'),
         FilterOperator.fromValue(Operator.CONTAINS),
         new FilterValue(query.lastName)
       );
@@ -111,7 +107,7 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
     });
 
     const users = await this.userRepository.findByCriteria(criteria);
-    
+
     return { users: users.map(user => user.toValue()) };
   }
 

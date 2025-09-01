@@ -25,12 +25,11 @@ export class RegisterUserControllerParams {
   lastName: string;
 
   @ApiProperty({ 
-    example: ['user'], 
-    description: 'User roles',
+    example: 'user', 
+    description: 'User role',
     enum: UserRoleEnum,
-    isArray: true,
   })
-  @IsArray()
   @IsNotEmpty()
+  @IsString()
   role: UserRoleEnum;
 }

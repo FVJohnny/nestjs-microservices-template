@@ -9,11 +9,10 @@ export class GetUsersControllerParams {
   @IsString()
   status?: string;
 
-  @ApiProperty({ required: false, description: 'Filter by roles (comma-separated)' })
+  @ApiProperty({ required: false, description: 'Filter by role' })
   @IsOptional()
   @IsString()
-  @Transform(({ value }) => value ? value.split(',').map((role: string) => role.trim()) : undefined)
-  roles?: string[];
+  role?: string;
 
   @ApiProperty({ required: false, description: 'Filter by email (partial match)' })
   @IsOptional()

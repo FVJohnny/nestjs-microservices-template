@@ -5,7 +5,7 @@ import { BaseQuery } from '@libs/nestjs-common';
 export class GetUsersQuery extends BaseQuery implements IQuery {
 
   public readonly status?: string;
-  public readonly roles?: string[];
+  public readonly role?: string;
   public readonly email?: string;
   public readonly username?: string;
   public readonly firstName?: string;

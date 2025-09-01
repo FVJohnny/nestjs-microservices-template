@@ -44,25 +44,6 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       expect(publishedData.data.role).toEqual('user');
     });
 
-    it('should handle user with no roles', async () => {
-      // Arrange
-      const event = new UserRegisteredDomainEvent({
-        userId: 'no-roles-user-id',
-        email: new Email('noroles@example.com'),
-        username: new Username('noroles'),
-        role: UserRole.user(),
-      });
-
-      // Act
-      await eventHandler.handle(event);
-
-      // Assert
-      const publishedEvent = mockIntegrationEventPublisher.publishedEvents[0];
-      const publishedData = publishedEvent.message;
-      
-      expect(publishedData.data.role).toEqual('user');
-    });
-
     it('should handle special characters in email and username', async () => {
       // Arrange
       const event = new UserRegisteredDomainEvent({
