@@ -33,8 +33,8 @@ export class InfrastructureException extends BaseException {
   constructor(
     operation: string,
     details: string,
+    cause: Error,
     metadata?: Record<string, any>,
-    cause?: Error,
   ) {
     super(
       `Infrastructure operation '${operation}' failed: ${details}`,

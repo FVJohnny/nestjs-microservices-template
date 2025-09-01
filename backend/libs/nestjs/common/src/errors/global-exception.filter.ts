@@ -89,7 +89,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         path,
         ...(correlationId && { correlationId }),
         ...(exception.metadata && { metadata: exception.metadata }),
-        ...(this.shouldIncludeStack() && { stack: exception.stack }),
       },
     };
   }
@@ -116,7 +115,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         timestamp,
         path,
         ...(correlationId && { correlationId }),
-        ...(this.shouldIncludeStack() && { stack: exception.stack }),
       },
     };
   }
@@ -139,7 +137,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         timestamp,
         path,
         ...(correlationId && { correlationId }),
-        ...(this.shouldIncludeStack() && { stack: error.stack }),
       },
     };
   }
@@ -165,9 +162,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       ...(correlationId ? [`[correlationId: ${correlationId}]`] : []),
       ...(exception instanceof BaseException ? [`[code: ${exception.code}]`] : []),
       ...(exception instanceof BaseException && exception.metadata ? [`[metadata: ${JSON.stringify(exception.metadata)}]`] : []),
-      
-      ...(this.shouldIncludeStack() && error.stack ? [`[stack: ${error.stack}]`] : []),
+      ...(exception instanceof BaseException && exception.cause
+        ? [`[cause: ${exception.cause.name}: ${exception.cause.message}]`]
+        : []),
+      ...(error.stack ? [`[stack: ${error.stack}]`] : []),
+      ...(exception instanceof BaseException && exception.cause && exception.cause.stack
+        ? [`[causeStack: ${exception.cause.stack}]`]
+        : []),
     ];
+
+    console.log("Cause: ", exception instanceof BaseException && exception.cause);
 
     const logMessage = logParts.join('\n');
     
@@ -176,11 +180,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     
   }
 
-  private isProduction(): boolean {
+  isProduction(): boolean {
     return process.env.NODE_ENV === 'production';
   }
 
-  private shouldIncludeStack(): boolean {
-    return !this.isProduction();
-  }
 }

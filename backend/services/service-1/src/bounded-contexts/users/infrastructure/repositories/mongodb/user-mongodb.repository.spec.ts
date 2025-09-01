@@ -1,14 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { MongoClient } from 'mongodb';
 import { UserMongodbRepository } from './user-mongodb.repository';
 import { User } from '../../../domain/entities/user.entity';
-import { Criteria, Filters, Filter, FilterField, FilterOperator, FilterValue, Operator, Order } from '@libs/nestjs-common';
-import { UserPersistenceException } from '../../errors';
+import { Criteria, Filters, Filter, FilterField, FilterOperator, FilterValue, Operator, InfrastructureException } from '@libs/nestjs-common';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Name } from '../../../domain/value-objects/name.vo';
 import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
-import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
+import { UserRole } from '../../../domain/value-objects/user-role.vo';
 
 describe('UserMongodbRepository (Integration)', () => {
   let repository: UserMongodbRepository;
@@ -471,7 +469,7 @@ describe('UserMongodbRepository (Integration)', () => {
       try {
         // Act & Assert
         await expect(repository.save(user)).rejects.toThrow(
-          UserPersistenceException
+          InfrastructureException
         );
       } finally {
         // Restore original collection
@@ -491,7 +489,7 @@ describe('UserMongodbRepository (Integration)', () => {
       try {
         // Act & Assert
         await expect(repository.findById('test-id')).rejects.toThrow(
-          UserPersistenceException
+          InfrastructureException
         );
       } finally {
         // Restore original collection
@@ -511,7 +509,7 @@ describe('UserMongodbRepository (Integration)', () => {
       try {
         // Act & Assert
         await expect(repository.existsByEmail(new Email('test@example.com'))).rejects.toThrow(
-          UserPersistenceException
+          InfrastructureException
         );
       } finally {
         // Restore original collection

@@ -164,10 +164,8 @@ export class UserMongodbRepository implements UserRepository {
   private handleDatabaseError(
     operation: string,
     id: string,
-    error: unknown,
+    error: Error,
   ): never {
-    const cause =
-      error instanceof Error ? error : new Error('Unknown database error');
-    throw new InfrastructureException(operation, id, cause);
+    throw new InfrastructureException(operation, id, error);
   }
 }
