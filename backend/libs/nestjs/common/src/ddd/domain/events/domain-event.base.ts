@@ -8,7 +8,7 @@ import { TracingMetadata, TracingMetadataParams } from '../../../tracing/tracing
 export abstract class DomainEvent implements IEvent {
   public readonly occurredOn: Date;
   public readonly eventId: string;
-  public readonly metadata?: TracingMetadata;
+  public readonly metadata: TracingMetadata;
 
   constructor(
     public readonly aggregateId: string,

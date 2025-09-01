@@ -17,7 +17,7 @@ export abstract class BaseIntegrationEvent {
   abstract readonly eventName: string;
   abstract readonly topic: string;
   readonly occurredOn: Date;
-  readonly metadata?: TracingMetadata;
+  readonly metadata: TracingMetadata;
 
   constructor(props: BaseIntegrationEventProps, metadata?: TracingMetadataParams) {
     this.occurredOn = props.occurredOn || new Date();
@@ -40,7 +40,7 @@ export abstract class BaseIntegrationEvent {
       eventVersion: this.eventVersion,
       topic: this.topic,
       occurredOn: this.occurredOn.toISOString(),
-      metadata: this.metadata?.toJSON(),
+      metadata: this.metadata.toJSON(),
       data: this.toEventJSON(),
     };
   }

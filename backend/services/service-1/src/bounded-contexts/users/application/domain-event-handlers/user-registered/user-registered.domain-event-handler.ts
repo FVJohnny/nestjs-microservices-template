@@ -24,13 +24,12 @@ export class UserRegisteredDomainEventHandler
   async handle(event: UserRegisteredEvent): Promise<void> {
     this.logger.log('Handling UserRegisteredEvent...');
 
-    // Transform domain event to integration event
     const integrationEvent = new UserCreatedIntegrationEvent({
       userId: event.aggregateId,
       email: event.email.toValue(),
       username: event.username.toValue(),
       roles: event.roles.map(role => role.toValue()),
-    });
+    }, {causationId: event.metadata.id});
 
     try {
       await this.integrationEventPublisher.publish(
