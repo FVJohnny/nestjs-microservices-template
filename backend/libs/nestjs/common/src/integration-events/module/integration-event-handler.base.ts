@@ -1,7 +1,6 @@
 import { Injectable, Inject, OnModuleInit, Logger } from '@nestjs/common';
-import { IntegrationEventListener } from '../ddd/index';
-import { INTEGRATION_EVENT_LISTENER_TOKEN } from '.';
-import { BaseIntegrationEvent } from './events/base-integration-event';
+import { BaseIntegrationEvent } from '../events';
+import { INTEGRATION_EVENT_LISTENER_TOKEN, IntegrationEventListener } from './integration-event-listener.base';
 
 
 

@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { DiscoveryService } from '@nestjs/core';
 import { EventTrackerService } from './event-tracker.service';
-import { BaseIntegrationEvent } from './events/base-integration-event';
+import { BaseIntegrationEvent } from '../events';
 
 @Injectable()
 export class IntegrationEventTrackingService implements OnModuleInit {
