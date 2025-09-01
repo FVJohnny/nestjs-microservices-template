@@ -1,0 +1,30 @@
+import { HttpStatus } from '@nestjs/common';
+import { BaseException } from './base.exception';
+
+export class NotFoundException extends BaseException {
+  constructor(
+    metadata?: Record<string, any>,
+  ) {
+    super(
+      `Entity not found`,
+      'ENTITY_NOT_FOUND',
+      HttpStatus.NOT_FOUND,
+      { ...metadata },
+    );
+  }
+}
+
+export class AlreadyExistsException extends BaseException {
+  constructor(
+    field: string,
+    value: string,
+    metadata?: Record<string, any>,
+  ) {
+    super(
+      `Entity already exists with ${field}: ${value}`,
+      'ENTITY_ALREADY_EXISTS',
+      HttpStatus.CONFLICT,
+      { ...metadata },
+    );
+  }
+}

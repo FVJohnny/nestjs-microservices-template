@@ -4,8 +4,8 @@ import { TracingMetadata } from '@libs/nestjs-common';
 
 export class UpdateUserProfileCommand extends BaseCommand implements ICommand {
   public readonly userId: string;
-  public readonly firstName?: string;
-  public readonly lastName?: string;
+  public readonly firstName: string;
+  public readonly lastName: string;
 
   constructor(
     props: UpdateUserProfileCommand,

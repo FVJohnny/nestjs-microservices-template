@@ -7,8 +7,7 @@ import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Name } from '../../../domain/value-objects/name.vo';
 import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
-import { BadRequestException } from '@nestjs/common';
-import { BaseCommandHandler } from '@libs/nestjs-common';
+import { AlreadyExistsException, BaseCommandHandler } from '@libs/nestjs-common';
 
 @CommandHandler(RegisterUserCommand)
 export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserCommand, RegisterUserCommandResponse> {
@@ -47,12 +46,12 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserC
 
     const emailExists = await this.userRepository.existsByEmail(email);
     if (emailExists) {
-      throw new BadRequestException(`Email ${command.email} is already registered`);
+      throw new AlreadyExistsException('email', command.email);
     }
 
     const usernameExists = await this.userRepository.existsByUsername(username);
     if (usernameExists) {
-      throw new BadRequestException(`Username ${command.username} is already taken`);
+      throw new AlreadyExistsException('username', command.username);
     }
   }
 }

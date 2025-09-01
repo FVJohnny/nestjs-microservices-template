@@ -1,10 +1,10 @@
 import { CommandHandler } from '@nestjs/cqrs';
-import { Inject, NotFoundException } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { UpdateUserProfileCommand } from './update-user-profile.command';
 import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
 import { Name } from '../../../domain/value-objects/name.vo';
 import { EventBus } from '@nestjs/cqrs';
-import { BaseCommandHandler } from '@libs/nestjs-common';
+import { BaseCommandHandler, NotFoundException } from '@libs/nestjs-common';
 
 @CommandHandler(UpdateUserProfileCommand)
 export class UpdateUserProfileCommandHandler extends BaseCommandHandler<UpdateUserProfileCommand, void> {
@@ -20,12 +20,12 @@ export class UpdateUserProfileCommandHandler extends BaseCommandHandler<UpdateUs
     const user = await this.userRepository.findById(command.userId);
     
     if (!user) {
-      throw new NotFoundException(`User with ID ${command.userId} not found`);
+      throw new NotFoundException();
     }
 
     user.updateProfile({
-      firstName: new Name(command.firstName || ''),
-      lastName: new Name(command.lastName || ''),
+      firstName: new Name(command.firstName),
+      lastName: new Name(command.lastName),
     });
 
     await this.userRepository.save(user);
@@ -40,7 +40,5 @@ export class UpdateUserProfileCommandHandler extends BaseCommandHandler<UpdateUs
   }
 
   protected async validate(command: UpdateUserProfileCommand): Promise<void> {
-    // TODO: Implement validation logic
-    // For example: validate firstName/lastName length, format, etc.
   }
 }

@@ -180,6 +180,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   }
 
   private shouldIncludeStack(): boolean {
-    return !this.isProduction() || process.env.INCLUDE_ERROR_STACK === 'true';
+    return !this.isProduction();
   }
 }

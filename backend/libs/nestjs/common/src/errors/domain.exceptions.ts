@@ -2,30 +2,6 @@ import { HttpStatus } from '@nestjs/common';
 import { BaseException } from './base.exception';
 
 /**
- * Domain-specific exception categories
- * These represent business logic violations
- */
-
-/**
- * Thrown when an entity is not found
- */
-export class EntityNotFoundException extends BaseException {
-  constructor(
-    entityName: string,
-    identifier: string | number,
-    metadata?: Record<string, any>,
-  ) {
-    super(
-      `${entityName} with identifier '${identifier}' was not found`,
-      'ENTITY_NOT_FOUND',
-      HttpStatus.NOT_FOUND,
-      { entityName, identifier, ...metadata },
-    );
-  }
-}
-
-
-/**
  * Thrown when domain business rules are violated
  */
 export class DomainValidationException extends BaseException {

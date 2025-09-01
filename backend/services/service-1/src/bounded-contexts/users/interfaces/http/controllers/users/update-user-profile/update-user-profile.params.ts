@@ -5,18 +5,16 @@ export class UpdateUserProfileControllerParams {
   @ApiProperty({ 
     example: 'John', 
     description: 'First name',
-    required: false 
+    required: true 
   })
   @IsString()
-  @IsOptional()
-  firstName?: string;
+  firstName: string;
 
   @ApiProperty({ 
     example: 'Doe', 
     description: 'Last name',
-    required: false 
+    required: true 
   })
   @IsString()
-  @IsOptional()
-  lastName?: string;
+  lastName: string;
 }

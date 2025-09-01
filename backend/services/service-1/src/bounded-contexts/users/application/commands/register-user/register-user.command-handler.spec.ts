@@ -3,7 +3,7 @@ import { RegisterUserCommand } from './register-user.command';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { BadRequestException } from '@nestjs/common';
-import { createEventBusMock, MockEventBus } from '@libs/nestjs-common';
+import { AlreadyExistsException, createEventBusMock, MockEventBus } from '@libs/nestjs-common';
 import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 
 describe('RegisterUserCommandHandler (Unit)', () => {
@@ -216,11 +216,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       // Act & Assert
       await expect(commandHandler.execute(duplicateEmailCommand))
         .rejects
-        .toThrow(BadRequestException);
-      
-      await expect(commandHandler.execute(duplicateEmailCommand))
-        .rejects
-        .toThrow('Email existing@example.com is already registered');
+        .toThrow(AlreadyExistsException);
     });
 
     it('should throw BadRequestException when username already exists', async () => {
@@ -245,11 +241,8 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       // Act & Assert
       await expect(commandHandler.execute(duplicateUsernameCommand))
         .rejects
-        .toThrow(BadRequestException);
+        .toThrow(AlreadyExistsException);
       
-      await expect(commandHandler.execute(duplicateUsernameCommand))
-        .rejects
-        .toThrow('Username existinguser is already taken');
     });
   });
 });
