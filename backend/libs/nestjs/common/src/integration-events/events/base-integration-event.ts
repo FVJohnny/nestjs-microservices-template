@@ -1,4 +1,4 @@
-import { TracingMetadata, TracingMetadataParams } from "../../ddd";
+import { TracingMetadata, TracingMetadataParams } from "../../general";
 
 /**
  * Base interface for all integration event props.

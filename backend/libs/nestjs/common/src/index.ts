@@ -11,7 +11,7 @@ export * from './tracing/tracing.module';
 export * from './errors';
 
 // DDD exports
-export * from './ddd';
+export * from './general';
 
 // Audit exports
 export * from './audit/audit.module';
@@ -29,7 +29,7 @@ export * from './metrics/metrics.interceptor';
 export * from './testing';
 
 // Use Case interface and decorators
-export * from './ddd/application';
+export * from './general/application';
 
 // Integration events
 export * from './integration-events';
