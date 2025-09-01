@@ -6,7 +6,7 @@ interface UserCreatedIntegrationEventProps extends BaseIntegrationEventProps {
   userId: string;
   email: string;
   username: string;
-  roles: string[];
+  role: string;
 }
 
 export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
@@ -17,7 +17,7 @@ export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
   public readonly userId: string;
   public readonly email: string;
   public readonly username: string;
-  public readonly roles: string[];
+  public readonly role: string;
   
   constructor(
     props: UserCreatedIntegrationEventProps,
@@ -28,7 +28,7 @@ export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
     this.userId = props.userId;
     this.email = props.email;
     this.username = props.username;
-    this.roles = props.roles;
+    this.role = props.role;
   }
   
   protected toEventJSON(): Record<string, any> {
@@ -36,7 +36,7 @@ export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
       userId: this.userId,
       email: this.email,
       username: this.username,
-      roles: this.roles,
+      role: this.role,
     };
   }
   
@@ -46,7 +46,7 @@ export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
         userId: json.userId,
         email: json.email,
         username: json.username,
-        roles: json.roles,
+        role: json.role,
         occurredOn: new Date(json.occurredOn),
       },
       json.metadata

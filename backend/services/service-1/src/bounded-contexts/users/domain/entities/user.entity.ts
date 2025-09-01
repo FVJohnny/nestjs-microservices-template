@@ -33,7 +33,7 @@ export class User extends AggregateRoot implements UserAttributes {
         props.lastName
       ),
       status: new UserStatus(UserStatusEnum.ACTIVE),
-      roles: props.roles,
+      role: props.role,
       lastLoginAt: undefined,
       createdAt: now,
       updatedAt: now,
@@ -44,7 +44,7 @@ export class User extends AggregateRoot implements UserAttributes {
         userId: id,
         email: props.email,
         username: props.username,
-        roles: user.roles,
+        role: user.role,
       }),
     );
 
@@ -64,7 +64,7 @@ export class User extends AggregateRoot implements UserAttributes {
         new Name('Doe')
       ),
       status: props?.status ?? new UserStatus(UserStatusEnum.ACTIVE),
-      roles: props?.roles ?? [UserRole.random()],
+      role: props?.role ?? UserRole.random(),
       lastLoginAt: props?.lastLoginAt,
       createdAt: props?.createdAt || now,
       updatedAt: props?.updatedAt || now,
@@ -113,19 +113,12 @@ export class User extends AggregateRoot implements UserAttributes {
   }
 
   hasRole(role: UserRole): boolean {  
-    return this.roles.some(r => r.equals(role));
+    return this.role.equals(role);
   }
 
-  addRole(role: UserRole): void {
+  changeRole(role: UserRole): void {
     if (!this.hasRole(role)) {
-      this.roles.push(role);
-      this.updatedAt = new Date();
-    }
-  }
-
-  removeRole(role: UserRole): void {
-    if (this.hasRole(role)) {
-      this.roles = this.roles.filter(r => !r.equals(role));
+      this.role = role;
       this.updatedAt = new Date();
     }
   }
@@ -141,7 +134,7 @@ export class User extends AggregateRoot implements UserAttributes {
       username: new Username(value.username),
       profile: new UserProfile(new Name(value.profile.firstName), new Name(value.profile.lastName)),
       status: new UserStatus(value.status),
-      roles: value.roles.map((r: UserRoleEnum) => new UserRole(r)),
+      role: new UserRole(value.role),
       lastLoginAt: value.lastLoginAt ? new Date(value.lastLoginAt) : undefined,
       createdAt: new Date(value.createdAt),
       updatedAt: new Date(value.updatedAt),
@@ -155,7 +148,7 @@ export class User extends AggregateRoot implements UserAttributes {
       username: this.username.toValue(),
       profile: this.profile.toValue(),
       status: this.status.toValue(),
-      roles: this.roles.map(r => r.toValue()),
+      role: this.role.toValue(),
       lastLoginAt: this.lastLoginAt,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

@@ -25,7 +25,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'johndoe',
         firstName: 'John',
         lastName: 'Doe',
-        roles: [UserRoleEnum.USER]
+        role: UserRoleEnum.USER
       });
 
       // Act
@@ -43,8 +43,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       expect(savedUser!.username.toValue()).toBe('johndoe');
       expect(savedUser!.profile.firstName.toValue()).toBe('John');
       expect(savedUser!.profile.lastName.toValue()).toBe('Doe');
-      expect(savedUser!.roles).toHaveLength(1);
-      expect(savedUser!.roles[0].toValue()).toBe(UserRoleEnum.USER);
+      expect(savedUser!.role.toValue()).toBe(UserRoleEnum.USER);
     });
 
     it('should register user with minimal required fields only', async () => {
@@ -54,7 +53,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'minimaluser',
         firstName: '',
         lastName: '',
-        roles: [UserRoleEnum.USER] // At least one role is now required
+        role: UserRoleEnum.USER // At least one role is now required
       });
 
       // Act
@@ -68,32 +67,9 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       expect(savedUser!.username.toValue()).toBe('minimaluser');
       expect(savedUser!.profile.firstName.toValue()).toBe('');
       expect(savedUser!.profile.lastName.toValue()).toBe('');
-      expect(savedUser!.roles).toHaveLength(1);
-      expect(savedUser!.roles[0].toValue()).toBe(UserRoleEnum.USER);
+      expect(savedUser!.role.toValue()).toBe(UserRoleEnum.USER);
     });
 
-    it('should assign multiple roles correctly', async () => {
-      // Arrange
-      const command = new RegisterUserCommand({
-        email: 'multirole@example.com',
-        username: 'multiroleuser',
-        firstName: 'Multi',
-        lastName: 'Role',
-        roles: [UserRoleEnum.ADMIN, UserRoleEnum.USER, UserRoleEnum.MODERATOR]
-      });
-
-      // Act
-      const result = await commandHandler.execute(command);
-
-      // Assert
-      const savedUser = await repository.findById(result.id);
-      expect(savedUser!.roles).toHaveLength(3);
-      
-      const roleValues = savedUser!.roles.map(r => r.toValue());
-      expect(roleValues).toContain(UserRoleEnum.ADMIN);
-      expect(roleValues).toContain(UserRoleEnum.USER);
-      expect(roleValues).toContain(UserRoleEnum.MODERATOR);
-    });
 
     it('should publish UserRegisteredEvent after user creation', async () => {
       // Arrange
@@ -102,7 +78,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'eventsuser',
         firstName: 'Events',
         lastName: 'User',
-        roles: [UserRoleEnum.USER, UserRoleEnum.ADMIN]
+        role: UserRoleEnum.ADMIN
       });
 
       // Act
@@ -123,11 +99,8 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       expect(publishedEvent.occurredOn).toBeInstanceOf(Date);
 
       
-      // Verify roles are correct
-      expect(publishedEvent.roles).toHaveLength(2);
-      const roleValues = publishedEvent.roles.map(r => r.toValue());
-      expect(roleValues).toContain(UserRoleEnum.USER);
-      expect(roleValues).toContain(UserRoleEnum.ADMIN);
+      // Verify role is correct
+      expect(publishedEvent.role.toValue()).toBe(UserRoleEnum.ADMIN);
     });
 
     it('should create user with default active status', async () => {
@@ -137,7 +110,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'activeuser',
         firstName: 'Active',
         lastName: 'User',
-        roles: [UserRole.user().toValue()]
+        role: UserRole.user().toValue()
       });
 
       // Act
@@ -155,7 +128,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'timestampuser',
         firstName: 'Timestamp',
         lastName: 'User',
-        roles: [UserRole.user().toValue()]
+        role: UserRole.user().toValue()
       });
       const beforeCreation = new Date();
 
@@ -180,14 +153,14 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'user1',
         firstName: 'User',
         lastName: 'One',
-        roles: [UserRole.user().toValue()]
+        role: UserRole.user().toValue()
       });
       const command2 = new RegisterUserCommand({
         email: 'user2@example.com',
         username: 'user2',
         firstName: 'User',
         lastName: 'Two',
-        roles: [UserRole.user().toValue()]
+        role: UserRole.user().toValue()
       });
 
       // Act
@@ -212,7 +185,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'failinguser',
         firstName: 'Failing',
         lastName: 'User',
-        roles: [UserRole.user().toValue()]
+        role: UserRole.user().toValue()
       });
 
       // Act & Assert
@@ -228,7 +201,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'user1',
         firstName: 'Existing',
         lastName: 'User',
-        roles: [UserRole.user().toValue()]
+        role: UserRole.user().toValue()
       });
       await commandHandler.execute(existingCommand);
 
@@ -237,7 +210,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'user2',
         firstName: 'Duplicate',
         lastName: 'User',
-        roles: [UserRole.user().toValue()]
+        role: UserRole.user().toValue()
       });
 
       // Act & Assert
@@ -257,7 +230,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'existinguser',
         firstName: 'Existing',
         lastName: 'User',
-        roles: [UserRole.user().toValue()]
+        role: UserRole.user().toValue()
       });
       await commandHandler.execute(existingCommand);
 
@@ -266,7 +239,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'existinguser',
         firstName: 'Existing',
         lastName: 'User',
-        roles: [UserRole.user().toValue()]
+        role: UserRole.user().toValue()
       });
 
       // Act & Assert
@@ -277,22 +250,6 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       await expect(commandHandler.execute(duplicateUsernameCommand))
         .rejects
         .toThrow('Username existinguser is already taken');
-    });
-
-    it('should throw error when empty roles array is provided', async () => {
-      // Arrange
-      const command = new RegisterUserCommand({
-        email: 'noroles@example.com',
-        username: 'norolesuser',
-        firstName: 'No',
-        lastName: 'Roles',
-        roles: []
-      });
-
-      // Act & Assert
-      await expect(commandHandler.execute(command))
-        .rejects
-        .toThrow();
     });
   });
 });

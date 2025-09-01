@@ -23,7 +23,7 @@ export class UserExampleIntegrationEventHandler {
         username: `example_user_${randomId}`,
         firstName: this.getRandomFirstName(),
         lastName: this.getRandomLastName(),
-        roles: [UserRoleEnum.USER]
+        role: UserRoleEnum.USER
       });
       await this.commandBus.execute(command);
       

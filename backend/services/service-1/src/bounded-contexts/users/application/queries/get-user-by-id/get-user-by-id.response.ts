@@ -19,8 +19,8 @@ export class GetUserByIdQueryResponse {
   @ApiProperty({ example: 'active' })
   status: string;
 
-  @ApiProperty({ example: ['user'], type: [String] })
-  roles: string[];
+  @ApiProperty({ example: 'moderator' })
+  role: string;
 
   @ApiProperty({ example: '2023-01-01T00:00:00.000Z', required: false })
   lastLoginAt?: Date;

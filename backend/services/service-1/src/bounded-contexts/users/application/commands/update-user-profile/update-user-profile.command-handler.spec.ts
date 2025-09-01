@@ -130,7 +130,7 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       // Arrange
       const originalEmail = existingUser.email.toValue();
       const originalUsername = existingUser.username.toValue();
-      const originalRoles = existingUser.roles.map(r => r.toValue());
+      const originalRole = existingUser.role.toValue();
       const originalStatus = existingUser.status.toValue();
       
       const command = new UpdateUserProfileCommand({
@@ -146,7 +146,7 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       const updatedUser = await repository.findById(existingUser.id);
       expect(updatedUser!.email.toValue()).toBe(originalEmail);
       expect(updatedUser!.username.toValue()).toBe(originalUsername);
-      expect(updatedUser!.roles.map(r => r.toValue())).toEqual(originalRoles);
+      expect(updatedUser!.role.toValue()).toEqual(originalRole);
       expect(updatedUser!.status.toValue()).toBe(originalStatus);
       expect(updatedUser!.createdAt.getTime()).toBe(existingUser.createdAt.getTime());
     });

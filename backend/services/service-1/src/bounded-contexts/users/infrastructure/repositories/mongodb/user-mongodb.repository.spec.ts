@@ -530,7 +530,7 @@ describe('UserMongodbRepository (Integration)', () => {
           new Name('Test'),
           new Name('User')
         ),
-        roles: [UserRole.admin(), UserRole.user()],
+        role: UserRole.admin(),
       });
 
       // Modify some properties to test different states
@@ -551,7 +551,7 @@ describe('UserMongodbRepository (Integration)', () => {
       expect(loadedUser!.profile.firstName.toValue()).toBe('Modified');
       expect(loadedUser!.profile.lastName.toValue()).toBe('Testuser');
       expect(loadedUser!.status.toValue()).toBe(originalUser.status.toValue());
-      expect(loadedUser!.roles.map(r => r.toValue())).toEqual(originalUser.roles.map(r => r.toValue()));
+      expect(loadedUser!.role.toValue()).toEqual(originalUser.role.toValue());
       expect(loadedUser!.createdAt.getTime()).toBe(originalUser.createdAt.getTime());
       expect(loadedUser!.updatedAt.getTime()).toBeGreaterThanOrEqual(originalUser.updatedAt.getTime());
     });
@@ -621,7 +621,7 @@ describe('UserMongodbRepository (Integration)', () => {
         new Name('Admin'),
         new Name('User')
       ),
-      roles: [UserRole.admin()],
+      role: UserRole.admin(),
     }),
     User.random({
       email: new Email('user1@example.com'),
@@ -630,7 +630,7 @@ describe('UserMongodbRepository (Integration)', () => {
         new Name('John'),
         new Name('Doe')
       ),
-      roles: [UserRole.user()],
+      role: UserRole.user(),
     }),
     User.random({
       email: new Email('user2@example.com'),
@@ -639,7 +639,7 @@ describe('UserMongodbRepository (Integration)', () => {
         new Name('Jane'),
         new Name('Smith')
       ),
-      roles: [UserRole.user()],
+      role: UserRole.user(),
     }),
   ];
 

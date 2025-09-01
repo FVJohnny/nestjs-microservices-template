@@ -32,5 +32,5 @@ export class RegisterUserControllerParams {
   })
   @IsArray()
   @IsNotEmpty()
-  roles: UserRoleEnum[];
+  role: UserRoleEnum;
 }

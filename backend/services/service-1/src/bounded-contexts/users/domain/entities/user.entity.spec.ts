@@ -17,7 +17,7 @@ describe('User Entity', () => {
         username: new Username('testuser'),
         firstName: new Name('John'),
         lastName: new Name('Doe'),
-        roles: [UserRole.user()]
+        role: UserRole.user()
       };
 
       // Act
@@ -30,31 +30,12 @@ describe('User Entity', () => {
       expect(user.profile.firstName.toValue()).toBe('John');
       expect(user.profile.lastName.toValue()).toBe('Doe');
       expect(user.status.toValue()).toBe(UserStatusEnum.ACTIVE);
-      expect(user.roles).toHaveLength(1);
-      expect(user.roles[0].toValue()).toBe(UserRoleEnum.USER);
+      expect(user.role.toValue()).toBe(UserRoleEnum.USER);
       expect(user.lastLoginAt).toBeUndefined();
       expect(user.createdAt).toBeInstanceOf(Date);
       expect(user.updatedAt).toBeInstanceOf(Date);
     });
 
-    it('should create user with multiple roles', () => {
-      // Arrange
-      const props = {
-        email: new Email('admin@example.com'),
-        username: new Username('admin'),
-        firstName: new Name('Admin'),
-        lastName: new Name('User'),
-        roles: [UserRole.admin(), UserRole.user()]
-      };
-
-      // Act
-      const user = User.create(props);
-
-      // Assert
-      expect(user.roles).toHaveLength(2);
-      expect(user.roles.map(r => r.toValue())).toContain(UserRoleEnum.ADMIN);
-      expect(user.roles.map(r => r.toValue())).toContain(UserRoleEnum.USER);
-    });
 
     it('should emit UserRegisteredEvent when created', () => {
       // Arrange
@@ -63,7 +44,7 @@ describe('User Entity', () => {
         username: new Username('testuser'),
         firstName: new Name('John'),
         lastName: new Name('Doe'),
-        roles: [UserRole.random()]
+        role: UserRole.random()
       };
 
       // Act
@@ -78,7 +59,7 @@ describe('User Entity', () => {
       expect(event.aggregateId).toBe(user.id);
       expect(event.email).toBe(props.email);
       expect(event.username).toBe(props.username);
-      expect(event.roles).toEqual(user.roles);
+      expect(event.role).toEqual(user.role);
       expect(event.occurredOn).toBeInstanceOf(Date);
     });
   });
@@ -95,8 +76,7 @@ describe('User Entity', () => {
       expect(user.profile.firstName.toValue()).toBeTruthy();
       expect(user.profile.lastName.toValue()).toBeTruthy();
       expect(user.status.toValue()).toBeTruthy();
-      expect(user.roles).toHaveLength(1);
-      expect(user.roles[0].toValue()).toBeTruthy();
+      expect(user.role.toValue()).toBeTruthy();
       expect(user.lastLoginAt).toBeUndefined();
     });
 
@@ -106,7 +86,7 @@ describe('User Entity', () => {
       const customUsername = new Username('customuser');
       const customFirstName = new Name('Jane');
       const customLastName = new Name('Smith');
-      const customRoles = [UserRole.random()];
+      const customRole = UserRole.random();
       const customStatus = UserStatusEnum.INACTIVE;
       const customLastLogin = new Date('2024-01-01');
       const customCreatedAt = new Date('2024-01-02');
@@ -117,7 +97,7 @@ describe('User Entity', () => {
         email: customEmail,
         username: customUsername,
         profile: new UserProfile(customFirstName, customLastName),
-        roles: customRoles,
+        role: customRole,
         status: UserStatus.inactive(),
         lastLoginAt: customLastLogin,
         createdAt: customCreatedAt,
@@ -129,7 +109,7 @@ describe('User Entity', () => {
       expect(user.username).toBe(customUsername);
       expect(user.profile.firstName).toBe(customFirstName);
       expect(user.profile.lastName).toBe(customLastName);
-      expect(user.roles).toBe(customRoles);
+      expect(user.role).toBe(customRole);
       expect(user.status.toValue()).toBe(customStatus);
       expect(user.lastLoginAt).toBe(customLastLogin);
       expect(user.createdAt).toBe(customCreatedAt);
@@ -262,16 +242,16 @@ describe('User Entity', () => {
       // Arrange
       const adminRole = UserRole.admin();
       const userRole = UserRole.user();
-      const user = User.random({ roles: [adminRole] });
+      const user = User.random({ role: adminRole });
 
       // Act & Assert
       expect(user.hasRole(adminRole)).toBe(true);
       expect(user.hasRole(userRole)).toBe(false);
     });
 
-    it('should add role when user does not have it', async () => {
+    it('should change role when user has different role', async () => {
       // Arrange
-      const user = User.random({ roles: [UserRole.user()] });
+      const user = User.random({ role: UserRole.user() });
       const originalUpdatedAt = user.updatedAt;
       const adminRole = UserRole.admin();
 
@@ -279,63 +259,26 @@ describe('User Entity', () => {
       await new Promise(resolve => setTimeout(resolve, 10));
 
       // Act
-      user.addRole(adminRole);
+      user.changeRole(adminRole);
 
       // Assert
-      expect(user.roles).toHaveLength(2);
       expect(user.hasRole(adminRole)).toBe(true);
+      expect(user.role.toValue()).toBe(UserRoleEnum.ADMIN);
       expect(user.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
     });
 
-    it('should not add duplicate role', () => {
+    it('should not update timestamp when changing to same role', () => {
       // Arrange
-      const userRole = UserRole.random();
-      const user = User.random({ roles: [userRole] });
+      const userRole = UserRole.user();
+      const user = User.random({ role: userRole });
       const originalUpdatedAt = user.updatedAt;
 
       // Act
-      user.addRole(userRole);
+      user.changeRole(userRole);
 
       // Assert
-      expect(user.roles).toHaveLength(1);
+      expect(user.role).toBe(userRole);
       expect(user.updatedAt).toBe(originalUpdatedAt);
-    });
-
-    it('should remove role when user has it', async () => {
-      // Arrange
-      const adminRole = UserRole.admin();
-      const userRole = UserRole.user();
-      const user = User.random({ roles: [adminRole, userRole] });
-      const originalUpdatedAt = user.updatedAt;
-
-      // Wait to ensure timestamp difference
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      // Act
-      user.removeRole(adminRole);
-
-      // Assert
-      expect(user.roles).toHaveLength(1);
-      expect(user.hasRole(adminRole)).toBe(false);
-      expect(user.hasRole(userRole)).toBe(true);
-      expect(user.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
-    });
-
-    it('should not update timestamp when removing non-existent role', async () => {
-      // Arrange
-      const userRole = UserRole.user();
-      const user = User.random({ roles: [userRole] });
-      const originalUpdatedAt = user.updatedAt;
-
-      // Wait to ensure timestamp difference
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      // Act
-      user.removeRole(UserRole.admin());
-
-      // Assert
-      expect(user.roles).toHaveLength(1);
-      expect(user.updatedAt.getTime()).toBe(originalUpdatedAt.getTime());
     });
   });
 
@@ -364,7 +307,7 @@ describe('User Entity', () => {
         email: new Email('test@example.com'),
         username: new Username('testuser'),
         profile: new UserProfile(new Name('John'), new Name('Doe')),
-        roles: [UserRole.admin(), UserRole.user()],
+        role: UserRole.admin(),
         status: UserStatus.active(),
         lastLoginAt: new Date('2024-01-01T12:00:00Z')
       });
@@ -382,7 +325,7 @@ describe('User Entity', () => {
           lastName: 'Doe'
         },
         status: UserStatusEnum.ACTIVE,
-        roles: [UserRoleEnum.ADMIN, UserRoleEnum.USER],
+        role: UserRoleEnum.ADMIN,
         lastLoginAt: new Date('2024-01-01T12:00:00Z'),
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
@@ -400,7 +343,7 @@ describe('User Entity', () => {
           lastName: 'Doe'
         },
         status: UserStatusEnum.INACTIVE,
-        roles: [UserRoleEnum.ADMIN, UserRoleEnum.USER],
+        role: UserRoleEnum.ADMIN,
         lastLoginAt: new Date('2024-01-01T12:00:00Z'),
         createdAt: new Date('2024-01-01T10:00:00Z'),
         updatedAt: new Date('2024-01-01T11:00:00Z')
@@ -416,9 +359,7 @@ describe('User Entity', () => {
       expect(user.profile.firstName.toValue()).toBe('John');
       expect(user.profile.lastName.toValue()).toBe('Doe');
       expect(user.status.toValue()).toBe(UserStatusEnum.INACTIVE);
-      expect(user.roles).toHaveLength(2);
-      expect(user.roles.map(r => r.toValue())).toContain(UserRoleEnum.ADMIN);
-      expect(user.roles.map(r => r.toValue())).toContain(UserRoleEnum.USER);
+      expect(user.role.toValue()).toBe(UserRoleEnum.ADMIN);
       expect(user.lastLoginAt).toEqual(new Date('2024-01-01T12:00:00Z'));
       expect(user.createdAt).toEqual(new Date('2024-01-01T10:00:00Z'));
       expect(user.updatedAt).toEqual(new Date('2024-01-01T11:00:00Z'));
@@ -459,18 +400,6 @@ describe('User Entity', () => {
       expect(reconstructed.profile.lastName.toValue()).toBe('');
     });
 
-    it('should handle user with no roles initially', () => {
-      // Arrange
-      const user = User.random({ roles: [] });
-
-      // Act & Assert
-      expect(user.roles).toHaveLength(0);
-      expect(user.hasRole(UserRole.user())).toBe(false);
-      
-      // Should be able to add roles
-      user.addRole(UserRole.user());
-      expect(user.roles).toHaveLength(1);
-    });
 
     it('should generate unique IDs for different users', () => {
       // Act
@@ -523,7 +452,7 @@ describe('User Entity', () => {
         lastName: new Name('Name')
       });
       user.activate();
-      user.addRole(UserRole.admin());
+      user.changeRole(UserRole.admin());
 
       // Assert - core identifiers should remain unchanged
       expect(user.id).toBe(originalId);
@@ -554,7 +483,7 @@ describe('User Entity', () => {
         username: new Username('testuser'),
         firstName: new Name('John'),
         lastName: new Name('Doe'),
-        roles: [UserRole.user()]
+        role: UserRole.user()
       });
 
       // Act

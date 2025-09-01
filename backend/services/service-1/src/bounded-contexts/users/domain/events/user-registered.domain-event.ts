@@ -7,14 +7,14 @@ interface UserRegisteredDomainEventParams {
   userId: string;
   email: Email;
   username: Username;
-  roles: UserRole[];
+  role: UserRole;
 }
 
 export class UserRegisteredDomainEvent extends DomainEvent {
 
   public readonly email: Email;
   public readonly username: Username;
-  public readonly roles: UserRole[];
+  public readonly role: UserRole;
 
   constructor(
     params: UserRegisteredDomainEventParams,
@@ -23,7 +23,7 @@ export class UserRegisteredDomainEvent extends DomainEvent {
 
     this.email = params.email;
     this.username = params.username;
-    this.roles = params.roles;
+    this.role = params.role;
   }
 
 }

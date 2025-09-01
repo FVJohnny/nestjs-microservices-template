@@ -28,7 +28,7 @@ export class UserRegisteredDomainEventHandler
       userId: event.aggregateId,
       email: event.email.toValue(),
       username: event.username.toValue(),
-      roles: event.roles.map(role => role.toValue()),
+      role: event.role.toValue(),
     }, {causationId: event.metadata.id});
 
     try {

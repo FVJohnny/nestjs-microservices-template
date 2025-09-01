@@ -10,7 +10,7 @@ export interface CreateUserProps {
     username: Username;
     firstName: Name;
     lastName: Name;
-    roles: UserRole[];
+    role: UserRole;
   }
 export interface UserAttributes {
     id: string;
@@ -18,7 +18,7 @@ export interface UserAttributes {
     username: Username;
     profile: UserProfile;
     status: UserStatus;
-    roles: UserRole[];
+    role: UserRole;
     lastLoginAt: Date | undefined;
     createdAt: Date;
     updatedAt: Date;

@@ -8,7 +8,7 @@ export class RegisterUserCommand extends BaseCommand implements ICommand {
   public readonly username: string;
   public readonly firstName: string;
   public readonly lastName: string;
-  public readonly roles: string[];
+  public readonly role: string;
 
   constructor(props: RegisterUserCommand, metadata?: TracingMetadataParams) {
     super(metadata);
@@ -16,7 +16,7 @@ export class RegisterUserCommand extends BaseCommand implements ICommand {
     this.username = props.username;
     this.firstName = props.firstName;
     this.lastName = props.lastName;
-    this.roles = props.roles;
+    this.role = props.role;
   }
 }
 

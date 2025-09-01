@@ -413,11 +413,11 @@ describe('UserInMemoryRepository', () => {
         expect(result[0].status.toValue()).toBe(UserStatusEnum.INACTIVE);
       });
 
-      it('should filter by roles (CONTAINS)', async () => {
+      it('should filter by roles (EQUAL)', async () => {
         // Arrange
         const filter = new Filter(
-          new FilterField('roles'),
-          new FilterOperator(Operator.CONTAINS),
+          new FilterField('role'),
+          new FilterOperator(Operator.EQUAL),
           new FilterValue('admin')
         );
         const criteria = new Criteria({
@@ -429,7 +429,7 @@ describe('UserInMemoryRepository', () => {
 
         // Assert
         expect(result).toHaveLength(1);
-        expect(result[0].hasRole(testUsers.find(u => u.username.toValue() === 'admin')!.roles[0])).toBe(true);
+        expect(result[0].role.toValue()).toBe(UserRoleEnum.ADMIN);
       });
     });
 
@@ -827,7 +827,7 @@ describe('UserInMemoryRepository', () => {
           new Name('Test'),
           new Name('User')
         ),
-        roles: [UserRole.admin(), UserRole.user()],
+        role: UserRole.admin(),
       });
 
       // Modify some properties
@@ -848,7 +848,7 @@ describe('UserInMemoryRepository', () => {
       expect(loadedUser!.profile.firstName.toValue()).toBe('Modified');
       expect(loadedUser!.profile.lastName.toValue()).toBe('Testuser');
       expect(loadedUser!.status.toValue()).toBe(originalUser.status.toValue());
-      expect(loadedUser!.roles.map(r => r.toValue())).toEqual(originalUser.roles.map(r => r.toValue()));
+      expect(loadedUser!.role.toValue()).toEqual(originalUser.role.toValue());
       expect(loadedUser!.createdAt.getTime()).toBe(originalUser.createdAt.getTime());
       expect(loadedUser!.updatedAt.getTime()).toBe(originalUser.updatedAt.getTime());
     });
@@ -1007,7 +1007,7 @@ describe('UserInMemoryRepository', () => {
         new Name('Admin'),
         new Name('User')
       ),
-      roles: [UserRole.admin()],
+      role: UserRole.admin(),
     }),
     User.random({
       email: new Email('user1@example.com'),
@@ -1016,7 +1016,7 @@ describe('UserInMemoryRepository', () => {
         new Name('John'),
         new Name('Doe')
       ),
-      roles: [UserRole.user()],
+      role: UserRole.user(),
     }),
     User.random({
       email: new Email('user2@example.com'),
@@ -1025,7 +1025,7 @@ describe('UserInMemoryRepository', () => {
         new Name('Jane'),
         new Name('Smith')
       ),
-      roles: [UserRole.user()],
+      role: UserRole.user(),
     }),
   ];
 

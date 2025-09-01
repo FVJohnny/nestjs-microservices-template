@@ -25,7 +25,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
         userId: 'test-user-id',
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        roles: [UserRole.user()],
+        role: UserRole.user(),
       });
 
       // Act
@@ -41,32 +41,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       expect(publishedData.data.userId).toBe('test-user-id');
       expect(publishedData.data.email).toBe('test@example.com');
       expect(publishedData.data.username).toBe('testuser');
-      expect(publishedData.data.roles).toEqual(['user']);
-    });
-
-    it('should handle user with multiple roles', async () => {
-      // Arrange
-      const event = new UserRegisteredDomainEvent({
-        userId: 'multi-role-user-id',
-        email: new Email('admin@example.com'),
-        username: new Username('adminuser'),
-        roles: [
-          UserRole.admin(),
-          UserRole.user(),
-          UserRole.moderator(),
-        ],
-      });
-
-      // Act
-      await eventHandler.handle(event);
-
-      // Assert
-      const publishedEvent = mockIntegrationEventPublisher.publishedEvents[0];
-      const publishedData = publishedEvent.message;
-      
-      expect(publishedData.data.roles).toEqual(['admin', 'user', 'moderator']);
-      expect(publishedData.data.email).toBe('admin@example.com');
-      expect(publishedData.data.username).toBe('adminuser');
+      expect(publishedData.data.role).toEqual('user');
     });
 
     it('should handle user with no roles', async () => {
@@ -75,7 +50,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
         userId: 'no-roles-user-id',
         email: new Email('noroles@example.com'),
         username: new Username('noroles'),
-        roles: [],
+        role: UserRole.user(),
       });
 
       // Act
@@ -85,7 +60,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       const publishedEvent = mockIntegrationEventPublisher.publishedEvents[0];
       const publishedData = publishedEvent.message;
       
-      expect(publishedData.data.roles).toEqual([]);
+      expect(publishedData.data.role).toEqual('user');
     });
 
     it('should handle special characters in email and username', async () => {
@@ -94,7 +69,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
         userId: 'special-chars-user',
         email: new Email('test.user+tag@example-domain.com'),
         username: new Username('user_name-123'),
-        roles: [UserRole.user()],
+        role: UserRole.user(),
       });
 
       // Act
@@ -114,7 +89,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
         userId: 'integration-event-test',
         email: new Email('integration@example.com'),
         username: new Username('integration'),
-        roles: [UserRole.user()],
+        role: UserRole.user(),
       });
 
       // Act
@@ -137,9 +112,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       expect(publishedEvent.data.userId).toBe('integration-event-test');
       expect(publishedEvent.data.email).toBe('integration@example.com');
       expect(publishedEvent.data.username).toBe('integration');
-      expect(publishedEvent.data.roles).toEqual(['user']);
-
-      
+      expect(publishedEvent.data.role).toEqual('user');
     });
 
     it('should handle multiple events sequentially', async () => {
@@ -149,13 +122,13 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
           userId: 'user-1',
           email: new Email('user1@example.com'),
           username: new Username('user1'),
-          roles: [UserRole.user()],
+          role: UserRole.user(),
         }),
         new UserRegisteredDomainEvent({
           userId: 'user-2',
           email: new Email('user2@example.com'),
           username: new Username('user2'),
-          roles: [UserRole.admin()],
+          role: UserRole.admin(),
         }),
       ];
 
@@ -179,7 +152,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
         userId: 'failing-user-id',
         email: new Email('failing@example.com'),
         username: new Username('failing'),
-        roles: [UserRole.user()],
+        role: UserRole.user(),
       });
 
       // Act & Assert
@@ -195,7 +168,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
         userId: 'network-error-user',
         email: new Email('network@example.com'),
         username: new Username('network'),
-        roles: [UserRole.user()],
+        role: UserRole.user(),
       });
 
       // Act & Assert
@@ -211,7 +184,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
         userId: 'timeout-user',
         email: new Email('timeout@example.com'),
         username: new Username('timeout'),
-        roles: [UserRole.user()],
+        role: UserRole.user(),
       });
 
       // Act & Assert

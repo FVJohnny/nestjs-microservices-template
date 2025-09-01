@@ -26,7 +26,7 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserC
       username: new Username(command.username),
       firstName: new Name(command.firstName),
       lastName: new Name(command.lastName),
-      roles: command.roles.map(role => new UserRole(role as UserRoleEnum)),
+      role: new UserRole(command.role as UserRoleEnum),
     });
 
     await this.userRepository.save(user);
@@ -44,11 +44,6 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserC
   protected async validate(command: RegisterUserCommand): Promise<void> {
     const email = new Email(command.email);
     const username = new Username(command.username);
-    const numOfRoles = command.roles.length;
-
-    if (numOfRoles === 0) {
-      throw new BadRequestException('At least one role is required');
-    }
 
     const emailExists = await this.userRepository.existsByEmail(email);
     if (emailExists) {
