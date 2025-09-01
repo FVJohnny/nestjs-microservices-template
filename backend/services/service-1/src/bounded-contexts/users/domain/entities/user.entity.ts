@@ -8,7 +8,7 @@ import { Email } from '../value-objects/email.vo';
 import { Username } from '../value-objects/username.vo';
 import { Name } from '../value-objects/name.vo';
 import { UserProfile } from '../value-objects/user-profile.vo';
-import { CreateUserProps, UserAttributes } from './user.types';
+import { CreateUserProps, UserAttributes, UserDTO } from './user.types';
 
 export interface User extends UserAttributes {}
 export class User extends AggregateRoot implements UserAttributes {
@@ -141,7 +141,7 @@ export class User extends AggregateRoot implements UserAttributes {
     });
   }
 
-  toValue() {
+  toValue(): UserDTO {
     return {
       id: this.id,
       email: this.email.toValue(),

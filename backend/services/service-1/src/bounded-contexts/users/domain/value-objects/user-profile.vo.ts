@@ -1,12 +1,7 @@
 import { CompositeValueObject } from '@libs/nestjs-common';
 import { Name } from './name.vo';
 
-type UserProfilePrimitives = {
-  firstName: string;
-  lastName: string;
-};
-
-export class UserProfile extends CompositeValueObject<UserProfilePrimitives> {
+export class UserProfile extends CompositeValueObject<UserProfileDTO> {
 
   constructor(
     public readonly firstName: Name,
@@ -22,7 +17,7 @@ export class UserProfile extends CompositeValueObject<UserProfilePrimitives> {
     );
   }
 
-  toValue() {
+  toValue(): UserProfileDTO {
     return {
       firstName: this.firstName.toValue(),
       lastName: this.lastName.toValue()
@@ -40,3 +35,8 @@ export class UserProfile extends CompositeValueObject<UserProfilePrimitives> {
     return `${first} ${last}`;
   }
 }
+
+export type UserProfileDTO = {
+  firstName: string;
+  lastName: string;
+};

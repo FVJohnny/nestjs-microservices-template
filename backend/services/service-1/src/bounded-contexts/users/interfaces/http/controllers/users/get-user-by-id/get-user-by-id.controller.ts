@@ -5,16 +5,16 @@ import {
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { GetUserByIdQuery, GetUserByIdQueryResponse } from '../../../../../application/queries';
+import { GetUserByIdQuery } from '../../../../../application/queries';
+import { GetUserByIdQueryResponse } from 'src/bounded-contexts/users/application/queries/get-user-by-id/get-user-by-id.response';
 
 @ApiTags('users')
 @Controller('users')
 export class GetUserController {
   constructor(private readonly queryBus: QueryBus) {}
 
-  @Get(':id')
+  @Get(':userId')
   @ApiOperation({ summary: 'Get user by ID' })
-  @ApiParam({ name: 'id', description: 'User ID', type: String })
   @ApiResponse({
     status: 200,
     description: 'User found',
@@ -24,8 +24,8 @@ export class GetUserController {
     status: 404,
     description: 'User not found',
   })
-  async getUser(@Param('id') id: string): Promise<GetUserByIdQueryResponse> {
-    const query = new GetUserByIdQuery({ userId: id });
+  async getUser(@Param('userId') userId: string): Promise<GetUserByIdQueryResponse> {
+    const query = new GetUserByIdQuery({ userId });
     return await this.queryBus.execute(query);
   }
 }

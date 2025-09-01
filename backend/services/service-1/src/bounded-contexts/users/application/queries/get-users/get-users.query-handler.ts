@@ -112,7 +112,7 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
 
     const users = await this.userRepository.findByCriteria(criteria);
     
-    return { ids: users.map(user => user.id) };
+    return { users: users.map(user => user.toValue()) };
   }
 
   protected async authorize(query: GetUsersQuery): Promise<boolean> {

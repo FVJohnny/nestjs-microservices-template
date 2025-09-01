@@ -1,9 +1,9 @@
 import { QueryHandler } from '@nestjs/cqrs';
 import { Inject, NotFoundException } from '@nestjs/common';
 import { GetUserByIdQuery } from './get-user-by-id.query';
-import { GetUserByIdQueryResponse } from './get-user-by-id.response';
 import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
 import { BaseQueryHandler } from '@libs/nestjs-common';
+import { GetUserByIdQueryResponse } from './get-user-by-id.response';
 
 @QueryHandler(GetUserByIdQuery)
 export class GetUserByIdQueryHandler extends BaseQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse> {
@@ -21,20 +21,7 @@ export class GetUserByIdQueryHandler extends BaseQueryHandler<GetUserByIdQuery, 
       throw new NotFoundException(`User with ID ${query.userId} not found`);
     }
 
-    const profileData = user.profile.toValue();
-    
-    return {
-      id: user.id,
-      email: user.email.toValue(),
-      username: user.username.toValue(),
-      firstName: profileData.firstName,
-      lastName: profileData.lastName,
-      status: user.status.toValue(),
-      role: user.role.toValue(),
-      lastLoginAt: user.lastLoginAt,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+    return user.toValue();
   }
 
   protected async authorize(query: GetUserByIdQuery): Promise<boolean> {

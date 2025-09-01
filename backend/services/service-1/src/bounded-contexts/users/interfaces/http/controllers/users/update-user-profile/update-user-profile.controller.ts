@@ -38,11 +38,3 @@ export class UpdateUserProfileController {
     await this.commandBus.execute(command);
   }
 }
-
-console.log('UpdateUserProfileController');
-const command = new UpdateUserProfileCommand({
-  userId: 'user iddd',
-  firstName: 'first name',
-  lastName: 'last name',
-});
-console.log(command);
