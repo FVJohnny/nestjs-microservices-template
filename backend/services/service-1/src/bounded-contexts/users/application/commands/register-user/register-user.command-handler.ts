@@ -1,7 +1,7 @@
 import { CommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { RegisterUserCommand, RegisterUserCommandResponse } from './register-user.command';
-import type { UserRepository } from '../../../domain/repositories/user.repository';
+import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
@@ -13,7 +13,7 @@ import { BaseCommandHandler } from '@libs/nestjs-common';
 @CommandHandler(RegisterUserCommand)
 export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserCommand, RegisterUserCommandResponse> {
   constructor(
-    @Inject('UserRepository')
+    @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
     eventBus: EventBus,
   ) {

@@ -2,13 +2,13 @@ import { QueryHandler } from '@nestjs/cqrs';
 import { Inject, NotFoundException } from '@nestjs/common';
 import { GetUserByIdQuery } from './get-user-by-id.query';
 import { GetUserByIdQueryResponse } from './get-user-by-id.response';
-import type { UserRepository } from '../../../domain/repositories/user.repository';
+import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
 import { BaseQueryHandler } from '@libs/nestjs-common';
 
 @QueryHandler(GetUserByIdQuery)
 export class GetUserByIdQueryHandler extends BaseQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse> {
   constructor(
-    @Inject('UserRepository')
+    @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
   ) {
     super();

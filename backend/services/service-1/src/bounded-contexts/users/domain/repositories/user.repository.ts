@@ -4,6 +4,7 @@ import { Email } from '../value-objects/email.vo';
 import { Username } from '../value-objects/username.vo';
 import { Criteria } from '@libs/nestjs-common';
 
+export const USER_REPOSITORY = Symbol('UserRepository');
 export interface UserRepository extends Repository<User, string> {
   findByEmail(email: Email): Promise<User | null>;
   findByUsername(username: Username): Promise<User | null>;

@@ -2,14 +2,15 @@ import { QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { GetUsersQuery } from './get-users.query';
 import { GetUsersQueryResponse } from './get-users.response';
-import type { UserRepository } from '../../../domain/repositories/user.repository';
+import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
 import { Criteria, Filters, Filter, FilterField, FilterOperator, FilterValue, Operator, OrderTypes, Order, BaseQueryHandler } from '@libs/nestjs-common';
 import { UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
+
 
 @QueryHandler(GetUsersQuery)
 export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUsersQueryResponse> {
   constructor(
-    @Inject('UserRepository')
+    @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
   ) {
     super();

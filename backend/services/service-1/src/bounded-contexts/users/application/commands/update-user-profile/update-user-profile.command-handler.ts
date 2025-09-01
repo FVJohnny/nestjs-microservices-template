@@ -1,7 +1,7 @@
 import { CommandHandler } from '@nestjs/cqrs';
 import { Inject, NotFoundException } from '@nestjs/common';
 import { UpdateUserProfileCommand } from './update-user-profile.command';
-import type { UserRepository } from '../../../domain/repositories/user.repository';
+import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
 import { Name } from '../../../domain/value-objects/name.vo';
 import { EventBus } from '@nestjs/cqrs';
 import { BaseCommandHandler } from '@libs/nestjs-common';
@@ -9,7 +9,7 @@ import { BaseCommandHandler } from '@libs/nestjs-common';
 @CommandHandler(UpdateUserProfileCommand)
 export class UpdateUserProfileCommandHandler extends BaseCommandHandler<UpdateUserProfileCommand, void> {
   constructor(
-    @Inject('UserRepository')
+    @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
     eventBus: EventBus,
   ) {
