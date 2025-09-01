@@ -113,7 +113,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       expect(publishedData.data.username).toBe('user_name-123');
     });
 
-    it('should create proper UserCreatedIntegrationEvent', async () => {
+    it('should publish UserCreatedIntegrationEvent', async () => {
       // Arrange
       const event = new UserRegisteredEvent({
         userId: 'integration-event-test',
@@ -127,22 +127,25 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       await eventHandler.handle(event);
 
       // Assert
-      const publishedEvent = mockIntegrationEventPublisher.publishedEvents[0];
-      const topic = publishedEvent.topic;
-      const data = publishedEvent.message;
+      const publishedEvent = mockIntegrationEventPublisher.publishedEvents[0].message;
+      expect(publishedEvent.topic).toBe(Topics.USERS.topic);
+      expect(publishedEvent.eventName).toEqual(Topics.USERS.events.USER_CREATED);
+      expect(publishedEvent.eventVersion).toBeDefined();
+      expect(publishedEvent.occurredOn).toBeDefined();
 
-      const integrationEvent = new UserCreatedIntegrationEvent({
-        userId: 'integration-event-test',
-        email: 'integration@example.com',
-        username: 'integration',
-        roles: ['user'],
-      });
-      expect(topic).toBe(Topics.USERS.topic);
+      expect(publishedEvent.metadata).toBeDefined();
+      expect(publishedEvent.metadata.id).toBeDefined();
+      expect(publishedEvent.metadata.causationId).toEqual(event.metadata.id);
+      expect(publishedEvent.metadata.correlationId).toBeDefined();
+      expect(publishedEvent.metadata.userId).toBeDefined();
+
+      expect(publishedEvent.data).toBeDefined();
+      expect(publishedEvent.data.userId).toBe('integration-event-test');
+      expect(publishedEvent.data.email).toBe('integration@example.com');
+      expect(publishedEvent.data.username).toBe('integration');
+      expect(publishedEvent.data.roles).toEqual(['user']);
+
       
-      const assertJson = integrationEvent.toJSON();
-      delete assertJson.metadata;
-      delete data.metadata;
-      expect(data).toEqual(assertJson);
     });
 
     it('should handle multiple events sequentially', async () => {
