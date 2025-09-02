@@ -1,9 +1,8 @@
-import { IsOptional, IsString, IsNumber, IsBoolean, IsEnum } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { OrderTypes } from '@libs/nestjs-common';
+import { ControllerPaginationParams } from '@libs/nestjs-common';
 
-export class GetUsersControllerParams {
+export class GetUsersControllerParams extends ControllerPaginationParams {
   @ApiProperty({ required: false, description: 'Filter by user status' })
   @IsOptional()
   @IsString()
@@ -33,26 +32,4 @@ export class GetUsersControllerParams {
   @IsOptional()
   @IsString()
   lastName?: string;
-
-  @ApiProperty({ required: false, description: 'Sort by field' })
-  @IsOptional()
-  @IsString()
-  orderBy?: string;
-
-  @ApiProperty({ required: false, enum: OrderTypes, description: 'Sort direction' })
-  @IsOptional()
-  @IsEnum(OrderTypes)
-  orderType?: OrderTypes;
-
-  @ApiProperty({ required: false, description: 'Maximum number of results' })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  limit?: number;
-
-  @ApiProperty({ required: false, description: 'Number of results to skip' })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  offset?: number;
 }

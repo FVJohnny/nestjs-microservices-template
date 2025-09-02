@@ -75,9 +75,9 @@ describe('GET /users (E2E)', () => {
     const res = await request(app.getHttpServer()).get('/users').expect(200);
 
     // Assert
-    expect(Array.isArray(res.body.users)).toBe(true);
-    expect(res.body.users).toHaveLength(3);
-    const usernames = res.body.users.map((u: any) => u.username).sort();
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.data).toHaveLength(3);
+    const usernames = res.body.data.map((u: any) => u.username).sort();
     expect(usernames).toEqual(['admin', 'user1', 'user2']);
   });
 
@@ -88,8 +88,8 @@ describe('GET /users (E2E)', () => {
     await repository.save(active);
 
     const res = await request(app.getHttpServer()).get('/users').query({ status: 'inactive' }).expect(200);
-    expect(res.body.users).toHaveLength(1);
-    expect(res.body.users[0].username).toBe('inactive');
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.data[0].username).toBe('inactive');
   });
 
   it('supports contains filters: email, username, firstName, lastName', async () => {
@@ -111,20 +111,20 @@ describe('GET /users (E2E)', () => {
     await Promise.all([admin, u1, u2].map(u => repository.save(u)));
 
     const byEmail = await request(app.getHttpServer()).get('/users').query({ email: 'admin@' }).expect(200);
-    expect(byEmail.body.users).toHaveLength(1);
-    expect(byEmail.body.users[0].username).toBe('admin');
+    expect(byEmail.body.data).toHaveLength(1);
+    expect(byEmail.body.data[0].username).toBe('admin');
 
     const byUsername = await request(app.getHttpServer()).get('/users').query({ username: 'user1' }).expect(200);
-    expect(byUsername.body.users).toHaveLength(1);
-    expect(byUsername.body.users[0].username).toBe('user1');
+    expect(byUsername.body.data).toHaveLength(1);
+    expect(byUsername.body.data[0].username).toBe('user1');
 
     const byFirst = await request(app.getHttpServer()).get('/users').query({ firstName: 'Jane' }).expect(200);
-    expect(byFirst.body.users).toHaveLength(1);
-    expect(byFirst.body.users[0].username).toBe('user2');
+    expect(byFirst.body.data).toHaveLength(1);
+    expect(byFirst.body.data[0].username).toBe('user2');
 
     const byLast = await request(app.getHttpServer()).get('/users').query({ lastName: 'Doe' }).expect(200);
-    expect(byLast.body.users).toHaveLength(1);
-    expect(byLast.body.users[0].username).toBe('user1');
+    expect(byLast.body.data).toHaveLength(1);
+    expect(byLast.body.data[0].username).toBe('user1');
   });
 
   it('filters by role equality', async () => {
@@ -134,12 +134,12 @@ describe('GET /users (E2E)', () => {
     await repository.save(user);
 
     const onlyAdmins = await request(app.getHttpServer()).get('/users').query({ role: 'admin' }).expect(200);
-    expect(onlyAdmins.body.users).toHaveLength(1);
-    expect(onlyAdmins.body.users[0].username).toBe('admin');
+    expect(onlyAdmins.body.data).toHaveLength(1);
+    expect(onlyAdmins.body.data[0].username).toBe('admin');
 
     const onlyUsers = await request(app.getHttpServer()).get('/users').query({ role: 'user' }).expect(200);
-    expect(onlyUsers.body.users).toHaveLength(1);
-    expect(onlyUsers.body.users[0].username).toBe('user');
+    expect(onlyUsers.body.data).toHaveLength(1);
+    expect(onlyUsers.body.data[0].username).toBe('user');
   });
 
   it('orders by username asc and paginates with limit/offset', async () => {
@@ -149,10 +149,10 @@ describe('GET /users (E2E)', () => {
     await Promise.all([a, b, c].map(u => repository.save(u)));
 
     const ordered = await request(app.getHttpServer()).get('/users').query({ orderBy: 'username', orderType: 'asc' }).expect(200);
-    expect(ordered.body.users.map((u: any) => u.username)).toEqual(['admin', 'user1', 'user2']);
+    expect(ordered.body.data.map((u: any) => u.username)).toEqual(['admin', 'user1', 'user2']);
 
     const page = await request(app.getHttpServer()).get('/users').query({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 1 }).expect(200);
-    expect(page.body.users.map((u: any) => u.username)).toEqual(['user1', 'user2']);
+    expect(page.body.data.map((u: any) => u.username)).toEqual(['user1', 'user2']);
   });
 
   it('rejects invalid orderType with 400 (validation)', async () => {

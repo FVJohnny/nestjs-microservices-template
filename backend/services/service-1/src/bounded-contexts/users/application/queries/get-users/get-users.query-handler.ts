@@ -3,8 +3,7 @@ import { Inject } from '@nestjs/common';
 import { GetUsersQuery } from './get-users.query';
 import { GetUsersQueryResponse } from './get-users.response';
 import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
-import { Criteria, Filters, Filter, FilterField, FilterOperator, FilterValue, Operator, OrderTypes, Order, BaseQueryHandler } from '@libs/nestjs-common';
-import { UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
+import { Criteria, Filters, Filter, FilterField, FilterOperator, FilterValue, Operator, OrderTypes, Order, BaseQueryHandler, OffsetPageParams, OffsetPageResultPagination } from '@libs/nestjs-common';
 
 
 @QueryHandler(GetUsersQuery)
@@ -83,8 +82,7 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
     
     const filters = new Filters(filterList);
     
-    // Handle ordering - use createdAt DESC as default to avoid empty string issues
-    let order = Order.none(); // Default ordering
+    let order = Order.none();
     if (query.pagination?.sort) {
       order = Order.fromValues(query.pagination.sort.field, query.pagination.sort.order || OrderTypes.ASC);
     }
@@ -98,7 +96,15 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
 
     const users = await this.userRepository.findByCriteria(criteria);
 
-    return { users: users.map(user => user.toValue()) };
+    const pagination: OffsetPageResultPagination = {
+      kind: 'offset',
+      limit: query.pagination?.limit || 0,
+      offset: query.pagination?.offset || 0,
+      hasNext: query.pagination?.limit ? users.length > query.pagination?.limit : false,
+      total: users.length,
+    };
+    
+    return { data: users.map(user => user.toValue()), pagination };
   }
 
   protected async authorize(query: GetUsersQuery): Promise<boolean> {

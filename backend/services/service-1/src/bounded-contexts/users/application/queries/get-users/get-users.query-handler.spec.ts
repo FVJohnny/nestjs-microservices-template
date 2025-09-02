@@ -57,8 +57,8 @@ describe('GetUsersQueryHandler', () => {
       const result = await handler.execute(query);
 
       // Assert
-      expect(result.users).toHaveLength(users.length);
-      users.forEach(u => expect(result.users).toContainEqual(u.toValue()));
+      expect(result.data).toHaveLength(users.length);
+      users.forEach(u => expect(result.data).toContainEqual(u.toValue()));
     });
 
     it('should filter by status when provided', async () => {
@@ -77,8 +77,8 @@ describe('GetUsersQueryHandler', () => {
       const result = await handler.execute(query);
 
       // Assert
-      expect(result.users).toHaveLength(1);
-      expect(result.users[0].username).toBe(inactive.username.toValue());
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].username).toBe(inactive.username.toValue());
     });
 
     it('should filter by email, username, firstName and lastName (contains)', async () => {
@@ -99,17 +99,17 @@ describe('GetUsersQueryHandler', () => {
       const resultsByLastName = await handler.execute(queryByLastName);
 
       // Assert
-      expect(resultsByEmail.users).toHaveLength(1);
-      expect(resultsByEmail.users[0].username).toBe('admin');
+      expect(resultsByEmail.data).toHaveLength(1);
+      expect(resultsByEmail.data[0].username).toBe('admin');
 
-      expect(resultsByUsername.users).toHaveLength(1);
-      expect(resultsByUsername.users[0].username).toBe('user1');
+      expect(resultsByUsername.data).toHaveLength(1);
+      expect(resultsByUsername.data[0].username).toBe('user1');
 
-      expect(resultsByFirstName.users).toHaveLength(1);
-      expect(resultsByFirstName.users[0].username).toBe('user2');
+      expect(resultsByFirstName.data).toHaveLength(1);
+      expect(resultsByFirstName.data[0].username).toBe('user2');
 
-      expect(resultsByLastName.users).toHaveLength(1);
-      expect(resultsByLastName.users[0].username).toBe('user1');
+      expect(resultsByLastName.data).toHaveLength(1);
+      expect(resultsByLastName.data[0].username).toBe('user1');
     });
   });
 
@@ -123,7 +123,7 @@ describe('GetUsersQueryHandler', () => {
       const result = await handler.execute(query);
 
       // Assert
-      expect(result.users.map(u => u.username)).toEqual(['admin', 'user1', 'user2']);
+      expect(result.data.map(u => u.username)).toEqual(['admin', 'user1', 'user2']);
     });
 
     it('should apply limit and offset', async () => {
@@ -135,8 +135,8 @@ describe('GetUsersQueryHandler', () => {
       const page2 = await handler.execute(new GetUsersQuery({ pagination: { sort: { field: 'username', order: 'asc' }, limit: 2, offset: 2 } }));
 
       // Assert
-      expect(page1.users.map(u => u.username)).toEqual(['admin', 'user1']);
-      expect(page2.users.map(u => u.username)).toEqual(['user2']);
+      expect(page1.data.map(u => u.username)).toEqual(['admin', 'user1']);
+      expect(page2.data.map(u => u.username)).toEqual(['user2']);
     });
   });
 
@@ -150,8 +150,8 @@ describe('GetUsersQueryHandler', () => {
       const onlyAdmins = await handler.execute(query);
 
       // Assert
-      expect(onlyAdmins.users).toHaveLength(1);
-      expect(onlyAdmins.users[0].role).toBe(UserRoleEnum.ADMIN);
+      expect(onlyAdmins.data).toHaveLength(1);
+      expect(onlyAdmins.data[0].role).toBe(UserRoleEnum.ADMIN);
     });
 
     it('should return only users when role=USER', async () => {
@@ -163,8 +163,8 @@ describe('GetUsersQueryHandler', () => {
       const onlyUsers = await handler.execute(query);
 
       // Assert
-      expect(onlyUsers.users).toHaveLength(2);
-      expect(new Set(onlyUsers.users.map(u => u.role))).toEqual(new Set([UserRoleEnum.USER]));
+      expect(onlyUsers.data).toHaveLength(2);
+      expect(new Set(onlyUsers.data.map(u => u.role))).toEqual(new Set([UserRoleEnum.USER]));
     });
   });
 });

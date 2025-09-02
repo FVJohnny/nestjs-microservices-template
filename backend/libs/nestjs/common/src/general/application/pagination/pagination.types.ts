@@ -1,4 +1,4 @@
-export type PaginationOrder = 'asc' | 'desc';
+export type PaginationOrder = 'asc' | 'desc' | 'none';
 
 export interface SortParam {
   field: string;         // must be validated/whitelisted per endpoint
@@ -18,13 +18,16 @@ export interface CursorPageParams {
   sort?: SortParam;
 }
 
+
+export interface OffsetPageResultPagination {
+  kind: 'offset';
+  limit: number;
+  offset: number;
+  hasNext: boolean;
+  total?: number | null; // optional
+}
+
 export interface OffsetPageResult<T> {
   data: T[];
-  pagination: {
-    kind: 'offset';
-    limit: number;
-    offset: number;
-    hasNext: boolean;
-    total?: number | null; // optional
-  }
+  pagination: OffsetPageResultPagination;
 }

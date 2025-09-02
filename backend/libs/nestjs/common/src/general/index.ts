@@ -31,3 +31,6 @@ export * from './infrastructure/in-memory-criteria-converter';
 
 // Application Layer
 export * from './application';
+
+// Interfaces
+export * from './interfaces';
