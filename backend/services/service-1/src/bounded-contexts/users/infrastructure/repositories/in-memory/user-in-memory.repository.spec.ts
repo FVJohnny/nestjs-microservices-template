@@ -699,6 +699,244 @@ describe('UserInMemoryRepository', () => {
       });
     });
 
+    describe('findByCriteria - withTotal functionality', () => {
+      it('should return null total when withTotal is false (default)', async () => {
+        // Arrange
+        const criteria = new Criteria();
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(3);
+        expect(result.total).toBeNull();
+      });
+
+      it('should return total count when withTotal is true', async () => {
+        // Arrange
+        const criteria = new Criteria({ withTotal: true });
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(3);
+        expect(result.total).toBe(3);
+      });
+
+      it('should return correct total with pagination (limit only)', async () => {
+        // Arrange
+        const criteria = new Criteria({ 
+          limit: 2,
+          withTotal: true 
+        });
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(2); // Limited results
+        expect(result.total).toBe(3); // Total available records
+      });
+
+      it('should return correct total with pagination (offset only)', async () => {
+        // Arrange
+        const criteria = new Criteria({ 
+          offset: 1,
+          withTotal: true 
+        });
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(2); // Remaining after offset
+        expect(result.total).toBe(3); // Total available records
+      });
+
+      it('should return correct total with pagination (limit and offset)', async () => {
+        // Arrange
+        const criteria = new Criteria({ 
+          limit: 1,
+          offset: 1,
+          withTotal: true 
+        });
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(1); // Limited and offset results
+        expect(result.total).toBe(3); // Total available records
+      });
+
+      it('should return correct total with filters and pagination', async () => {
+        // Arrange - Filter for users with firstName containing 'J' (John and Jane)
+        const filter = new Filter(
+          new FilterField('profile.firstName'),
+          new FilterOperator(Operator.CONTAINS),
+          new FilterValue('J')
+        );
+        const criteria = new Criteria({
+          filters: new Filters([filter]),
+          limit: 1,
+          withTotal: true
+        });
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(1); // Limited to 1
+        expect(result.total).toBe(2); // Total matching the filter (John and Jane)
+      });
+
+      it('should return zero total when no records match filter', async () => {
+        // Arrange
+        const filter = new Filter(
+          new FilterField('email'),
+          new FilterOperator(Operator.EQUAL),
+          new FilterValue('nonexistent@example.com')
+        );
+        const criteria = new Criteria({
+          filters: new Filters([filter]),
+          withTotal: true
+        });
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(0);
+        expect(result.total).toBe(0);
+      });
+
+      it('should return correct total with sorting and pagination', async () => {
+        // Arrange
+        const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.ASC));
+        const criteria = new Criteria({
+          order,
+          limit: 2,
+          offset: 1,
+          withTotal: true
+        });
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(2); // Limited and offset results
+        expect(result.total).toBe(3); // Total available records (ignoring pagination)
+      });
+
+      it('should handle edge case where offset equals total records', async () => {
+        // Arrange
+        const criteria = new Criteria({
+          offset: 3, // Equal to total number of test users
+          withTotal: true
+        });
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(0); // No results after offset
+        expect(result.total).toBe(3); // Total available records
+      });
+
+      it('should handle edge case where offset exceeds total records', async () => {
+        // Arrange
+        const criteria = new Criteria({
+          offset: 10, // Much larger than total
+          withTotal: true
+        });
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(0); // No results
+        expect(result.total).toBe(3); // Total available records
+      });
+
+      it('should work correctly with complex filters and withTotal', async () => {
+        // Arrange - Create additional test user to have more data
+        const extraUser = User.random({
+          email: new Email('extra@example.com'),
+          username: new Username('extrauser'),
+          profile: new UserProfile(
+            new Name('Julia'),
+            new Name('Extra')
+          ),
+          role: UserRole.user(),
+        });
+        await repository.save(extraUser);
+
+        // Filter for users with firstName containing 'J' (John, Jane, and Julia)
+        const filter = new Filter(
+          new FilterField('profile.firstName'),
+          new FilterOperator(Operator.CONTAINS),
+          new FilterValue('J')
+        );
+        const criteria = new Criteria({
+          filters: new Filters([filter]),
+          limit: 2,
+          offset: 1,
+          withTotal: true
+        });
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(2); // Limited to 2, offset by 1
+        expect(result.total).toBe(3); // Total matching the filter (John, Jane, Julia)
+      });
+
+      it('should work with NOT_EQUAL filter and withTotal', async () => {
+        // Arrange
+        const filter = new Filter(
+          new FilterField('role'),
+          new FilterOperator(Operator.NOT_EQUAL),
+          new FilterValue('admin')
+        );
+        const criteria = new Criteria({
+          filters: new Filters([filter]),
+          limit: 1,
+          withTotal: true
+        });
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(1); // Limited to 1
+        expect(result.total).toBe(2); // Total users that are not admin
+      });
+
+      it('should work with CONTAINS filter and withTotal', async () => {
+        // Arrange
+        const filter = new Filter(
+          new FilterField('email'),
+          new FilterOperator(Operator.CONTAINS),
+          new FilterValue('example.com')
+        );
+        const criteria = new Criteria({
+          filters: new Filters([filter]),
+          limit: 1,
+          offset: 1,
+          withTotal: true
+        });
+
+        // Act
+        const result = await repository.findByCriteria(criteria);
+
+        // Assert
+        expect(result.data).toHaveLength(1); // Limited to 1, offset by 1
+        expect(result.total).toBe(3); // All test users have example.com emails
+      });
+    });
+
     describe('findByCriteria - Complex Scenarios', () => {
       it('should combine filters, sorting, and pagination', async () => {
         // Arrange
