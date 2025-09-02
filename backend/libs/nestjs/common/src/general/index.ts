@@ -1,10 +1,3 @@
-// === MESSAGING ===
-// Integration Events
-export * from '../integration-events';
-
-// Modules
-
-
 // === DOMAIN ===
 // Events
 export * from './domain/events/domain-event.base';

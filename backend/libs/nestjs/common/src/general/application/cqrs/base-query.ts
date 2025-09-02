@@ -1,4 +1,4 @@
-import { TracingMetadata, TracingMetadataParams } from '../../tracing/tracing-metadata';
+import { TracingMetadata, TracingMetadataParams } from '../../../tracing';
 
 export abstract class BaseQuery {
   public metadata?: TracingMetadata;
