@@ -119,7 +119,7 @@ describe('GetUsersQueryHandler', () => {
       await seedUsers();
 
       // Act
-      const query = new GetUsersQuery({ orderBy: 'username', orderType: 'asc' });
+      const query = new GetUsersQuery({ pagination: { sort: { field: 'username', order: 'asc' } } });
       const result = await handler.execute(query);
 
       // Assert
@@ -131,8 +131,8 @@ describe('GetUsersQueryHandler', () => {
       await seedUsers();
 
       // Act
-      const page1 = await handler.execute(new GetUsersQuery({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 0 }));
-      const page2 = await handler.execute(new GetUsersQuery({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 2 }));
+      const page1 = await handler.execute(new GetUsersQuery({ pagination: { sort: { field: 'username', order: 'asc' }, limit: 2, offset: 0 } }));
+      const page2 = await handler.execute(new GetUsersQuery({ pagination: { sort: { field: 'username', order: 'asc' }, limit: 2, offset: 2 } }));
 
       // Assert
       expect(page1.users.map(u => u.username)).toEqual(['admin', 'user1']);

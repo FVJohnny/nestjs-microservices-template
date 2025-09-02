@@ -85,15 +85,15 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
     
     // Handle ordering - use createdAt DESC as default to avoid empty string issues
     let order = Order.none(); // Default ordering
-    if (query.orderBy) {
-      order = Order.fromValues(query.orderBy, query.orderType || OrderTypes.ASC);
+    if (query.pagination?.sort) {
+      order = Order.fromValues(query.pagination.sort.field, query.pagination.sort.order || OrderTypes.ASC);
     }
 
     const criteria = new Criteria({
       filters,
       order,
-      limit: query.limit,
-      offset: query.offset
+      limit: query.pagination?.limit,
+      offset: query.pagination?.offset
     });
 
     const users = await this.userRepository.findByCriteria(criteria);
