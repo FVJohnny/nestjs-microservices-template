@@ -28,6 +28,7 @@ export * from './domain/criteria/OrderType';
 
 // Infrastructure
 export * from './infrastructure/in-memory-criteria-converter';
+export * from './infrastructure/pagination';
 
 // Application Layer
 export * from './application';

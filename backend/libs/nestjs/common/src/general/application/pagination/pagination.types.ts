@@ -9,6 +9,7 @@ export interface OffsetPageParams {
   limit?: number;        // default 20, max 100
   offset?: number;       // default 0
   sort?: SortParam;      // default { field:'createdAt', order:'desc' }
+  withTotal?: boolean;  // default false
 }
 
 export interface CursorPageParams {

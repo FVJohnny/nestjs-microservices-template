@@ -7,18 +7,21 @@ interface CriteriaProps {
   order?: Order;
   limit?: number;
   offset?: number;
+  withTotal?: boolean;
 }
 export class Criteria {
   readonly filters: Filters;
   readonly order: Order;
   readonly limit?: number;
   readonly offset?: number;
+  readonly withTotal?: boolean;
 
   constructor(props: CriteriaProps = {}) {
     this.filters = props.filters || Filters.none();
     this.order = props.order || Order.none();
     this.limit = props.limit;
     this.offset = props.offset;
+    this.withTotal = props.withTotal;
   }
 
   public hasFilters(): boolean {

@@ -4,7 +4,7 @@ import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { Criteria, InfrastructureException } from '@libs/nestjs-common';
+import { Criteria, InfrastructureException, PaginatedRepoResult } from '@libs/nestjs-common';
 import { MongoCriteriaConverter } from '@libs/nestjs-mongodb';
 import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
 
@@ -101,26 +101,58 @@ export class UserMongodbRepository implements UserRepository {
     }
   }
 
-  async findByCriteria(criteria: Criteria): Promise<User[]> {
-
+  async findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
     try {
       const {filter, options} = MongoCriteriaConverter.convert(criteria);
-      let query = this.collection.find(filter);
       
-      if (options.sort) {
-        query = query.sort(options.sort);
-      }
-      
-      if (options.limit) {
-        query = query.limit(options.limit);
-      }
-      
-      if (options.skip) {
-        query = query.skip(options.skip);
+      if (!criteria.withTotal) {
+        // Simple query without total count
+        let query = this.collection.find(filter);
+        
+        if (options.sort) {
+          query = query.sort(options.sort);
+        }
+        
+        if (options.limit) {
+          query = query.limit(options.limit);
+        }
+        
+        if (options.skip) {
+          query = query.skip(options.skip);
+        }
+        
+        const documents = await query.toArray();
+        const count = criteria.withTotal ? await this.collection.countDocuments(filter) : null;
+        
+        return {
+          data: documents.map(doc => User.fromValue(doc)),
+          total: count
+        };
       }
 
-      const documents = await query.toArray();
-      return documents.map(doc => User.fromValue(doc));
+      // Single query with both data and count using aggregation
+      const pipeline = [
+        { $match: filter },
+        {
+          $facet: {
+            data: [
+              ...(options.sort ? [{ $sort: options.sort }] : []),
+              ...(options.skip ? [{ $skip: options.skip }] : []),
+              ...(options.limit ? [{ $limit: options.limit }] : [])
+            ],
+            count: [{ $count: "total" }]
+          }
+        }
+      ];
+
+      const [result] = await this.collection.aggregate(pipeline).toArray();
+      const documents = result.data || [];
+      const totalCount = result.count[0]?.total || 0;
+
+      return {
+        data: documents.map(doc => User.fromValue(doc)),
+        total: totalCount
+      };
     } catch (error) {
       this.handleDatabaseError('findByCriteria', '', error);
     }

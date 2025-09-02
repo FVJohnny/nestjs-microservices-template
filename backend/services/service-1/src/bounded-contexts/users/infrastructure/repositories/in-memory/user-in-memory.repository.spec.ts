@@ -312,7 +312,7 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(testUsers.length);
+        expect(result.data).toHaveLength(testUsers.length);
       });
 
       it('should filter by email (EQUAL)', async () => {
@@ -330,8 +330,8 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(1);
-        expect(result[0].email.toValue()).toBe('admin@example.com');
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].email.toValue()).toBe('admin@example.com');
       });
 
       it('should filter by username (EQUAL)', async () => {
@@ -349,8 +349,8 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(1);
-        expect(result[0].username.toValue()).toBe('admin');
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].username.toValue()).toBe('admin');
       });
 
       it('should filter by firstName (EQUAL)', async () => {
@@ -368,8 +368,8 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(1);
-        expect(result[0].profile.firstName.toValue()).toBe('John');
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].profile.firstName.toValue()).toBe('John');
       });
 
       it('should filter by lastName (EQUAL)', async () => {
@@ -387,8 +387,8 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(1);
-        expect(result[0].profile.lastName.toValue()).toBe('Smith');
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].profile.lastName.toValue()).toBe('Smith');
       });
 
       it('should filter by status (EQUAL)', async () => {
@@ -409,8 +409,8 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(1);
-        expect(result[0].status.toValue()).toBe(UserStatusEnum.INACTIVE);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].status.toValue()).toBe(UserStatusEnum.INACTIVE);
       });
 
       it('should filter by role (EQUAL)', async () => {
@@ -428,8 +428,8 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(1);
-        expect(result[0].role.toValue()).toBe(UserRoleEnum.ADMIN);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].role.toValue()).toBe(UserRoleEnum.ADMIN);
       });
     });
 
@@ -449,8 +449,8 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(2); // Should return users that are not admin
-        expect(result.every(user => user.username.toValue() !== 'admin')).toBe(true);
+        expect(result.data  ).toHaveLength(2); // Should return users that are not admin
+        expect(result.data.every(user => user.username.toValue() !== 'admin')).toBe(true);
       });
 
       it('should filter with CONTAINS operator (case-insensitive)', async () => {
@@ -468,8 +468,8 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(3); // All test users have example.com email
-        expect(result.every(user => user.email.toValue().toLowerCase().includes('example'))).toBe(true);
+        expect(result.data).toHaveLength(3); // All test users have example.com email
+        expect(result.data.every(user => user.email.toValue().toLowerCase().includes('example'))).toBe(true);
       });
 
       it('should filter with NOT_CONTAINS operator', async () => {
@@ -487,8 +487,8 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(2); // Admin and Jane
-        expect(result.every(user => !user.profile.firstName.toValue().toLowerCase().includes('john'))).toBe(true);
+        expect(result.data).toHaveLength(2); // Admin and Jane
+        expect(result.data.every(user => !user.profile.firstName.toValue().toLowerCase().includes('john'))).toBe(true);
       });
 
       it('should filter with date fields using GT operator', async () => {
@@ -507,8 +507,8 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(3); // All test users were created today
-        expect(result.every(user => user.createdAt > pastDate)).toBe(true);
+        expect(result.data).toHaveLength(3); // All test users were created today
+        expect(result.data.every(user => user.createdAt > pastDate)).toBe(true);
       });
 
       it('should filter with date fields using LT operator', async () => {
@@ -527,8 +527,8 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(3); // All test users were created before tomorrow
-        expect(result.every(user => user.createdAt < futureDate)).toBe(true);
+        expect(result.data).toHaveLength(3); // All test users were created before tomorrow
+        expect(result.data.every(user => user.createdAt < futureDate)).toBe(true);
       });
 
       it('should combine multiple filters (AND logic)', async () => {
@@ -553,9 +553,9 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(1);
-        expect(result[0].profile.firstName.toValue()).toBe('John');
-        expect(result[0].profile.lastName.toValue()).toBe('Doe');
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].profile.firstName.toValue()).toBe('John');
+        expect(result.data[0].profile.lastName.toValue()).toBe('Doe');
       });
 
       it('should return empty array when no matches found', async () => {
@@ -573,7 +573,7 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
     });
 
@@ -587,10 +587,10 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(3);
-        expect(result[0].profile.firstName.toValue()).toBe('Admin');
-        expect(result[1].profile.firstName.toValue()).toBe('Jane');
-        expect(result[2].profile.firstName.toValue()).toBe('John');
+        expect(result.data).toHaveLength(3);
+        expect(result.data[0].profile.firstName.toValue()).toBe('Admin');
+        expect(result.data[1].profile.firstName.toValue()).toBe('Jane');
+        expect(result.data[2].profile.firstName.toValue()).toBe('John');
       });
 
       it('should sort by firstName descending', async () => {
@@ -602,10 +602,10 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(3);
-        expect(result[0].profile.firstName.toValue()).toBe('John');
-        expect(result[1].profile.firstName.toValue()).toBe('Jane');
-        expect(result[2].profile.firstName.toValue()).toBe('Admin');
+        expect(result.data).toHaveLength(3);
+        expect(result.data[0].profile.firstName.toValue()).toBe('John');
+        expect(result.data[1].profile.firstName.toValue()).toBe('Jane');
+        expect(result.data[2].profile.firstName.toValue()).toBe('Admin');
       });
 
       it('should sort by username ascending', async () => {
@@ -617,10 +617,10 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(3);
-        expect(result[0].username.toValue()).toBe('admin');
-        expect(result[1].username.toValue()).toBe('user1');
-        expect(result[2].username.toValue()).toBe('user2');
+        expect(result.data).toHaveLength(3);
+        expect(result.data[0].username.toValue()).toBe('admin');
+        expect(result.data[1].username.toValue()).toBe('user1');
+        expect(result.data[2].username.toValue()).toBe('user2');
       });
 
       it('should handle sorting with null/undefined values', async () => {
@@ -635,9 +635,9 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(4);
+        expect(result.data).toHaveLength(4);
         // Users with undefined lastLoginAt should be sorted to the end
-        expect(result[result.length - 1].lastLoginAt).toBeUndefined();
+        expect(result.data[result.data.length - 1].lastLoginAt).toBeUndefined();
       });
     });
 
@@ -650,7 +650,7 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(2);
+        expect(result.data).toHaveLength(2);
       });
 
       it('should apply offset', async () => {
@@ -662,7 +662,7 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(allUsers.length - 1);
+        expect(result.data).toHaveLength(allUsers.length - 1);
       });
 
       it('should combine limit and offset', async () => {
@@ -673,7 +673,7 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(1);
+        expect(result.data).toHaveLength(1);
       });
 
       it('should handle offset larger than collection size', async () => {
@@ -684,7 +684,7 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
 
       it('should handle limit larger than remaining items', async () => {
@@ -695,7 +695,7 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(1); // Only 1 item remaining after offset 2
+        expect(result.data).toHaveLength(1); // Only 1 item remaining after offset 2
       });
     });
 
@@ -718,8 +718,8 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(1);
-        expect(result[0].profile.firstName.toValue()).toBe('John'); // John comes first in DESC order
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].profile.firstName.toValue()).toBe('John'); // John comes first in DESC order
       });
 
       it('should handle empty results with all criteria', async () => {
@@ -741,7 +741,7 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
     });
 
@@ -812,7 +812,7 @@ describe('UserInMemoryRepository', () => {
 
         // Assert
         expect(count).toBe(2); // Total matching records
-        expect(results).toHaveLength(1); // After pagination
+        expect(results.data).toHaveLength(1); // After pagination
       });
     });
   });
@@ -922,7 +922,7 @@ describe('UserInMemoryRepository', () => {
       const result1 = await repository.findByCriteria(new Criteria({
         filters: new Filters([filter1])
       }));
-      expect(result1).toHaveLength(1);
+      expect(result1.data).toHaveLength(1);
 
       // Act & Assert - Space in last name
       const filter2 = new Filter(
@@ -933,7 +933,7 @@ describe('UserInMemoryRepository', () => {
       const result2 = await repository.findByCriteria(new Criteria({
         filters: new Filters([filter2])
       }));
-      expect(result2).toHaveLength(1);
+      expect(result2.data).toHaveLength(1);
     });
 
     it('should handle empty string filters', async () => {
@@ -959,8 +959,8 @@ describe('UserInMemoryRepository', () => {
       }));
 
       // Assert
-      expect(result).toHaveLength(1);
-      expect(result[0].profile.firstName.toValue()).toBe('');
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].profile.firstName.toValue()).toBe('');
     });
 
     it('should handle very large datasets efficiently', async () => {
@@ -992,8 +992,8 @@ describe('UserInMemoryRepository', () => {
       const end = performance.now();
 
       // Assert
-      expect(result).toHaveLength(50);
-      expect(result.every(user => user.profile.firstName.toValue() === 'Even')).toBe(true);
+      expect(result.data).toHaveLength(50);
+      expect(result.data.every(user => user.profile.firstName.toValue() === 'Even')).toBe(true);
       expect(end - start).toBeLessThan(100); // Should complete quickly (< 100ms)
     });
   });

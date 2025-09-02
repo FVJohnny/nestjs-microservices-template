@@ -91,20 +91,21 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
       filters,
       order,
       limit: query.pagination?.limit,
-      offset: query.pagination?.offset
+      offset: query.pagination?.offset,
+      withTotal: query.pagination?.withTotal
     });
 
-    const users = await this.userRepository.findByCriteria(criteria);
+    const offsetPageResult = await this.userRepository.findByCriteria(criteria);
 
     const pagination: OffsetPageResultPagination = {
       kind: 'offset',
       limit: query.pagination?.limit || 0,
       offset: query.pagination?.offset || 0,
-      hasNext: query.pagination?.limit ? users.length > query.pagination?.limit : false,
-      total: users.length,
+      hasNext: true,
+      total: offsetPageResult.total,
     };
     
-    return { data: users.map(user => user.toValue()), pagination };
+    return { data: offsetPageResult.data.map(user => user.toValue()), pagination };
   }
 
   protected async authorize(query: GetUsersQuery): Promise<boolean> {

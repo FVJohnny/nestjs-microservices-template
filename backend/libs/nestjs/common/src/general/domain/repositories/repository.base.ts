@@ -11,11 +11,6 @@ export interface Repository<T, ID = string> {
   findById(id: ID): Promise<T | null>;
 
   /**
-   * Finds all entities matching the given criteria
-   */
-  findByCriteria(criteria: Criteria): Promise<T[]>;
-
-  /**
    * Saves an entity (create or update)
    */
   save(entity: T): Promise<void>;

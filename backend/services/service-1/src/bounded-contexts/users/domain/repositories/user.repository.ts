@@ -1,4 +1,4 @@
-import { Repository } from '@libs/nestjs-common';
+import { PaginatedRepoResult, Repository } from '@libs/nestjs-common';
 import { User } from '../entities/user.entity';
 import { Email } from '../value-objects/email.vo';
 import { Username } from '../value-objects/username.vo';
@@ -11,7 +11,7 @@ export interface UserRepository extends Repository<User, string> {
   existsByEmail(email: Email): Promise<boolean>;
   existsByUsername(username: Username): Promise<boolean>;
   findAll(): Promise<User[]>;
-  findByCriteria(criteria: Criteria | any): Promise<User[]>;
+  findByCriteria(criteria: Criteria | any): Promise<PaginatedRepoResult<User>>;
   countByCriteria(criteria: Criteria | any): Promise<number>;
   delete(id: string): Promise<void>;
 }

@@ -23,7 +23,6 @@ export class GetUsersController {
   })
   async getUsers(@Query() params: GetUsersControllerParams): Promise<GetUsersQueryResponse> {
 
-    console.log("params is ", params);
     const sort: SortParam | undefined = params.orderBy && params.orderType ? {
       field: params.orderBy,
       order: params.orderType,

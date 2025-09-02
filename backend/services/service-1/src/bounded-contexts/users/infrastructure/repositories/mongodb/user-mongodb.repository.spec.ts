@@ -62,8 +62,8 @@ describe('UserMongodbRepository (Integration)', () => {
       expect(savedUser!.profile.lastName.toValue()).toBe('Name');
       
       // Should still be only one document
-      const allUsers = await repository.findByCriteria(new Criteria());
-      expect(allUsers).toHaveLength(1);
+      const pageResult = await repository.findByCriteria(new Criteria());
+      expect(pageResult.data).toHaveLength(1);
     });
 
   });
@@ -278,7 +278,7 @@ describe('UserMongodbRepository (Integration)', () => {
       const result = await repository.findByCriteria(criteria);
 
       // Assert
-      expect(result).toHaveLength(testUsers.length);
+      expect(result.data).toHaveLength(testUsers.length);
     });
 
     it('should filter by email', async () => {
@@ -296,8 +296,8 @@ describe('UserMongodbRepository (Integration)', () => {
       const result = await repository.findByCriteria(criteria);
 
       // Assert
-      expect(result).toHaveLength(1);
-      expect(result[0].email.toValue()).toBe('admin@example.com');
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].email.toValue()).toBe('admin@example.com');
     });
 
     it('should filter by username', async () => {
@@ -315,8 +315,8 @@ describe('UserMongodbRepository (Integration)', () => {
       const result = await repository.findByCriteria(criteria);
 
       // Assert
-      expect(result).toHaveLength(1);
-      expect(result[0].username.toValue()).toBe('admin');
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].username.toValue()).toBe('admin');
     });
 
     it('should filter by firstName', async () => {
@@ -334,8 +334,8 @@ describe('UserMongodbRepository (Integration)', () => {
       const result = await repository.findByCriteria(criteria);
 
       // Assert
-      expect(result).toHaveLength(1);
-      expect(result[0].profile.firstName.toValue()).toBe('John');
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].profile.firstName.toValue()).toBe('John');
     });
 
     it('should filter by lastName', async () => {
@@ -353,8 +353,8 @@ describe('UserMongodbRepository (Integration)', () => {
       const result = await repository.findByCriteria(criteria);
 
       // Assert
-      expect(result).toHaveLength(1);
-      expect(result[0].profile.firstName.toValue()).toBe('John');
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].profile.firstName.toValue()).toBe('John');
     });
 
     it('should filter by role (EQUAL)', async () => {
@@ -372,8 +372,8 @@ describe('UserMongodbRepository (Integration)', () => {
       const result = await repository.findByCriteria(criteria);
 
       // Assert
-      expect(result).toHaveLength(1);
-      expect(result[0].role.toValue()).toBe('admin');
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].role.toValue()).toBe('admin');
     });
 
     it('should apply limit', async () => {
@@ -386,7 +386,7 @@ describe('UserMongodbRepository (Integration)', () => {
       const result = await repository.findByCriteria(criteria);
 
       // Assert
-      expect(result).toHaveLength(1);
+      expect(result.data).toHaveLength(1);
     });
 
     it('should apply offset', async () => {
@@ -400,7 +400,7 @@ describe('UserMongodbRepository (Integration)', () => {
       const result = await repository.findByCriteria(criteria);
 
       // Assert
-      expect(result).toHaveLength(testUsers.length - offset); // Total 3, offset 1 = 2 results
+      expect(result.data).toHaveLength(testUsers.length - offset); // Total 3, offset 1 = 2 results
     });
 
     it('should combine limit and offset', async () => {
@@ -414,7 +414,7 @@ describe('UserMongodbRepository (Integration)', () => {
       const result = await repository.findByCriteria(criteria);
 
       // Assert
-      expect(result).toHaveLength(1);
+      expect(result.data).toHaveLength(1);
     });
   });
 
