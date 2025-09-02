@@ -170,46 +170,4 @@ export class UserTestFactory {
     }
   }
 
-  /**
-   * Creates users with specific email patterns for testing email filters
-   */
-  static createUsersWithEmailPatterns(): User[] {
-    return [
-      this.createUser('gmail', 'Gmail', 'User', { email: 'user@gmail.com' }),
-      this.createUser('yahoo', 'Yahoo', 'User', { email: 'user@yahoo.com' }),
-      this.createUser('hotmail', 'Hotmail', 'User', { email: 'user@hotmail.com' }),
-      this.createUser('company', 'Company', 'User', { email: 'user@company.co.uk' }),
-      this.createUser('edu', 'Education', 'User', { email: 'student@university.edu' }),
-    ];
-  }
-
-  /**
-   * Creates users with different statuses for status-based testing
-   */
-  static createUsersWithStatuses(): User[] {
-    return [
-      this.createUser('active1', 'Active', 'One', { status: UserStatus.active() }),
-      this.createUser('active2', 'Active', 'Two', { status: UserStatus.active() }),
-      this.createUser('inactive1', 'Inactive', 'One', { status: UserStatus.inactive() }),
-      this.createUser('inactive2', 'Inactive', 'Two', { status: UserStatus.inactive() }),
-    ];
-  }
-
-  /**
-   * Creates users for testing name-based searches and filters
-   * Includes users with names starting with the same letters
-   */
-  static createUsersForNameFiltering(): User[] {
-    return [
-      // J names for testing CONTAINS 'J'
-      this.createUser('john', 'John', 'Johnson'),
-      this.createUser('jane', 'Jane', 'Jackson'),
-      this.createUser('julia', 'Julia', 'Jones'),
-      this.createUser('james', 'James', 'Jordan'),
-      // Other names
-      this.createUser('alice', 'Alice', 'Anderson'),
-      this.createUser('bob', 'Bob', 'Brown'),
-      this.createUser('carol', 'Carol', 'Clark'),
-    ];
-  }
 }

@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { MongoClient, Collection } from 'mongodb';
 import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
@@ -10,13 +10,20 @@ import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
 
 @Injectable()
 export class UserMongodbRepository implements UserRepository {
+  private readonly logger = new Logger(UserMongodbRepository.name);
   private readonly collection: Collection;
 
   constructor(
     @Inject(SharedMongoDBModule.MONGO_CLIENT_TOKEN) private readonly mongoClient: MongoClient,
   ) {
     this.collection = this.mongoClient.db().collection('users');
+    // Initialize indexes on first connection
+    this.initializeIndexes().catch(error => 
+      this.logger.error('Failed to initialize user collection indexes:', error)
+    );
   }
+
+
 
   async save(user: User): Promise<void> {
     try {
@@ -187,6 +194,117 @@ export class UserMongodbRepository implements UserRepository {
       return count > 0;
     } catch (error) {
       this.handleDatabaseError('exists', id, error);
+    }
+  }
+
+  /**
+   * Initialize MongoDB indexes for optimal query performance
+   * This method is called once when the repository is instantiated
+   */
+  private async initializeIndexes(): Promise<void> {
+    try {
+      // Check if collection exists first
+      const collections = await this.mongoClient.db().listCollections({name: 'users'}).toArray();
+      if (collections.length === 0) {
+        // Collection doesn't exist yet, indexes will be created when first document is inserted
+        this.logger.log('Users collection does not exist yet, skipping index initialization');
+        return;
+      }
+
+      // Check if indexes already exist to avoid recreation
+      const existingIndexes = await this.collection.indexes();
+      const indexNames = existingIndexes.map(idx => idx.name);
+
+      // Primary unique indexes
+      if (!indexNames.includes('idx_user_id')) {
+        await this.collection.createIndex(
+          { "id": 1 }, 
+          { 
+            unique: true, 
+            name: "idx_user_id" 
+          }
+        );
+      }
+
+      if (!indexNames.includes('idx_user_email')) {
+        await this.collection.createIndex(
+          { "email": 1 }, 
+          { 
+            unique: true, 
+            name: "idx_user_email",
+            collation: { locale: "en", strength: 2 } // Case-insensitive
+          }
+        );
+      }
+
+      if (!indexNames.includes('idx_user_username')) {
+        await this.collection.createIndex(
+          { "username": 1 }, 
+          { 
+            unique: true, 
+            name: "idx_user_username",
+            collation: { locale: "en", strength: 2 } // Case-insensitive
+          }
+        );
+      }
+
+      // Query performance indexes
+      if (!indexNames.includes('idx_user_role')) {
+        await this.collection.createIndex(
+          { "role": 1 }, 
+          { name: "idx_user_role" }
+        );
+      }
+
+      if (!indexNames.includes('idx_user_status_role')) {
+        await this.collection.createIndex(
+          { "status": 1, "role": 1 }, 
+          { name: "idx_user_status_role" }
+        );
+      }
+
+      // Name search indexes
+      if (!indexNames.includes('idx_user_profile_names')) {
+        await this.collection.createIndex(
+          { 
+            "profile.firstName": 1, 
+            "profile.lastName": 1 
+          }, 
+          { name: "idx_user_profile_names" }
+        );
+      }
+
+      // Sorting indexes
+      if (!indexNames.includes('idx_user_created_desc')) {
+        await this.collection.createIndex(
+          { "createdAt": -1 }, 
+          { name: "idx_user_created_desc" }
+        );
+      }
+
+      if (!indexNames.includes('idx_user_updated_desc')) {
+        await this.collection.createIndex(
+          { "updatedAt": -1 }, 
+          { name: "idx_user_updated_desc" }
+        );
+      }
+
+      // Compound indexes for common query patterns
+      if (!indexNames.includes('idx_user_status_created')) {
+        await this.collection.createIndex(
+          { 
+            "status": 1, 
+            "createdAt": -1 
+          }, 
+          { name: "idx_user_status_created" }
+        );
+      }
+
+      this.logger.log('User collection indexes initialized successfully');
+    } catch (error) {
+      this.logger.error('Error initializing user collection indexes:', error);
+      // Don't throw error to avoid breaking application startup
+      // Indexes can be created manually or on first document insert
     }
   }
 
