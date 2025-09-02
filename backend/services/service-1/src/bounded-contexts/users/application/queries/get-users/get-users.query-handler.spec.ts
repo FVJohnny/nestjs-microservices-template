@@ -61,27 +61,6 @@ describe('GetUsersQueryHandler', () => {
       users.forEach(u => expect(result.users).toContainEqual(u.toValue()));
     });
 
-    it('should filter only active users when onlyActive=true', async () => {
-      // Arrange
-      const users = await seedUsers();
-      // add an inactive user
-      const user = User.random({
-        email: new Email('inactive@example.com'),
-        username: new Username('inactive'),
-        profile: new UserProfile(new Name('Idle'), new Name('User')),
-        status: UserStatus.inactive(),
-      });
-      await repository.save(user);
-
-      // Act
-      const query = new GetUsersQuery({ onlyActive: true });
-      const result = await handler.execute(query);
-
-      // Assert - should not include the inactive one
-      expect(result.users.length).toBe(users.length); // inactive excluded
-      expect(result.users.find(u => u.username === 'inactive')).toBeUndefined();
-    });
-
     it('should filter by status when provided', async () => {
       // Arrange
       await seedUsers();

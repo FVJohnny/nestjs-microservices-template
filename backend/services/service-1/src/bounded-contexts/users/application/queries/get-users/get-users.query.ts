@@ -14,7 +14,6 @@ export class GetUsersQuery extends BaseQuery implements IQuery {
   public readonly orderType?: string;
   public readonly limit?: number;
   public readonly offset?: number;
-  public readonly onlyActive?: boolean;
 
   constructor(
     props: GetUsersQuery,

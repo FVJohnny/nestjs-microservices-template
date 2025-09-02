@@ -55,10 +55,4 @@ export class GetUsersControllerParams {
   @Type(() => Number)
   @IsNumber()
   offset?: number;
-
-  @ApiProperty({ required: false, description: 'Legacy: filter only active users' })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
-  @IsBoolean()
-  onlyActive?: boolean;
 }

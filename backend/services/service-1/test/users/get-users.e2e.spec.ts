@@ -81,24 +81,6 @@ describe('GET /users (E2E)', () => {
     expect(usernames).toEqual(['admin', 'user1', 'user2']);
   });
 
-  it('filters only active users when onlyActive=true', async () => {
-    // Arrange
-    const active1 = User.random({ username: new Username('userA') });
-    const active2 = User.random({ username: new Username('userB') });
-    const inactive = User.random({ username: new Username('inactive'), status: UserStatus.inactive() });
-    await repository.save(active1);
-    await repository.save(active2);
-    await repository.save(inactive);
-
-    // Act
-    const res = await request(app.getHttpServer()).get('/users').query({ onlyActive: true }).expect(200);
-
-    // Assert
-    const names = res.body.users.map((u: any) => u.username);
-    expect(names).toEqual(expect.arrayContaining(['usera', 'userb']));
-    expect(names).not.toContain('inactive');
-  });
-
   it('filters by status=inactive', async () => {
     const inactive = User.random({ username: new Username('inactive'), status: UserStatus.inactive() });
     const active = User.random({ username: new Username('active') });

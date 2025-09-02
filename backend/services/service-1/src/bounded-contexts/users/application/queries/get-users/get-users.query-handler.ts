@@ -21,18 +21,8 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
   protected async handle(query: GetUsersQuery): Promise<GetUsersQueryResponse> {
     const filterList: Filter[] = [];
     
-    // Handle legacy onlyActive parameter
-    if (query.onlyActive) {
-      const statusFilter = new Filter(
-        new FilterField('status'),
-        FilterOperator.fromValue(Operator.EQUAL),
-        new FilterValue(UserStatusEnum.ACTIVE)
-      );
-      filterList.push(statusFilter);
-    }
-    
     // Handle specific status filter
-    if (query.status && !query.onlyActive) {
+    if (query.status) {
       const statusFilter = new Filter(
         new FilterField('status'),
         FilterOperator.fromValue(Operator.EQUAL),
