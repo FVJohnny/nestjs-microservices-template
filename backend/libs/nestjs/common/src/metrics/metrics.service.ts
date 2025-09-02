@@ -50,7 +50,7 @@ export class MetricsService {
       status_code: (labels.status_code ?? '200').toString(),
       service: this.serviceName,
     } as const;
-    return this.httpRequestDuration.startTimer(fullLabels as any);
+    return this.httpRequestDuration.startTimer(fullLabels);
   }
 
   observeHttpRequest(labels: Partial<HttpLabelValues>, durationSeconds: number) {
@@ -60,7 +60,7 @@ export class MetricsService {
       status_code: (labels.status_code ?? 200).toString(),
       service: this.serviceName,
     } as const;
-    this.httpRequestsTotal.inc(fullLabels as any);
+    this.httpRequestsTotal.inc(fullLabels);
   }
 
   async getMetrics(): Promise<string> {

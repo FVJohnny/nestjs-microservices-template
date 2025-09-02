@@ -26,7 +26,7 @@ describe('GetUserByIdQueryHandler', () => {
     });
     await repository.save(user);
 
-    const query = new GetUserByIdQuery({ userId: user.id } as any);
+    const query = new GetUserByIdQuery({ userId: user.id });
 
     // Act
     const result = await handler.execute(query);
@@ -38,7 +38,7 @@ describe('GetUserByIdQueryHandler', () => {
 
   it('should throw NotFoundException when user does not exist', async () => {
     // Arrange
-    const query = new GetUserByIdQuery({ userId: 'non-existent-id' } as any);
+    const query = new GetUserByIdQuery({ userId: 'non-existent-id' });
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(NotFoundException);

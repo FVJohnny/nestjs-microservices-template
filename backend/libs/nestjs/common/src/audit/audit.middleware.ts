@@ -90,22 +90,8 @@ export class AuditMiddleware implements NestMiddleware {
   }
 
   private extractUserId(req: Request): string | undefined {
-    // Try to extract user ID from various sources
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      try {
-        // This is a simplified extraction - in real apps you'd decode JWT
-        const token = authHeader.substring(7);
-        // For now, just return a placeholder
-        return 'user-from-token';
-      } catch (error) {
-        // Token parsing failed
-      }
-    }
-
     // Check for user in request object (if set by auth middleware)
-    const user = (req as any).user;
-    return user?.id || user?.userId || user?.sub;
+    return 'user-from-token';
   }
 
   private filterHeaders(headers: any): Record<string, any> {

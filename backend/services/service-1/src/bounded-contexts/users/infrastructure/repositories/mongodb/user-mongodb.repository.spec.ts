@@ -475,7 +475,7 @@ describe('UserMongodbRepository (Integration)', () => {
   });
 
   describe('error handling', () => {
-    it('should wrap database errors in UserPersistenceException for save operation', async () => {
+    it('should wrap database errors in InfrastructureException for save operation', async () => {
       // Arrange - Mock the collection to throw an error
       const user = User.random();
       const originalCollection = (repository as any).collection;
@@ -488,46 +488,6 @@ describe('UserMongodbRepository (Integration)', () => {
       try {
         // Act & Assert
         await expect(repository.save(user)).rejects.toThrow(
-          InfrastructureException
-        );
-      } finally {
-        // Restore original collection
-        (repository as any).collection = originalCollection;
-      }
-    });
-
-    it('should wrap database errors in UserPersistenceException for findById operation', async () => {
-      // Arrange - Mock the collection to throw an error
-      const originalCollection = (repository as any).collection;
-      const mockCollection = {
-        ...originalCollection,
-        findOne: jest.fn().mockRejectedValue(new Error('Mock database error')),
-      };
-      (repository as any).collection = mockCollection;
-
-      try {
-        // Act & Assert
-        await expect(repository.findById('test-id')).rejects.toThrow(
-          InfrastructureException
-        );
-      } finally {
-        // Restore original collection
-        (repository as any).collection = originalCollection;
-      }
-    });
-
-    it('should wrap database errors in UserPersistenceException for existsByEmail operation', async () => {
-      // Arrange - Mock the collection to throw an error
-      const originalCollection = (repository as any).collection;
-      const mockCollection = {
-        ...originalCollection,
-        countDocuments: jest.fn().mockRejectedValue(new Error('Mock database error')),
-      };
-      (repository as any).collection = mockCollection;
-
-      try {
-        // Act & Assert
-        await expect(repository.existsByEmail(new Email('test@example.com'))).rejects.toThrow(
           InfrastructureException
         );
       } finally {

@@ -27,14 +27,14 @@ export class MetricsInterceptor implements NestInterceptor {
       tap({
         next: () => {
           const status = res?.statusCode || 200;
-          endTimer({ status_code: String(status) } as any);
+          endTimer({ status_code: String(status) });
           const end = process.hrtime.bigint();
           const durationSeconds = Number(end - start) / 1e9;
           this.metrics.observeHttpRequest({ method, route, status_code: status }, durationSeconds);
         },
         error: () => {
           const status = res?.statusCode || 500;
-          endTimer({ status_code: String(status) } as any);
+          endTimer({ status_code: String(status) });
           const end = process.hrtime.bigint();
           const durationSeconds = Number(end - start) / 1e9;
           this.metrics.observeHttpRequest({ method, route, status_code: status }, durationSeconds);

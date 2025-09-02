@@ -19,10 +19,10 @@ export class KafkaPublisherService implements OnModuleInit, OnModuleDestroy {
 
     // Override with explicit config if provided
     if (this.options.ssl !== undefined) {
-      (kafkaConfig as any).ssl = this.options.ssl;
+      kafkaConfig.ssl = this.options.ssl;
     }
     if (this.options.sasl) {
-      (kafkaConfig as any).sasl = this.options.sasl;
+      kafkaConfig.sasl = this.options.sasl;
     }
 
     this.kafka = new Kafka(kafkaConfig);

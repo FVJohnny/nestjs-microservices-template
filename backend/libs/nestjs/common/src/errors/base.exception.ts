@@ -6,8 +6,8 @@ import { HttpStatus } from '@nestjs/common';
  */
 export abstract class BaseException extends Error {
   public readonly timestamp: Date;
-  public readonly path?: string;
-  public readonly correlationId?: string;
+  public path?: string;
+  public correlationId?: string;
   
   constructor(
     message: string,
@@ -45,16 +45,14 @@ export abstract class BaseException extends Error {
   /**
    * Set request path context
    */
-  setPath(path: string): this {
-    (this as any).path = path;
-    return this;
+  setPath(path: string): void {
+    this.path = path;
   }
 
   /**
    * Set correlation ID for tracing
    */
-  setCorrelationId(correlationId: string): this {
-    (this as any).correlationId = correlationId;
-    return this;
+  setCorrelationId(correlationId: string): void {
+    this.correlationId = correlationId;
   }
 }

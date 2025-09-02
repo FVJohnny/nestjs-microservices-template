@@ -1,3 +1,5 @@
+import { AuthenticationProviderArgs, Authenticator } from "kafkajs";
+
 export interface KafkaModuleOptions {
   clientId: string;
   groupId: string;
@@ -7,6 +9,7 @@ export interface KafkaModuleOptions {
     mechanism: string;
     username: string;
     password: string;
+    authenticationProvider: (args: AuthenticationProviderArgs) => Authenticator;
   };
 }
 
