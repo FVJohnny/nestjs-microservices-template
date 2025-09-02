@@ -11,17 +11,15 @@ import { UserProfile } from '../value-objects/user-profile.vo';
 describe('User Entity', () => {
   describe('create', () => {
     it('should create a new user with required properties', () => {
-      // Arrange
-      const props = {
+
+      // Act
+      const user = User.create({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
         firstName: new Name('John'),
         lastName: new Name('Doe'),
         role: UserRole.user()
-      };
-
-      // Act
-      const user = User.create(props);
+      });
 
       // Assert
       expect(user.id).toBeDefined();

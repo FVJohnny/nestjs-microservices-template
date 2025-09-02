@@ -7,6 +7,7 @@ import { Username } from '../../../domain/value-objects/username.vo';
 import { Name } from '../../../domain/value-objects/name.vo';
 import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
 import { UserRole } from '../../../domain/value-objects/user-role.vo';
+import { UserTestFactory } from '../../../test-utils';
 
 describe('UserMongodbRepository (Integration)', () => {
   let repository: UserMongodbRepository;
@@ -239,8 +240,8 @@ describe('UserMongodbRepository (Integration)', () => {
   describe('findAll', () => {
     it('should return all users', async () => {
       // Arrange
-      const testUsers = createTestUsers();
-      await saveTestUsers(testUsers);
+      const testUsers = UserTestFactory.createStandardTestUsers();
+      await UserTestFactory.saveUsersToRepository(repository, testUsers);
 
       // Act
       const results = await repository.findAll();
@@ -266,8 +267,8 @@ describe('UserMongodbRepository (Integration)', () => {
     let testUsers: User[] = [];
     
     beforeEach(async () => {
-      testUsers = createTestUsers();
-      await saveTestUsers(testUsers);
+      testUsers = UserTestFactory.createStandardTestUsers();
+      await UserTestFactory.saveUsersToRepository(repository, testUsers);
     });
 
     it('should return all users when no filters applied', async () => {
@@ -420,8 +421,8 @@ describe('UserMongodbRepository (Integration)', () => {
 
   describe('findByCriteria - withTotal functionality', () => {
     beforeEach(async () => {
-      const testUsers = createTestUsers();
-      await saveTestUsers(testUsers);
+      const testUsers = UserTestFactory.createStandardTestUsers();
+      await UserTestFactory.saveUsersToRepository(repository, testUsers);
     });
 
     it('should return null total when withTotal is false (default)', async () => {
@@ -621,8 +622,8 @@ describe('UserMongodbRepository (Integration)', () => {
     let testUsers: User[] = [];
     
     beforeEach(async () => {
-      testUsers = createTestUsers();
-      await saveTestUsers(testUsers);
+      testUsers = UserTestFactory.createStandardTestUsers();
+      await UserTestFactory.saveUsersToRepository(repository, testUsers);
     });
 
     it('should count all users when no filters applied', async () => {
@@ -789,39 +790,4 @@ describe('UserMongodbRepository (Integration)', () => {
     await db.collection('users').deleteMany({});
   };
 
-  const createTestUsers = (): User[] => [
-    User.random({
-      email: new Email('admin@example.com'),
-      username: new Username('admin'),
-      profile: new UserProfile(
-        new Name('Admin'),
-        new Name('User')
-      ),
-      role: UserRole.admin(),
-    }),
-    User.random({
-      email: new Email('user1@example.com'),
-      username: new Username('user1'),
-      profile: new UserProfile(
-        new Name('John'),
-        new Name('Doe')
-      ),
-      role: UserRole.user(),
-    }),
-    User.random({
-      email: new Email('user2@example.com'),
-      username: new Username('user2'),
-      profile: new UserProfile(
-        new Name('Jane'),
-        new Name('Smith')
-      ),
-      role: UserRole.user(),
-    }),
-  ];
-
-  const saveTestUsers = async (users: User[]): Promise<void> => {
-    for (const user of users) {
-      await repository.save(user);
-    }
-  };
 });

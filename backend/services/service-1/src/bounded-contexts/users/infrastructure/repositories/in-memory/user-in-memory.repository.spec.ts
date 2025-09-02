@@ -19,6 +19,7 @@ import {
   Operator,
 } from '@libs/nestjs-common';
 import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
+import { UserTestFactory } from '../../../test-utils';
 
 describe('UserInMemoryRepository', () => {
   let repository: UserInMemoryRepository;
@@ -68,10 +69,10 @@ describe('UserInMemoryRepository', () => {
 
       it('should save multiple users', async () => {
         // Arrange
-        const users = createTestUsers();
+        const users = UserTestFactory.createStandardTestUsers();
 
         // Act
-        await saveTestUsers(users);
+        await UserTestFactory.saveUsersToRepository(repository, users);
 
         // Assert
         const allUsers = await repository.findAll();
@@ -269,8 +270,8 @@ describe('UserInMemoryRepository', () => {
     describe('findAll', () => {
       it('should return all users', async () => {
         // Arrange
-        const testUsers = createTestUsers();
-        await saveTestUsers(testUsers);
+        const testUsers = UserTestFactory.createStandardTestUsers();
+        await UserTestFactory.saveUsersToRepository(repository, testUsers);
 
         // Act
         const results = await repository.findAll();
@@ -299,8 +300,8 @@ describe('UserInMemoryRepository', () => {
     let testUsers: User[] = [];
     
     beforeEach(async () => {
-      testUsers = createTestUsers();
-      await saveTestUsers(testUsers);
+      testUsers = UserTestFactory.createStandardTestUsers();
+      await UserTestFactory.saveUsersToRepository(repository, testUsers);
     });
 
     describe('findByCriteria - Basic Filtering', () => {
@@ -1236,40 +1237,4 @@ describe('UserInMemoryRepository', () => {
     });
   });
 
-  // Helper functions
-  const createTestUsers = (): User[] => [
-    User.random({
-      email: new Email('admin@example.com'),
-      username: new Username('admin'),
-      profile: new UserProfile(
-        new Name('Admin'),
-        new Name('User')
-      ),
-      role: UserRole.admin(),
-    }),
-    User.random({
-      email: new Email('user1@example.com'),
-      username: new Username('user1'),
-      profile: new UserProfile(
-        new Name('John'),
-        new Name('Doe')
-      ),
-      role: UserRole.user(),
-    }),
-    User.random({
-      email: new Email('user2@example.com'),
-      username: new Username('user2'),
-      profile: new UserProfile(
-        new Name('Jane'),
-        new Name('Smith')
-      ),
-      role: UserRole.user(),
-    }),
-  ];
-
-  const saveTestUsers = async (users: User[]): Promise<void> => {
-    for (const user of users) {
-      await repository.save(user);
-    }
-  };
 });

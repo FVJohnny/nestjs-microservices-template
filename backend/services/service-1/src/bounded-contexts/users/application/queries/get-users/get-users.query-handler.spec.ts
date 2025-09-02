@@ -8,6 +8,7 @@ import { Name } from '../../../domain/value-objects/name.vo';
 import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
 import { UserStatus, UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
 import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
+import { UserTestFactory } from '../../../test-utils';
 
 describe('GetUsersQueryHandler', () => {
   let handler: GetUsersQueryHandler;
@@ -19,31 +20,8 @@ describe('GetUsersQueryHandler', () => {
   });
 
   const seedUsers = async () => {
-    const users = [
-      User.random({
-        email: new Email('admin@example.com'),
-        username: new Username('admin'),
-        profile: new UserProfile(new Name('Admin'), new Name('User')),
-        role: UserRole.admin(),
-      }),
-      User.random({
-        email: new Email('user1@example.com'),
-        username: new Username('user1'),
-        profile: new UserProfile(new Name('John'), new Name('Doe')),
-        role: UserRole.user(),
-      }),
-      User.random({
-        email: new Email('user2@example.com'),
-        username: new Username('user2'),
-        profile: new UserProfile(new Name('Jane'), new Name('Smith')),
-        role: UserRole.user(),
-      }),
-    ];
-
-    for (const u of users) {
-      await repository.save(u);
-    }
-
+    const users = UserTestFactory.createStandardTestUsers();
+    await UserTestFactory.saveUsersToRepository(repository, users);
     return users;
   };
 
