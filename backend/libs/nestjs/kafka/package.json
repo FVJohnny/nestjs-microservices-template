@@ -16,9 +16,16 @@
     "kafkajs": "^2.2.4"
   },
   "devDependencies": {
+    "@libs/nestjs-eslint": "file:../eslint",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.42.0",
+    "@typescript-eslint/parser": "^8.42.0",
+    "eslint": "^9.34.0",
+    "eslint-plugin-import-x": "^4.16.1",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-unused-imports": "^4.2.0",
     "kafkajs": "^2.2.4",
     "typescript": "^5.0.0"
   },
