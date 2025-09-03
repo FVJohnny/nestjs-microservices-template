@@ -1,22 +1,17 @@
-import { Module, Global, DynamicModule, Provider } from '@nestjs/common';
-import { TypeOrmModule, TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
-import { PostgreSQLConfigService } from './postgresql-config.service';
+import { Global, Module } from '@nestjs/common';
+import type { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
+
 import { PostgreSQLController } from './postgresql.controller';
+import { PostgreSQLConfigService } from './postgresql-config.service';
 
 @Global()
 @Module({
-  imports: [
-  ],
   controllers: [PostgreSQLController],
   providers: [PostgreSQLConfigService],
   exports: [PostgreSQLConfigService],
 })
 export class SharedPostgreSQLModule {
-  /**
-   * Returns TypeORM configuration for use in application-level modules
-   * This avoids the ModuleRef issues when TypeORM is created in shared libraries
-   */
-  static getTypeOrmConfig(entities: any[] = []): TypeOrmModuleAsyncOptions {
+  static getTypeOrmConfig(entities = []): TypeOrmModuleAsyncOptions {
     return {
       useFactory: (configService: PostgreSQLConfigService) => ({
         ...configService.getPostgreSQLConfig(),

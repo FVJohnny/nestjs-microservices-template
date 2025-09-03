@@ -1,4 +1,4 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 export type PostgreSQLConfig = TypeOrmModuleOptions & {
   type: 'postgres';
@@ -9,9 +9,6 @@ export type PostgreSQLConfig = TypeOrmModuleOptions & {
   database: string;
   synchronize?: boolean;
   logging?: boolean;
-  entities?: any[];
-  migrations?: any[];
-  subscribers?: any[];
   ssl?: {
     rejectUnauthorized?: boolean;
     ca?: string;

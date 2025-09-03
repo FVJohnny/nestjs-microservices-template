@@ -1,4 +1,5 @@
-import { Criteria, Operator } from '@libs/nestjs-common';
+import { type Criteria, Operator } from '@libs/nestjs-common';
+import type { SelectQueryBuilder } from 'typeorm';
 
 /**
  * Converts DDD Criteria to TypeORM QueryBuilder operations
@@ -8,10 +9,10 @@ export class PostgresCriteriaConverter {
    * Convert a Criteria object to TypeORM QueryBuilder with filters, ordering, and pagination
    */
   static convert(
-    queryBuilder: any,
+    queryBuilder: SelectQueryBuilder<unknown>,
     criteria: Criteria,
     entityAlias: string = 'entity'
-  ): any {
+  ): SelectQueryBuilder<unknown> {
     let builder = queryBuilder;
 
     // Apply filters from criteria
@@ -22,9 +23,7 @@ export class PostgresCriteriaConverter {
       const operator = filter.operator.toValue();
       const value = filter.value.toValue();
 
-      // Determine if this is the first filter (need to decide between where/andWhere)
-      const useWhere = index === 0;
-      const whereMethod = useWhere ? 'where' : 'andWhere';
+      const whereMethod = index === 0 ? 'where' : 'andWhere';
 
       switch (operator) {
         case Operator.EQUAL:
@@ -99,7 +98,7 @@ export class PostgresCriteriaConverter {
   /**
    * Parse value based on its type - handles dates, numbers, booleans
    */
-  private static parseValue(value: string): any {
+  private static parseValue(value: string): string | number | boolean | Date {
     // Try to parse as Date if it looks like an ISO string
     if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
       const date = new Date(value);

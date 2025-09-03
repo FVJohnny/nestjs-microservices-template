@@ -1,24 +1,24 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { PostgreSQLConfig } from './interfaces/postgresql-config.interface';
+
+import type { PostgreSQLConfig } from './interfaces/postgresql-config.interface';
 
 @Injectable()
 export class PostgreSQLConfigService {
   private readonly logger = new Logger(PostgreSQLConfigService.name);
 
   getPostgreSQLConfig(): PostgreSQLConfig {
-    let config: PostgreSQLConfig = {
+    const config: PostgreSQLConfig = {
       type: 'postgres',
       host: process.env.POSTGRES_HOST || 'localhost',
-      port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
+      port: parseInt(process.env.POSTGRES_PORT || '5432'),
       username: process.env.POSTGRES_USER || 'postgres',
       password: process.env.POSTGRES_PASSWORD || 'postgres',
       database: process.env.POSTGRES_DB || 'channels_db',
       synchronize: process.env.POSTGRES_SYNCHRONIZE === 'true',
       logging: process.env.POSTGRES_LOGGING === 'true',
-      entities: [], // Will be configured per service
-      migrations: [],
-      subscribers: [],
+      extra: {
+        conectionLimit: parseInt(process.env.POSTGRES_CONNECTION_LIMIT || '10'),
+      },
     };
 
     // SSL configuration for production
@@ -31,37 +31,13 @@ export class PostgreSQLConfigService {
       };
     }
 
-    // Connection pool settings
-    if (process.env.POSTGRES_CONNECTION_LIMIT) {
-      config = {
-        ...config,
-        extra: {
-          ...config.extra,
-          connectionLimit: parseInt(process.env.POSTGRES_CONNECTION_LIMIT, 10),
-        },
-      };
-    }
-
     this.logger.log(
       `PostgreSQL configuration: ${config.host}:${config.port}/${config.database} (user: ${config.username}, SSL: ${!!config.ssl})`,
     );
-    
-    // Debug environment variables
-    this.logger.debug('Environment variables:', {
-      POSTGRES_HOST: process.env.POSTGRES_HOST,
-      POSTGRES_PORT: process.env.POSTGRES_PORT,
-      POSTGRES_USER: process.env.POSTGRES_USER,
-      POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD ? '***' : undefined,
-      POSTGRES_DB: process.env.POSTGRES_DB,
-    });
 
     return config;
   }
 
-  /**
-   * Get connection URL for PostgreSQL
-   * Useful for CLI tools and migrations
-   */
   getConnectionUrl(): string {
     const config = this.getPostgreSQLConfig();
     const auth = `${config.username}:${config.password}`;
@@ -71,9 +47,6 @@ export class PostgreSQLConfigService {
     return `postgresql://${auth}@${host}/${config.database}${sslParam}`;
   }
 
-  /**
-   * Validate that required environment variables are set
-   */
   validateConfig(): void {
     const requiredVars = ['POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB'];
     const missing = requiredVars.filter(varName => !process.env[varName]);
