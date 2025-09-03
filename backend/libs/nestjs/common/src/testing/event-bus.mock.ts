@@ -88,7 +88,7 @@ export interface MockIntegrationEventPublisher extends IntegrationEventPublisher
  * Creates a mock IntegrationEventPublisher for testing purposes
  * 
  * @param options Configuration options for the mock
- * @param options.shouldFail If true, publish/publishBatch methods will throw errors
+ * @param options.shouldFail If true, publish methods will throw errors
  * @returns MockIntegrationEventPublisher instance with captured events and configurable failure behavior
  */
 export function createIntegrationEventPublisherMock(
@@ -106,18 +106,9 @@ export function createIntegrationEventPublisherMock(
     return Promise.resolve();
   };
   
-  const publishBatchMock = (topic: string, messages: any[]) => {
-    if (options.shouldFail) {
-      throw new Error('IntegrationEventPublisher publishBatch failed');
-    }
-    messages.forEach(message => publishedEvents.push({ topic, message }));
-    return Promise.resolve();
-  };
-  
   const mockPublisher: MockIntegrationEventPublisher = {
     publishedEvents,
     publish: publishMock,
-    publishBatch: publishBatchMock,
   };
   
   return mockPublisher;

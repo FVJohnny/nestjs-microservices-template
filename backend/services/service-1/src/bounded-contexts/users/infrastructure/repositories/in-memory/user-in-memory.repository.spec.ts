@@ -3,8 +3,14 @@ import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Name } from '../../../domain/value-objects/name.vo';
-import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
-import { UserStatus, UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
+import {
+  UserRole,
+  UserRoleEnum,
+} from '../../../domain/value-objects/user-role.vo';
+import {
+  UserStatus,
+  UserStatusEnum,
+} from '../../../domain/value-objects/user-status.vo';
 import {
   Criteria,
   Filters,
@@ -51,7 +57,7 @@ describe('UserInMemoryRepository', () => {
         // Modify user
         user.updateProfile({
           firstName: new Name('Updated'),
-          lastName: new Name('Name')
+          lastName: new Name('Name'),
         });
 
         // Act
@@ -61,7 +67,7 @@ describe('UserInMemoryRepository', () => {
         const savedUser = await repository.findById(user.id);
         expect(savedUser!.profile.firstName.toValue()).toBe('Updated');
         expect(savedUser!.profile.lastName.toValue()).toBe('Name');
-        
+
         // Should still be only one user
         const allUsers = await repository.findAll();
         expect(allUsers).toHaveLength(1);
@@ -77,8 +83,8 @@ describe('UserInMemoryRepository', () => {
         // Assert
         const allUsers = await repository.findAll();
         expect(allUsers).toHaveLength(users.length);
-        users.forEach(user => {
-          const found = allUsers.find(u => u.id === user.id);
+        users.forEach((user) => {
+          const found = allUsers.find((u) => u.id === user.id);
           expect(found).toBeDefined();
           expect(found?.equals(user)).toBe(true);
         });
@@ -124,7 +130,9 @@ describe('UserInMemoryRepository', () => {
 
       it('should return null when email does not exist', async () => {
         // Act
-        const result = await repository.findByEmail(new Email('nonexistent@example.com'));
+        const result = await repository.findByEmail(
+          new Email('nonexistent@example.com'),
+        );
 
         // Assert
         expect(result).toBeNull();
@@ -151,7 +159,9 @@ describe('UserInMemoryRepository', () => {
         await repository.save(user);
 
         // Act
-        const result = await repository.findByUsername(new Username('testuser'));
+        const result = await repository.findByUsername(
+          new Username('testuser'),
+        );
 
         // Assert
         expect(result).not.toBeNull();
@@ -160,7 +170,9 @@ describe('UserInMemoryRepository', () => {
 
       it('should return null when username does not exist', async () => {
         // Act
-        const result = await repository.findByUsername(new Username('nonexistentuser'));
+        const result = await repository.findByUsername(
+          new Username('nonexistentuser'),
+        );
 
         // Assert
         expect(result).toBeNull();
@@ -174,7 +186,9 @@ describe('UserInMemoryRepository', () => {
         await repository.save(user);
 
         // Act
-        const result = await repository.existsByEmail(new Email('existing@example.com'));
+        const result = await repository.existsByEmail(
+          new Email('existing@example.com'),
+        );
 
         // Assert
         expect(result).toBe(true);
@@ -182,7 +196,9 @@ describe('UserInMemoryRepository', () => {
 
       it('should return false when email does not exist', async () => {
         // Act
-        const result = await repository.existsByEmail(new Email('nonexistent@example.com'));
+        const result = await repository.existsByEmail(
+          new Email('nonexistent@example.com'),
+        );
 
         // Assert
         expect(result).toBe(false);
@@ -196,7 +212,9 @@ describe('UserInMemoryRepository', () => {
         await repository.save(user);
 
         // Act
-        const result = await repository.existsByUsername(new Username('existinguser'));
+        const result = await repository.existsByUsername(
+          new Username('existinguser'),
+        );
 
         // Assert
         expect(result).toBe(true);
@@ -204,7 +222,9 @@ describe('UserInMemoryRepository', () => {
 
       it('should return false when username does not exist', async () => {
         // Act
-        const result = await repository.existsByUsername(new Username('nonexistentuser'));
+        const result = await repository.existsByUsername(
+          new Username('nonexistentuser'),
+        );
 
         // Assert
         expect(result).toBe(false);
@@ -250,8 +270,12 @@ describe('UserInMemoryRepository', () => {
 
       it('should handle removal of non-existent user gracefully', async () => {
         // Act & Assert - Should not throw
-        await expect(repository.remove('non-existent-id')).resolves.not.toThrow();
-        await expect(repository.delete('non-existent-id')).resolves.not.toThrow();
+        await expect(
+          repository.remove('non-existent-id'),
+        ).resolves.not.toThrow();
+        await expect(
+          repository.delete('non-existent-id'),
+        ).resolves.not.toThrow();
       });
 
       it('delete method should work the same as remove', async () => {
@@ -278,8 +302,8 @@ describe('UserInMemoryRepository', () => {
 
         // Assert
         expect(results).toHaveLength(testUsers.length);
-        testUsers.forEach(testUser => {
-          const result = results.find(r => r.id === testUser.id);
+        testUsers.forEach((testUser) => {
+          const result = results.find((r) => r.id === testUser.id);
           expect(result).toBeDefined();
           expect(result!.equals(testUser)).toBe(true);
         });
@@ -298,7 +322,7 @@ describe('UserInMemoryRepository', () => {
 
   describe('Criteria-based Operations', () => {
     let testUsers: User[] = [];
-    
+
     beforeEach(async () => {
       testUsers = UserTestFactory.createStandardTestUsers();
       await UserTestFactory.saveUsersToRepository(repository, testUsers);
@@ -321,7 +345,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('email'),
           new FilterOperator(Operator.EQUAL),
-          new FilterValue('admin@example.com')
+          new FilterValue('admin@example.com'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -340,7 +364,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('username'),
           new FilterOperator(Operator.EQUAL),
-          new FilterValue('admin')
+          new FilterValue('admin'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -359,7 +383,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('profile.firstName'),
           new FilterOperator(Operator.EQUAL),
-          new FilterValue('John')
+          new FilterValue('John'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -378,7 +402,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('profile.lastName'),
           new FilterOperator(Operator.EQUAL),
-          new FilterValue('Smith')
+          new FilterValue('Smith'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -394,13 +418,13 @@ describe('UserInMemoryRepository', () => {
 
       it('should filter by status (EQUAL)', async () => {
         // Arrange
-        const inactiveUser = User.random({ status: UserStatus .inactive() });
+        const inactiveUser = User.random({ status: UserStatus.inactive() });
         await repository.save(inactiveUser);
 
         const filter = new Filter(
           new FilterField('status'),
           new FilterOperator(Operator.EQUAL),
-          new FilterValue(UserStatusEnum.INACTIVE)
+          new FilterValue(UserStatusEnum.INACTIVE),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -419,7 +443,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('role'),
           new FilterOperator(Operator.EQUAL),
-          new FilterValue('admin')
+          new FilterValue('admin'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -440,7 +464,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('username'),
           new FilterOperator(Operator.NOT_EQUAL),
-          new FilterValue('admin')
+          new FilterValue('admin'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -450,8 +474,10 @@ describe('UserInMemoryRepository', () => {
         const result = await repository.findByCriteria(criteria);
 
         // Assert
-        expect(result.data  ).toHaveLength(2); // Should return users that are not admin
-        expect(result.data.every(user => user.username.toValue() !== 'admin')).toBe(true);
+        expect(result.data).toHaveLength(2); // Should return users that are not admin
+        expect(
+          result.data.every((user) => user.username.toValue() !== 'admin'),
+        ).toBe(true);
       });
 
       it('should filter with CONTAINS operator (case-insensitive)', async () => {
@@ -459,7 +485,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('email'),
           new FilterOperator(Operator.CONTAINS),
-          new FilterValue('EXAMPLE') // uppercase
+          new FilterValue('EXAMPLE'), // uppercase
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -470,7 +496,11 @@ describe('UserInMemoryRepository', () => {
 
         // Assert
         expect(result.data).toHaveLength(3); // All test users have example.com email
-        expect(result.data.every(user => user.email.toValue().toLowerCase().includes('example'))).toBe(true);
+        expect(
+          result.data.every((user) =>
+            user.email.toValue().toLowerCase().includes('example'),
+          ),
+        ).toBe(true);
       });
 
       it('should filter with NOT_CONTAINS operator', async () => {
@@ -478,7 +508,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('profile.firstName'),
           new FilterOperator(Operator.NOT_CONTAINS),
-          new FilterValue('John')
+          new FilterValue('John'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -489,7 +519,12 @@ describe('UserInMemoryRepository', () => {
 
         // Assert
         expect(result.data).toHaveLength(2); // Admin and Jane
-        expect(result.data.every(user => !user.profile.firstName.toValue().toLowerCase().includes('john'))).toBe(true);
+        expect(
+          result.data.every(
+            (user) =>
+              !user.profile.firstName.toValue().toLowerCase().includes('john'),
+          ),
+        ).toBe(true);
       });
 
       it('should filter with date fields using GT operator', async () => {
@@ -498,7 +533,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('createdAt'),
           new FilterOperator(Operator.GT),
-          new FilterValue(pastDate.toISOString())
+          new FilterValue(pastDate.toISOString()),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -509,7 +544,9 @@ describe('UserInMemoryRepository', () => {
 
         // Assert
         expect(result.data).toHaveLength(3); // All test users were created today
-        expect(result.data.every(user => user.createdAt > pastDate)).toBe(true);
+        expect(result.data.every((user) => user.createdAt > pastDate)).toBe(
+          true,
+        );
       });
 
       it('should filter with date fields using LT operator', async () => {
@@ -518,7 +555,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('createdAt'),
           new FilterOperator(Operator.LT),
-          new FilterValue(futureDate.toISOString())
+          new FilterValue(futureDate.toISOString()),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -529,7 +566,9 @@ describe('UserInMemoryRepository', () => {
 
         // Assert
         expect(result.data).toHaveLength(3); // All test users were created before tomorrow
-        expect(result.data.every(user => user.createdAt < futureDate)).toBe(true);
+        expect(result.data.every((user) => user.createdAt < futureDate)).toBe(
+          true,
+        );
       });
 
       it('should combine multiple filters (AND logic)', async () => {
@@ -538,12 +577,12 @@ describe('UserInMemoryRepository', () => {
           new Filter(
             new FilterField('profile.firstName'),
             new FilterOperator(Operator.CONTAINS),
-            new FilterValue('J') // Should match John and Jane
+            new FilterValue('J'), // Should match John and Jane
           ),
           new Filter(
             new FilterField('profile.lastName'),
             new FilterOperator(Operator.EQUAL),
-            new FilterValue('Doe') // Should match only John Doe
+            new FilterValue('Doe'), // Should match only John Doe
           ),
         ];
         const criteria = new Criteria({
@@ -564,7 +603,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('email'),
           new FilterOperator(Operator.EQUAL),
-          new FilterValue('nonexistent@example.com')
+          new FilterValue('nonexistent@example.com'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -581,7 +620,10 @@ describe('UserInMemoryRepository', () => {
     describe('findByCriteria - Sorting', () => {
       it('should sort by firstName ascending', async () => {
         // Arrange
-        const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.ASC));
+        const order = new Order(
+          new OrderBy('profile.firstName'),
+          new OrderType(OrderTypes.ASC),
+        );
         const criteria = new Criteria({ order });
 
         // Act
@@ -596,7 +638,10 @@ describe('UserInMemoryRepository', () => {
 
       it('should sort by firstName descending', async () => {
         // Arrange
-        const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.DESC));
+        const order = new Order(
+          new OrderBy('profile.firstName'),
+          new OrderType(OrderTypes.DESC),
+        );
         const criteria = new Criteria({ order });
 
         // Act
@@ -611,7 +656,10 @@ describe('UserInMemoryRepository', () => {
 
       it('should sort by username ascending', async () => {
         // Arrange
-        const order = new Order(new OrderBy('username'), new OrderType(OrderTypes.ASC));
+        const order = new Order(
+          new OrderBy('username'),
+          new OrderType(OrderTypes.ASC),
+        );
         const criteria = new Criteria({ order });
 
         // Act
@@ -626,10 +674,15 @@ describe('UserInMemoryRepository', () => {
 
       it('should handle sorting with null/undefined values', async () => {
         // Arrange - Create user with lastLoginAt undefined
-        const userWithoutLogin = User.random({ username: new Username('nologin') });
+        const userWithoutLogin = User.random({
+          username: new Username('nologin'),
+        });
         await repository.save(userWithoutLogin);
 
-        const order = new Order(new OrderBy('lastLoginAt'), new OrderType(OrderTypes.ASC));
+        const order = new Order(
+          new OrderBy('lastLoginAt'),
+          new OrderType(OrderTypes.ASC),
+        );
         const criteria = new Criteria({ order });
 
         // Act
@@ -727,9 +780,9 @@ describe('UserInMemoryRepository', () => {
 
       it('should return correct total with pagination (limit only)', async () => {
         // Arrange
-        const criteria = new Criteria({ 
+        const criteria = new Criteria({
           limit: 2,
-          withTotal: true 
+          withTotal: true,
         });
 
         // Act
@@ -742,9 +795,9 @@ describe('UserInMemoryRepository', () => {
 
       it('should return correct total with pagination (offset only)', async () => {
         // Arrange
-        const criteria = new Criteria({ 
+        const criteria = new Criteria({
           offset: 1,
-          withTotal: true 
+          withTotal: true,
         });
 
         // Act
@@ -757,10 +810,10 @@ describe('UserInMemoryRepository', () => {
 
       it('should return correct total with pagination (limit and offset)', async () => {
         // Arrange
-        const criteria = new Criteria({ 
+        const criteria = new Criteria({
           limit: 1,
           offset: 1,
-          withTotal: true 
+          withTotal: true,
         });
 
         // Act
@@ -776,12 +829,12 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('profile.firstName'),
           new FilterOperator(Operator.CONTAINS),
-          new FilterValue('J')
+          new FilterValue('J'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
           limit: 1,
-          withTotal: true
+          withTotal: true,
         });
 
         // Act
@@ -797,11 +850,11 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('email'),
           new FilterOperator(Operator.EQUAL),
-          new FilterValue('nonexistent@example.com')
+          new FilterValue('nonexistent@example.com'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
-          withTotal: true
+          withTotal: true,
         });
 
         // Act
@@ -814,12 +867,15 @@ describe('UserInMemoryRepository', () => {
 
       it('should return correct total with sorting and pagination', async () => {
         // Arrange
-        const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.ASC));
+        const order = new Order(
+          new OrderBy('profile.firstName'),
+          new OrderType(OrderTypes.ASC),
+        );
         const criteria = new Criteria({
           order,
           limit: 2,
           offset: 1,
-          withTotal: true
+          withTotal: true,
         });
 
         // Act
@@ -834,7 +890,7 @@ describe('UserInMemoryRepository', () => {
         // Arrange
         const criteria = new Criteria({
           offset: 3, // Equal to total number of test users
-          withTotal: true
+          withTotal: true,
         });
 
         // Act
@@ -849,7 +905,7 @@ describe('UserInMemoryRepository', () => {
         // Arrange
         const criteria = new Criteria({
           offset: 10, // Much larger than total
-          withTotal: true
+          withTotal: true,
         });
 
         // Act
@@ -865,10 +921,7 @@ describe('UserInMemoryRepository', () => {
         const extraUser = User.random({
           email: new Email('extra@example.com'),
           username: new Username('extrauser'),
-          profile: new UserProfile(
-            new Name('Julia'),
-            new Name('Extra')
-          ),
+          profile: new UserProfile(new Name('Julia'), new Name('Extra')),
           role: UserRole.user(),
         });
         await repository.save(extraUser);
@@ -877,13 +930,13 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('profile.firstName'),
           new FilterOperator(Operator.CONTAINS),
-          new FilterValue('J')
+          new FilterValue('J'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
           limit: 2,
           offset: 1,
-          withTotal: true
+          withTotal: true,
         });
 
         // Act
@@ -899,12 +952,12 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('role'),
           new FilterOperator(Operator.NOT_EQUAL),
-          new FilterValue('admin')
+          new FilterValue('admin'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
           limit: 1,
-          withTotal: true
+          withTotal: true,
         });
 
         // Act
@@ -920,13 +973,13 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('email'),
           new FilterOperator(Operator.CONTAINS),
-          new FilterValue('example.com')
+          new FilterValue('example.com'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
           limit: 1,
           offset: 1,
-          withTotal: true
+          withTotal: true,
         });
 
         // Act
@@ -944,9 +997,12 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('profile.firstName'),
           new FilterOperator(Operator.CONTAINS),
-          new FilterValue('J') // Should match John and Jane
+          new FilterValue('J'), // Should match John and Jane
         );
-        const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.DESC));
+        const order = new Order(
+          new OrderBy('profile.firstName'),
+          new OrderType(OrderTypes.DESC),
+        );
         const criteria = new Criteria({
           filters: new Filters([filter]),
           order,
@@ -966,9 +1022,12 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('email'),
           new FilterOperator(Operator.EQUAL),
-          new FilterValue('nonexistent@example.com')
+          new FilterValue('nonexistent@example.com'),
         );
-        const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.ASC));
+        const order = new Order(
+          new OrderBy('profile.firstName'),
+          new OrderType(OrderTypes.ASC),
+        );
         const criteria = new Criteria({
           filters: new Filters([filter]),
           order,
@@ -1001,7 +1060,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('profile.firstName'),
           new FilterOperator(Operator.CONTAINS),
-          new FilterValue('J')
+          new FilterValue('J'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -1019,7 +1078,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('email'),
           new FilterOperator(Operator.EQUAL),
-          new FilterValue('nonexistent@example.com')
+          new FilterValue('nonexistent@example.com'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -1037,7 +1096,7 @@ describe('UserInMemoryRepository', () => {
         const filter = new Filter(
           new FilterField('profile.firstName'),
           new FilterOperator(Operator.CONTAINS),
-          new FilterValue('J')
+          new FilterValue('J'),
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
@@ -1062,17 +1121,14 @@ describe('UserInMemoryRepository', () => {
       const originalUser = User.random({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        profile: new UserProfile(
-          new Name('Test'),
-          new Name('User')
-        ),
+        profile: new UserProfile(new Name('Test'), new Name('User')),
         role: UserRole.admin(),
       });
 
       // Modify some properties
       originalUser.updateProfile({
         firstName: new Name('Modified'),
-        lastName: new Name('Testuser')
+        lastName: new Name('Testuser'),
       });
 
       // Act
@@ -1083,13 +1139,19 @@ describe('UserInMemoryRepository', () => {
       expect(loadedUser).not.toBeNull();
       expect(loadedUser!.id).toBe(originalUser.id);
       expect(loadedUser!.email.toValue()).toBe(originalUser.email.toValue());
-      expect(loadedUser!.username.toValue()).toBe(originalUser.username.toValue());
+      expect(loadedUser!.username.toValue()).toBe(
+        originalUser.username.toValue(),
+      );
       expect(loadedUser!.profile.firstName.toValue()).toBe('Modified');
       expect(loadedUser!.profile.lastName.toValue()).toBe('Testuser');
       expect(loadedUser!.status.toValue()).toBe(originalUser.status.toValue());
       expect(loadedUser!.role.toValue()).toEqual(originalUser.role.toValue());
-      expect(loadedUser!.createdAt.getTime()).toBe(originalUser.createdAt.getTime());
-      expect(loadedUser!.updatedAt.getTime()).toBe(originalUser.updatedAt.getTime());
+      expect(loadedUser!.createdAt.getTime()).toBe(
+        originalUser.createdAt.getTime(),
+      );
+      expect(loadedUser!.updatedAt.getTime()).toBe(
+        originalUser.updatedAt.getTime(),
+      );
     });
 
     it('should handle users with no last login', async () => {
@@ -1127,12 +1189,12 @@ describe('UserInMemoryRepository', () => {
       const users = Array.from({ length: 100 }, () => User.random());
 
       // Act - Save all users concurrently
-      await Promise.all(users.map(user => repository.save(user)));
+      await Promise.all(users.map((user) => repository.save(user)));
 
       // Assert
       const allUsers = await repository.findAll();
       expect(allUsers).toHaveLength(100);
-      
+
       // All users should be retrievable
       for (const user of users) {
         const found = await repository.findById(user.id);
@@ -1143,12 +1205,9 @@ describe('UserInMemoryRepository', () => {
 
     it('should handle special characters in filter values', async () => {
       // Arrange
-      const user = User.random({ 
+      const user = User.random({
         username: new Username('testuser123'),
-        profile: new UserProfile(
-          new Name('John-Paul'),
-          new Name('Van Berg')
-        )
+        profile: new UserProfile(new Name('John-Paul'), new Name('Van Berg')),
       });
       await repository.save(user);
 
@@ -1156,22 +1215,26 @@ describe('UserInMemoryRepository', () => {
       const filter1 = new Filter(
         new FilterField('profile.firstName'),
         new FilterOperator(Operator.CONTAINS),
-        new FilterValue('-')
+        new FilterValue('-'),
       );
-      const result1 = await repository.findByCriteria(new Criteria({
-        filters: new Filters([filter1])
-      }));
+      const result1 = await repository.findByCriteria(
+        new Criteria({
+          filters: new Filters([filter1]),
+        }),
+      );
       expect(result1.data).toHaveLength(1);
 
       // Act & Assert - Space in last name
       const filter2 = new Filter(
         new FilterField('profile.lastName'),
         new FilterOperator(Operator.CONTAINS),
-        new FilterValue(' ')
+        new FilterValue(' '),
       );
-      const result2 = await repository.findByCriteria(new Criteria({
-        filters: new Filters([filter2])
-      }));
+      const result2 = await repository.findByCriteria(
+        new Criteria({
+          filters: new Filters([filter2]),
+        }),
+      );
       expect(result2.data).toHaveLength(1);
     });
 
@@ -1182,8 +1245,8 @@ describe('UserInMemoryRepository', () => {
         username: new Username('emptyuser'),
         profile: new UserProfile(
           new Name(''), // Empty first name
-          new Name('Test')
-        )
+          new Name('Test'),
+        ),
       });
       await repository.save(user);
 
@@ -1191,11 +1254,13 @@ describe('UserInMemoryRepository', () => {
       const filter = new Filter(
         new FilterField('profile.firstName'),
         new FilterOperator(Operator.EQUAL),
-        new FilterValue('')
+        new FilterValue(''),
       );
-      const result = await repository.findByCriteria(new Criteria({
-        filters: new Filters([filter])
-      }));
+      const result = await repository.findByCriteria(
+        new Criteria({
+          filters: new Filters([filter]),
+        }),
+      );
 
       // Assert
       expect(result.data).toHaveLength(1);
@@ -1204,37 +1269,42 @@ describe('UserInMemoryRepository', () => {
 
     it('should handle very large datasets efficiently', async () => {
       // Arrange - Create a large number of users
-      const largeUserSet = Array.from({ length: 1000 }, (_, i) => 
-        User.random({ 
+      const largeUserSet = Array.from({ length: 1000 }, (_, i) =>
+        User.random({
           username: new Username(`user${i}`),
           email: new Email(`user${i}@example.com`),
           profile: new UserProfile(
             new Name(i % 2 === 0 ? 'Even' : 'Odd'),
-            new Name('User')
-          )
-        })
+            new Name('User'),
+          ),
+        }),
       );
 
-      await Promise.all(largeUserSet.map(user => repository.save(user)));
+      await Promise.all(largeUserSet.map((user) => repository.save(user)));
 
       // Act - Filter and paginate
       const filter = new Filter(
         new FilterField('profile.firstName'),
         new FilterOperator(Operator.EQUAL),
-        new FilterValue('Even')
+        new FilterValue('Even'),
       );
       const start = performance.now();
-      const result = await repository.findByCriteria(new Criteria({
-        filters: new Filters([filter]),
-        limit: 50
-      }));
+      const result = await repository.findByCriteria(
+        new Criteria({
+          filters: new Filters([filter]),
+          limit: 50,
+        }),
+      );
       const end = performance.now();
 
       // Assert
       expect(result.data).toHaveLength(50);
-      expect(result.data.every(user => user.profile.firstName.toValue() === 'Even')).toBe(true);
+      expect(
+        result.data.every(
+          (user) => user.profile.firstName.toValue() === 'Even',
+        ),
+      ).toBe(true);
       expect(end - start).toBeLessThan(100); // Should complete quickly (< 100ms)
     });
   });
-
 });

@@ -3,7 +3,6 @@ import { OffsetPageParams, TracingMetadata } from '@libs/nestjs-common';
 import { BaseQuery } from '@libs/nestjs-common';
 
 export class GetUsersQuery extends BaseQuery implements IQuery {
-
   public readonly status?: string;
   public readonly role?: string;
   public readonly email?: string;
@@ -14,10 +13,7 @@ export class GetUsersQuery extends BaseQuery implements IQuery {
   // pagination
   public readonly pagination?: OffsetPageParams;
 
-  constructor(
-    props: GetUsersQuery,
-    metadata?: TracingMetadata
-  ) {
+  constructor(props: GetUsersQuery, metadata?: TracingMetadata) {
     super(metadata);
     Object.assign(this, props);
   }

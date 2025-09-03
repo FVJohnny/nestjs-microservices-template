@@ -44,4 +44,3 @@ describe('GetUserByIdQueryHandler', () => {
     await expect(handler.execute(query)).rejects.toThrow(NotFoundException);
   });
 });
-

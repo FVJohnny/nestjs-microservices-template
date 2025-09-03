@@ -6,8 +6,14 @@ import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Name } from '../../../domain/value-objects/name.vo';
 import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
-import { UserStatus, UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
-import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
+import {
+  UserStatus,
+  UserStatusEnum,
+} from '../../../domain/value-objects/user-status.vo';
+import {
+  UserRole,
+  UserRoleEnum,
+} from '../../../domain/value-objects/user-role.vo';
 import { UserTestFactory } from '../../../test-utils';
 
 describe('GetUsersQueryHandler', () => {
@@ -36,7 +42,7 @@ describe('GetUsersQueryHandler', () => {
 
       // Assert
       expect(result.data).toHaveLength(users.length);
-      users.forEach(u => expect(result.data).toContainEqual(u.toValue()));
+      users.forEach((u) => expect(result.data).toContainEqual(u.toValue()));
     });
 
     it('should filter by status when provided', async () => {
@@ -97,11 +103,17 @@ describe('GetUsersQueryHandler', () => {
       await seedUsers();
 
       // Act
-      const query = new GetUsersQuery({ pagination: { sort: { field: 'username', order: 'asc' } } });
+      const query = new GetUsersQuery({
+        pagination: { sort: { field: 'username', order: 'asc' } },
+      });
       const result = await handler.execute(query);
 
       // Assert
-      expect(result.data.map(u => u.username)).toEqual(['admin', 'user1', 'user2']);
+      expect(result.data.map((u) => u.username)).toEqual([
+        'admin',
+        'user1',
+        'user2',
+      ]);
     });
 
     it('should apply limit and offset', async () => {
@@ -109,12 +121,28 @@ describe('GetUsersQueryHandler', () => {
       await seedUsers();
 
       // Act
-      const page1 = await handler.execute(new GetUsersQuery({ pagination: { sort: { field: 'username', order: 'asc' }, limit: 2, offset: 0 } }));
-      const page2 = await handler.execute(new GetUsersQuery({ pagination: { sort: { field: 'username', order: 'asc' }, limit: 2, offset: 2 } }));
+      const page1 = await handler.execute(
+        new GetUsersQuery({
+          pagination: {
+            sort: { field: 'username', order: 'asc' },
+            limit: 2,
+            offset: 0,
+          },
+        }),
+      );
+      const page2 = await handler.execute(
+        new GetUsersQuery({
+          pagination: {
+            sort: { field: 'username', order: 'asc' },
+            limit: 2,
+            offset: 2,
+          },
+        }),
+      );
 
       // Assert
-      expect(page1.data.map(u => u.username)).toEqual(['admin', 'user1']);
-      expect(page2.data.map(u => u.username)).toEqual(['user2']);
+      expect(page1.data.map((u) => u.username)).toEqual(['admin', 'user1']);
+      expect(page2.data.map((u) => u.username)).toEqual(['user2']);
     });
   });
 
@@ -142,7 +170,9 @@ describe('GetUsersQueryHandler', () => {
 
       // Assert
       expect(onlyUsers.data).toHaveLength(2);
-      expect(new Set(onlyUsers.data.map(u => u.role))).toEqual(new Set([UserRoleEnum.USER]));
+      expect(new Set(onlyUsers.data.map((u) => u.role))).toEqual(
+        new Set([UserRoleEnum.USER]),
+      );
     });
   });
 });

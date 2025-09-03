@@ -1,5 +1,6 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Param,Query } from '@nestjs/common';
+import { ApiOperation, ApiParam,ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+
 import { RedisService } from './redis.service';
 
 @ApiTags('Redis')
@@ -76,27 +77,18 @@ export class RedisController {
       }
       const info = await client.info();
       
-      // Parse info string into structured object
-      const sections = info.split('\r\n\r\n').reduce((acc, section) => {
+      return info.split('\r\n\r\n').reduce((acc, section) => {
         const lines = section.split('\r\n');
         const sectionName = lines[0]?.replace('# ', '').toLowerCase();
         
         if (sectionName && lines.length > 1) {
-          acc[sectionName] = lines.slice(1).reduce((sectionAcc, line) => {
-            const [key, value] = line.split(':');
-            if (key && value !== undefined) {
-              sectionAcc[key] = isNaN(Number(value)) ? value : Number(value);
-            }
-            return sectionAcc;
-          }, {} as Record<string, any>);
+          acc[sectionName] = this.parseInfoSection(lines.slice(1).join('\r\n'));
         }
         
         return acc;
-      }, {} as Record<string, any>);
-
-      return sections;
+      }, {} as Record<string, Record<string, string | number>>);
     } catch (error) {
-      throw new Error(`Failed to get Redis info: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.handleError('get Redis info', error);
     }
   }
 
@@ -151,15 +143,7 @@ export class RedisController {
         }
       });
 
-      // Parse memory info
-      const memoryLines = info.split('\r\n');
-      const memory = memoryLines.reduce((acc, line) => {
-        const [key, value] = line.split(':');
-        if (key && value !== undefined) {
-          acc[key] = isNaN(Number(value)) ? value : Number(value);
-        }
-        return acc;
-      }, {} as Record<string, any>);
+      const memory = this.parseInfoSection(info);
 
       // Parse uptime
       const serverLines = serverInfo.split('\r\n');
@@ -195,7 +179,7 @@ export class RedisController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      throw new Error(`Failed to get Redis stats: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.handleError('get Redis stats', error);
     }
   }
 
@@ -247,7 +231,7 @@ export class RedisController {
         limited: limit ? keys.length > limit : false,
       };
     } catch (error) {
-      throw new Error(`Failed to get Redis keys: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.handleError('get Redis keys', error);
     }
   }
 
@@ -297,37 +281,7 @@ export class RedisController {
 
       const type = await client.type(key);
       const ttl = await client.ttl(key);
-      
-      let value: any = null;
-      let size = 0;
-
-      switch (type) {
-        case 'string':
-          value = await this.redisService.get(key);
-          size = value ? value.length : 0;
-          // Try to parse as JSON if possible
-          try {
-            value = JSON.parse(value || '');
-          } catch {
-            // Keep as string if not valid JSON
-          }
-          break;
-        case 'hash':
-          value = await this.redisService.hgetall(key);
-          size = Object.keys(value).length;
-          break;
-        case 'set':
-          value = await this.redisService.smembers(key);
-          size = value.length;
-          break;
-        case 'list':
-          const listLength = await client.llen(key);
-          value = await client.lrange(key, 0, Math.min(listLength - 1, 99)); // Limit to first 100 items
-          size = listLength;
-          break;
-        default:
-          value = `Unsupported type: ${type}`;
-      }
+      const { value, size } = await this.getKeyValue(type, key);
 
       return {
         key,
@@ -338,8 +292,67 @@ export class RedisController {
         size,
       };
     } catch (error) {
-      throw new Error(`Failed to get key info: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.handleError('get key info', error);
     }
   }
 
+  private parseInfoSection(info: string): Record<string, string | number> {
+    return info.split('\r\n').reduce((acc, line) => {
+      const [key, value] = line.split(':');
+      if (key && value !== undefined) {
+        acc[key] = isNaN(Number(value)) ? value : Number(value);
+      }
+      return acc;
+    }, {} as Record<string, string | number>);
+  }
+
+  private async getKeyValue(type: string, key: string): Promise<{ value: unknown; size: number }> {
+    const client = this.redisService.getClient();
+    if (!client) throw new Error('Redis client not initialized');
+
+    switch (type) {
+      case 'string': {
+        const stringValue = await this.redisService.get(key);
+        
+        try {
+          const objValue = JSON.parse(stringValue || '');
+          return { value: objValue, size: Object.keys(objValue).length };
+        } catch {
+          return { value: stringValue, size: stringValue?.length || 0 };
+        }
+      }
+      case 'hash': {
+        const hashValue = await this.redisService.hgetall(key);
+        return {
+          value: hashValue,
+          size: Object.keys(hashValue).length
+        };
+      }
+      case 'set': {
+        const setValue = await this.redisService.smembers(key);
+        return {
+          value: setValue,
+          size: setValue?.length ?? 0
+        };
+      }
+      case 'list': {
+        const listLength = await client.llen(key);
+        const listValue = await client.lrange(key, 0, Math.min(listLength - 1, 99));
+        return {
+          value: listValue,
+          size: listLength
+        };
+      }
+      default:
+        return {
+          value: `Unsupported type: ${type}`,
+          size: 0
+        };
+    }
+  }
+
+  private handleError(operation: string, error: unknown): never {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to ${operation}: ${message}`);
+  }
 }

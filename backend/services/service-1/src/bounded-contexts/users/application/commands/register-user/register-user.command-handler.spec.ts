@@ -1,9 +1,16 @@
 import { RegisterUserCommandHandler } from './register-user.command-handler';
 import { RegisterUserCommand } from './register-user.command';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
-import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
+import {
+  UserRole,
+  UserRoleEnum,
+} from '../../../domain/value-objects/user-role.vo';
 import { BadRequestException } from '@nestjs/common';
-import { AlreadyExistsException, createEventBusMock, MockEventBus } from '@libs/nestjs-common';
+import {
+  AlreadyExistsException,
+  createEventBusMock,
+  MockEventBus,
+} from '@libs/nestjs-common';
 import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 
 describe('RegisterUserCommandHandler (Unit)', () => {
@@ -14,7 +21,10 @@ describe('RegisterUserCommandHandler (Unit)', () => {
   beforeEach(() => {
     repository = new UserInMemoryRepository();
     eventBus = createEventBusMock({ shouldFail: false });
-    commandHandler = new RegisterUserCommandHandler(repository, eventBus as any);
+    commandHandler = new RegisterUserCommandHandler(
+      repository,
+      eventBus as any,
+    );
   });
 
   describe('Happy Path', () => {
@@ -25,7 +35,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'johndoe',
         firstName: 'John',
         lastName: 'Doe',
-        role: UserRoleEnum.USER
+        role: UserRoleEnum.USER,
       });
 
       // Act
@@ -53,7 +63,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'minimaluser',
         firstName: '',
         lastName: '',
-        role: UserRoleEnum.USER // At least one role is now required
+        role: UserRoleEnum.USER, // At least one role is now required
       });
 
       // Act
@@ -70,7 +80,6 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       expect(savedUser!.role.toValue()).toBe(UserRoleEnum.USER);
     });
 
-
     it('should publish UserRegisteredEvent after user creation', async () => {
       // Arrange
       const command = new RegisterUserCommand({
@@ -78,7 +87,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'eventsuser',
         firstName: 'Events',
         lastName: 'User',
-        role: UserRoleEnum.ADMIN
+        role: UserRoleEnum.ADMIN,
       });
 
       // Act
@@ -87,18 +96,17 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       // Assert - Verify that domain events were published to the mock EventBus
       expect(eventBus.events).toBeDefined();
       expect(eventBus.events).toHaveLength(1);
-      
+
       // Verify the exact event type
       const publishedEvent = eventBus.events[0] as UserRegisteredDomainEvent;
       expect(publishedEvent).toBeInstanceOf(UserRegisteredDomainEvent);
-      
+
       // Verify event properties match exactly with the created user
       expect(publishedEvent.aggregateId).toBe(result.id);
       expect(publishedEvent.email.toValue()).toBe('events@example.com');
       expect(publishedEvent.username.toValue()).toBe('eventsuser');
       expect(publishedEvent.occurredOn).toBeInstanceOf(Date);
 
-      
       // Verify role is correct
       expect(publishedEvent.role.toValue()).toBe(UserRoleEnum.ADMIN);
     });
@@ -110,7 +118,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'activeuser',
         firstName: 'Active',
         lastName: 'User',
-        role: UserRole.user().toValue()
+        role: UserRole.user().toValue(),
       });
 
       // Act
@@ -128,7 +136,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'timestampuser',
         firstName: 'Timestamp',
         lastName: 'User',
-        role: UserRole.user().toValue()
+        role: UserRole.user().toValue(),
       });
       const beforeCreation = new Date();
 
@@ -140,9 +148,15 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       const savedUser = await repository.findById(result.id);
       expect(savedUser!.createdAt).toBeInstanceOf(Date);
       expect(savedUser!.updatedAt).toBeInstanceOf(Date);
-      expect(savedUser!.createdAt.getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
-      expect(savedUser!.createdAt.getTime()).toBeLessThanOrEqual(afterCreation.getTime());
-      expect(savedUser!.updatedAt.getTime()).toBe(savedUser!.createdAt.getTime());
+      expect(savedUser!.createdAt.getTime()).toBeGreaterThanOrEqual(
+        beforeCreation.getTime(),
+      );
+      expect(savedUser!.createdAt.getTime()).toBeLessThanOrEqual(
+        afterCreation.getTime(),
+      );
+      expect(savedUser!.updatedAt.getTime()).toBe(
+        savedUser!.createdAt.getTime(),
+      );
       expect(savedUser!.lastLoginAt).toBeUndefined();
     });
 
@@ -153,14 +167,14 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'user1',
         firstName: 'User',
         lastName: 'One',
-        role: UserRole.user().toValue()
+        role: UserRole.user().toValue(),
       });
       const command2 = new RegisterUserCommand({
         email: 'user2@example.com',
         username: 'user2',
         firstName: 'User',
         lastName: 'Two',
-        role: UserRole.user().toValue()
+        role: UserRole.user().toValue(),
       });
 
       // Act
@@ -178,20 +192,23 @@ describe('RegisterUserCommandHandler (Unit)', () => {
     it('should handle EventBus publishing failures gracefully', async () => {
       // Arrange
       const failingEventBus = createEventBusMock({ shouldFail: true });
-      const handlerWithFailingEventBus = new RegisterUserCommandHandler(repository, failingEventBus as any);
-      
+      const handlerWithFailingEventBus = new RegisterUserCommandHandler(
+        repository,
+        failingEventBus as any,
+      );
+
       const command = new RegisterUserCommand({
         email: 'failing@example.com',
         username: 'failinguser',
         firstName: 'Failing',
         lastName: 'User',
-        role: UserRole.user().toValue()
+        role: UserRole.user().toValue(),
       });
 
       // Act & Assert
-      await expect(handlerWithFailingEventBus.execute(command))
-        .rejects
-        .toThrow('EventBus publishAll failed');
+      await expect(handlerWithFailingEventBus.execute(command)).rejects.toThrow(
+        'EventBus publishAll failed',
+      );
     });
 
     it('should throw BadRequestException when email already exists', async () => {
@@ -201,7 +218,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'user1',
         firstName: 'Existing',
         lastName: 'User',
-        role: UserRole.user().toValue()
+        role: UserRole.user().toValue(),
       });
       await commandHandler.execute(existingCommand);
 
@@ -210,13 +227,13 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'user2',
         firstName: 'Duplicate',
         lastName: 'User',
-        role: UserRole.user().toValue()
+        role: UserRole.user().toValue(),
       });
 
       // Act & Assert
-      await expect(commandHandler.execute(duplicateEmailCommand))
-        .rejects
-        .toThrow(AlreadyExistsException);
+      await expect(
+        commandHandler.execute(duplicateEmailCommand),
+      ).rejects.toThrow(AlreadyExistsException);
     });
 
     it('should throw BadRequestException when username already exists', async () => {
@@ -226,7 +243,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'existinguser',
         firstName: 'Existing',
         lastName: 'User',
-        role: UserRole.user().toValue()
+        role: UserRole.user().toValue(),
       });
       await commandHandler.execute(existingCommand);
 
@@ -235,14 +252,13 @@ describe('RegisterUserCommandHandler (Unit)', () => {
         username: 'existinguser',
         firstName: 'Existing',
         lastName: 'User',
-        role: UserRole.user().toValue()
+        role: UserRole.user().toValue(),
       });
 
       // Act & Assert
-      await expect(commandHandler.execute(duplicateUsernameCommand))
-        .rejects
-        .toThrow(AlreadyExistsException);
-      
+      await expect(
+        commandHandler.execute(duplicateUsernameCommand),
+      ).rejects.toThrow(AlreadyExistsException);
     });
   });
 });

@@ -3,7 +3,11 @@ import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { Criteria, InMemoryCriteriaConverter, PaginatedRepoResult } from '@libs/nestjs-common';
+import {
+  Criteria,
+  InMemoryCriteriaConverter,
+  PaginatedRepoResult,
+} from '@libs/nestjs-common';
 
 @Injectable()
 export class UserInMemoryRepository implements UserRepository {
@@ -59,23 +63,25 @@ export class UserInMemoryRepository implements UserRepository {
 
   async findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
     const users = Array.from(this.users.values());
-    const { filterFn, sortFn, paginationFn } = InMemoryCriteriaConverter.convert<User>(criteria);
+    const { filterFn, sortFn, paginationFn } =
+      InMemoryCriteriaConverter.convert<User>(criteria);
 
-    let result = filterFn(users);
-    
+    const result = filterFn(users);
+
     if (sortFn) {
       result.sort(sortFn);
     }
-    
+
     return {
       data: paginationFn(result),
-      total: criteria.withTotal ? result.length : null
+      total: criteria.withTotal ? result.length : null,
     };
   }
 
   async countByCriteria(criteria: Criteria): Promise<number> {
     const users = Array.from(this.users.values());
-    const { filterFn, sortFn } = InMemoryCriteriaConverter.convert<User>(criteria);
+    const { filterFn, sortFn } =
+      InMemoryCriteriaConverter.convert<User>(criteria);
 
     // Apply only filters, ignore pagination for count
     const filteredUsers = filterFn(users);
@@ -93,5 +99,4 @@ export class UserInMemoryRepository implements UserRepository {
   async exists(id: string): Promise<boolean> {
     return this.users.has(id);
   }
-
 }

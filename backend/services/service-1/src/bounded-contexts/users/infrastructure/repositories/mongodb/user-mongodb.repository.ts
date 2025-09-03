@@ -4,7 +4,11 @@ import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { Criteria, InfrastructureException, PaginatedRepoResult } from '@libs/nestjs-common';
+import {
+  Criteria,
+  InfrastructureException,
+  PaginatedRepoResult,
+} from '@libs/nestjs-common';
 import { MongoCriteriaConverter } from '@libs/nestjs-mongodb';
 import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
 
@@ -14,25 +18,24 @@ export class UserMongodbRepository implements UserRepository {
   private readonly collection: Collection;
 
   constructor(
-    @Inject(SharedMongoDBModule.MONGO_CLIENT_TOKEN) private readonly mongoClient: MongoClient,
+    @Inject(SharedMongoDBModule.MONGO_CLIENT_TOKEN)
+    private readonly mongoClient: MongoClient,
   ) {
     this.collection = this.mongoClient.db().collection('users');
     // Initialize indexes on first connection
-    this.initializeIndexes().catch(error => 
-      this.logger.error('Failed to initialize user collection indexes:', error)
+    this.initializeIndexes().catch((error) =>
+      this.logger.error('Failed to initialize user collection indexes:', error),
     );
   }
-
-
 
   async save(user: User): Promise<void> {
     try {
       const primitives = user.toValue();
-      
+
       await this.collection.updateOne(
         { id: user.id },
         { $set: { ...primitives } },
-        { upsert: true }
+        { upsert: true },
       );
     } catch (error) {
       this.handleDatabaseError('save', user.id, error);
@@ -42,7 +45,7 @@ export class UserMongodbRepository implements UserRepository {
   async findById(id: string): Promise<User | null> {
     try {
       const document = await this.collection.findOne({ id });
-      
+
       if (!document) {
         return null;
       }
@@ -55,8 +58,10 @@ export class UserMongodbRepository implements UserRepository {
 
   async findByEmail(email: Email): Promise<User | null> {
     try {
-      const document = await this.collection.findOne({ email: email.toValue() });
-      
+      const document = await this.collection.findOne({
+        email: email.toValue(),
+      });
+
       if (!document) {
         return null;
       }
@@ -69,8 +74,10 @@ export class UserMongodbRepository implements UserRepository {
 
   async findByUsername(username: Username): Promise<User | null> {
     try {
-      const document = await this.collection.findOne({ username: username.toValue() });
-      
+      const document = await this.collection.findOne({
+        username: username.toValue(),
+      });
+
       if (!document) {
         return null;
       }
@@ -83,7 +90,9 @@ export class UserMongodbRepository implements UserRepository {
 
   async existsByEmail(email: Email): Promise<boolean> {
     try {
-      const count = await this.collection.countDocuments({ email: email.toValue() });
+      const count = await this.collection.countDocuments({
+        email: email.toValue(),
+      });
       return count > 0;
     } catch (error) {
       this.handleDatabaseError('existsByEmail', email.toValue(), error);
@@ -92,7 +101,9 @@ export class UserMongodbRepository implements UserRepository {
 
   async existsByUsername(username: Username): Promise<boolean> {
     try {
-      const count = await this.collection.countDocuments({ username: username.toValue() });
+      const count = await this.collection.countDocuments({
+        username: username.toValue(),
+      });
       return count > 0;
     } catch (error) {
       this.handleDatabaseError('existsByUsername', username.toValue(), error);
@@ -102,7 +113,7 @@ export class UserMongodbRepository implements UserRepository {
   async findAll(): Promise<User[]> {
     try {
       const documents = await this.collection.find().toArray();
-      return documents.map(doc => User.fromValue(doc));
+      return documents.map((doc) => User.fromValue(doc));
     } catch (error) {
       this.handleDatabaseError('findAll', '', error);
     }
@@ -110,30 +121,32 @@ export class UserMongodbRepository implements UserRepository {
 
   async findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
     try {
-      const {filter, options} = MongoCriteriaConverter.convert(criteria);
-      
+      const { filter, options } = MongoCriteriaConverter.convert(criteria);
+
       if (!criteria.withTotal) {
         // Simple query without total count
         let query = this.collection.find(filter);
-        
+
         if (options.sort) {
           query = query.sort(options.sort);
         }
-        
+
         if (options.limit) {
           query = query.limit(options.limit);
         }
-        
+
         if (options.skip) {
           query = query.skip(options.skip);
         }
-        
+
         const documents = await query.toArray();
-        const count = criteria.withTotal ? await this.collection.countDocuments(filter) : null;
-        
+        const count = criteria.withTotal
+          ? await this.collection.countDocuments(filter)
+          : null;
+
         return {
-          data: documents.map(doc => User.fromValue(doc)),
-          total: count
+          data: documents.map((doc) => User.fromValue(doc)),
+          total: count,
         };
       }
 
@@ -145,11 +158,11 @@ export class UserMongodbRepository implements UserRepository {
             data: [
               ...(options.sort ? [{ $sort: options.sort }] : []),
               ...(options.skip ? [{ $skip: options.skip }] : []),
-              ...(options.limit ? [{ $limit: options.limit }] : [])
+              ...(options.limit ? [{ $limit: options.limit }] : []),
             ],
-            count: [{ $count: "total" }]
-          }
-        }
+            count: [{ $count: 'total' }],
+          },
+        },
       ];
 
       const [result] = await this.collection.aggregate(pipeline).toArray();
@@ -157,8 +170,8 @@ export class UserMongodbRepository implements UserRepository {
       const totalCount = result.count[0]?.total || 0;
 
       return {
-        data: documents.map(doc => User.fromValue(doc)),
-        total: totalCount
+        data: documents.map((doc) => User.fromValue(doc)),
+        total: totalCount,
       };
     } catch (error) {
       this.handleDatabaseError('findByCriteria', '', error);
@@ -169,7 +182,9 @@ export class UserMongodbRepository implements UserRepository {
     try {
       const convertedCriteria = MongoCriteriaConverter.convert(criteria);
 
-      const count = await this.collection.countDocuments(convertedCriteria?.filter || {});
+      const count = await this.collection.countDocuments(
+        convertedCriteria?.filter || {},
+      );
       return count;
     } catch (error) {
       this.handleDatabaseError('countByCriteria', 'criteria', error);
@@ -204,99 +219,104 @@ export class UserMongodbRepository implements UserRepository {
   private async initializeIndexes(): Promise<void> {
     try {
       // Check if collection exists first
-      const collections = await this.mongoClient.db().listCollections({name: 'users'}).toArray();
+      const collections = await this.mongoClient
+        .db()
+        .listCollections({ name: 'users' })
+        .toArray();
       if (collections.length === 0) {
         // Collection doesn't exist yet, indexes will be created when first document is inserted
-        this.logger.log('Users collection does not exist yet, skipping index initialization');
+        this.logger.log(
+          'Users collection does not exist yet, skipping index initialization',
+        );
         return;
       }
 
       // Check if indexes already exist to avoid recreation
       const existingIndexes = await this.collection.indexes();
-      const indexNames = existingIndexes.map(idx => idx.name);
+      const indexNames = existingIndexes.map((idx) => idx.name);
 
       // Primary unique indexes
       if (!indexNames.includes('idx_user_id')) {
         await this.collection.createIndex(
-          { "id": 1 }, 
-          { 
-            unique: true, 
-            name: "idx_user_id" 
-          }
+          { id: 1 },
+          {
+            unique: true,
+            name: 'idx_user_id',
+          },
         );
       }
 
       if (!indexNames.includes('idx_user_email')) {
         await this.collection.createIndex(
-          { "email": 1 }, 
-          { 
-            unique: true, 
-            name: "idx_user_email",
-            collation: { locale: "en", strength: 2 } // Case-insensitive
-          }
+          { email: 1 },
+          {
+            unique: true,
+            name: 'idx_user_email',
+            collation: { locale: 'en', strength: 2 }, // Case-insensitive
+          },
         );
       }
 
       if (!indexNames.includes('idx_user_username')) {
         await this.collection.createIndex(
-          { "username": 1 }, 
-          { 
-            unique: true, 
-            name: "idx_user_username",
-            collation: { locale: "en", strength: 2 } // Case-insensitive
-          }
+          { username: 1 },
+          {
+            unique: true,
+            name: 'idx_user_username',
+            collation: { locale: 'en', strength: 2 }, // Case-insensitive
+          },
         );
       }
 
       // Query performance indexes
       if (!indexNames.includes('idx_user_role')) {
         await this.collection.createIndex(
-          { "role": 1 }, 
-          { name: "idx_user_role" }
+          { role: 1 },
+          { name: 'idx_user_role' },
         );
       }
 
       if (!indexNames.includes('idx_user_status_role')) {
         await this.collection.createIndex(
-          { "status": 1, "role": 1 }, 
-          { name: "idx_user_status_role" }
+          { status: 1, role: 1 },
+          { name: 'idx_user_status_role' },
         );
       }
 
       // Name search indexes
       if (!indexNames.includes('idx_user_profile_names')) {
         await this.collection.createIndex(
-          { 
-            "profile.firstName": 1, 
-            "profile.lastName": 1 
-          }, 
-          { name: "idx_user_profile_names" }
+          {
+            'profile.firstName': 1,
+            'profile.lastName': 1,
+          },
+          { name: 'idx_user_profile_names' },
         );
       }
 
       // Sorting indexes
       if (!indexNames.includes('idx_user_created_desc')) {
         await this.collection.createIndex(
-          { "createdAt": -1 }, 
-          { name: "idx_user_created_desc" }
+          { createdAt: -1 },
+          { name: 'idx_user_created_desc' },
         );
       }
 
       if (!indexNames.includes('idx_user_updated_desc')) {
         await this.collection.createIndex(
-          { "updatedAt": -1 }, 
-          { name: "idx_user_updated_desc" }
+          { updatedAt: -1 },
+          { name: 'idx_user_updated_desc' },
         );
       }
 
       // Compound indexes for common query patterns
       if (!indexNames.includes('idx_user_status_created')) {
         await this.collection.createIndex(
-          { 
-            "status": 1, 
-            "createdAt": -1 
-          }, 
-          { name: "idx_user_status_created" }
+          {
+            status: 1,
+            createdAt: -1,
+          },
+          { name: 'idx_user_status_created' },
         );
       }
 

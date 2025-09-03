@@ -1,8 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-} from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { GetUserByIdQuery } from '../../../../../application/queries';
@@ -24,7 +20,9 @@ export class GetUserController {
     status: 404,
     description: 'User not found',
   })
-  async getUser(@Param('userId') userId: string): Promise<GetUserByIdQueryResponse> {
+  async getUser(
+    @Param('userId') userId: string,
+  ): Promise<GetUserByIdQueryResponse> {
     const query = new GetUserByIdQuery({ userId });
     return await this.queryBus.execute(query);
   }

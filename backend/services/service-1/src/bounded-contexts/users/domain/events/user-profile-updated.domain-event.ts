@@ -13,9 +13,7 @@ export class UserProfileUpdatedDomainEvent extends DomainEvent {
   public readonly firstName: string;
   public readonly lastName: string;
 
-  constructor(
-    payload: UserProfileUpdatedDomainEventParams,
-  ) {
+  constructor(payload: UserProfileUpdatedDomainEventParams) {
     super(payload.userId);
 
     this.previousFirstName = payload.previousFirstName;
@@ -23,5 +21,4 @@ export class UserProfileUpdatedDomainEvent extends DomainEvent {
     this.firstName = payload.firstName;
     this.lastName = payload.lastName;
   }
-
 }

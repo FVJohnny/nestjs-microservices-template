@@ -4,7 +4,10 @@ import request from 'supertest';
 import { CqrsModule } from '@nestjs/cqrs';
 import { GetUsersController } from '../../src/bounded-contexts/users/interfaces/http/controllers/users/get-users/get-users.controller';
 import { GetUsersQueryHandler } from '../../src/bounded-contexts/users/application/queries/get-users/get-users.query-handler';
-import { USER_REPOSITORY, UserRepository } from '../../src/bounded-contexts/users/domain/repositories/user.repository';
+import {
+  USER_REPOSITORY,
+  UserRepository,
+} from '../../src/bounded-contexts/users/domain/repositories/user.repository';
 import { UserInMemoryRepository } from '../../src/bounded-contexts/users/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '../../src/bounded-contexts/users/domain/entities/user.entity';
 import { Email } from '../../src/bounded-contexts/users/domain/value-objects/email.vo';
@@ -36,7 +39,7 @@ describe('GET /users (E2E)', () => {
 
   const clearRepo = async () => {
     const all = await repository.findAll();
-    await Promise.all(all.map(u => repository.delete(u.id)));
+    await Promise.all(all.map((u) => repository.delete(u.id)));
   };
 
   afterAll(async () => {
@@ -82,12 +85,18 @@ describe('GET /users (E2E)', () => {
   });
 
   it('filters by status=inactive', async () => {
-    const inactive = User.random({ username: new Username('inactive'), status: UserStatus.inactive() });
+    const inactive = User.random({
+      username: new Username('inactive'),
+      status: UserStatus.inactive(),
+    });
     const active = User.random({ username: new Username('active') });
     await repository.save(inactive);
     await repository.save(active);
 
-    const res = await request(app.getHttpServer()).get('/users').query({ status: 'inactive' }).expect(200);
+    const res = await request(app.getHttpServer())
+      .get('/users')
+      .query({ status: 'inactive' })
+      .expect(200);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].username).toBe('inactive');
   });
@@ -108,36 +117,60 @@ describe('GET /users (E2E)', () => {
       username: new Username('user2'),
       profile: new UserProfile(new Name('Jane'), new Name('Smith')),
     });
-    await Promise.all([admin, u1, u2].map(u => repository.save(u)));
+    await Promise.all([admin, u1, u2].map((u) => repository.save(u)));
 
-    const byEmail = await request(app.getHttpServer()).get('/users').query({ email: 'admin@' }).expect(200);
+    const byEmail = await request(app.getHttpServer())
+      .get('/users')
+      .query({ email: 'admin@' })
+      .expect(200);
     expect(byEmail.body.data).toHaveLength(1);
     expect(byEmail.body.data[0].username).toBe('admin');
 
-    const byUsername = await request(app.getHttpServer()).get('/users').query({ username: 'user1' }).expect(200);
+    const byUsername = await request(app.getHttpServer())
+      .get('/users')
+      .query({ username: 'user1' })
+      .expect(200);
     expect(byUsername.body.data).toHaveLength(1);
     expect(byUsername.body.data[0].username).toBe('user1');
 
-    const byFirst = await request(app.getHttpServer()).get('/users').query({ firstName: 'Jane' }).expect(200);
+    const byFirst = await request(app.getHttpServer())
+      .get('/users')
+      .query({ firstName: 'Jane' })
+      .expect(200);
     expect(byFirst.body.data).toHaveLength(1);
     expect(byFirst.body.data[0].username).toBe('user2');
 
-    const byLast = await request(app.getHttpServer()).get('/users').query({ lastName: 'Doe' }).expect(200);
+    const byLast = await request(app.getHttpServer())
+      .get('/users')
+      .query({ lastName: 'Doe' })
+      .expect(200);
     expect(byLast.body.data).toHaveLength(1);
     expect(byLast.body.data[0].username).toBe('user1');
   });
 
   it('filters by role equality', async () => {
-    const admin = User.random({ username: new Username('admin'), role: UserRole.admin() });
-    const user = User.random({ username: new Username('user'), role: UserRole.user() });
+    const admin = User.random({
+      username: new Username('admin'),
+      role: UserRole.admin(),
+    });
+    const user = User.random({
+      username: new Username('user'),
+      role: UserRole.user(),
+    });
     await repository.save(admin);
     await repository.save(user);
 
-    const onlyAdmins = await request(app.getHttpServer()).get('/users').query({ role: 'admin' }).expect(200);
+    const onlyAdmins = await request(app.getHttpServer())
+      .get('/users')
+      .query({ role: 'admin' })
+      .expect(200);
     expect(onlyAdmins.body.data).toHaveLength(1);
     expect(onlyAdmins.body.data[0].username).toBe('admin');
 
-    const onlyUsers = await request(app.getHttpServer()).get('/users').query({ role: 'user' }).expect(200);
+    const onlyUsers = await request(app.getHttpServer())
+      .get('/users')
+      .query({ role: 'user' })
+      .expect(200);
     expect(onlyUsers.body.data).toHaveLength(1);
     expect(onlyUsers.body.data[0].username).toBe('user');
   });
@@ -146,18 +179,34 @@ describe('GET /users (E2E)', () => {
     const a = User.random({ username: new Username('admin') });
     const b = User.random({ username: new Username('user1') });
     const c = User.random({ username: new Username('user2') });
-    await Promise.all([a, b, c].map(u => repository.save(u)));
+    await Promise.all([a, b, c].map((u) => repository.save(u)));
 
-    const ordered = await request(app.getHttpServer()).get('/users').query({ orderBy: 'username', orderType: 'asc' }).expect(200);
-    expect(ordered.body.data.map((u: any) => u.username)).toEqual(['admin', 'user1', 'user2']);
+    const ordered = await request(app.getHttpServer())
+      .get('/users')
+      .query({ orderBy: 'username', orderType: 'asc' })
+      .expect(200);
+    expect(ordered.body.data.map((u: any) => u.username)).toEqual([
+      'admin',
+      'user1',
+      'user2',
+    ]);
 
-    const page = await request(app.getHttpServer()).get('/users').query({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 1 }).expect(200);
-    expect(page.body.data.map((u: any) => u.username)).toEqual(['user1', 'user2']);
+    const page = await request(app.getHttpServer())
+      .get('/users')
+      .query({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 1 })
+      .expect(200);
+    expect(page.body.data.map((u: any) => u.username)).toEqual([
+      'user1',
+      'user2',
+    ]);
   });
 
   it('rejects invalid orderType with 400 (validation)', async () => {
     const u = User.random({ username: new Username('alpha') });
     await repository.save(u);
-    await request(app.getHttpServer()).get('/users').query({ orderBy: 'username', orderType: 'ASC' }).expect(400);
+    await request(app.getHttpServer())
+      .get('/users')
+      .query({ orderBy: 'username', orderType: 'ASC' })
+      .expect(400);
   });
 });

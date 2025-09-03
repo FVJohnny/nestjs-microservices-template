@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Put,
-  Body,
-  Param,
-} from '@nestjs/common';
+import { Controller, Put, Body, Param } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { UpdateUserProfileCommand } from '../../../../../application/commands';

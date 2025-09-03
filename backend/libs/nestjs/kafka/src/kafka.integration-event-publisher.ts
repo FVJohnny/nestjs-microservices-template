@@ -21,14 +21,4 @@ export class KafkaIntegrationEventPublisher implements IntegrationEventPublisher
       throw error;
     }
   }
-
-  async publishBatch(topic: string, messages: any[]): Promise<void> {
-    try {
-      await this.kafkaService.publishMessages(topic, messages);
-      this.logger.debug(`${messages.length} events published to Kafka topic ${topic}`);
-    } catch (error) {
-      this.logger.error(`Failed to publish batch events to Kafka topic ${topic}:`, error);
-      throw error;
-    }
-  }
 }

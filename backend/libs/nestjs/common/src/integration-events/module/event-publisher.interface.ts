@@ -6,5 +6,4 @@
 export const INTEGRATION_EVENT_PUBLISHER_TOKEN = 'IntegrationEventPublisher';
 export interface IntegrationEventPublisher {
   publish(topic: string, message: any): Promise<void>;
-  publishBatch?(topic: string, messages: any[]): Promise<void>;
 }

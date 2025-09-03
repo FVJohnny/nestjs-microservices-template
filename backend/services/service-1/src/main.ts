@@ -15,12 +15,14 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    forbidUnknownValues: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      forbidUnknownValues: true,
+    }),
+  );
   // Security
   app.enableShutdownHooks();
   app.use(helmet());

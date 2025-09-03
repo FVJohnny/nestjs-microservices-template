@@ -4,12 +4,15 @@ import { Username } from '../domain/value-objects/username.vo';
 import { Name } from '../domain/value-objects/name.vo';
 import { UserProfile } from '../domain/value-objects/user-profile.vo';
 import { UserRole, UserRoleEnum } from '../domain/value-objects/user-role.vo';
-import { UserStatus, UserStatusEnum } from '../domain/value-objects/user-status.vo';
+import {
+  UserStatus,
+  UserStatusEnum,
+} from '../domain/value-objects/user-status.vo';
 
 /**
  * Test user factory for creating consistent lists of test users
  * across all test files in the users bounded context.
- * 
+ *
  * This factory focuses on creating predefined lists of users
  * that are commonly used in tests, avoiding duplication.
  */
@@ -23,28 +26,19 @@ export class UserTestFactory {
       User.random({
         email: new Email('admin@example.com'),
         username: new Username('admin'),
-        profile: new UserProfile(
-          new Name('Admin'),
-          new Name('User')
-        ),
+        profile: new UserProfile(new Name('Admin'), new Name('User')),
         role: UserRole.admin(),
       }),
       User.random({
         email: new Email('user1@example.com'),
         username: new Username('user1'),
-        profile: new UserProfile(
-          new Name('John'),
-          new Name('Doe')
-        ),
+        profile: new UserProfile(new Name('John'), new Name('Doe')),
         role: UserRole.user(),
       }),
       User.random({
         email: new Email('user2@example.com'),
         username: new Username('user2'),
-        profile: new UserProfile(
-          new Name('Jane'),
-          new Name('Smith')
-        ),
+        profile: new UserProfile(new Name('Jane'), new Name('Smith')),
         role: UserRole.user(),
       }),
     ];
@@ -61,25 +55,25 @@ export class UserTestFactory {
       role?: UserRole;
       status?: UserStatus;
       domain?: string;
-    }
+    },
   ): User[] {
     const users: User[] = [];
     const domain = baseProps?.domain ?? 'example.com';
-    
+
     for (let i = 0; i < count; i++) {
       const user = User.random({
         email: new Email(`user${i}@${domain}`),
         username: new Username(`user${i}`),
         profile: new UserProfile(
           new Name(`FirstName${i}`),
-          new Name(`LastName${i}`)
+          new Name(`LastName${i}`),
         ),
         role: baseProps?.role,
         status: baseProps?.status,
       });
       users.push(user);
     }
-    
+
     return users;
   }
 
@@ -94,27 +88,24 @@ export class UserTestFactory {
       prefix?: string;
       domain?: string;
       role?: UserRole;
-    }
+    },
   ): User[] {
     const prefix = options?.prefix ?? 'page';
     const domain = options?.domain ?? 'example.com';
     const users: User[] = [];
-    
+
     for (let i = 0; i < total; i++) {
       users.push(
         User.random({
           email: new Email(`${prefix}${i}@${domain}`),
           username: new Username(`${prefix}${i}`),
-          profile: new UserProfile(
-            new Name(`First${i}`),
-            new Name(`Last${i}`)
-          ),
+          profile: new UserProfile(new Name(`First${i}`), new Name(`Last${i}`)),
           role: options?.role ?? (i === 0 ? UserRole.admin() : UserRole.user()),
           status: UserStatus.active(),
-        })
+        }),
       );
     }
-    
+
     return users;
   }
 
@@ -163,11 +154,10 @@ export class UserTestFactory {
    */
   static async saveUsersToRepository(
     repository: { save(user: User): Promise<void> },
-    users: User[]
+    users: User[],
   ): Promise<void> {
     for (const user of users) {
       await repository.save(user);
     }
   }
-
 }

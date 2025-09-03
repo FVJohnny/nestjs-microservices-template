@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import { BaseIntegrationEventListener } from '@libs/nestjs-common';
+import { Injectable } from '@nestjs/common';
+
 import { RedisService } from './redis.service';
 
 /**
@@ -16,10 +17,10 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
     await super.onModuleInit();
     // Auto-start listening when the module initializes
     // This ensures handlers registered in onModuleInit are ready
-    setTimeout(async () => {
+    setTimeout(() => {
       if (this.eventHandlers.size > 0 && !this.isListeningFlag) {
         this.logger.log(`Auto-starting listener with ${this.eventHandlers.size} registered handlers`);
-        await this.startListening();
+        void this.startListening();
       }
     }, 100); // Small delay to allow all handlers to register
   }
@@ -37,14 +38,14 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
       
       // Set up message handler (only once, not for each topic)
       if (!client.listenerCount('message')) {
-        client.on('message', async (channel: string, message: string) => {
-          await this.handleMessage(channel, message);
+        client.on('message', (channel: string, message: string) => {
+          this.handleMessage(channel, message).catch(this.logger.error);
         });
       }
       
-      this.logger.log(`Subscribed to Redis channel: ${topicName}`);
+      this.logger.log(`Subscribed to Redis topic/channel: ${topicName}`);
     } catch (error) {
-      this.logger.error(`Failed to subscribe to Redis channel ${topicName}:`, error);
+      this.logger.error(`Failed to subscribe to Redis topic/channel ${topicName}:`, error);
       throw error;
     }
   }
@@ -64,7 +65,7 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
     }
   }
 
-  protected parseMessage(rawMessage: any): { parsedMessage: Record<string, unknown>; messageId: string } {
+  protected parseMessage(rawMessage: unknown): { parsedMessage: Record<string, unknown>; messageId: string } {
     try {
       const parsedMessage = typeof rawMessage === 'string' 
         ? JSON.parse(rawMessage) as Record<string, unknown>

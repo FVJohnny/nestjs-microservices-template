@@ -14,8 +14,12 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
   let mockIntegrationEventPublisher: MockIntegrationEventPublisher;
 
   beforeEach(() => {
-    mockIntegrationEventPublisher = createIntegrationEventPublisherMock({ shouldFail: false });
-    eventHandler = new UserRegisteredDomainEventHandler(mockIntegrationEventPublisher);
+    mockIntegrationEventPublisher = createIntegrationEventPublisherMock({
+      shouldFail: false,
+    });
+    eventHandler = new UserRegisteredDomainEventHandler(
+      mockIntegrationEventPublisher,
+    );
   });
 
   describe('Happy Path', () => {
@@ -33,10 +37,10 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
       // Assert
       expect(mockIntegrationEventPublisher.publishedEvents).toHaveLength(1);
-      
+
       const publishedEvent = mockIntegrationEventPublisher.publishedEvents[0];
       expect(publishedEvent.topic).toBe('users');
-      
+
       const publishedData = publishedEvent.message;
       expect(publishedData.data.userId).toBe('test-user-id');
       expect(publishedData.data.email).toBe('test@example.com');
@@ -59,7 +63,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       // Assert
       const publishedEvent = mockIntegrationEventPublisher.publishedEvents[0];
       const publishedData = publishedEvent.message;
-      
+
       expect(publishedData.data.email).toBe('test.user+tag@example-domain.com');
       expect(publishedData.data.username).toBe('user_name-123');
     });
@@ -77,7 +81,8 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       await eventHandler.handle(event);
 
       // Assert
-      const publishedEvent = mockIntegrationEventPublisher.publishedEvents[0].message;
+      const publishedEvent =
+        mockIntegrationEventPublisher.publishedEvents[0].message;
       expect(publishedEvent.topic).toBe(Topics.USERS.topic);
       expect(publishedEvent.name).toEqual(Topics.USERS.events.USER_CREATED);
       expect(publishedEvent.version).toBeDefined();
@@ -126,9 +131,13 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
   describe('Error Cases', () => {
     it('should handle integration event publisher failures and rethrow error', async () => {
       // Arrange
-      const failingPublisher = createIntegrationEventPublisherMock({ shouldFail: true });
-      const failingEventHandler = new UserRegisteredDomainEventHandler(failingPublisher);
-      
+      const failingPublisher = createIntegrationEventPublisherMock({
+        shouldFail: true,
+      });
+      const failingEventHandler = new UserRegisteredDomainEventHandler(
+        failingPublisher,
+      );
+
       const event = new UserRegisteredDomainEvent({
         userId: 'failing-user-id',
         email: new Email('failing@example.com'),
@@ -137,14 +146,20 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       });
 
       // Act & Assert
-      await expect(failingEventHandler.handle(event)).rejects.toThrow('IntegrationEventPublisher publish failed');
+      await expect(failingEventHandler.handle(event)).rejects.toThrow(
+        'IntegrationEventPublisher publish failed',
+      );
     });
 
     it('should log error and rethrow when publisher throws', async () => {
       // Arrange
-      const failingPublisher = createIntegrationEventPublisherMock({ shouldFail: true });
-      const failingEventHandler = new UserRegisteredDomainEventHandler(failingPublisher);
-      
+      const failingPublisher = createIntegrationEventPublisherMock({
+        shouldFail: true,
+      });
+      const failingEventHandler = new UserRegisteredDomainEventHandler(
+        failingPublisher,
+      );
+
       const event = new UserRegisteredDomainEvent({
         userId: 'network-error-user',
         email: new Email('network@example.com'),
@@ -153,14 +168,20 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       });
 
       // Act & Assert
-      await expect(failingEventHandler.handle(event)).rejects.toThrow('IntegrationEventPublisher publish failed');
+      await expect(failingEventHandler.handle(event)).rejects.toThrow(
+        'IntegrationEventPublisher publish failed',
+      );
     });
 
     it('should handle timeout errors from integration event publisher', async () => {
       // Arrange
-      const failingPublisher = createIntegrationEventPublisherMock({ shouldFail: true });
-      const failingEventHandler = new UserRegisteredDomainEventHandler(failingPublisher);
-      
+      const failingPublisher = createIntegrationEventPublisherMock({
+        shouldFail: true,
+      });
+      const failingEventHandler = new UserRegisteredDomainEventHandler(
+        failingPublisher,
+      );
+
       const event = new UserRegisteredDomainEvent({
         userId: 'timeout-user',
         email: new Email('timeout@example.com'),
@@ -169,7 +190,9 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       });
 
       // Act & Assert
-      await expect(failingEventHandler.handle(event)).rejects.toThrow('IntegrationEventPublisher publish failed');
+      await expect(failingEventHandler.handle(event)).rejects.toThrow(
+        'IntegrationEventPublisher publish failed',
+      );
     });
   });
 });

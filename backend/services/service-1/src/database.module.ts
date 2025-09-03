@@ -1,7 +1,10 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SharedRedisModule } from '@libs/nestjs-redis';
-import { SharedPostgreSQLModule, PostgreSQLConfigService } from '@libs/nestjs-postgresql';
+import {
+  SharedPostgreSQLModule,
+  PostgreSQLConfigService,
+} from '@libs/nestjs-postgresql';
 import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
 
 /**
@@ -21,10 +24,8 @@ import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
     // TypeOrmModule.forRootAsync(
     //   SharedPostgreSQLModule.getTypeOrmConfig([PostgreSQLChannelEntity]) as any,
     // ),
-    
   ],
-  providers: [
-  ],
-  exports: []
+  providers: [],
+  exports: [],
 })
 export class DatabaseModule {}

@@ -1,7 +1,11 @@
 import { UpdateUserProfileCommandHandler } from './update-user-profile.command-handler';
 import { UpdateUserProfileCommand } from './update-user-profile.command';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
-import { createEventBusMock, MockEventBus, NotFoundException } from '@libs/nestjs-common';
+import {
+  createEventBusMock,
+  MockEventBus,
+  NotFoundException,
+} from '@libs/nestjs-common';
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
@@ -18,19 +22,19 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
   beforeEach(async () => {
     repository = new UserInMemoryRepository();
     eventBus = createEventBusMock({ shouldFail: false });
-    commandHandler = new UpdateUserProfileCommandHandler(repository, eventBus as any);
+    commandHandler = new UpdateUserProfileCommandHandler(
+      repository,
+      eventBus as any,
+    );
 
     // Create an existing user for testing
     existingUser = User.random({
       email: new Email('test@example.com'),
       username: new Username('testuser'),
-      profile: new UserProfile(
-        new Name('Original'),
-        new Name('User')
-      ),
+      profile: new UserProfile(new Name('Original'), new Name('User')),
       role: UserRole.user(),
     });
-    
+
     await repository.save(existingUser);
   });
 
@@ -41,11 +45,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       const command = new UpdateUserProfileCommand({
         userId: existingUser.id,
         firstName: 'Updated',
-        lastName: 'Name'
+        lastName: 'Name',
       });
 
       // Act
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       await commandHandler.execute(command);
 
       // Assert
@@ -53,18 +57,19 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       expect(updatedUser).not.toBeNull();
       expect(updatedUser!.profile.firstName.toValue()).toBe('Updated');
       expect(updatedUser!.profile.lastName.toValue()).toBe('Name');
-      
-      // Verify updatedAt timestamp was updated
-      expect(updatedUser!.updatedAt.getTime()).toBeGreaterThan(oldUpdatedAt.getTime());
-    });
 
+      // Verify updatedAt timestamp was updated
+      expect(updatedUser!.updatedAt.getTime()).toBeGreaterThan(
+        oldUpdatedAt.getTime(),
+      );
+    });
 
     it('should handle empty strings for names', async () => {
       // Arrange
       const command = new UpdateUserProfileCommand({
         userId: existingUser.id,
         firstName: '',
-        lastName: ''
+        lastName: '',
       });
 
       // Act
@@ -81,7 +86,7 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       const command = new UpdateUserProfileCommand({
         userId: existingUser.id,
         firstName: 'EventTest',
-        lastName: 'User'
+        lastName: 'User',
       });
 
       // Act
@@ -98,11 +103,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       const originalUsername = existingUser.username.toValue();
       const originalRole = existingUser.role.toValue();
       const originalStatus = existingUser.status.toValue();
-      
+
       const command = new UpdateUserProfileCommand({
         userId: existingUser.id,
         firstName: 'PreserveTest',
-        lastName: 'User'
+        lastName: 'User',
       });
 
       // Act
@@ -114,7 +119,9 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       expect(updatedUser!.username.toValue()).toBe(originalUsername);
       expect(updatedUser!.role.toValue()).toEqual(originalRole);
       expect(updatedUser!.status.toValue()).toBe(originalStatus);
-      expect(updatedUser!.createdAt.getTime()).toBe(existingUser.createdAt.getTime());
+      expect(updatedUser!.createdAt.getTime()).toBe(
+        existingUser.createdAt.getTime(),
+      );
     });
 
     it('should handle names with special characters', async () => {
@@ -122,7 +129,7 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       const command = new UpdateUserProfileCommand({
         userId: existingUser.id,
         firstName: 'José-María',
-        lastName: "O'Connor"
+        lastName: "O'Connor",
       });
 
       // Act
@@ -142,37 +149,40 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       const command = new UpdateUserProfileCommand({
         userId: nonExistentUserId,
         firstName: 'Test',
-        lastName: 'User'
+        lastName: 'User',
       });
 
       // Act & Assert
-      await expect(commandHandler.execute(command))
-        .rejects
-        .toThrow(NotFoundException);
+      await expect(commandHandler.execute(command)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should handle EventBus publishing failures', async () => {
       // Arrange
       const failingEventBus = createEventBusMock({ shouldFail: true });
-      const handlerWithFailingEventBus = new UpdateUserProfileCommandHandler(repository, failingEventBus as any);
-      
+      const handlerWithFailingEventBus = new UpdateUserProfileCommandHandler(
+        repository,
+        failingEventBus as any,
+      );
+
       const command = new UpdateUserProfileCommand({
         userId: existingUser.id,
         firstName: 'Failing',
-        lastName: 'Test'
+        lastName: 'Test',
       });
 
       // Act & Assert
-      await expect(handlerWithFailingEventBus.execute(command))
-        .rejects
-        .toThrow('EventBus publishAll failed');
+      await expect(handlerWithFailingEventBus.execute(command)).rejects.toThrow(
+        'EventBus publishAll failed',
+      );
     });
 
     it('should not update user if repository save fails', async () => {
       // This test would require mocking the repository to throw an error
       // For this simple test, we'll just verify the current behavior
       const originalProfile = existingUser.profile.toValue();
-      
+
       // If an error occurred during save, the profile should remain unchanged
       // This is more of a documentation test for expected behavior
       expect(originalProfile.firstName).toBe('Original');
@@ -185,11 +195,11 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       // Arrange - Create names at the boundary of the Name value object limits
       const longFirstName = 'A'.repeat(50); // Max length for Name VO
       const longLastName = 'B'.repeat(50);
-      
+
       const command = new UpdateUserProfileCommand({
         userId: existingUser.id,
         firstName: longFirstName,
-        lastName: longLastName
+        lastName: longLastName,
       });
 
       // Act
@@ -197,8 +207,12 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
 
       // Assert
       const updatedUser = await repository.findById(existingUser.id);
-      expect(updatedUser!.profile.firstName.toValue()).toBe('Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'); // Name VO normalizes
-      expect(updatedUser!.profile.lastName.toValue()).toBe('Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'); // Name VO normalizes
+      expect(updatedUser!.profile.firstName.toValue()).toBe(
+        'Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      ); // Name VO normalizes
+      expect(updatedUser!.profile.lastName.toValue()).toBe(
+        'Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      ); // Name VO normalizes
     });
 
     it('should handle whitespace-only names by trimming to empty', async () => {
@@ -206,7 +220,7 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       const command = new UpdateUserProfileCommand({
         userId: existingUser.id,
         firstName: '   ',
-        lastName: '   '
+        lastName: '   ',
       });
 
       // Act

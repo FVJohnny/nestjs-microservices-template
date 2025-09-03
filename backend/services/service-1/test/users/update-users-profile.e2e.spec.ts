@@ -5,7 +5,10 @@ import { ValidationPipe } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UpdateUserProfileController } from '../../src/bounded-contexts/users/interfaces/http/controllers/users/update-user-profile/update-user-profile.controller';
 import { UpdateUserProfileCommandHandler } from '../../src/bounded-contexts/users/application/commands/update-user-profile/update-user-profile.command-handler';
-import { USER_REPOSITORY, UserRepository } from '../../src/bounded-contexts/users/domain/repositories/user.repository';
+import {
+  USER_REPOSITORY,
+  UserRepository,
+} from '../../src/bounded-contexts/users/domain/repositories/user.repository';
 import { UserInMemoryRepository } from '../../src/bounded-contexts/users/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '../../src/bounded-contexts/users/domain/entities/user.entity';
 import { Name } from '../../src/bounded-contexts/users/domain/value-objects/name.vo';
@@ -71,7 +74,7 @@ describe('Users E2E (update profile)', () => {
       .put(`/users/${user.id}/profile`)
       // Send numbers instead of strings
       .send({ firstName: 123, lastName: 456 })
-      .expect(res => {
+      .expect((res) => {
         if (res.status !== 400 && res.status !== 500) {
           throw new Error(`Expected 400 or 500, got ${res.status}`);
         }

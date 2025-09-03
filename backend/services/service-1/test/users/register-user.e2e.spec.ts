@@ -5,7 +5,10 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { ErrorHandlingModule } from '@libs/nestjs-common';
 import { RegisterUserController } from '../../src/bounded-contexts/users/interfaces/http/controllers/users/register-user/register-user.controller';
 import { RegisterUserCommandHandler } from '../../src/bounded-contexts/users/application/commands/register-user/register-user.command-handler';
-import { USER_REPOSITORY, UserRepository } from '../../src/bounded-contexts/users/domain/repositories/user.repository';
+import {
+  USER_REPOSITORY,
+  UserRepository,
+} from '../../src/bounded-contexts/users/domain/repositories/user.repository';
 import { UserInMemoryRepository } from '../../src/bounded-contexts/users/infrastructure/repositories/in-memory/user-in-memory.repository';
 
 describe('POST /users (E2E)', () => {
@@ -41,7 +44,10 @@ describe('POST /users (E2E)', () => {
       role: 'user',
     };
 
-    const res = await request(app.getHttpServer()).post('/users').send(body).expect(201);
+    const res = await request(app.getHttpServer())
+      .post('/users')
+      .send(body)
+      .expect(201);
     expect(res.body.id).toBeDefined();
   });
 
@@ -54,14 +60,17 @@ describe('POST /users (E2E)', () => {
       role: 'user',
     };
     await request(app.getHttpServer()).post('/users').send(body).expect(201);
-    await request(app.getHttpServer()).post('/users').send({ ...body, username: 'newuser' }).expect(409);
+    await request(app.getHttpServer())
+      .post('/users')
+      .send({ ...body, username: 'newuser' })
+      .expect(409);
   });
 
   it('returns a client error for invalid email and too-short username', async () => {
     await request(app.getHttpServer())
       .post('/users')
       .send({ email: 'not-an-email', username: 'ab', role: 'user' })
-      .expect(res => {
+      .expect((res) => {
         if (res.status !== 400 && res.status !== 500) {
           throw new Error(`Expected 400 or 500, got ${res.status}`);
         }

@@ -11,14 +11,13 @@ import { UserProfile } from '../value-objects/user-profile.vo';
 describe('User Entity', () => {
   describe('create', () => {
     it('should create a new user with required properties', () => {
-
       // Act
       const user = User.create({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
         firstName: new Name('John'),
         lastName: new Name('Doe'),
-        role: UserRole.user()
+        role: UserRole.user(),
       });
 
       // Assert
@@ -34,7 +33,6 @@ describe('User Entity', () => {
       expect(user.updatedAt).toBeInstanceOf(Date);
     });
 
-
     it('should emit UserRegisteredEvent when created', () => {
       // Arrange
       const props = {
@@ -42,7 +40,7 @@ describe('User Entity', () => {
         username: new Username('testuser'),
         firstName: new Name('John'),
         lastName: new Name('Doe'),
-        role: UserRole.random()
+        role: UserRole.random(),
       };
 
       // Act
@@ -52,7 +50,7 @@ describe('User Entity', () => {
       const domainEvents = user.getUncommittedEvents();
       expect(domainEvents).toHaveLength(1);
       expect(domainEvents[0]).toBeInstanceOf(UserRegisteredDomainEvent);
-      
+
       const event = domainEvents[0] as UserRegisteredDomainEvent;
       expect(event.aggregateId).toBe(user.id);
       expect(event.email).toBe(props.email);
@@ -99,7 +97,7 @@ describe('User Entity', () => {
         status: UserStatus.inactive(),
         lastLoginAt: customLastLogin,
         createdAt: customCreatedAt,
-        updatedAt: customUpdatedAt
+        updatedAt: customUpdatedAt,
       });
 
       // Assert
@@ -117,7 +115,7 @@ describe('User Entity', () => {
     it('should handle empty string names correctly with nullish coalescing', () => {
       // Act
       const user = User.random({
-        profile: new UserProfile(new Name(''), new Name(''))
+        profile: new UserProfile(new Name(''), new Name('')),
       });
 
       // Assert
@@ -130,7 +128,7 @@ describe('User Entity', () => {
     it('should update user profile and emit domain event', () => {
       // Arrange
       const user = User.random({
-        profile: new UserProfile(new Name('Original'), new Name('Name'))
+        profile: new UserProfile(new Name('Original'), new Name('Name')),
       });
 
       const newFirstName = new Name('Updated');
@@ -139,7 +137,7 @@ describe('User Entity', () => {
       // Act
       user.updateProfile({
         firstName: newFirstName,
-        lastName: newLastName
+        lastName: newLastName,
       });
 
       // Assert
@@ -162,11 +160,11 @@ describe('User Entity', () => {
     it('should handle empty string names in profile update', () => {
       // Arrange
       const user = User.random();
-      
+
       // Act
       user.updateProfile({
         firstName: new Name(''),
-        lastName: new Name('')
+        lastName: new Name(''),
       });
 
       // Assert
@@ -181,7 +179,7 @@ describe('User Entity', () => {
       const user = User.random({ status: UserStatus.inactive() });
 
       // Wait to ensure timestamp difference
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Act
       user.activate();
@@ -211,7 +209,7 @@ describe('User Entity', () => {
       const user = User.random({ status: UserStatus.active() });
 
       // Wait to ensure timestamp difference
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Act
       user.deactivate();
@@ -254,7 +252,7 @@ describe('User Entity', () => {
       const adminRole = UserRole.admin();
 
       // Wait to ensure timestamp difference
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Act
       user.changeRole(adminRole);
@@ -262,7 +260,9 @@ describe('User Entity', () => {
       // Assert
       expect(user.hasRole(adminRole)).toBe(true);
       expect(user.role.toValue()).toBe(UserRoleEnum.ADMIN);
-      expect(user.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+      expect(user.updatedAt.getTime()).toBeGreaterThan(
+        originalUpdatedAt.getTime(),
+      );
     });
 
     it('should not update timestamp when changing to same role', () => {
@@ -307,7 +307,7 @@ describe('User Entity', () => {
         profile: new UserProfile(new Name('John'), new Name('Doe')),
         role: UserRole.admin(),
         status: UserStatus.active(),
-        lastLoginAt: new Date('2024-01-01T12:00:00Z')
+        lastLoginAt: new Date('2024-01-01T12:00:00Z'),
       });
 
       // Act
@@ -320,13 +320,13 @@ describe('User Entity', () => {
         username: 'testuser',
         profile: {
           firstName: 'John',
-          lastName: 'Doe'
+          lastName: 'Doe',
         },
         status: UserStatusEnum.ACTIVE,
         role: UserRoleEnum.ADMIN,
         lastLoginAt: new Date('2024-01-01T12:00:00Z'),
         createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        updatedAt: user.updatedAt,
       });
     });
 
@@ -338,13 +338,13 @@ describe('User Entity', () => {
         username: 'testuser',
         profile: {
           firstName: 'John',
-          lastName: 'Doe'
+          lastName: 'Doe',
         },
         status: UserStatusEnum.INACTIVE,
         role: UserRoleEnum.ADMIN,
         lastLoginAt: new Date('2024-01-01T12:00:00Z'),
         createdAt: new Date('2024-01-01T10:00:00Z'),
-        updatedAt: new Date('2024-01-01T11:00:00Z')
+        updatedAt: new Date('2024-01-01T11:00:00Z'),
       };
 
       // Act
@@ -381,23 +381,19 @@ describe('User Entity', () => {
     it('should handle user with empty name components', () => {
       // Arrange & Act
       const user = User.random({
-        profile: new UserProfile(
-          new Name(''),
-          new Name('')
-        )
+        profile: new UserProfile(new Name(''), new Name('')),
       });
 
       // Assert
       expect(user.profile.firstName.toValue()).toBe('');
       expect(user.profile.lastName.toValue()).toBe('');
-      
+
       // Should still serialize/deserialize correctly
       const primitives = user.toValue();
       const reconstructed = User.fromValue(primitives);
       expect(reconstructed.profile.firstName.toValue()).toBe('');
       expect(reconstructed.profile.lastName.toValue()).toBe('');
     });
-
 
     it('should generate unique IDs for different users', () => {
       // Act
@@ -417,21 +413,23 @@ describe('User Entity', () => {
       // Act
       user.updateProfile({
         firstName: new Name('First'),
-        lastName: new Name('Update')
+        lastName: new Name('Update'),
       });
 
       user.updateProfile({
         firstName: new Name('Second'),
-        lastName: new Name('Update')
+        lastName: new Name('Update'),
       });
 
       // Assert
       expect(user.profile.firstName.toValue()).toBe('Second');
       expect(user.profile.lastName.toValue()).toBe('Update');
-      
+
       const events = user.getUncommittedEvents();
       expect(events).toHaveLength(2);
-      expect(events.every(e => e instanceof UserProfileUpdatedDomainEvent)).toBe(true);
+      expect(
+        events.every((e) => e instanceof UserProfileUpdatedDomainEvent),
+      ).toBe(true);
     });
   });
 
@@ -447,7 +445,7 @@ describe('User Entity', () => {
       // Act - perform various operations
       user.updateProfile({
         firstName: new Name('New'),
-        lastName: new Name('Name')
+        lastName: new Name('Name'),
       });
       user.activate();
       user.changeRole(UserRole.admin());
@@ -465,13 +463,15 @@ describe('User Entity', () => {
       const originalUpdatedAt = user.updatedAt;
 
       // Wait to ensure timestamp difference
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       // Act
       user.activate();
 
       // Assert
-      expect(user.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+      expect(user.updatedAt.getTime()).toBeGreaterThan(
+        originalUpdatedAt.getTime(),
+      );
     });
 
     it('should preserve domain event order', () => {
@@ -481,13 +481,13 @@ describe('User Entity', () => {
         username: new Username('testuser'),
         firstName: new Name('John'),
         lastName: new Name('Doe'),
-        role: UserRole.user()
+        role: UserRole.user(),
       });
 
       // Act
       user.updateProfile({
         firstName: new Name('Jane'),
-        lastName: new Name('Smith')
+        lastName: new Name('Smith'),
       });
 
       // Assert

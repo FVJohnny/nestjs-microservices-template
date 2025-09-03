@@ -24,12 +24,15 @@ export class UserRegisteredDomainEventHandler
   async handle(event: UserRegisteredDomainEvent): Promise<void> {
     this.logger.log('Handling UserRegisteredEvent...');
 
-    const integrationEvent = new UserCreatedIntegrationEvent({
-      userId: event.aggregateId,
-      email: event.email.toValue(),
-      username: event.username.toValue(),
-      role: event.role.toValue(),
-    }, {causationId: event.metadata.id});
+    const integrationEvent = new UserCreatedIntegrationEvent(
+      {
+        userId: event.aggregateId,
+        email: event.email.toValue(),
+        username: event.username.toValue(),
+        role: event.role.toValue(),
+      },
+      { causationId: event.metadata.id },
+    );
 
     try {
       await this.integrationEventPublisher.publish(

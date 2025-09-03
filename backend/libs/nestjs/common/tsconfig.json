@@ -17,6 +17,6 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../eslint/index.js"],
   "exclude": ["node_modules", "dist"]
 }

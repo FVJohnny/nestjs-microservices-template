@@ -11,19 +11,15 @@ interface UserRegisteredDomainEventParams {
 }
 
 export class UserRegisteredDomainEvent extends DomainEvent {
-
   public readonly email: Email;
   public readonly username: Username;
   public readonly role: UserRole;
 
-  constructor(
-    params: UserRegisteredDomainEventParams,
-  ) {
+  constructor(params: UserRegisteredDomainEventParams) {
     super(params.userId);
 
     this.email = params.email;
     this.username = params.username;
     this.role = params.role;
   }
-
 }

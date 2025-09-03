@@ -1,7 +1,16 @@
 import { MongoClient } from 'mongodb';
 import { UserMongodbRepository } from './user-mongodb.repository';
 import { User } from '../../../domain/entities/user.entity';
-import { Criteria, Filters, Filter, FilterField, FilterOperator, FilterValue, Operator, InfrastructureException } from '@libs/nestjs-common';
+import {
+  Criteria,
+  Filters,
+  Filter,
+  FilterField,
+  FilterOperator,
+  FilterValue,
+  Operator,
+  InfrastructureException,
+} from '@libs/nestjs-common';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Name } from '../../../domain/value-objects/name.vo';
@@ -14,8 +23,10 @@ describe('UserMongodbRepository (Integration)', () => {
   let mongoClient: MongoClient;
 
   // Use existing MongoDB instance from docker-compose with credentials
-  const TEST_DB_NAME = "users_test_db";
-  const MONGODB_URI = process.env.MONGODB_URI || `mongodb://admin:admin123@localhost:27017/${TEST_DB_NAME}?authSource=admin`;
+  const TEST_DB_NAME = 'users_test_db';
+  const MONGODB_URI =
+    process.env.MONGODB_URI ||
+    `mongodb://admin:admin123@localhost:27017/${TEST_DB_NAME}?authSource=admin`;
 
   beforeAll(async () => {
     await setupDatabase();
@@ -51,7 +62,7 @@ describe('UserMongodbRepository (Integration)', () => {
       // Modify user (simulate business logic change)
       user.updateProfile({
         firstName: new Name('Updated'),
-        lastName: new Name('Name')
+        lastName: new Name('Name'),
       });
 
       // Act
@@ -61,12 +72,11 @@ describe('UserMongodbRepository (Integration)', () => {
       const savedUser = await repository.findById(user.id);
       expect(savedUser!.profile.firstName.toValue()).toBe('Updated');
       expect(savedUser!.profile.lastName.toValue()).toBe('Name');
-      
+
       // Should still be only one document
       const pageResult = await repository.findByCriteria(new Criteria());
       expect(pageResult.data).toHaveLength(1);
     });
-
   });
 
   describe('findById', () => {
@@ -99,7 +109,9 @@ describe('UserMongodbRepository (Integration)', () => {
       await repository.save(user);
 
       // Act
-      const result = await repository.findByEmail(new Email('test@example.com'));
+      const result = await repository.findByEmail(
+        new Email('test@example.com'),
+      );
 
       // Assert
       expect(result).not.toBeNull();
@@ -108,7 +120,9 @@ describe('UserMongodbRepository (Integration)', () => {
 
     it('should return null when email does not exist', async () => {
       // Act
-      const result = await repository.findByEmail(new Email('nonexistent@example.com'));
+      const result = await repository.findByEmail(
+        new Email('nonexistent@example.com'),
+      );
 
       // Assert
       expect(result).toBeNull();
@@ -131,7 +145,9 @@ describe('UserMongodbRepository (Integration)', () => {
 
     it('should return null when username does not exist', async () => {
       // Act
-      const result = await repository.findByUsername(new Username('nonexistentuser'));
+      const result = await repository.findByUsername(
+        new Username('nonexistentuser'),
+      );
 
       // Assert
       expect(result).toBeNull();
@@ -145,7 +161,9 @@ describe('UserMongodbRepository (Integration)', () => {
       await repository.save(user);
 
       // Act
-      const result = await repository.existsByEmail(new Email('existing@example.com'));
+      const result = await repository.existsByEmail(
+        new Email('existing@example.com'),
+      );
 
       // Assert
       expect(result).toBe(true);
@@ -153,7 +171,9 @@ describe('UserMongodbRepository (Integration)', () => {
 
     it('should return false when email does not exist', async () => {
       // Act
-      const result = await repository.existsByEmail(new Email('nonexistent@example.com'));
+      const result = await repository.existsByEmail(
+        new Email('nonexistent@example.com'),
+      );
 
       // Assert
       expect(result).toBe(false);
@@ -167,7 +187,9 @@ describe('UserMongodbRepository (Integration)', () => {
       await repository.save(user);
 
       // Act
-      const result = await repository.existsByUsername(new Username('existinguser'));
+      const result = await repository.existsByUsername(
+        new Username('existinguser'),
+      );
 
       // Assert
       expect(result).toBe(true);
@@ -175,7 +197,9 @@ describe('UserMongodbRepository (Integration)', () => {
 
     it('should return false when username does not exist', async () => {
       // Act
-      const result = await repository.existsByUsername(new Username('nonexistentuser'));
+      const result = await repository.existsByUsername(
+        new Username('nonexistentuser'),
+      );
 
       // Assert
       expect(result).toBe(false);
@@ -265,7 +289,7 @@ describe('UserMongodbRepository (Integration)', () => {
 
   describe('findByCriteria', () => {
     let testUsers: User[] = [];
-    
+
     beforeEach(async () => {
       testUsers = UserTestFactory.createStandardTestUsers();
       await UserTestFactory.saveUsersToRepository(repository, testUsers);
@@ -287,10 +311,10 @@ describe('UserMongodbRepository (Integration)', () => {
       const filter = new Filter(
         new FilterField('email'),
         new FilterOperator(Operator.EQUAL),
-        new FilterValue('admin@example.com')
+        new FilterValue('admin@example.com'),
       );
       const criteria = new Criteria({
-        filters: new Filters([ filter ]),
+        filters: new Filters([filter]),
       });
 
       // Act
@@ -306,10 +330,10 @@ describe('UserMongodbRepository (Integration)', () => {
       const filter = new Filter(
         new FilterField('username'),
         new FilterOperator(Operator.EQUAL),
-        new FilterValue('admin')
+        new FilterValue('admin'),
       );
       const criteria = new Criteria({
-        filters: new Filters([ filter ]),
+        filters: new Filters([filter]),
       });
 
       // Act
@@ -325,10 +349,10 @@ describe('UserMongodbRepository (Integration)', () => {
       const filter = new Filter(
         new FilterField('profile.firstName'),
         new FilterOperator(Operator.EQUAL),
-        new FilterValue('John')
+        new FilterValue('John'),
       );
       const criteria = new Criteria({
-        filters: new Filters([ filter ]),
+        filters: new Filters([filter]),
       });
 
       // Act
@@ -344,10 +368,10 @@ describe('UserMongodbRepository (Integration)', () => {
       const filter = new Filter(
         new FilterField('profile.lastName'),
         new FilterOperator(Operator.EQUAL),
-        new FilterValue('Doe')
+        new FilterValue('Doe'),
       );
       const criteria = new Criteria({
-        filters: new Filters([ filter ]),
+        filters: new Filters([filter]),
       });
 
       // Act
@@ -363,7 +387,7 @@ describe('UserMongodbRepository (Integration)', () => {
       const filter = new Filter(
         new FilterField('role'),
         new FilterOperator(Operator.EQUAL),
-        new FilterValue('admin')
+        new FilterValue('admin'),
       );
       const criteria = new Criteria({
         filters: new Filters([filter]),
@@ -451,9 +475,9 @@ describe('UserMongodbRepository (Integration)', () => {
 
     it('should return correct total with pagination (limit only)', async () => {
       // Arrange
-      const criteria = new Criteria({ 
+      const criteria = new Criteria({
         limit: 2,
-        withTotal: true 
+        withTotal: true,
       });
 
       // Act
@@ -466,9 +490,9 @@ describe('UserMongodbRepository (Integration)', () => {
 
     it('should return correct total with pagination (offset only)', async () => {
       // Arrange
-      const criteria = new Criteria({ 
+      const criteria = new Criteria({
         offset: 1,
-        withTotal: true 
+        withTotal: true,
       });
 
       // Act
@@ -481,10 +505,10 @@ describe('UserMongodbRepository (Integration)', () => {
 
     it('should return correct total with pagination (limit and offset)', async () => {
       // Arrange
-      const criteria = new Criteria({ 
+      const criteria = new Criteria({
         limit: 1,
         offset: 1,
-        withTotal: true 
+        withTotal: true,
       });
 
       // Act
@@ -501,12 +525,12 @@ describe('UserMongodbRepository (Integration)', () => {
       const filter = new Filter(
         new FilterField('role'),
         new FilterOperator(Operator.EQUAL),
-        new FilterValue('user')
+        new FilterValue('user'),
       );
       const criteria = new Criteria({
         filters: new Filters([filter]),
         limit: 1,
-        withTotal: true
+        withTotal: true,
       });
 
       // Act
@@ -522,11 +546,11 @@ describe('UserMongodbRepository (Integration)', () => {
       const filter = new Filter(
         new FilterField('email'),
         new FilterOperator(Operator.EQUAL),
-        new FilterValue('nonexistent@example.com')
+        new FilterValue('nonexistent@example.com'),
       );
       const criteria = new Criteria({
         filters: new Filters([filter]),
-        withTotal: true
+        withTotal: true,
       });
 
       // Act
@@ -542,7 +566,7 @@ describe('UserMongodbRepository (Integration)', () => {
       const criteria = new Criteria({
         limit: 2,
         offset: 1,
-        withTotal: true
+        withTotal: true,
       });
 
       // Act
@@ -557,7 +581,7 @@ describe('UserMongodbRepository (Integration)', () => {
       // Arrange
       const criteria = new Criteria({
         offset: 3, // Equal to total number of test users
-        withTotal: true
+        withTotal: true,
       });
 
       // Act
@@ -572,7 +596,7 @@ describe('UserMongodbRepository (Integration)', () => {
       // Arrange
       const criteria = new Criteria({
         offset: 10, // Much larger than total
-        withTotal: true
+        withTotal: true,
       });
 
       // Act
@@ -588,10 +612,7 @@ describe('UserMongodbRepository (Integration)', () => {
       const extraUser = User.random({
         email: new Email('extra@example.com'),
         username: new Username('extrauser'),
-        profile: new UserProfile(
-          new Name('Extra'),
-          new Name('User')
-        ),
+        profile: new UserProfile(new Name('Extra'), new Name('User')),
         role: UserRole.user(),
       });
       await repository.save(extraUser);
@@ -600,13 +621,13 @@ describe('UserMongodbRepository (Integration)', () => {
       const filter = new Filter(
         new FilterField('role'),
         new FilterOperator(Operator.EQUAL),
-        new FilterValue('user')
+        new FilterValue('user'),
       );
       const criteria = new Criteria({
         filters: new Filters([filter]),
         limit: 2,
         offset: 1,
-        withTotal: true
+        withTotal: true,
       });
 
       // Act
@@ -620,7 +641,7 @@ describe('UserMongodbRepository (Integration)', () => {
 
   describe('countByCriteria', () => {
     let testUsers: User[] = [];
-    
+
     beforeEach(async () => {
       testUsers = UserTestFactory.createStandardTestUsers();
       await UserTestFactory.saveUsersToRepository(repository, testUsers);
@@ -642,10 +663,10 @@ describe('UserMongodbRepository (Integration)', () => {
       const filter = new Filter(
         new FilterField('profile.firstName'),
         new FilterOperator(Operator.EQUAL),
-        new FilterValue('John')
+        new FilterValue('John'),
       );
       const criteria = new Criteria({
-        filters: new Filters([ filter ]),
+        filters: new Filters([filter]),
       });
 
       // Act
@@ -660,10 +681,10 @@ describe('UserMongodbRepository (Integration)', () => {
       const filter = new Filter(
         new FilterField('email'),
         new FilterOperator(Operator.EQUAL),
-        new FilterValue('nonexistent@example.com')
+        new FilterValue('nonexistent@example.com'),
       );
       const criteria = new Criteria({
-        filters: new Filters([ filter ]),
+        filters: new Filters([filter]),
       });
 
       // Act
@@ -681,14 +702,16 @@ describe('UserMongodbRepository (Integration)', () => {
       const originalCollection = (repository as any).collection;
       const mockCollection = {
         ...originalCollection,
-        updateOne: jest.fn().mockRejectedValue(new Error('Mock database error')),
+        updateOne: jest
+          .fn()
+          .mockRejectedValue(new Error('Mock database error')),
       };
       (repository as any).collection = mockCollection;
 
       try {
         // Act & Assert
         await expect(repository.save(user)).rejects.toThrow(
-          InfrastructureException
+          InfrastructureException,
         );
       } finally {
         // Restore original collection
@@ -703,17 +726,14 @@ describe('UserMongodbRepository (Integration)', () => {
       const originalUser = User.random({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        profile: new UserProfile(
-          new Name('Test'),
-          new Name('User')
-        ),
+        profile: new UserProfile(new Name('Test'), new Name('User')),
         role: UserRole.admin(),
       });
 
       // Modify some properties to test different states
       originalUser.updateProfile({
         firstName: new Name('Modified'),
-        lastName: new Name('Testuser')
+        lastName: new Name('Testuser'),
       });
 
       // Act
@@ -724,13 +744,19 @@ describe('UserMongodbRepository (Integration)', () => {
       expect(loadedUser).not.toBeNull();
       expect(loadedUser!.id).toBe(originalUser.id);
       expect(loadedUser!.email.toValue()).toBe(originalUser.email.toValue());
-      expect(loadedUser!.username.toValue()).toBe(originalUser.username.toValue());
+      expect(loadedUser!.username.toValue()).toBe(
+        originalUser.username.toValue(),
+      );
       expect(loadedUser!.profile.firstName.toValue()).toBe('Modified');
       expect(loadedUser!.profile.lastName.toValue()).toBe('Testuser');
       expect(loadedUser!.status.toValue()).toBe(originalUser.status.toValue());
       expect(loadedUser!.role.toValue()).toEqual(originalUser.role.toValue());
-      expect(loadedUser!.createdAt.getTime()).toBe(originalUser.createdAt.getTime());
-      expect(loadedUser!.updatedAt.getTime()).toBeGreaterThanOrEqual(originalUser.updatedAt.getTime());
+      expect(loadedUser!.createdAt.getTime()).toBe(
+        originalUser.createdAt.getTime(),
+      );
+      expect(loadedUser!.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        originalUser.updatedAt.getTime(),
+      );
     });
 
     it('should handle users with no last login', async () => {
@@ -765,7 +791,7 @@ describe('UserMongodbRepository (Integration)', () => {
       // Create repository instance that uses the test database
       const testMongoClient = {
         ...mongoClient,
-        db: (dbName?: string) => mongoClient.db(TEST_DB_NAME)
+        db: (dbName?: string) => mongoClient.db(TEST_DB_NAME),
       };
       repository = new UserMongodbRepository(testMongoClient as any);
       console.log('Test setup completed');
@@ -789,5 +815,4 @@ describe('UserMongodbRepository (Integration)', () => {
     const db = mongoClient.db(TEST_DB_NAME);
     await db.collection('users').deleteMany({});
   };
-
 });

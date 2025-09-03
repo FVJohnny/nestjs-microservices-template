@@ -12,26 +12,20 @@ import { CreateUserProps, UserAttributes, UserDTO } from './user.types';
 
 export interface User extends UserAttributes {}
 export class User extends AggregateRoot implements UserAttributes {
-
-  constructor(
-    props: UserAttributes
-  ) {
+  constructor(props: UserAttributes) {
     super();
-    Object.assign(this, props)
+    Object.assign(this, props);
   }
 
   static create(props: CreateUserProps): User {
     const id = uuidv4();
     const now = new Date();
-    
-    const user = new User({ 
+
+    const user = new User({
       id,
       email: props.email,
       username: props.username,
-      profile: new UserProfile(
-        props.firstName,
-        props.lastName
-      ),
+      profile: new UserProfile(props.firstName, props.lastName),
       status: new UserStatus(UserStatusEnum.ACTIVE),
       role: props.role,
       lastLoginAt: undefined,
@@ -54,15 +48,15 @@ export class User extends AggregateRoot implements UserAttributes {
   static random(props?: Partial<UserAttributes>): User {
     const id = props?.id || uuidv4();
     const now = new Date();
-    
+
     return new User({
       id,
       email: props?.email || new Email('user@example.com'),
-      username: props?.username || new Username('user' + Math.floor(Math.random() * 10000)),
-      profile: props?.profile ?? new UserProfile(
-        new Name('John'),
-        new Name('Doe')
-      ),
+      username:
+        props?.username ||
+        new Username('user' + Math.floor(Math.random() * 10000)),
+      profile:
+        props?.profile ?? new UserProfile(new Name('John'), new Name('Doe')),
       status: props?.status ?? new UserStatus(UserStatusEnum.ACTIVE),
       role: props?.role ?? UserRole.random(),
       lastLoginAt: props?.lastLoginAt,
@@ -71,20 +65,14 @@ export class User extends AggregateRoot implements UserAttributes {
     });
   }
 
-  updateProfile(props: {
-    firstName: Name;
-    lastName: Name;
-  }): void {
+  updateProfile(props: { firstName: Name; lastName: Name }): void {
     const previousProfile = this.profile.toValue();
-    
-    this.profile = new UserProfile(
-      props.firstName,
-      props.lastName
-    );
+
+    this.profile = new UserProfile(props.firstName, props.lastName);
     this.updatedAt = new Date();
 
     const newProfile = this.profile.toValue();
-    
+
     this.apply(
       new UserProfileUpdatedDomainEvent({
         userId: this.id,
@@ -112,7 +100,7 @@ export class User extends AggregateRoot implements UserAttributes {
     this.updatedAt = new Date();
   }
 
-  hasRole(role: UserRole): boolean {  
+  hasRole(role: UserRole): boolean {
     return this.role.equals(role);
   }
 
@@ -132,7 +120,10 @@ export class User extends AggregateRoot implements UserAttributes {
       id: value.id,
       email: new Email(value.email),
       username: new Username(value.username),
-      profile: new UserProfile(new Name(value.profile.firstName), new Name(value.profile.lastName)),
+      profile: new UserProfile(
+        new Name(value.profile.firstName),
+        new Name(value.profile.lastName),
+      ),
       status: new UserStatus(value.status),
       role: new UserRole(value.role),
       lastLoginAt: value.lastLoginAt ? new Date(value.lastLoginAt) : undefined,

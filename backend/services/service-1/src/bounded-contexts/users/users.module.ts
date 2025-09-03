@@ -8,7 +8,8 @@ import { UserInMemoryRepository } from './infrastructure/repositories/in-memory/
 import { USER_REPOSITORY } from './domain/repositories/user.repository';
 
 // 🚀 RUNTIME AUTO-DISCOVERY
-const {controllers, handlers} = RuntimeAutoDiscovery.discoverAllComponents(__dirname);
+const { controllers, handlers } =
+  RuntimeAutoDiscovery.discoverAllComponents(__dirname);
 
 @Module({
   imports: [CqrsModule],

@@ -1,9 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, IsNotEmpty, IsArray, IsOptional, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  IsNotEmpty,
+  IsArray,
+  IsOptional,
+  MinLength,
+} from 'class-validator';
 import { UserRoleEnum } from '../../../../../domain/value-objects/user-role.vo';
 
 export class RegisterUserControllerParams {
-  @ApiProperty({ example: 'john.doe@example.com', description: 'User email address' })
+  @ApiProperty({
+    example: 'john.doe@example.com',
+    description: 'User email address',
+  })
   @IsEmail()
   @IsNotEmpty()
   email: string;
@@ -24,8 +34,8 @@ export class RegisterUserControllerParams {
   @IsOptional()
   lastName: string;
 
-  @ApiProperty({ 
-    example: 'user', 
+  @ApiProperty({
+    example: 'user',
     description: 'User role',
     enum: UserRoleEnum,
   })

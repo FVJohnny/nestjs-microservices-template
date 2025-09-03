@@ -151,7 +151,7 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
    * Handle incoming messages from the event source
    * Parses the message and delegates to the appropriate event handler
    */
-  protected async handleMessage(topicName: string, rawMessage: any): Promise<void> {
+  protected async handleMessage(topicName: string, rawMessage: any) {
     const startTime = Date.now();
     const stats = this.messageStats.get(topicName);
     

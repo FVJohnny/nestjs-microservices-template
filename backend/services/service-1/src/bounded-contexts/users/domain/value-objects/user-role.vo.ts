@@ -1,4 +1,7 @@
-import { EnumValueObject, DomainValidationException } from '@libs/nestjs-common';
+import {
+  EnumValueObject,
+  DomainValidationException,
+} from '@libs/nestjs-common';
 
 export enum UserRoleEnum {
   ADMIN = 'admin',
@@ -12,7 +15,11 @@ export class UserRole extends EnumValueObject<UserRoleEnum> {
   }
 
   protected throwErrorForInvalidValue(value: UserRoleEnum): void {
-    throw new DomainValidationException('userRole', value, `Invalid user role: ${value}`);
+    throw new DomainValidationException(
+      'userRole',
+      value,
+      `Invalid user role: ${value}`,
+    );
   }
 
   // random user role
@@ -33,5 +40,3 @@ export class UserRole extends EnumValueObject<UserRoleEnum> {
     return new UserRole(UserRoleEnum.MODERATOR);
   }
 }
-
-  

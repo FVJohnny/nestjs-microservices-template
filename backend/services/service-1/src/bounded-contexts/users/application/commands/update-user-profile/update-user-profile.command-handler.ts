@@ -1,13 +1,19 @@
 import { CommandHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { UpdateUserProfileCommand } from './update-user-profile.command';
-import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '../../../domain/repositories/user.repository';
 import { Name } from '../../../domain/value-objects/name.vo';
 import { EventBus } from '@nestjs/cqrs';
 import { BaseCommandHandler, NotFoundException } from '@libs/nestjs-common';
 
 @CommandHandler(UpdateUserProfileCommand)
-export class UpdateUserProfileCommandHandler extends BaseCommandHandler<UpdateUserProfileCommand, void> {
+export class UpdateUserProfileCommandHandler extends BaseCommandHandler<
+  UpdateUserProfileCommand,
+  void
+> {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
@@ -18,7 +24,7 @@ export class UpdateUserProfileCommandHandler extends BaseCommandHandler<UpdateUs
 
   protected async handle(command: UpdateUserProfileCommand): Promise<void> {
     const user = await this.userRepository.findById(command.userId);
-    
+
     if (!user) {
       throw new NotFoundException();
     }
@@ -34,11 +40,12 @@ export class UpdateUserProfileCommandHandler extends BaseCommandHandler<UpdateUs
     await this.sendDomainEvents(user);
   }
 
-  protected async authorize(command: UpdateUserProfileCommand): Promise<boolean> {
+  protected async authorize(
+    command: UpdateUserProfileCommand,
+  ): Promise<boolean> {
     // TODO: Implement authorization logic
     return true;
   }
 
-  protected async validate(command: UpdateUserProfileCommand): Promise<void> {
-  }
+  protected async validate(command: UpdateUserProfileCommand): Promise<void> {}
 }

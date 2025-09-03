@@ -2,7 +2,6 @@ import { ICommand } from '@nestjs/cqrs';
 import { BaseCommand, TracingMetadataParams } from '@libs/nestjs-common';
 
 export class RegisterUserCommand extends BaseCommand implements ICommand {
-
   public readonly email: string;
   public readonly username: string;
   public readonly firstName: string;

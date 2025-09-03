@@ -1,11 +1,10 @@
-import {
-  Controller,
-  Get,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { GetUsersQuery, GetUsersQueryResponse } from '../../../../../application/queries';
+import {
+  GetUsersQuery,
+  GetUsersQueryResponse,
+} from '../../../../../application/queries';
 import { GetUsersControllerParams } from './get-users.params';
 import { OffsetPageParams, SortParam } from '@libs/nestjs-common';
 
@@ -21,12 +20,16 @@ export class GetUsersController {
     description: 'User IDs retrieved successfully',
     type: GetUsersQueryResponse,
   })
-  async getUsers(@Query() params: GetUsersControllerParams): Promise<GetUsersQueryResponse> {
-
-    const sort: SortParam | undefined = params.orderBy && params.orderType ? {
-      field: params.orderBy,
-      order: params.orderType,
-    } : undefined;
+  async getUsers(
+    @Query() params: GetUsersControllerParams,
+  ): Promise<GetUsersQueryResponse> {
+    const sort: SortParam | undefined =
+      params.orderBy && params.orderType
+        ? {
+            field: params.orderBy,
+            order: params.orderType,
+          }
+        : undefined;
 
     const query = new GetUsersQuery({
       status: params.status,

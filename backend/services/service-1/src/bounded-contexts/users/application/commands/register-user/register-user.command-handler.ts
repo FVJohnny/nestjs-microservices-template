@@ -1,16 +1,31 @@
 import { CommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { RegisterUserCommand, RegisterUserCommandResponse } from './register-user.command';
-import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
+import {
+  RegisterUserCommand,
+  RegisterUserCommandResponse,
+} from './register-user.command';
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '../../../domain/repositories/user.repository';
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Name } from '../../../domain/value-objects/name.vo';
-import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
-import { AlreadyExistsException, BaseCommandHandler } from '@libs/nestjs-common';
+import {
+  UserRole,
+  UserRoleEnum,
+} from '../../../domain/value-objects/user-role.vo';
+import {
+  AlreadyExistsException,
+  BaseCommandHandler,
+} from '@libs/nestjs-common';
 
 @CommandHandler(RegisterUserCommand)
-export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserCommand, RegisterUserCommandResponse> {
+export class RegisterUserCommandHandler extends BaseCommandHandler<
+  RegisterUserCommand,
+  RegisterUserCommandResponse
+> {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
@@ -19,7 +34,9 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserC
     super(eventBus);
   }
 
-  protected async handle(command: RegisterUserCommand): Promise<RegisterUserCommandResponse> {
+  protected async handle(
+    command: RegisterUserCommand,
+  ): Promise<RegisterUserCommandResponse> {
     const user = User.create({
       email: new Email(command.email),
       username: new Username(command.username),
