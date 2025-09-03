@@ -1,6 +1,7 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
-import { Kafka, Consumer } from 'kafkajs';
-import { KafkaTopicHandler, KafkaConsumerStats, KafkaTopicStats } from './interfaces/kafka-consumer.interface';
+import { Injectable, Logger,OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Consumer,Kafka } from 'kafkajs';
+
+import { KafkaConsumerStats, KafkaTopicHandler, KafkaTopicStats } from './interfaces/kafka-consumer.interface';
 import { createKafkaConfig } from './kafka-config.helper';
 
 export interface KafkaConsumerServiceConfig {

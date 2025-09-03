@@ -1,4 +1,4 @@
-import { AuthenticationProviderArgs, Authenticator } from "kafkajs";
+import type { AuthenticationProviderArgs, Authenticator } from "kafkajs";
 
 export interface KafkaModuleOptions {
   clientId: string;

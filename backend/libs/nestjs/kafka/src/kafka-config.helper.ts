@@ -1,5 +1,6 @@
-import { KafkaConfig } from 'kafkajs';
-import { KafkaServiceConfig } from './kafka-service';
+import type { KafkaConfig } from 'kafkajs';
+
+import type { KafkaServiceConfig } from './kafka-service';
 
 /**
  * Helper function to create KafkaServiceConfig from environment variables

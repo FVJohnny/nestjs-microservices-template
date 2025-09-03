@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { IntegrationEventPublisher } from '@libs/nestjs-common';
+import { Injectable, Logger } from '@nestjs/common';
+
 import { KafkaService } from './kafka-service';
 
 /**

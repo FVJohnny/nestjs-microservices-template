@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
-import { KafkaService } from './kafka-service';
+
 import { KafkaController } from './kafka.controller';
+import { KafkaService } from './kafka-service';
 
 /**
  * Global Kafka module that provides Kafka services to all modules

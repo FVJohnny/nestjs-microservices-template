@@ -1,7 +1,8 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy,OnModuleInit } from '@nestjs/common';
+
+import { createKafkaServiceConfig } from './kafka-config.helper';
 import { KafkaConsumerService, KafkaConsumerServiceConfig } from './kafka-consumer.service';
 import { KafkaPublisherService } from './kafka-publisher.service';
-import { createKafkaServiceConfig } from './kafka-config.helper';
 
 export interface KafkaServiceConfig {
   clientId: string;
