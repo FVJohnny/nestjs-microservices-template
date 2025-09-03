@@ -6,12 +6,12 @@ import {
   KafkaIntegrationEventPublisher,
   KafkaIntegrationEventListener,
 } from '@libs/nestjs-kafka';
-import {
-  SharedRedisModule,
-  RedisService,
-  RedisIntegrationEventPublisher,
-  RedisIntegrationEventListener,
-} from '@libs/nestjs-redis';
+// import {
+//   SharedRedisModule,
+//   RedisService,
+//   RedisIntegrationEventPublisher,
+//   RedisIntegrationEventListener,
+// } from '@libs/nestjs-redis';
 
 @Module({
   imports: [

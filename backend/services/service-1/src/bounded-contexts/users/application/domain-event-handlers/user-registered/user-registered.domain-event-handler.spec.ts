@@ -41,7 +41,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       const publishedEvent = mockIntegrationEventPublisher.publishedEvents[0];
       expect(publishedEvent.topic).toBe('users');
 
-      const publishedData = publishedEvent.message;
+      const publishedData = JSON.parse(publishedEvent.message);
       expect(publishedData.data.userId).toBe('test-user-id');
       expect(publishedData.data.email).toBe('test@example.com');
       expect(publishedData.data.username).toBe('testuser');
@@ -62,7 +62,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
       // Assert
       const publishedEvent = mockIntegrationEventPublisher.publishedEvents[0];
-      const publishedData = publishedEvent.message;
+      const publishedData = JSON.parse(publishedEvent.message);
 
       expect(publishedData.data.email).toBe('test.user+tag@example-domain.com');
       expect(publishedData.data.username).toBe('user_name-123');
@@ -82,7 +82,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
       // Assert
       const publishedEvent =
-        mockIntegrationEventPublisher.publishedEvents[0].message;
+        JSON.parse(mockIntegrationEventPublisher.publishedEvents[0].message);
       expect(publishedEvent.topic).toBe(Topics.USERS.topic);
       expect(publishedEvent.name).toEqual(Topics.USERS.events.USER_CREATED);
       expect(publishedEvent.version).toBeDefined();

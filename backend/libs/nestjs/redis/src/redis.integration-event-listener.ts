@@ -1,4 +1,4 @@
-import { BaseIntegrationEventListener } from '@libs/nestjs-common';
+import { BaseIntegrationEventListener, type ParsedIntegrationMessage } from '@libs/nestjs-common';
 import { Injectable } from '@nestjs/common';
 
 import { RedisService } from './redis.service';
@@ -11,18 +11,6 @@ import { RedisService } from './redis.service';
 export class RedisIntegrationEventListener extends BaseIntegrationEventListener {
   constructor(private readonly redisService: RedisService) {
     super();
-  }
-
-  async onModuleInit() {
-    await super.onModuleInit();
-    // Auto-start listening when the module initializes
-    // This ensures handlers registered in onModuleInit are ready
-    setTimeout(() => {
-      if (this.eventHandlers.size > 0 && !this.isListeningFlag) {
-        this.logger.log(`Auto-starting listener with ${this.eventHandlers.size} registered handlers`);
-        void this.startListening();
-      }
-    }, 100); // Small delay to allow all handlers to register
   }
 
   protected async subscribeToTopic(topicName: string): Promise<void> {
@@ -65,7 +53,7 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
     }
   }
 
-  protected parseMessage(rawMessage: unknown): { parsedMessage: Record<string, unknown>; messageId: string } {
+  protected parseMessage(rawMessage: unknown): ParsedIntegrationMessage {
     try {
       const parsedMessage = typeof rawMessage === 'string' 
         ? JSON.parse(rawMessage) as Record<string, unknown>
@@ -80,9 +68,5 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
       this.logger.error(`Error parsing Redis message: ${error}`);
       throw error;
     }
-  }
-
-  async onModuleDestroy() {
-    await super.onModuleDestroy();
   }
 }

@@ -13,10 +13,10 @@ export class KafkaIntegrationEventPublisher implements IntegrationEventPublisher
 
   constructor(private readonly kafkaService: KafkaService) {}
 
-  async publish(topic: string, message: any): Promise<void> {
+  async publish(topic: string, message: string): Promise<void> {
     try {
       await this.kafkaService.publishMessage(topic, message);
-      this.logger.debug(`Event published to Kafka topic ${topic}`);
+      this.logger.debug(`Event published to Kafka topic ${topic}`, JSON.parse(message));
     } catch (error) {
       this.logger.error(`Failed to publish event to Kafka topic ${topic}:`, error);
       throw error;

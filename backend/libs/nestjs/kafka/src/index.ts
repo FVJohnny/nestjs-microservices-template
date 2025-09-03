@@ -3,6 +3,7 @@ export * from './interfaces/kafka-consumer.interface';
 export * from './kafka.controller';
 export * from './kafka.integration-event-listener';
 export * from './kafka.integration-event-publisher';
+export * from './kafka.types';
 export * from './kafka-config.helper';
 export * from './kafka-consumer.service';
 export * from './kafka-publisher.service';

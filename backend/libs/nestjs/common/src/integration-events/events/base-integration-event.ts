@@ -1,4 +1,4 @@
-import { TracingMetadata, TracingMetadataParams } from "../../tracing";
+import { TracingMetadata, type TracingMetadataParams } from "../../tracing";
 
 /**
  * Base interface for all integration event props.
@@ -34,7 +34,7 @@ export abstract class BaseIntegrationEvent {
   /**
    * Converts the event to a JSON message payload.
    */
-  toJSON(): Record<string, any> {
+  toJSON(): Record<string, unknown> {
     return {
       name: this.name,
       version: this.version,
@@ -43,6 +43,10 @@ export abstract class BaseIntegrationEvent {
       metadata: this.metadata.toJSON(),
       data: this.toEventJSON(),
     };
+  }
+
+  toJSONString(): string {
+    return JSON.stringify(this.toJSON());
   }
 
   /**
@@ -78,6 +82,6 @@ export abstract class BaseIntegrationEvent {
   /**
    * Subclasses must implement this to return their specific event data.
    */
-  protected abstract toEventJSON(): Record<string, any>;
+  protected abstract toEventJSON(): Record<string, unknown>;
 
 }

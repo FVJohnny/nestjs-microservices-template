@@ -1,6 +1,8 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { IIntegrationEventHandler } from './integration-event-handler.base';
+import { Injectable, Logger } from '@nestjs/common';
+
+import type { ParsedIntegrationMessage } from '../types/integration-event.types';
 import { EventTrackerService } from './event-tracker.service';
+import { IIntegrationEventHandler } from './integration-event-handler.base';
 
 interface HandlerInfo {
   handler: IIntegrationEventHandler;
@@ -13,7 +15,7 @@ interface HandlerInfo {
  * Provides common functionality for managing event handlers and listening state
  */
 @Injectable()
-export abstract class BaseIntegrationEventListener implements IntegrationEventListener, OnModuleInit, OnModuleDestroy {
+export abstract class BaseIntegrationEventListener implements IntegrationEventListener {
   protected readonly logger = new Logger(this.constructor.name);
   protected readonly eventHandlers = new Map<string, HandlerInfo[]>(); // topic -> array of handlers
   protected readonly messageStats = new Map<string, {
@@ -26,50 +28,6 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
   protected isListeningFlag = false;
 
   constructor() {}
-
-  async onModuleInit() {
-    // Subclasses can override this for initialization
-  }
-
-  async onModuleDestroy() {
-    if (this.isListeningFlag) {
-      await this.stopListening();
-    }
-  }
-
-  async startListening(): Promise<void> {
-    if (this.isListeningFlag) {
-      this.logger.warn(`${this.constructor.name} is already listening`);
-      return;
-    }
-
-    this.isListeningFlag = true;
-
-    // Topics are already subscribed when handlers are registered
-    // No need to subscribe again here
-
-    this.logger.log(`${this.constructor.name} started listening`);
-  }
-
-  async stopListening(): Promise<void> {
-    if (!this.isListeningFlag) {
-      this.logger.warn(`${this.constructor.name} is not currently listening`);
-      return;
-    }
-
-    this.isListeningFlag = false;
-
-    // Unsubscribe from all topics
-    for (const topicName of this.eventHandlers.keys()) {
-      await this.unsubscribeFromTopic(topicName);
-    }
-
-    this.logger.log(`${this.constructor.name} stopped listening`);
-  }
-
-  isListening(): boolean {
-    return this.isListeningFlag;
-  }
 
   async registerEventHandler(topicName: string, handler: IIntegrationEventHandler): Promise<void> {
     // Extract event type from handler's event class
@@ -206,14 +164,14 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
         stats.totalProcessingTime += Date.now() - startTime;
       }
       
-    } catch (error) {
+    } catch (error: any) {
       // Update failure stats
       if (stats) {
         stats.messagesFailed++;
         stats.totalProcessingTime += Date.now() - startTime;
       }
       
-      this.logger.error(`Error handling message for topic '${topicName}': ${error}`);
+      this.logger.error(`Error handling message for topic '${topicName}': ${error} ${error.stack}`);
       throw error;
     }
   }
@@ -273,13 +231,10 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
    */
   protected abstract subscribeToTopic(topicName: string): Promise<void>;
   protected abstract unsubscribeFromTopic(topicName: string): Promise<void>;
-  protected abstract parseMessage(rawMessage: any): { parsedMessage: Record<string, unknown>; messageId: string };
+  protected abstract parseMessage(rawMessage: any): ParsedIntegrationMessage;
 }
 
 export const INTEGRATION_EVENT_LISTENER_TOKEN = 'IntegrationEventListener';
 export interface IntegrationEventListener {
-  startListening(): Promise<void>;
-  stopListening(): Promise<void>;
-  isListening(): boolean;
   registerEventHandler(topicName: string, handler: IIntegrationEventHandler): Promise<void>;
 }

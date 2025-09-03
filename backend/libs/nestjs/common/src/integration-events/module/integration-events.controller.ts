@@ -1,8 +1,9 @@
-import { Controller, Post, Get, Body, Inject } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { Body, Controller, Get, Inject,Post } from '@nestjs/common';
+import { ApiBody,ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+
 import { INTEGRATION_EVENT_PUBLISHER_TOKEN, IntegrationEventPublisher } from './event-publisher.interface';
-import { INTEGRATION_EVENT_LISTENER_TOKEN, BaseIntegrationEventListener, IntegrationEventListener } from './integration-event-listener.base';
 import { EventTrackerService } from './event-tracker.service';
+import { BaseIntegrationEventListener, INTEGRATION_EVENT_LISTENER_TOKEN, IntegrationEventListener } from './integration-event-listener.base';
 
 /**
  * Generic messaging controller that works with any event source implementation
@@ -79,7 +80,7 @@ export class MessagingController {
     }
   ) {
     try {
-      await this.integrationEventPublisher.publish(body.topic, body.message);
+      await this.integrationEventPublisher.publish(body.topic, JSON.stringify(body.message));
       
       // Get backend type from the implementation class name
       const backend = this.integrationEventPublisher.constructor.name.replace('IntegrationEventPublisher', '');
@@ -118,11 +119,9 @@ export class MessagingController {
     },
   })
   async getListenerStatus() {
-    const isListening = this.integrationEventListener.isListening();
     const backend = this.integrationEventListener.constructor.name;
     
     return {
-      listening: isListening,
       backend,
       timestamp: new Date().toISOString(),
     };
@@ -176,7 +175,6 @@ export class MessagingController {
     },
   })
   async getListenerStats() {
-    const isListening = this.integrationEventListener.isListening();
     const backend = this.integrationEventListener.constructor.name.replace('IntegrationEventListener', '');
     
     // Get new event tracking stats using singleton
@@ -237,7 +235,6 @@ export class MessagingController {
       timestamp: trackingStats.timestamp,
       
       // Legacy format for backward compatibility - but derive from tracked events only
-      listening: isListening,
       backend,
       subscribedTopics: allEventsByType.length > 0 
         ? [...new Set(allEventsByType.map(e => e.topic))]
@@ -261,40 +258,6 @@ export class MessagingController {
     };
   }
 
-  @Post('listener/start')
-  @ApiOperation({ 
-    summary: 'Start the event listener',
-    description: 'Starts listening for events on all registered topics' 
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Listener started successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Event listener started' },
-        timestamp: { type: 'string', format: 'date-time' },
-      },
-    },
-  })
-  async startListener() {
-    try {
-      await this.integrationEventListener.startListening();
-      return {
-        success: true,
-        message: 'Event listener started',
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to start listener',
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
   @Post('listener/reset-tracker')
   @ApiOperation({ 
     summary: 'Reset event tracker (debug only)',
@@ -313,40 +276,6 @@ export class MessagingController {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to reset tracker',
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
-  @Post('listener/stop')
-  @ApiOperation({ 
-    summary: 'Stop the event listener',
-    description: 'Stops listening for events on all topics' 
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Listener stopped successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Event listener stopped' },
-        timestamp: { type: 'string', format: 'date-time' },
-      },
-    },
-  })
-  async stopListener() {
-    try {
-      await this.integrationEventListener.stopListening();
-      return {
-        success: true,
-        message: 'Event listener stopped',
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to stop listener',
         timestamp: new Date().toISOString(),
       };
     }

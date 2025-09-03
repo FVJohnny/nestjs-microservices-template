@@ -1,6 +1,7 @@
-import { BaseIntegrationEventListener } from '@libs/nestjs-common';
+import { BaseIntegrationEventListener, type ParsedIntegrationMessage } from '@libs/nestjs-common';
 import { Injectable } from '@nestjs/common';
 
+import { KafkaMessage } from './kafka.types';
 import { KafkaService } from './kafka-service';
 
 /**
@@ -13,41 +14,13 @@ export class KafkaIntegrationEventListener extends BaseIntegrationEventListener 
     super();
   }
 
-  async onModuleInit() {
-    await super.onModuleInit();
-    // Auto-start listening when the module initializes
-    // This ensures handlers registered in onModuleInit are ready
-    this.logger.log(`KafkaIntegrationEventListener onModuleInit called, current handlers: ${this.eventHandlers.size}, isListening: ${this.isListeningFlag}`);
-    setTimeout(() => {
-      void (async () => {
-        this.logger.log(`KafkaIntegrationEventListener setTimeout callback executed, handlers: ${this.eventHandlers.size}, isListening: ${this.isListeningFlag}`);
-        if (this.eventHandlers.size > 0 && !this.isListeningFlag) {
-          this.logger.log(`Auto-starting listener with ${this.eventHandlers.size} registered handlers`);
-          await this.startListening();
-          this.logger.log(`KafkaIntegrationEventListener auto-start completed, isListening: ${this.isListeningFlag}`);
-        } else {
-          this.logger.log(`KafkaIntegrationEventListener auto-start skipped - handlers: ${this.eventHandlers.size}, already listening: ${this.isListeningFlag}`);
-        }
-      })();
-    }, 100); // Small delay to allow all handlers to register
-  }
-
   protected async subscribeToTopic(topicName: string): Promise<void> {
-    // Log call stack to understand where this is being called from
-    const stack = new Error().stack;
-    const callerLine = stack?.split('\n')[2] || 'unknown';
-    this.logger.debug(`subscribeToTopic called for ${topicName} from: ${callerLine.trim()}`);
-    
-    // Create a Kafka handler that delegates to our base handleMessage method
-    const kafkaHandler = {
+    await this.kafkaService.registerHandler({
       topicName,
       handle: async (kafkaMessage: unknown) => {
         await this.handleMessage(topicName, kafkaMessage);
       }
-    };
-
-    // Register with the KafkaService
-    await this.kafkaService.registerHandler(kafkaHandler);
+    });
     this.logger.log(`Subscribed to Kafka topic: ${topicName}`);
   }
 
@@ -56,20 +29,14 @@ export class KafkaIntegrationEventListener extends BaseIntegrationEventListener 
     this.logger.log(`Unsubscribed from Kafka topic: ${topicName}`);
   }
 
-  protected parseMessage(rawMessage: unknown): { parsedMessage: Record<string, unknown>; messageId: string } {
+  protected parseMessage(message: KafkaMessage): ParsedIntegrationMessage {
     try {
       // Extract message data from Kafka message format
-      const kafkaMsg = rawMessage as {
-        message?: { value?: Buffer | string; key?: Buffer | string };
-        value?: Buffer | string;
-        key?: Buffer | string;
-      };
-      const actualMessage = kafkaMsg.message || kafkaMsg;
-      const messageValue = actualMessage.value?.toString();
-      const messageKey = actualMessage.key?.toString();
+      const messageValue = message.message.value?.toString();
+      const messageKey = message.message.key?.toString();
       
       const messageId = messageKey || `kafka-${Date.now()}`;
-      const parsedMessage = messageValue ? JSON.parse(messageValue) : (actualMessage.value || {});
+      const parsedMessage = JSON.parse(messageValue || '{}');
 
       return { parsedMessage, messageId };
     } catch (error) {

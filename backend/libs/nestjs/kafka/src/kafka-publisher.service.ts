@@ -42,28 +42,17 @@ export class KafkaPublisherService implements OnModuleInit, OnModuleDestroy {
     this.logger.log(`[${this.options.clientId}] Kafka disconnected`);
   }
 
-  async publishMessage(topic: string, message: any) {
+  async publishMessage(topic: string, message: string) {
     await this.producer.send({
       topic,
       messages: [
         {
-          value: JSON.stringify(message),
+          value: message,
           timestamp: Date.now().toString(),
         },
       ],
     });
     this.logger.log(`[${this.options.clientId}] Published message to ${topic}:`, message);
-  }
-
-  async publishMessages(topic: string, messages: any[]) {
-    await this.producer.send({
-      topic,
-      messages: messages.map(message => ({
-        value: JSON.stringify(message),
-        timestamp: Date.now().toString(),
-      })),
-    });
-    this.logger.log(`[${this.options.clientId}] Published ${messages.length} messages to ${topic}`);
   }
 
 }

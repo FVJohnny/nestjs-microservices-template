@@ -9,11 +9,6 @@ export interface KafkaMessagePayload {
   };
 }
 
-export interface KafkaTopicHandler {
-  readonly topicName: string;
-  handle(payload: KafkaMessagePayload): Promise<void>;
-}
-
 export interface KafkaTopicStats {
   topic: string;
   handlerName: string;

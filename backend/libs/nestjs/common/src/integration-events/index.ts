@@ -2,6 +2,9 @@
 export * from './module/event-publisher.interface';
 export * from './module/integration-event-handler.base';
 
+// Types
+export * from './types/integration-event.types';
+
 // Decorators
 export * from './module/integration-event-handler.decorator';
 

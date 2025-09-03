@@ -1,7 +1,7 @@
-import { Injectable, OnModuleInit, Logger, Inject } from '@nestjs/common';
-import { INTEGRATION_EVENT_LISTENER_TOKEN } from './integration-event-listener.base';
-import type { BaseIntegrationEventListener } from './integration-event-listener.base';
+import { Inject,Injectable, Logger, OnModuleInit } from '@nestjs/common';
+
 import { BaseIntegrationEvent } from '../events';
+import { type BaseIntegrationEventListener, INTEGRATION_EVENT_LISTENER_TOKEN } from './integration-event-listener.base';
 
 // Interface for the handler instance that the decorator expects
 interface IntegrationEventHandlerInstance {

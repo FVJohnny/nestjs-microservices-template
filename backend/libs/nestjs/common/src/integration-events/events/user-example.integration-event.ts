@@ -1,5 +1,5 @@
-import { TracingMetadataParams } from '../../tracing/tracing-metadata';
-import { BaseIntegrationEvent, BaseIntegrationEventProps } from './base-integration-event';
+import type { TracingMetadataParams } from '../../tracing/tracing-metadata';
+import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './base-integration-event';
 import { Topics } from './topics';
 
 export interface UserExampleIntegrationEventProps extends BaseIntegrationEventProps {
@@ -24,7 +24,7 @@ export class UserExampleIntegrationEvent extends BaseIntegrationEvent {
   static fromJSON(json: any): UserExampleIntegrationEvent {
     const event = new UserExampleIntegrationEvent(
       {
-        occurredOn: new Date(json.occurredOn),
+        occurredOn: json.occurredOn ? new Date(json.occurredOn) : undefined,
       },
       json.metadata
     );

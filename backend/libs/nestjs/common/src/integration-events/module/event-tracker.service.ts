@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { BaseIntegrationEvent } from '../events/base-integration-event';
 
 export interface EventStats {

@@ -37,7 +37,7 @@ export class UserRegisteredDomainEventHandler
     try {
       await this.integrationEventPublisher.publish(
         integrationEvent.getTopic(),
-        integrationEvent.toJSON(),
+        integrationEvent.toJSONString(),
       );
     } catch (error) {
       this.logger.error(`Failed to publish integration event`, error);
