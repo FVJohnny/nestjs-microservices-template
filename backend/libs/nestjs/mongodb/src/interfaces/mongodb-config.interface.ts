@@ -1,4 +1,4 @@
-import { MongooseModuleOptions } from '@nestjs/mongoose';
+import type { MongooseModuleOptions } from '@nestjs/mongoose';
 
 export interface MongoDBModuleOptions {
   uri?: string;

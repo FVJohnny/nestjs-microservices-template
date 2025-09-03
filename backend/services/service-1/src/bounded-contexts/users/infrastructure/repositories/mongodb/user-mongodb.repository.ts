@@ -123,55 +123,28 @@ export class UserMongodbRepository implements UserRepository {
     try {
       const { filter, options } = MongoCriteriaConverter.convert(criteria);
 
-      if (!criteria.withTotal) {
-        // Simple query without total count
-        let query = this.collection.find(filter);
+      let query = this.collection.find(filter);
 
-        if (options.sort) {
-          query = query.sort(options.sort);
-        }
-
-        if (options.limit) {
-          query = query.limit(options.limit);
-        }
-
-        if (options.skip) {
-          query = query.skip(options.skip);
-        }
-
-        const documents = await query.toArray();
-        const count = criteria.withTotal
-          ? await this.collection.countDocuments(filter)
-          : null;
-
-        return {
-          data: documents.map((doc) => User.fromValue(doc)),
-          total: count,
-        };
+      if (options.sort) {
+        query = query.sort(options.sort);
       }
 
-      // Single query with both data and count using aggregation
-      const pipeline = [
-        { $match: filter },
-        {
-          $facet: {
-            data: [
-              ...(options.sort ? [{ $sort: options.sort }] : []),
-              ...(options.skip ? [{ $skip: options.skip }] : []),
-              ...(options.limit ? [{ $limit: options.limit }] : []),
-            ],
-            count: [{ $count: 'total' }],
-          },
-        },
-      ];
+      if (options.limit) {
+        query = query.limit(options.limit);
+      }
 
-      const [result] = await this.collection.aggregate(pipeline).toArray();
-      const documents = result.data || [];
-      const totalCount = result.count[0]?.total || 0;
+      if (options.skip) {
+        query = query.skip(options.skip);
+      }
+
+      const documents = await query.toArray();
+      const count = criteria.withTotal
+        ? await this.collection.countDocuments(filter)
+        : null;
 
       return {
         data: documents.map((doc) => User.fromValue(doc)),
-        total: totalCount,
+        total: count,
       };
     } catch (error) {
       this.handleDatabaseError('findByCriteria', '', error);

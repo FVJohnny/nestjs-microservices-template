@@ -1,4 +1,4 @@
-import { Criteria, Filter, Operator } from '@libs/nestjs-common';
+import { type Criteria, type Filter, Operator } from '@libs/nestjs-common';
 
 /**
  * MongoDB query options interface
@@ -13,7 +13,7 @@ interface MongoQueryOptions {
  * MongoDB criteria conversion result
  */
 interface MongoCriteriaResult {
-  filter: Record<string, any>;
+  filter: Record<string, unknown>;
   options: MongoQueryOptions;
 }
 
@@ -25,7 +25,7 @@ export class MongoCriteriaConverter {
    * Convert a Criteria object to MongoDB filter and options
    */
   static convert(criteria: Criteria): MongoCriteriaResult {
-    const filter: Record<string, any> = {};
+    const filter: Record<string, unknown> = {};
     const options: MongoQueryOptions = {};
 
     // Apply filters from criteria
@@ -85,7 +85,7 @@ export class MongoCriteriaConverter {
   /**
    * Parse value based on its type - handles dates, numbers, booleans
    */
-  private static parseValue(value: string): any {
+  private static parseValue(value: string): string | number | boolean | Date {
     // Try to parse as Date if it looks like an ISO string
     if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
       const date = new Date(value);
