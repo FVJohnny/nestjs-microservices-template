@@ -67,6 +67,7 @@ export class RuntimeAutoDiscovery {
           // Clear require cache to ensure fresh load
           delete require.cache[require.resolve(filePath)];
           
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const module = require(filePath);
           this.logger.debug(`📦 Module exports: ${Object.keys(module).join(', ')}`);
           

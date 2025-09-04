@@ -7,7 +7,7 @@ import { EventTrackerService } from './event-tracker.service';
 @Injectable()
 export class IntegrationEventTrackingService implements OnModuleInit {
   private readonly logger = new Logger(IntegrationEventTrackingService.name);
-  private originalMethods = new Map<string, Function>();
+  private originalMethods = new Map<string, (...args: unknown[]) => unknown>();
 
   constructor(
     private readonly discoveryService: DiscoveryService,

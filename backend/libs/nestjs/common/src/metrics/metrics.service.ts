@@ -61,6 +61,7 @@ export class MetricsService {
       service: this.serviceName,
     } as const;
     this.httpRequestsTotal.inc(fullLabels);
+    this.httpRequestDuration.observe(fullLabels, durationSeconds);
   }
 
   async getMetrics(): Promise<string> {
