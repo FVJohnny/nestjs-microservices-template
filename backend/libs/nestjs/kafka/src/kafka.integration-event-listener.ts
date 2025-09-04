@@ -1,7 +1,7 @@
 import { BaseIntegrationEventListener, type ParsedIntegrationMessage } from '@libs/nestjs-common';
 import { Injectable } from '@nestjs/common';
+import { type KafkaMessage } from 'kafkajs';
 
-import { KafkaMessage } from './kafka.types';
 import { KafkaService } from './kafka-service';
 
 /**
@@ -15,11 +15,13 @@ export class KafkaIntegrationEventListener extends BaseIntegrationEventListener 
   }
 
   protected async subscribeToTopic(topicName: string): Promise<void> {
-    await this.kafkaService.registerHandler({
-      topicName,
-      handle: async (kafkaMessage: unknown) => {
-        await this.handleMessage(topicName, kafkaMessage);
-      }
+    this.logger.log(`Subscribing to Kafka topic: ${topicName}`);
+    const consumer = this.kafkaService.getConsumer();
+    await consumer.subscribe({ topic: topicName });
+    await consumer.run({
+      eachMessage: async ({ topic, partition, message }) => {
+        await this.handleMessage(topic, this.parseMessage(message));
+      },
     });
     this.logger.log(`Subscribed to Kafka topic: ${topicName}`);
   }
@@ -32,13 +34,13 @@ export class KafkaIntegrationEventListener extends BaseIntegrationEventListener 
   protected parseMessage(message: KafkaMessage): ParsedIntegrationMessage {
     try {
       // Extract message data from Kafka message format
-      const messageValue = message.message.value?.toString();
-      const messageKey = message.message.key?.toString();
+      const messageValue = message.value?.toString();
+      const messageKey = message.key?.toString();
       
       const messageId = messageKey || `kafka-${Date.now()}`;
       const parsedMessage = JSON.parse(messageValue || '{}');
 
-      return { parsedMessage, messageId };
+      return { id: messageId, name: parsedMessage.name, ...parsedMessage };
     } catch (error) {
       this.logger.error(`Error parsing Kafka message: ${error}`);
       throw error;

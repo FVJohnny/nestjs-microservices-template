@@ -1,14 +1,15 @@
-import type { LoggerService } from '@nestjs/common';
-import { Logger } from '@nestjs/common';
+import { Logger, type LoggerService } from '@nestjs/common';
 
 import { TracingService } from './tracing.service';
+
+type LogMessage = string | number | boolean | object | Error;
 
 export class TracingLogger extends Logger implements LoggerService {
   constructor(context?: string) {
     super(context || 'TracingLogger');
   }
 
-  private formatMessage(message: any): string {
+  private formatMessage(message: LogMessage): string {
     const correlationId = TracingService.getCorrelationId();
     const context = TracingService.getContext();
     
@@ -27,29 +28,29 @@ export class TracingLogger extends Logger implements LoggerService {
     return `${prefix}${userInfo} ${message}.  ${contextText}`;
   }
 
-  log(message: any) {
+  log(message: LogMessage) {
     super.log(this.formatMessage(message));
   }
 
-  error(message: any, errorOrTrace?: string | Error) {
+  error(message: LogMessage, errorOrTrace?: string | Error) {
     // Handle Error objects directly
     if (errorOrTrace instanceof Error) {
-      const errorMessage = `${message}: ${errorOrTrace.message}`;
+      const errorMessage = `${String(message)}: ${errorOrTrace.message}`;
       super.error(this.formatMessage(errorMessage), errorOrTrace.stack);
     } else {
       super.error(this.formatMessage(message), errorOrTrace);
     }
   }
 
-  warn(message: any) {
+  warn(message: LogMessage) {
     super.warn(this.formatMessage(message));
   }
 
-  debug(message: any) {
+  debug(message: LogMessage) {
     super.debug(this.formatMessage(message));
   }
 
-  verbose(message: any) {
+  verbose(message: LogMessage) {
     super.verbose(this.formatMessage(message));
   }
 }

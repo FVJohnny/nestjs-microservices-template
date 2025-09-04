@@ -1,15 +1,16 @@
+import type { DomainEvent } from "../general";
 import type { IntegrationEventPublisher } from "../integration-events";
 
 export interface MockEventBus {
-  events: any[];
+  events: DomainEvent[];
   shouldFail: boolean;
-  publish: any;
-  publishAll: any;
-  bind?: any;
-  combine?: any;
-  ofType?: any;
-  pipe?: any;
-  subscribe?: any;
+  publish: (event: DomainEvent) => Promise<void>;
+  publishAll: (events: DomainEvent[]) => Promise<void>;
+  bind?: () => void;
+  combine?: () => void;
+  ofType?: () => void;
+  pipe?: () => void;
+  subscribe?: () => void;
 }
 
 export interface CreateEventBusMockOptions {
@@ -26,10 +27,10 @@ export interface CreateEventBusMockOptions {
 export function createEventBusMock(options: CreateEventBusMockOptions = {}): MockEventBus {
   const { shouldFail = false } = options;
   
-  const events: any[] = [];
+  const events: DomainEvent[] = [];
   
   // Create mock functions without jest dependency
-  const publishMock = (event: any) => {
+  const publishMock = (event: DomainEvent) => {
     if (shouldFail) {
       throw new Error('EventBus publish failed');
     }
@@ -37,7 +38,7 @@ export function createEventBusMock(options: CreateEventBusMockOptions = {}): Moc
     return Promise.resolve();
   };
   
-  const publishAllMock = (eventArray: any[]) => {
+  const publishAllMock = (eventArray: DomainEvent[]) => {
     if (shouldFail) {
       throw new Error('EventBus publishAll failed');
     }
@@ -80,7 +81,7 @@ export function createSuccessfulEventBusMock(): MockEventBus {
 }
 
 export interface MockIntegrationEventPublisher extends IntegrationEventPublisher {
-  publishedEvents: Array<{ topic: string; message: any }>;
+  publishedEvents: Array<{ topic: string; message: string }>;
 }
 
 
@@ -95,10 +96,10 @@ export function createIntegrationEventPublisherMock(
   options: { shouldFail: boolean }
 ): MockIntegrationEventPublisher {
   
-  const publishedEvents: Array<{ topic: string; message: any }> = [];
+  const publishedEvents: Array<{ topic: string; message: string }> = [];
   
   // Create mock functions without jest dependency
-  const publishMock = (topic: string, message: any) => {
+  const publishMock = (topic: string, message: string) => {
     if (options.shouldFail) {
       throw new Error('IntegrationEventPublisher publish failed');
     }

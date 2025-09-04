@@ -1,7 +1,8 @@
-export * from './heartbeat/heartbeat.controller';
-export * from './heartbeat/heartbeat.module';
-export * from './swagger/swagger.utility';
-export * from './swagger/swagger-config.interface';
+// Heartbeat
+export * from './heartbeat';
+
+// Swagger utilities
+export * from './swagger';
 
 // Error handling exports
 export * from './errors';

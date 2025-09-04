@@ -2,7 +2,7 @@ import type { Criteria } from '../domain/criteria/Criteria';
 import type { Filter } from '../domain/criteria/Filter';
 import { Operator } from '../domain/criteria/FilterOperator';
 import type { Order } from '../domain/criteria/Order';
-import type { AggregateRoot } from '../domain/entities/AggregateRoot';
+import type { AggregateRoot, AggregateRootDTO } from '../domain/entities/AggregateRoot';
 
 export interface InMemoryFilterResult<T> {
   filterFn: (items: T[]) => T[];
@@ -18,15 +18,15 @@ export class InMemoryCriteriaConverter {
   /**
    * Convert a Criteria object to in-memory filter functions
    */
-  static convert(criteria: Criteria): InMemoryFilterResult<AggregateRoot> {
+  static convert<T extends AggregateRoot>(criteria: Criteria): InMemoryFilterResult<T> {
     return {
-      filterFn: (items: AggregateRoot[]) => this.applyFilters(items, criteria),
-      sortFn: criteria.order ? (a: AggregateRoot, b: AggregateRoot) => this.applySorting(a, b, criteria.order!) : undefined,
-      paginationFn: (items: AggregateRoot[]) => this.applyPagination(items, criteria.offset, criteria.limit),
+      filterFn: (items: T[]) => this.applyFilters(items, criteria),
+      sortFn: criteria.order ? (a: T, b: T) => this.applySorting(a, b, criteria.order!) : undefined,
+      paginationFn: (items: T[]) => this.applyPagination(items, criteria.offset, criteria.limit),
     };
   }
 
-  private static applyFilters(items: AggregateRoot[], criteria: Criteria): AggregateRoot[] {
+  private static applyFilters<T extends AggregateRoot>(items: T[], criteria: Criteria): T[] {
     if (!criteria.hasFilters()) {
       return items;
     }
@@ -44,14 +44,14 @@ export class InMemoryCriteriaConverter {
     });
   }
 
-  private static matchesFilter(primitives: Record<string, unknown>, field: string, operator: string, filterValue: unknown): boolean {
+  private static matchesFilter(primitives: AggregateRootDTO, field: string, operator: string, filterValue: unknown): boolean {
     // Get value from nested path
     let userValue = this.getNestedValue(primitives, field);
     
     if (userValue === undefined || userValue === null) {
       return false;
     }
-
+    
     if (Array.isArray(userValue)) {
       userValue = userValue.join(',');
     }

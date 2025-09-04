@@ -1,10 +1,10 @@
-import type { Type } from '@nestjs/common';
+import { Logger, type Type } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 
 interface RuntimeDiscoveryResult {
-  handlers: Type<any>[];
-  controllers: Type<any>[];
+  handlers: Type<unknown>[];
+  controllers: Type<unknown>[];
 }
 
 /**
@@ -12,6 +12,7 @@ interface RuntimeDiscoveryResult {
  * This scans and requires files at module initialization time
  */
 export class RuntimeAutoDiscovery {
+  private static readonly logger = new Logger(RuntimeAutoDiscovery.name);
   
   static discoverAllComponents(boundedContextPath: string): RuntimeDiscoveryResult {
     const result: RuntimeDiscoveryResult = {
@@ -20,7 +21,7 @@ export class RuntimeAutoDiscovery {
     };
 
     try {
-      console.log('🔍 Starting runtime auto-discovery from:', boundedContextPath);
+      this.logger.log(`🔍 Starting runtime auto-discovery from: ${boundedContextPath}`);
 
       // Discover handlers
       result.handlers = [
@@ -33,51 +34,48 @@ export class RuntimeAutoDiscovery {
       // Discover controllers
       result.controllers = this.discoverControllers(boundedContextPath, 'interfaces/http/controllers', '.controller.js');
 
-      console.log('✅ Runtime auto-discovery complete:', {
-        handlers: result.handlers.length,
-        controllers: result.controllers.length,
-      });
+      this.logger.log(`✅ Runtime auto-discovery complete: handlers=${result.handlers.length}, controllers=${result.controllers.length}`);
 
-      console.log('📋 Discovered handlers:', result.handlers.map(h => h.name));
-      console.log('📋 Discovered controllers:', result.controllers.map(c => c.name));
+      this.logger.log(`📋 Discovered handlers: ${result.handlers.map(h => h.name).join(', ')}`);
+      this.logger.log(`📋 Discovered controllers: ${result.controllers.map(c => c.name).join(', ')}`);
 
       return result;
     } catch (error) {
-      console.error('❌ Runtime auto-discovery failed:', error);
+      this.logger.error('❌ Runtime auto-discovery failed:', error);
       return result;
     }
   }
 
-  private static discoverHandlers(basePath: string, subPath: string, suffix: string): Type<any>[] {
-    const handlers: Type<any>[] = [];
+  private static discoverHandlers(basePath: string, subPath: string, suffix: string): Type<unknown>[] {
+    const handlers: Type<unknown>[] = [];
     const fullPath = path.join(basePath, subPath);
 
-    console.log(`🔍 Looking for handlers in: ${fullPath} with suffix: ${suffix}`);
+    this.logger.debug(`🔍 Looking for handlers in: ${fullPath} with suffix: ${suffix}`);
     
     if (!fs.existsSync(fullPath)) {
-      console.log(`⚠️  Path does not exist: ${fullPath}`);
+      this.logger.debug(`⚠️  Path does not exist: ${fullPath}`);
       return handlers;
     }
 
     try {
       const files = this.getAllFilesRecursively(fullPath, suffix);
-      console.log(`📁 Found ${files.length} files with suffix ${suffix}:`, files);
+      this.logger.debug(`📁 Found ${files.length} files with suffix ${suffix}: ${files.join(', ')}`);
       
       for (const filePath of files) {
-        console.log(`🔍 Processing file: ${filePath}`);
+        this.logger.debug(`🔍 Processing file: ${filePath}`);
         try {
           // Clear require cache to ensure fresh load
           delete require.cache[require.resolve(filePath)];
           
           const module = require(filePath);
-          console.log(`📦 Module exports:`, Object.keys(module));
+          this.logger.debug(`📦 Module exports: ${Object.keys(module).join(', ')}`);
           
           const handlerClass = this.extractComponentFromModule(module, 'Handler');
-          console.log(`🎯 Extracted handler class:`, handlerClass?.name || 'null');
+          this.logger.debug(`🎯 Extracted handler class: ${handlerClass?.name || 'null'}`);
           
           if (handlerClass) {
             handlers.push(handlerClass);
-            console.log(`✅ Discovered handler: ${handlerClass.name} from ${path.basename(filePath)}`);
+            this.logger.log(`✅ Discovered handler: ${handlerClass.name} from ${path.basename(filePath)}`);
           }
         } catch (error) {
           console.warn(`⚠️ Failed to load handler from ${filePath}:`, (error as Error).message);
@@ -90,8 +88,8 @@ export class RuntimeAutoDiscovery {
     return handlers;
   }
 
-  private static discoverControllers(basePath: string, subPath: string, suffix: string): Type<any>[] {
-    const controllers: Type<any>[] = [];
+  private static discoverControllers(basePath: string, subPath: string, suffix: string): Type<unknown>[] {
+    const controllers: Type<unknown>[] = [];
     const fullPath = path.join(basePath, subPath);
 
     if (!fs.existsSync(fullPath)) {
@@ -111,7 +109,7 @@ export class RuntimeAutoDiscovery {
           
           if (controllerClass) {
             controllers.push(controllerClass);
-            console.log(`✅ Discovered controller: ${controllerClass.name} from ${path.basename(filePath)}`);
+            this.logger.log(`✅ Discovered controller: ${controllerClass.name} from ${path.basename(filePath)}`);
           }
         } catch (error) {
           console.warn(`⚠️ Failed to load controller from ${filePath}:`, (error as Error).message);
@@ -146,7 +144,7 @@ export class RuntimeAutoDiscovery {
     return files;
   }
 
-  private static extractComponentFromModule(module: any, typeSuffix: string): Type<any> | null {
+  private static extractComponentFromModule(module: Record<string, unknown>, typeSuffix: string): Type<unknown> | null {
     // Look for exports that are classes ending with the specified suffix
     const exports = Object.keys(module);
     
@@ -156,7 +154,7 @@ export class RuntimeAutoDiscovery {
       if (typeof exportValue === 'function' && 
           exportValue.prototype &&
           exportName.endsWith(typeSuffix)) {
-        return exportValue;
+        return exportValue as Type<unknown>;
       }
     }
 
@@ -167,7 +165,7 @@ export class RuntimeAutoDiscovery {
         defaultExport.prototype &&
         defaultExport.name &&
         defaultExport.name.endsWith(typeSuffix)) {
-      return defaultExport;
+      return defaultExport as Type<unknown>;
     }
 
     return null;

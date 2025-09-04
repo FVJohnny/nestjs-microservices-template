@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger,OnModuleInit } from '@nestjs/common';
 
 import { BaseIntegrationEvent } from '../events';
+import { ParsedIntegrationMessage } from '../types/integration-event.types';
 import { INTEGRATION_EVENT_LISTENER_TOKEN, IntegrationEventListener } from './integration-event-listener.base';
 
 
@@ -17,7 +18,7 @@ export abstract class BaseIntegrationEventHandler<T extends BaseIntegrationEvent
   protected readonly logger = new Logger(this.constructor.name);
 
   abstract readonly topicName: string;
-  eventClass!: { fromJSON(json: any): T };
+  eventClass!: { fromJSON(json: unknown): T };
 
   constructor(
     @Inject(INTEGRATION_EVENT_LISTENER_TOKEN) private readonly integrationEventListener: IntegrationEventListener,
@@ -31,21 +32,21 @@ export abstract class BaseIntegrationEventHandler<T extends BaseIntegrationEvent
   /**
    * Internal handler that deserializes the payload and calls the typed handler
    */
-  async handle(payload: Record<string, unknown>, messageId: string): Promise<void> {
-    const event = this.eventClass.fromJSON(payload);
+  async handle(message: ParsedIntegrationMessage): Promise<void> {
+    const event = this.eventClass.fromJSON(message);
     this.logger.log(
-      `Processing ${this.topicName} event [${messageId}] - ${event.name}`,
+      `Processing ${this.topicName} event [${message.id}] - ${event.name}`,
     );
-    await this.handleEvent(event, messageId);
+    await this.handleEvent(event);
   }
 
   /**
    * Implement this method to handle the typed event
    */
-  protected abstract handleEvent(event: T, messageId: string): Promise<void>;
+  protected abstract handleEvent(event: T): Promise<void>;
 }
 
 export interface IIntegrationEventHandler {
   readonly topicName: string;
-  handle(payload: Record<string, unknown>, messageId: string): Promise<void>;
+  handle(message: ParsedIntegrationMessage): Promise<void>;
 }

@@ -1,6 +1,5 @@
 import type { TracingMetadataParams } from '../../tracing/tracing-metadata';
-import type { BaseIntegrationEventProps } from './base-integration-event';
-import { BaseIntegrationEvent } from './base-integration-event';
+import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './base-integration-event';
 import { Topics } from './topics';
 
 interface UserCreatedIntegrationEventProps extends BaseIntegrationEventProps {
@@ -32,7 +31,7 @@ export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
     this.role = props.role;
   }
   
-  protected toEventJSON(): Record<string, any> {
+  protected toEventJSON(): Record<string, unknown> {
     return {
       userId: this.userId,
       email: this.email,
@@ -41,16 +40,17 @@ export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
     };
   }
   
-  static fromJSON(json: any): UserCreatedIntegrationEvent {
+  static fromJSON(json: Record<string, unknown>): UserCreatedIntegrationEvent {
+
     const event = new UserCreatedIntegrationEvent(
       {
-        userId: json.userId,
-        email: json.email,
-        username: json.username,
-        role: json.role,
-        occurredOn: new Date(json.occurredOn),
+        userId: json.userId as string,
+        email: json.email as string,
+        username: json.username as string,
+        role: json.role as string,
+        occurredOn: json.occurredOn ? new Date(json.occurredOn as string) : undefined,
       },
-      json.metadata
+      json.metadata as TracingMetadataParams
     );
     event.validate();
     return event;

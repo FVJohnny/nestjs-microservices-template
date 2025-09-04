@@ -11,7 +11,7 @@ export abstract class AggregateRoot extends CQRSAggregateRoot<IEvent> {
    * Convert the aggregate to its primitive representation
    * This is used for persistence and serialization
    */
-  abstract toValue(): Record<string, unknown>;
+  abstract toValue(): AggregateRootDTO;
 
   /**
    * Compares two aggregate roots for equality based on their primitive values
@@ -20,4 +20,7 @@ export abstract class AggregateRoot extends CQRSAggregateRoot<IEvent> {
   equals(other?: AggregateRoot | null): boolean {
     return isDeepStrictEqual(this.toValue(), other?.toValue());
   }
+}
+
+export class AggregateRootDTO {  
 }

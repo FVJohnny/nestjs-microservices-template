@@ -80,7 +80,7 @@ export class UserInMemoryRepository implements UserRepository {
 
   async countByCriteria(criteria: Criteria): Promise<number> {
     const users = Array.from(this.users.values());
-    const { filterFn, sortFn } =
+    const { filterFn } =
       InMemoryCriteriaConverter.convert<User>(criteria);
 
     // Apply only filters, ignore pagination for count

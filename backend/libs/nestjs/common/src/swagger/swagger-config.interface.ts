@@ -1,3 +1,5 @@
+import type { INestApplication } from '@nestjs/common';
+
 export interface SwaggerConfig {
   title: string;
   description: string;
@@ -8,7 +10,7 @@ export interface SwaggerConfig {
 }
 
 export interface SwaggerSetupOptions {
-  app: any; // NestJS application instance
+  app: INestApplication; // NestJS application instance
   config: SwaggerConfig;
   basePath?: string;
 }

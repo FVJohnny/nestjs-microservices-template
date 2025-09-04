@@ -17,16 +17,16 @@ export class UserExampleIntegrationEvent extends BaseIntegrationEvent {
     super(props, metadata);
   }
   
-  protected toEventJSON(): Record<string, any> {
+  protected toEventJSON(): Record<string, unknown> {
     return {}
   }
   
-  static fromJSON(json: any): UserExampleIntegrationEvent {
+  static fromJSON(json: Record<string, unknown>): UserExampleIntegrationEvent {
     const event = new UserExampleIntegrationEvent(
       {
-        occurredOn: json.occurredOn ? new Date(json.occurredOn) : undefined,
+        occurredOn: json.occurredOn ? new Date(json.occurredOn as string) : undefined,
       },
-      json.metadata
+      json.metadata as TracingMetadataParams | undefined
     );
     event.validate();
     return event;

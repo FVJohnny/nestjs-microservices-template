@@ -1,6 +1,5 @@
 import { Global, Module } from '@nestjs/common';
 
-import { KafkaController } from './kafka.controller';
 import { KafkaService } from './kafka-service';
 
 /**
@@ -11,7 +10,7 @@ import { KafkaService } from './kafka-service';
  */
 @Global()
 @Module({
-  controllers: [KafkaController],
+  controllers: [],
   providers: [KafkaService],
   exports: [KafkaService],
 })

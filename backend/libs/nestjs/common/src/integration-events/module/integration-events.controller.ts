@@ -3,7 +3,7 @@ import { ApiBody,ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { INTEGRATION_EVENT_PUBLISHER_TOKEN, IntegrationEventPublisher } from './event-publisher.interface';
 import { EventTrackerService } from './event-tracker.service';
-import { BaseIntegrationEventListener, INTEGRATION_EVENT_LISTENER_TOKEN, IntegrationEventListener } from './integration-event-listener.base';
+import { INTEGRATION_EVENT_LISTENER_TOKEN, IntegrationEventListener } from './integration-event-listener.base';
 
 /**
  * Generic messaging controller that works with any event source implementation
@@ -76,7 +76,7 @@ export class MessagingController {
   async publishEvent(
     @Body() body: { 
       topic: string; 
-      message: any;
+      message: unknown;
     }
   ) {
     try {
@@ -180,49 +180,6 @@ export class MessagingController {
     // Get new event tracking stats using singleton
     const trackingStats = EventTrackerService.getInstance().getStats();
     
-    // Try to get detailed stats if the listener is a BaseEventListener (legacy support)
-    let subscribedTopics: string[] = [];
-    let handlers: any[] = [];
-    let totalStats: any = {};
-    
-    if (this.integrationEventListener instanceof BaseIntegrationEventListener) {
-      const baseListener = this.integrationEventListener as any; // Access protected members
-      if (baseListener.eventHandlers) {
-        subscribedTopics = Array.from(baseListener.eventHandlers.keys());
-        
-        // Get detailed message statistics for each handler
-        if (typeof baseListener.getMessageStats === 'function') {
-          handlers = baseListener.getMessageStats();
-        } else {
-          // Fallback to basic handler info without stats
-          handlers = Array.from(baseListener.eventHandlers.entries()).map((entry: any) => {
-            const [topic, handler] = entry;
-            return {
-              topic,
-              handlerName: handler.constructor.name,
-              messagesProcessed: 0,
-              messagesSucceeded: 0,
-              messagesFailed: 0,
-              averageProcessingTime: 0,
-              lastProcessedAt: null,
-            };
-          });
-        }
-        
-        // Get total statistics across all handlers
-        if (typeof baseListener.getTotalMessageStats === 'function') {
-          totalStats = baseListener.getTotalMessageStats();
-        } else {
-          totalStats = {
-            totalMessages: 0,
-            totalSuccesses: 0,
-            totalFailures: 0,
-            averageProcessingTime: 0,
-          };
-        }
-      }
-    }
-    
     // Use the tracked events directly - EventTrackerService already includes all events with 0 counts
     const allEventsByType = [...trackingStats.eventsByType];
 
@@ -233,28 +190,6 @@ export class MessagingController {
       totalEventsProcessed: trackingStats.totalEventsProcessed,
       eventsByType: allEventsByType.sort((a, b) => b.count - a.count),
       timestamp: trackingStats.timestamp,
-      
-      // Legacy format for backward compatibility - but derive from tracked events only
-      backend,
-      subscribedTopics: allEventsByType.length > 0 
-        ? [...new Set(allEventsByType.map(e => e.topic))]
-        : subscribedTopics,
-      handlerCount: allEventsByType.length,
-      handlers: allEventsByType.map(event => ({
-        topic: event.topic,
-        handlerName: `${event.eventType}Handler`,
-        messagesProcessed: event.count,
-        messagesSucceeded: event.count,
-        messagesFailed: 0,
-        averageProcessingTime: 0,
-        lastProcessedAt: event.lastProcessed ? new Date(event.lastProcessed).toISOString() : null,
-      })),
-      totalStats: {
-        totalMessages: trackingStats.totalEventsProcessed,
-        totalSuccesses: trackingStats.totalEventsProcessed,
-        totalFailures: 0,
-        averageProcessingTime: 0,
-      },
     };
   }
 

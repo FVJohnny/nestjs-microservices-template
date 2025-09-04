@@ -1,17 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Inject,Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
 import { BaseIntegrationEvent } from '../events';
+import { ParsedIntegrationMessage } from '../types/integration-event.types';
 import { type BaseIntegrationEventListener, INTEGRATION_EVENT_LISTENER_TOKEN } from './integration-event-listener.base';
 
 // Interface for the handler instance that the decorator expects
 interface IntegrationEventHandlerInstance {
-  handleEvent(event: any, messageId: string): Promise<void>;
+  handleEvent(event: BaseIntegrationEvent): Promise<void>;
 }
 
 // Interface for handler registration
 interface HandlerForRegistration {
   readonly topicName: string;
-  handle(payload: Record<string, unknown>, messageId: string): Promise<void>;
+  handle(payload: ParsedIntegrationMessage): Promise<void>;
 }
 
 /**
@@ -19,9 +21,9 @@ interface HandlerForRegistration {
  * Creates a complete integration event handler without needing to extend any base class
  */
 export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
-  eventClass: (new (...args: any[]) => T) & { fromJSON(json: any): T }
+  eventClass: (new (...args: any[]) => T) & { fromJSON(json: unknown): T }
 ) {
-  return function <U extends new (...args: any[]) => any>(constructor: U) {
+  return function <U extends new (...args: any[]) => IntegrationEventHandlerInstance>(constructor: U) {
     // Apply @Injectable decorator
     Injectable()(constructor);
     
@@ -40,7 +42,7 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
           name: 'temp', 
           userId: 'temp',
           connectionConfig: {}
-        } as any);
+        });
         topicName = tempInstance.getTopic();
       } catch (nestedError) {
         // If both fail, try to access the topic property from a prototype instance
@@ -67,21 +69,17 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
       }
       
       async onModuleInit() {
-        // Auto-register this event handler with its topic
-        if (this.integrationEventListener && this.topicName) {
-          this.logger.log(`[${constructor.name}] onModuleInit called, registering for topic: ${this.topicName}`);
-          const handler = this as unknown as HandlerForRegistration;
-          await this.integrationEventListener.registerEventHandler(this.topicName, handler);
-        }
+        const handler = this as unknown as HandlerForRegistration;
+        await this.integrationEventListener.registerEventHandler(this.topicName, handler);
       }
       
-      async handle(payload: Record<string, unknown>, messageId: string): Promise<void> {
-        const event = eventClass.fromJSON(payload);
+      async handle(message: ParsedIntegrationMessage): Promise<void> {
+        const event = eventClass.fromJSON(message);
         const instance = this as unknown as IntegrationEventHandlerInstance;
         this.logger.log(
-          `Processing ${this.topicName} event [${messageId}] - ${event.name}`,
+          `Processing ${this.topicName} event [${message.id}] - ${event.name}`,
         );
-        await instance.handleEvent(event, messageId);
+        await instance.handleEvent(event);
       }
     }
     
@@ -90,6 +88,6 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
       value: constructor.name
     });
     
-    return IntegrationEventHandlerClass as any;
+    return IntegrationEventHandlerClass as U;
   };
 }

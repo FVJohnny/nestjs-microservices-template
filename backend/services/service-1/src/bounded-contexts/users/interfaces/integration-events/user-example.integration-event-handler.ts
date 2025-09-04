@@ -15,10 +15,9 @@ export class UserExampleIntegrationEventHandler {
 
   async handleEvent(
     event: UserExampleIntegrationEvent,
-    messageId: string,
   ): Promise<void> {
     this.logger.log(
-      `Handling UserExample integration event [${messageId}]: ${JSON.stringify(event.toJSON())}`,
+      `Handling UserExample integration event: ${JSON.stringify(event.toJSON())}`,
     );
 
     try {
@@ -34,11 +33,12 @@ export class UserExampleIntegrationEventHandler {
       await this.commandBus.execute(command);
 
       this.logger.log(
-        `✅ Created example user: ${command.email} (${command.firstName} ${command.lastName}) via UserExample integration event [${messageId}]`,
+        `✅ Created example user: ${command.email} (${command.firstName} ${command.lastName}) via UserExample integration event`,
       );
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `❌ Failed to create example user via UserExample integration event [${messageId}]: ${error.message}`,
+        `❌ Failed to create example user via UserExample integration event: ${errorMessage}`,
       );
       throw error;
     }

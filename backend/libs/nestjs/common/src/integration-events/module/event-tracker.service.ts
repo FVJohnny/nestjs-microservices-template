@@ -104,7 +104,7 @@ export class EventTrackerService {
     try {
       this.operationInProgress = true;
       this.eventCounts.clear();
-      console.log('EventTrackerService: Cleared all event counts');
+      this.logger.log('EventTrackerService: Cleared all event counts');
     } finally {
       this.operationInProgress = false;
     }

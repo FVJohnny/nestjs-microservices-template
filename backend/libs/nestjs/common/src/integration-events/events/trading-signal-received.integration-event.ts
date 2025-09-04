@@ -1,6 +1,5 @@
 import type { TracingMetadataParams } from '../../tracing/tracing-metadata';
-import type { BaseIntegrationEventProps } from './base-integration-event';
-import { BaseIntegrationEvent } from './base-integration-event';
+import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './base-integration-event';
 import { Topics } from './topics';
 
 /**
@@ -25,7 +24,7 @@ export class TradingSignalReceivedIntegrationEvent extends BaseIntegrationEvent 
   /**
    * Returns the event-specific data payload
    */
-  protected toEventJSON(): Record<string, any> {
+  protected toEventJSON(): Record<string, unknown> {
     return {}
   }
 
@@ -39,10 +38,10 @@ export class TradingSignalReceivedIntegrationEvent extends BaseIntegrationEvent 
   /**
    * Creates an event from a JSON message payload
    */
-  static fromJSON(json: any): TradingSignalReceivedIntegrationEvent {
+  static fromJSON(json: Record<string, unknown>): TradingSignalReceivedIntegrationEvent {
     const event = new TradingSignalReceivedIntegrationEvent({
-      occurredOn: new Date(json.occurredOn),
-    }, json.metadata);
+      occurredOn: json.occurredOn ? new Date(json.occurredOn as string) : undefined,
+    }, json.metadata as TracingMetadataParams | undefined);
     event.validate();
     return event;
   }

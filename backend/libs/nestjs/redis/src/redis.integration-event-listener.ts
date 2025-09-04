@@ -27,7 +27,7 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
       // Set up message handler (only once, not for each topic)
       if (!client.listenerCount('message')) {
         client.on('message', (channel: string, message: string) => {
-          this.handleMessage(channel, message).catch(this.logger.error);
+          this.handleMessage(channel, this.parseMessage(message)).catch(this.logger.error);
         });
       }
       
@@ -53,17 +53,15 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
     }
   }
 
-  protected parseMessage(rawMessage: unknown): ParsedIntegrationMessage {
+  protected parseMessage(rawMessage: string): ParsedIntegrationMessage {
     try {
-      const parsedMessage = typeof rawMessage === 'string' 
-        ? JSON.parse(rawMessage) as Record<string, unknown>
-        : rawMessage as Record<string, unknown>;
+      const parsedMessage = JSON.parse(rawMessage);
       
       const messageId = (parsedMessage.messageId as string) || 
                        (parsedMessage.eventId as string) || 
                        `redis-${Date.now()}`;
       
-      return { parsedMessage, messageId };
+      return { id: messageId, name: parsedMessage.name, ...parsedMessage };
     } catch (error) {
       this.logger.error(`Error parsing Redis message: ${error}`);
       throw error;
