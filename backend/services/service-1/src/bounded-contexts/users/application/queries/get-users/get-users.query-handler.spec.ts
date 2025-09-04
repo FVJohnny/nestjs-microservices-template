@@ -10,10 +10,7 @@ import {
   UserStatus,
   UserStatusEnum,
 } from '../../../domain/value-objects/user-status.vo';
-import {
-  UserRole,
-  UserRoleEnum,
-} from '../../../domain/value-objects/user-role.vo';
+import { UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { UserTestFactory } from '../../../test-utils';
 
 describe('GetUsersQueryHandler', () => {
