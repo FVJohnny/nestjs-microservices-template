@@ -8,43 +8,6 @@ import { PostgreSQLConfigService } from './postgresql-config.service';
 export class PostgreSQLController {
   constructor(private readonly configService: PostgreSQLConfigService) {}
 
-  @Get('config')
-  @ApiOperation({ 
-    summary: 'Get PostgreSQL configuration',
-    description: 'Returns the current PostgreSQL configuration (sensitive data masked)' 
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'PostgreSQL configuration',
-    schema: {
-      type: 'object',
-      properties: {
-        host: { type: 'string' },
-        port: { type: 'number' },
-        database: { type: 'string' },
-        username: { type: 'string' },
-        ssl: { type: 'boolean' },
-        synchronize: { type: 'boolean' },
-        logging: { type: 'boolean' },
-      },
-    },
-  })
-  getConfig() {
-    const config = this.configService.getPostgreSQLConfig();
-    
-    return {
-      host: config.host,
-      port: config.port,
-      database: config.database,
-      username: config.username,
-      password: '***masked***',
-      ssl: !!config.ssl,
-      synchronize: config.synchronize,
-      logging: config.logging,
-      connectionUrl: this.configService.getConnectionUrl().replace(/:[^:@]+@/, ':***masked***@'),
-    };
-  }
-
   @Get('health')
   @ApiOperation({ 
     summary: 'Check PostgreSQL connection health',

@@ -1,5 +1,4 @@
-import { type Criteria, type Filter, Operator } from '@libs/nestjs-common';
-
+import { type Criteria, type Filter, Operator, parseFromString } from '@libs/nestjs-common';
 /**
  * MongoDB query options interface
  */
@@ -37,10 +36,10 @@ export class MongoCriteriaConverter {
 
       switch (operator) {
         case Operator.EQUAL:
-          filter[fieldName] = this.parseValue(value);
+          filter[fieldName] = parseFromString(value);
           break;
         case Operator.NOT_EQUAL:
-          filter[fieldName] = { $ne: value };
+          filter[fieldName] = { $ne: parseFromString(value) };
           break;
         case Operator.CONTAINS:
           filter[fieldName] = { $regex: value, $options: 'i' };
@@ -49,10 +48,10 @@ export class MongoCriteriaConverter {
           filter[fieldName] = { $not: { $regex: value, $options: 'i' } };
           break;
         case Operator.GT:
-          filter[fieldName] = { $gt: this.parseValue(value) };
+          filter[fieldName] = { $gt: parseFromString(value) };
           break;
         case Operator.LT:
-          filter[fieldName] = { $lt: this.parseValue(value) };
+          filter[fieldName] = { $lt: parseFromString(value) };
           break;
       }
     });
@@ -80,33 +79,6 @@ export class MongoCriteriaConverter {
     }
 
     return { filter, options };
-  }
-
-  /**
-   * Parse value based on its type - handles dates, numbers, booleans
-   */
-  private static parseValue(value: string): string | number | boolean | Date {
-    // Try to parse as Date if it looks like an ISO string
-    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
-      const date = new Date(value);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    }
-
-    // Try to parse as number
-    if (typeof value === 'string' && !isNaN(Number(value))) {
-      return Number(value);
-    }
-
-    // Try to parse as boolean
-    if (typeof value === 'string') {
-      if (value.toLowerCase() === 'true') return true;
-      if (value.toLowerCase() === 'false') return false;
-    }
-
-    // Return as-is
-    return value;
   }
 
 }

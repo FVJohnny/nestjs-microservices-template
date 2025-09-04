@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import type { PostgreSQLConfig } from './interfaces/postgresql-config.interface';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 @Injectable()
 export class PostgreSQLConfigService {
@@ -43,14 +43,14 @@ export class PostgreSQLConfigService {
     const auth = `${config.username}:${config.password}`;
     const host = `${config.host}:${config.port}`;
     const sslParam = config.ssl ? '?sslmode=require' : '';
-    
+
     return `postgresql://${auth}@${host}/${config.database}${sslParam}`;
   }
 
   validateConfig(): void {
     const requiredVars = ['POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB'];
     const missing = requiredVars.filter(varName => !process.env[varName]);
-    
+
     if (missing.length > 0) {
       this.logger.warn(
         `Missing PostgreSQL environment variables: ${missing.join(', ')}. Using defaults.`,
@@ -58,3 +58,20 @@ export class PostgreSQLConfigService {
     }
   }
 }
+
+export type PostgreSQLConfig = TypeOrmModuleOptions & {
+  type: 'postgres';
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  database: string;
+  synchronize?: boolean;
+  logging?: boolean;
+  ssl?: {
+    rejectUnauthorized?: boolean;
+    ca?: string;
+    cert?: string;
+    key?: string;
+  };
+};

@@ -1,4 +1,3 @@
-export * from './interfaces/redis-config.interface';
 export * from './redis.integration-event-listener';
 export * from './redis.integration-event-publisher';
 export * from './redis.service';

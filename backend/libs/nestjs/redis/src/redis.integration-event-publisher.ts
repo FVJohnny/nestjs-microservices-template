@@ -12,7 +12,6 @@ export class RedisIntegrationEventPublisher implements IntegrationEventPublisher
   ) {}
 
   async publish(topic: string, message: string): Promise<void> {
-    this.logger.debug(`[Redis] Publishing event to channel: ${topic}`);
     const client = this.redisService.getPublisherClient();
     if (!client) {
       this.logger.warn(`[Redis] No Redis publisher client available, event not published to ${topic}`);
@@ -20,8 +19,9 @@ export class RedisIntegrationEventPublisher implements IntegrationEventPublisher
     }
     
     try {
+      this.logger.debug(`[Redis] Publishing event to channel: ${topic}. Message: ${message}`);
       await client.publish(topic, message);
-      this.logger.debug(`[Redis] Event published to ${topic}: ${message}`);
+      this.logger.debug(`[Redis] Event published to ${topic}. Message: ${message}`);
     } catch (error) {
       this.logger.error(`[Redis] Failed to publish event to channel ${topic}:`, error);
       throw error;
