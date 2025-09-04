@@ -5,15 +5,11 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { ErrorHandlingModule } from '@libs/nestjs-common';
 import { RegisterUserController } from '../../src/bounded-contexts/users/interfaces/http/controllers/users/register-user/register-user.controller';
 import { RegisterUserCommandHandler } from '../../src/bounded-contexts/users/application/commands/register-user/register-user.command-handler';
-import {
-  USER_REPOSITORY,
-  UserRepository,
-} from '../../src/bounded-contexts/users/domain/repositories/user.repository';
+import { USER_REPOSITORY } from '../../src/bounded-contexts/users/domain/repositories/user.repository';
 import { UserInMemoryRepository } from '../../src/bounded-contexts/users/infrastructure/repositories/in-memory/user-in-memory.repository';
 
 describe('POST /users (E2E)', () => {
   let app: INestApplication;
-  let repository: UserRepository;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -28,7 +24,6 @@ describe('POST /users (E2E)', () => {
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
     await app.init();
-    repository = app.get<UserRepository>(USER_REPOSITORY);
   });
 
   afterAll(async () => {

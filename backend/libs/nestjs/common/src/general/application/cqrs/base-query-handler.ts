@@ -6,7 +6,7 @@ import type { IQuery } from '@nestjs/cqrs';
  * Provides common functionality including authorization and validation
  * Implements the template method pattern with: authorize → validate → handle
  */
-export abstract class BaseQueryHandler<TQuery extends IQuery, TResult extends Record<string, unknown>> {
+export abstract class BaseQueryHandler<TQuery extends IQuery, TResult extends object> {
 
   /**
    * Executes the query following the template method pattern:

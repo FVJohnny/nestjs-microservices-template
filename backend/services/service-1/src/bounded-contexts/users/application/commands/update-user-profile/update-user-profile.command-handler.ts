@@ -40,12 +40,12 @@ export class UpdateUserProfileCommandHandler extends BaseCommandHandler<
     await this.sendDomainEvents(user);
   }
 
-  protected async authorize(
-    command: UpdateUserProfileCommand,
-  ): Promise<boolean> {
+  protected authorize(_command: UpdateUserProfileCommand): Promise<boolean> {
     // TODO: Implement authorization logic
-    return true;
+    return Promise.resolve(true);
   }
 
-  protected async validate(command: UpdateUserProfileCommand): Promise<void> {}
+  protected validate(_command: UpdateUserProfileCommand): Promise<void> {
+    return Promise.resolve();
+  }
 }

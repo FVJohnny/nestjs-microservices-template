@@ -52,9 +52,9 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<
     return { id: user.id };
   }
 
-  protected async authorize(command: RegisterUserCommand): Promise<boolean> {
+  protected authorize(_command: RegisterUserCommand): Promise<boolean> {
     // TODO: Implement authorization logic
-    return true;
+    return Promise.resolve(true);
   }
 
   protected async validate(command: RegisterUserCommand): Promise<void> {

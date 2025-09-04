@@ -4,6 +4,7 @@ import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
+import { UserDTO } from '../../../domain/entities/user.types';
 import {
   Criteria,
   InfrastructureException,
@@ -15,13 +16,13 @@ import { MONGO_CLIENT_TOKEN } from '@libs/nestjs-mongodb';
 @Injectable()
 export class UserMongodbRepository implements UserRepository {
   private readonly logger = new Logger(UserMongodbRepository.name);
-  private readonly collection: Collection;
+  private readonly collection: Collection<UserDTO>;
 
   constructor(
     @Inject(MONGO_CLIENT_TOKEN)
     private readonly mongoClient: MongoClient,
   ) {
-    this.collection = this.mongoClient.db().collection('users');
+    this.collection = this.mongoClient.db().collection<UserDTO>('users');
     // Initialize indexes on first connection
     this.initializeIndexes().catch((error) =>
       this.logger.error('Failed to initialize user collection indexes:', error),

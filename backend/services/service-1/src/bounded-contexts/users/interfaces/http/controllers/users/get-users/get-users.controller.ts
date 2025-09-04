@@ -1,12 +1,12 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import {
   GetUsersQuery,
   GetUsersQueryResponse,
 } from '../../../../../application/queries';
 import { GetUsersControllerParams } from './get-users.params';
-import { OffsetPageParams, SortParam } from '@libs/nestjs-common';
+import { SortParam } from '@libs/nestjs-common';
 
 @ApiTags('users')
 @Controller('users')
@@ -18,7 +18,7 @@ export class GetUsersController {
   @ApiResponse({
     status: 200,
     description: 'User IDs retrieved successfully',
-    type: GetUsersQueryResponse,
+    type: Object,
   })
   async getUsers(
     @Query() params: GetUsersControllerParams,

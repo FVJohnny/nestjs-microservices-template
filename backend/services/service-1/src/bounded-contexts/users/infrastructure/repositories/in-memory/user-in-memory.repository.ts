@@ -13,55 +13,56 @@ import {
 export class UserInMemoryRepository implements UserRepository {
   private users: Map<string, User> = new Map();
 
-  async save(user: User): Promise<void> {
+  save(user: User): Promise<void> {
     this.users.set(user.id, user);
+    return Promise.resolve();
   }
 
-  async findById(id: string): Promise<User | null> {
-    return this.users.get(id) || null;
+  findById(id: string): Promise<User | null> {
+    return Promise.resolve(this.users.get(id) || null);
   }
 
-  async findByEmail(email: Email): Promise<User | null> {
+  findByEmail(email: Email): Promise<User | null> {
     for (const user of this.users.values()) {
       if (user.email.equals(email)) {
-        return user;
+        return Promise.resolve(user);
       }
     }
-    return null;
+    return Promise.resolve(null);
   }
 
-  async findByUsername(username: Username): Promise<User | null> {
+  findByUsername(username: Username): Promise<User | null> {
     for (const user of this.users.values()) {
       if (user.username.equals(username)) {
-        return user;
+        return Promise.resolve(user);
       }
     }
-    return null;
+    return Promise.resolve(null);
   }
 
-  async existsByEmail(email: Email): Promise<boolean> {
+  existsByEmail(email: Email): Promise<boolean> {
     for (const user of this.users.values()) {
       if (user.email.equals(email)) {
-        return true;
+        return Promise.resolve(true);
       }
     }
-    return false;
+    return Promise.resolve(false);
   }
 
-  async existsByUsername(username: Username): Promise<boolean> {
+  existsByUsername(username: Username): Promise<boolean> {
     for (const user of this.users.values()) {
       if (user.username.equals(username)) {
-        return true;
+        return Promise.resolve(true);
       }
     }
-    return false;
+    return Promise.resolve(false);
   }
 
-  async findAll(): Promise<User[]> {
-    return Array.from(this.users.values());
+  findAll(): Promise<User[]> {
+    return Promise.resolve(Array.from(this.users.values()));
   }
 
-  async findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
+  findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
     const users = Array.from(this.users.values());
     const { filterFn, sortFn, paginationFn } =
       InMemoryCriteriaConverter.convert<User>(criteria);
@@ -72,31 +73,31 @@ export class UserInMemoryRepository implements UserRepository {
       result.sort(sortFn);
     }
 
-    return {
+    return Promise.resolve({
       data: paginationFn(result),
       total: criteria.withTotal ? result.length : null,
-    };
+    });
   }
 
-  async countByCriteria(criteria: Criteria): Promise<number> {
+  countByCriteria(criteria: Criteria): Promise<number> {
     const users = Array.from(this.users.values());
-    const { filterFn } =
-      InMemoryCriteriaConverter.convert<User>(criteria);
+    const { filterFn } = InMemoryCriteriaConverter.convert<User>(criteria);
 
     // Apply only filters, ignore pagination for count
     const filteredUsers = filterFn(users);
-    return filteredUsers.length;
+    return Promise.resolve(filteredUsers.length);
   }
 
-  async delete(id: string): Promise<void> {
+  delete(id: string): Promise<void> {
     this.users.delete(id);
+    return Promise.resolve();
   }
 
-  async remove(id: string): Promise<void> {
-    await this.delete(id);
+  remove(id: string): Promise<void> {
+    return this.delete(id);
   }
 
-  async exists(id: string): Promise<boolean> {
-    return this.users.has(id);
+  exists(id: string): Promise<boolean> {
+    return Promise.resolve(this.users.has(id));
   }
 }

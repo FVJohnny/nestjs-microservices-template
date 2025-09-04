@@ -17,7 +17,6 @@ import {
   OrderTypes,
   Order,
   BaseQueryHandler,
-  OffsetPageParams,
   OffsetPageResultPagination,
 } from '@libs/nestjs-common';
 
@@ -130,13 +129,14 @@ export class GetUsersQueryHandler extends BaseQueryHandler<
     };
   }
 
-  protected async authorize(query: GetUsersQuery): Promise<boolean> {
+  protected authorize(_query: GetUsersQuery): Promise<boolean> {
     // TODO: Implement authorization logic
-    return true;
+    return Promise.resolve(true);
   }
 
-  protected async validate(query: GetUsersQuery): Promise<void> {
+  protected validate(_query: GetUsersQuery): Promise<void> {
     // TODO: Implement validation logic
     // For example: validate limit/offset ranges, orderBy field names, etc.
+    return Promise.resolve();
   }
 }

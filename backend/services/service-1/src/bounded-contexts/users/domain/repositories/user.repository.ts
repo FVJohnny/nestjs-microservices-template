@@ -11,7 +11,7 @@ export interface UserRepository extends Repository<User, string> {
   existsByEmail(email: Email): Promise<boolean>;
   existsByUsername(username: Username): Promise<boolean>;
   findAll(): Promise<User[]>;
-  findByCriteria(criteria: Criteria | any): Promise<PaginatedRepoResult<User>>;
-  countByCriteria(criteria: Criteria | any): Promise<number>;
+  findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>>;
+  countByCriteria(criteria: Criteria): Promise<number>;
   delete(id: string): Promise<void>;
 }

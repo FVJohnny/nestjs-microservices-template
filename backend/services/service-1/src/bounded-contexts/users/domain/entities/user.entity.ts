@@ -10,8 +10,16 @@ import { Name } from '../value-objects/name.vo';
 import { UserProfile } from '../value-objects/user-profile.vo';
 import { CreateUserProps, UserAttributes, UserDTO } from './user.types';
 
-export interface User extends UserAttributes {}
 export class User extends AggregateRoot implements UserAttributes {
+  id: string;
+  email: Email;
+  username: Username;
+  profile: UserProfile;
+  status: UserStatus;
+  role: UserRole;
+  lastLoginAt: Date | undefined;
+  createdAt: Date;
+  updatedAt: Date;
   constructor(props: UserAttributes) {
     super();
     Object.assign(this, props);
@@ -115,7 +123,7 @@ export class User extends AggregateRoot implements UserAttributes {
     return this.status.equals(UserStatus.active());
   }
 
-  static fromValue(value: any): User {
+  static fromValue(value: UserDTO): User {
     return new User({
       id: value.id,
       email: new Email(value.email),
@@ -124,8 +132,8 @@ export class User extends AggregateRoot implements UserAttributes {
         new Name(value.profile.firstName),
         new Name(value.profile.lastName),
       ),
-      status: new UserStatus(value.status),
-      role: new UserRole(value.role),
+      status: new UserStatus(value.status as UserStatusEnum),
+      role: new UserRole(value.role as UserRoleEnum),
       lastLoginAt: value.lastLoginAt ? new Date(value.lastLoginAt) : undefined,
       createdAt: new Date(value.createdAt),
       updatedAt: new Date(value.updatedAt),

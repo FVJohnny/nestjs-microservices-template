@@ -13,9 +13,7 @@ export class UserExampleIntegrationEventHandler {
 
   constructor(private readonly commandBus: CommandBus) {}
 
-  async handleEvent(
-    event: UserExampleIntegrationEvent,
-  ): Promise<void> {
+  async handleEvent(event: UserExampleIntegrationEvent): Promise<void> {
     this.logger.log(
       `Handling UserExample integration event: ${JSON.stringify(event.toJSON())}`,
     );
@@ -36,7 +34,8 @@ export class UserExampleIntegrationEventHandler {
         `✅ Created example user: ${command.email} (${command.firstName} ${command.lastName}) via UserExample integration event`,
       );
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger.error(
         `❌ Failed to create example user via UserExample integration event: ${errorMessage}`,
       );

@@ -3,11 +3,8 @@ import { Email } from '../domain/value-objects/email.vo';
 import { Username } from '../domain/value-objects/username.vo';
 import { Name } from '../domain/value-objects/name.vo';
 import { UserProfile } from '../domain/value-objects/user-profile.vo';
-import { UserRole, UserRoleEnum } from '../domain/value-objects/user-role.vo';
-import {
-  UserStatus,
-  UserStatusEnum,
-} from '../domain/value-objects/user-status.vo';
+import { UserRole } from '../domain/value-objects/user-role.vo';
+import { UserStatus } from '../domain/value-objects/user-status.vo';
 
 /**
  * Test user factory for creating consistent lists of test users

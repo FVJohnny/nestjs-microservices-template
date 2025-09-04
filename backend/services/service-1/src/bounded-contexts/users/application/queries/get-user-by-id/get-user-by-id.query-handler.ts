@@ -32,12 +32,13 @@ export class GetUserByIdQueryHandler extends BaseQueryHandler<
     return user.toValue();
   }
 
-  protected async authorize(query: GetUserByIdQuery): Promise<boolean> {
-    return true;
+  protected authorize(_query: GetUserByIdQuery): Promise<boolean> {
+    return Promise.resolve(true);
   }
 
-  protected async validate(query: GetUserByIdQuery): Promise<void> {
+  protected validate(_query: GetUserByIdQuery): Promise<void> {
     // TODO: Implement validation logic
     // For example: validate userId format, ensure it's not empty, etc.
+    return Promise.resolve();
   }
 }

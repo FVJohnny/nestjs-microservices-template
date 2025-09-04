@@ -3,7 +3,7 @@ import type { EventBus, ICommand } from '@nestjs/cqrs';
 import type { AggregateRoot } from '../../domain/entities/AggregateRoot';
 
 
-export abstract class BaseCommandHandler<TCommand extends ICommand, TResult extends Record<string, unknown> | void> {
+export abstract class BaseCommandHandler<TCommand extends ICommand, TResult extends object | void> {
   
   constructor(protected readonly eventBus: EventBus) {}
 

@@ -81,8 +81,9 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       await eventHandler.handle(event);
 
       // Assert
-      const publishedEvent =
-        JSON.parse(mockIntegrationEventPublisher.publishedEvents[0].message);
+      const publishedEvent = JSON.parse(
+        mockIntegrationEventPublisher.publishedEvents[0].message,
+      );
       expect(publishedEvent.topic).toBe(Topics.USERS.topic);
       expect(publishedEvent.name).toEqual(Topics.USERS.events.USER_CREATED);
       expect(publishedEvent.version).toBeDefined();

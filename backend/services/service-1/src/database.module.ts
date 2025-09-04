@@ -1,10 +1,6 @@
 import { Global, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { SharedRedisModule } from '@libs/nestjs-redis';
-import {
-  SharedPostgreSQLModule,
-  PostgreSQLConfigService,
-} from '@libs/nestjs-postgresql';
+import { SharedPostgreSQLModule } from '@libs/nestjs-postgresql';
 import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
 
 /**

@@ -1,5 +1,5 @@
 import { DomainEvent } from '@libs/nestjs-common';
-import { UserRole, UserRoleEnum } from '../value-objects/user-role.vo';
+import { UserRole } from '../value-objects/user-role.vo';
 import { Email } from '../value-objects/email.vo';
 import { Username } from '../value-objects/username.vo';
 

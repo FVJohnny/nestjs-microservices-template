@@ -5,7 +5,6 @@ import {
   UserRole,
   UserRoleEnum,
 } from '../../../domain/value-objects/user-role.vo';
-import { BadRequestException } from '@nestjs/common';
 import {
   AlreadyExistsException,
   createEventBusMock,

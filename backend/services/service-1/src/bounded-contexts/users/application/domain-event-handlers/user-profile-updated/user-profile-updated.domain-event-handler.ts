@@ -10,9 +10,10 @@ export class UserProfileUpdatedDomainEventHandler
     UserProfileUpdatedDomainEventHandler.name,
   );
 
-  async handle(event: UserProfileUpdatedDomainEvent): Promise<void> {
+  handle(event: UserProfileUpdatedDomainEvent): Promise<void> {
     this.logger.log(`User profile updated for user: ${event.aggregateId}`);
 
+    return Promise.resolve();
     // Here you could add additional logic like:
     // - Update search indices
     // - Send notification emails
