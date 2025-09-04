@@ -116,39 +116,22 @@ export class IntegrationEventsController {
     schema: {
       type: 'object',
       properties: {
-        listening: { type: 'boolean', example: true },
-        backend: { type: 'string', example: 'RedisEventListener' },
-        subscribedTopics: { 
-          type: 'array', 
-          items: { type: 'string' },
-          example: ['trading-signals', 'channels'] 
-        },
-        handlerCount: { type: 'number', example: 2 },
-        handlers: {
+        service: { type: 'string', example: 'Copy Signals AI' },
+        totalEventsProcessed: { type: 'number', example: 123 },
+        eventsByType: {
           type: 'array',
           items: {
             type: 'object',
             properties: {
+              eventName: { type: 'string', example: 'channel.create' },
               topic: { type: 'string', example: 'trading-signals' },
-              handlerName: { type: 'string', example: 'TradingSignalsIntegrationEventHandler' },
-              messagesProcessed: { type: 'number', example: 42 },
-              messagesSucceeded: { type: 'number', example: 40 },
-              messagesFailed: { type: 'number', example: 2 },
-              averageProcessingTime: { type: 'number', example: 150 },
-              lastProcessedAt: { type: 'string', format: 'date-time' },
-            }
-          }
+              successCount: { type: 'number', example: 123 },
+              failureCount: { type: 'number', example: 0 },
+              lastProcessed: { type: 'string', format: 'date-time', example: '2023-04-01T12:34:56.789Z' },
+            },
+          },
         },
-        totalStats: {
-          type: 'object',
-          properties: {
-            totalMessages: { type: 'number', example: 42 },
-            totalSuccesses: { type: 'number', example: 40 },
-            totalFailures: { type: 'number', example: 2 },
-            averageProcessingTime: { type: 'number', example: 150 },
-          }
-        },
-        timestamp: { type: 'string', format: 'date-time' },
+        timestamp: { type: 'string', format: 'date-time', example: '2023-04-01T12:34:56.789Z' },
       },
     },
   })
