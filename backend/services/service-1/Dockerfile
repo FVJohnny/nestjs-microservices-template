@@ -4,6 +4,9 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
+# Copy root tsconfig.base.json (needed by shared libraries)
+COPY tsconfig.base.json ./tsconfig.base.json
+
 # Copy shared libraries first (needed for local file dependencies)
 COPY libs ./libs
 WORKDIR /app/libs/nestjs/common
