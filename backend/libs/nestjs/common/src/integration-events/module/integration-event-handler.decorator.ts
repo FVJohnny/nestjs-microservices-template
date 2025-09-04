@@ -34,7 +34,7 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
       // Try to create instance with empty payload first
       const tempInstance = new eventClass({});
       topicName = tempInstance.getTopic();
-    } catch (error) {
+    } catch {
       // If that fails, try with channel-specific props for backward compatibility
       try {
         const tempInstance = new eventClass({
@@ -44,8 +44,8 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
           connectionConfig: {}
         });
         topicName = tempInstance.getTopic();
-      } catch (nestedError) {
-        // If both fail, try to access the topic property from a prototype instance
+      } catch {
+            // If both fail, try to access the topic property from a prototype instance
         try {
           const prototype = eventClass.prototype;
           topicName = prototype.topic || '';

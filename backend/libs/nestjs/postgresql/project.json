@@ -1,0 +1,32 @@
+{
+  "name": "nestjs-postgresql",
+  "sourceRoot": "backend/libs/nestjs/postgresql/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "outputPath": "backend/libs/nestjs/postgresql/dist",
+        "main": "backend/libs/nestjs/postgresql/src/index.ts",
+        "tsConfig": "backend/libs/nestjs/postgresql/tsconfig.json",
+        "assets": []
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["backend/libs/nestjs/postgresql/src/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "backend/libs/nestjs/postgresql/jest.config.js"
+      }
+    }
+  },
+  "tags": ["type:lib", "scope:nestjs", "topic:postgresql"]
+}

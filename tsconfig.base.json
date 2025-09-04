@@ -1,0 +1,26 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@libs/nestjs-common": ["backend/libs/nestjs/common/src/index.ts"],
+      "@libs/nestjs-kafka": ["backend/libs/nestjs/kafka/src/index.ts"],
+      "@libs/nestjs-mongodb": ["backend/libs/nestjs/mongodb/src/index.ts"],
+      "@libs/nestjs-redis": ["backend/libs/nestjs/redis/src/index.ts"],
+      "@libs/nestjs-postgresql": ["backend/libs/nestjs/postgresql/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

@@ -54,7 +54,7 @@ export abstract class BaseIntegrationEvent {
    * Subclasses should override this method.
    */
   static fromJSON(json: Record<string, unknown>): BaseIntegrationEvent {
-    throw new Error(`${this.name}.fromJSON() must be implemented by subclass`);
+    throw new Error(`${this.name}.fromJSON() must be implemented by subclass. ${JSON.stringify(json)}`);
   }
 
   /**

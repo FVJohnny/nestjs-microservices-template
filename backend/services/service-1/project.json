@@ -1,0 +1,56 @@
+{
+  "name": "service-1",
+  "sourceRoot": "backend/services/service-1/src", 
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "outputPath": "backend/services/service-1/dist",
+        "main": "backend/services/service-1/src/main.ts",
+        "tsConfig": "backend/services/service-1/tsconfig.json",
+        "assets": []
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "service-1:build",
+        "inspect": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "service-1:build:development"
+        },
+        "production": {
+          "buildTarget": "service-1:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["backend/services/service-1/src/**/*.ts", "backend/services/service-1/test/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "backend/services/service-1/jest.config.js"
+      }
+    }
+  },
+  "tags": ["type:app", "scope:service"],
+  "implicitDependencies": [
+    "nestjs-common",
+    "nestjs-kafka", 
+    "nestjs-mongodb",
+    "nestjs-redis",
+    "nestjs-postgresql"
+  ]
+}

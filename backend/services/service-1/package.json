@@ -36,6 +36,7 @@
     "@types/pg": "^8.15.5",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "express": "^5.1.0",
     "helmet": "^8.1.0",
     "kafkajs": "^2.2.4",
     "mongoose": "^8.0.0",
@@ -88,6 +89,14 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@libs/nestjs-common(.*)$": "<rootDir>/../../../libs/nestjs/common/src$1",
+      "^@libs/nestjs-kafka(.*)$": "<rootDir>/../../../libs/nestjs/kafka/src$1",
+      "^@libs/nestjs-mongodb(.*)$": "<rootDir>/../../../libs/nestjs/mongodb/src$1",
+      "^@libs/nestjs-redis(.*)$": "<rootDir>/../../../libs/nestjs/redis/src$1",
+      "^@libs/nestjs-postgresql(.*)$": "<rootDir>/../../../libs/nestjs/postgresql/src$1",
+      "^express$": "<rootDir>/../node_modules/express/index.js"
+    }
   }
 }

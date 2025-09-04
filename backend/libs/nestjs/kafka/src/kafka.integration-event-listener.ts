@@ -19,7 +19,7 @@ export class KafkaIntegrationEventListener extends BaseIntegrationEventListener 
     const consumer = this.kafkaService.getConsumer();
     await consumer.subscribe({ topic: topicName });
     await consumer.run({
-      eachMessage: async ({ topic, partition, message }) => {
+      eachMessage: async ({ topic, message }) => {
         await this.handleMessage(topic, this.parseMessage(message));
       },
     });
