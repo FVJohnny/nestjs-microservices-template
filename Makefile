@@ -52,8 +52,6 @@ update-libs:
 	@cd backend/libs/nestjs/redis && npm install && npm run build
 	@echo "🔧 Building nestjs-postgresql library..."
 	@cd backend/libs/nestjs/postgresql && npm install && npm run build
-	@echo "🔧 Building nestjs-events library..."
-	@cd backend/libs/nestjs/events && npm install && npm run build
 	@echo ""
 	@echo "📦 Updating service-1..."
 	@cd backend/services/service-1 && npm install

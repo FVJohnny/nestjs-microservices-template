@@ -10,7 +10,7 @@ import {
   PaginatedRepoResult,
 } from '@libs/nestjs-common';
 import { MongoCriteriaConverter } from '@libs/nestjs-mongodb';
-import { SharedMongoDBModule } from '@libs/nestjs-mongodb';
+import { MONGO_CLIENT_TOKEN } from '@libs/nestjs-mongodb';
 
 @Injectable()
 export class UserMongodbRepository implements UserRepository {
@@ -18,7 +18,7 @@ export class UserMongodbRepository implements UserRepository {
   private readonly collection: Collection;
 
   constructor(
-    @Inject(SharedMongoDBModule.MONGO_CLIENT_TOKEN)
+    @Inject(MONGO_CLIENT_TOKEN)
     private readonly mongoClient: MongoClient,
   ) {
     this.collection = this.mongoClient.db().collection('users');
