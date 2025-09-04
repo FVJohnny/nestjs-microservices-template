@@ -23,15 +23,10 @@ export interface IntegrationEventListener {
 export abstract class BaseIntegrationEventListener implements IntegrationEventListener {
   protected readonly logger = new Logger(this.constructor.name);
   protected readonly eventHandlers = new Map<string, HandlerInfo[]>(); // topic -> array of handlers
-  protected readonly messageStats = new Map<string, {
-    messagesProcessed: number;
-    messagesSucceeded: number;
-    messagesFailed: number;
-    totalProcessingTime: number;
-    lastProcessedAt: Date | null;
-  }>();
 
-  constructor() {}
+  constructor(
+    private readonly eventTracker: EventTrackerService,
+  ) {}
 
   async registerEventHandler(topicName: string, handler: IIntegrationEventHandler): Promise<void> {
     // Extract event type from handler's event class
@@ -79,28 +74,16 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
       handlerName: handler.constructor.name
     });
 
-    // Initialize message stats for this topic if not exists
-    if (!this.messageStats.has(topicName)) {
-      this.messageStats.set(topicName, {
-        messagesProcessed: 0,
-        messagesSucceeded: 0,
-        messagesFailed: 0,
-        totalProcessingTime: 0,
-        lastProcessedAt: null,
-      });
-    }
-
-    // Pre-register the event in the tracker with 0 count only when a handler exists
-    const eventTracker = EventTrackerService.getInstance();
-    if (eventTracker) {
-      eventTracker.preRegisterEvent(eventName, topicName);
-    }
-
     // Subscribe to topic if this is the first handler for this topic
     if (topicHandlers.length === 1) {
       await this.subscribeToTopic(topicName);
     }
 
+    // Pre-register the event in the tracker with 0 count
+    if (this.eventTracker) {
+      this.eventTracker.initializeStats(eventName, topicName);
+    }
+    
     this.logger.log(`Registered event handler '${handler.constructor.name}' for topic '${topicName}' and event name '${eventName}'.   (${topicHandlers.length} handlers total)`);
   }
 
@@ -109,9 +92,6 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
    * Parses the message and delegates to the appropriate event handler
    */
   protected async handleMessage(topicName: string, message: ParsedIntegrationMessage) {
-    const startTime = Date.now();
-    const stats = this.messageStats.get(topicName);
-    
     try {
 
       // Find the appropriate event handler based on event type
@@ -130,91 +110,17 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
         return;
       }
 
-      // Update message stats - increment processed count
-      if (stats) {
-        stats.messagesProcessed++;
-        stats.lastProcessedAt = new Date();
-      }
-
-      // Delegate to the appropriate event handler
       await handlerInfo.handler.handle(message);
-      
-      // Update success stats
-      if (stats) {
-        stats.messagesSucceeded++;
-        stats.totalProcessingTime += Date.now() - startTime;
-      }
-      
+
+      this.eventTracker.trackEvent(topicName, message, true);
     } catch (error) {
-      // Update failure stats
-      if (stats) {
-        stats.messagesFailed++;
-        stats.totalProcessingTime += Date.now() - startTime;
-      }
-      
+      this.eventTracker.trackEvent(topicName, message, false);
+
       const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : '';
       this.logger.error(`Error handling message for topic '${topicName}': ${errorMessage} ${errorStack}`);
       throw error;
     }
-  }
-
-  /**
-   * Get message statistics for all topics
-   */
-  getMessageStats() {
-    const stats: Array<{
-      topic: string;
-      handlerName: string;
-      messagesProcessed: number;
-      messagesSucceeded: number;
-      messagesFailed: number;
-      averageProcessingTime: number;
-      lastProcessedAt: Date | null;
-    }> = [];
-    for (const [topicName, handlers] of this.eventHandlers.entries()) {
-      const messageStats = this.messageStats.get(topicName);
-      if (messageStats) {
-        stats.push({
-          topic: topicName,
-          handlerName: handlers[0]?.handlerName ?? 'Unknown',
-          messagesProcessed: messageStats.messagesProcessed,
-          messagesSucceeded: messageStats.messagesSucceeded,
-          messagesFailed: messageStats.messagesFailed,
-          averageProcessingTime: messageStats.messagesProcessed > 0 
-            ? Math.round(messageStats.totalProcessingTime / messageStats.messagesProcessed)
-            : 0,
-          lastProcessedAt: messageStats.lastProcessedAt,
-        });
-      }
-    }
-    return stats;
-  }
-
-  /**
-   * Get total message statistics across all topics
-   */
-  getTotalMessageStats() {
-    let totalProcessed = 0;
-    let totalSucceeded = 0;
-    let totalFailed = 0;
-    let totalProcessingTime = 0;
-
-    for (const stats of this.messageStats.values()) {
-      totalProcessed += stats.messagesProcessed;
-      totalSucceeded += stats.messagesSucceeded;
-      totalFailed += stats.messagesFailed;
-      totalProcessingTime += stats.totalProcessingTime;
-    }
-
-    return {
-      totalMessages: totalProcessed,
-      totalSuccesses: totalSucceeded,
-      totalFailures: totalFailed,
-      averageProcessingTime: totalProcessed > 0 
-        ? Math.round(totalProcessingTime / totalProcessed)
-        : 0,
-    };
   }
 
   /**

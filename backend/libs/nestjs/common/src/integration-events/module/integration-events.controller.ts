@@ -13,12 +13,13 @@ import type { IntegrationEventListener } from './integration-event-listener.base
  */
 @ApiTags('Integration-Events')
 @Controller('integration-events')
-export class MessagingController {
+export class IntegrationEventsController {
   constructor(
     @Inject(INTEGRATION_EVENT_PUBLISHER_TOKEN)
     private readonly integrationEventPublisher: IntegrationEventPublisher,
     @Inject(INTEGRATION_EVENT_LISTENER_TOKEN)
     private readonly integrationEventListener: IntegrationEventListener,
+    private readonly eventTracker: EventTrackerService,
   ) {}
 
   @Post('publish')
@@ -103,31 +104,6 @@ export class MessagingController {
     }
   }
 
-  @Get('listener/status')
-  @ApiOperation({ 
-    summary: 'Get event listener status',
-    description: 'Returns the current status of the event listener' 
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Event listener status',
-    schema: {
-      type: 'object',
-      properties: {
-        listening: { type: 'boolean', example: true },
-        backend: { type: 'string', example: 'RedisEventListener' },
-        timestamp: { type: 'string', format: 'date-time' },
-      },
-    },
-  })
-  async getListenerStatus() {
-    const backend = this.integrationEventListener.constructor.name;
-    
-    return {
-      backend,
-      timestamp: new Date().toISOString(),
-    };
-  }
 
   @Get('listener/stats')
   @ApiOperation({ 
@@ -178,41 +154,16 @@ export class MessagingController {
   })
   async getListenerStats() {
     // Get new event tracking stats using singleton
-    const trackingStats = EventTrackerService.getInstance().getStats();
+    const trackingStats = this.eventTracker.getStats();
     
-    // Use the tracked events directly - EventTrackerService already includes all events with 0 counts
-    const allEventsByType = [...trackingStats.eventsByType];
-
     // Return only the new event tracking format - no legacy merging
     return {
       // New event tracking format
       service: trackingStats.service,
       totalEventsProcessed: trackingStats.totalEventsProcessed,
-      eventsByType: allEventsByType.sort((a, b) => b.count - a.count),
+      eventsByType: trackingStats.eventsByType,
       timestamp: trackingStats.timestamp,
     };
   }
 
-  @Post('listener/reset-tracker')
-  @ApiOperation({ 
-    summary: 'Reset event tracker (debug only)',
-    description: 'Resets the event tracker to clear all counts' 
-  })
-  async resetTracker() {
-    try {
-      const eventTracker = EventTrackerService.getInstance();
-      eventTracker.reset();
-      return {
-        success: true,
-        message: 'Event tracker reset',
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to reset tracker',
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
 }

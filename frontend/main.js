@@ -150,22 +150,19 @@ function updateEventDetails(statsData, container, envData = null) {
       const eventElement = document.createElement('div');
       eventElement.className = 'event-item';
       
-      // Style events with 0 counts slightly dimmed
-      if (event.count === 0) {
-        eventElement.style.opacity = '0.7';
-      }
       
       const lastProcessed = event.lastProcessed ? new Date(event.lastProcessed).toLocaleTimeString() : 'Never';
       
       eventElement.innerHTML = `
         <div class="event-header">
           <div class="event-name-topic">
-            <span class="event-name" title="${event.eventType}">${event.eventType}</span>
+            <span class="event-name" title="${event.eventName}">${event.eventName}</span>
             <span class="event-topic" style="color: var(--text-muted); font-size: 0.7rem;">@ ${event.topic}</span>
           </div>
           <div class="event-actions">
-            <span class="event-count">${event.count}</span>
-            <button class="trigger-event-btn" data-topic="${event.topic}" data-event="${event.eventType}" data-service-url="${statsData.service}">
+            <span class="event-count">${event.successCount}</span>
+            <span class="event-count-error">${event.failureCount}</span>
+            <button class="trigger-event-btn" data-topic="${event.topic}" data-event="${event.eventName}" data-service-url="${statsData.service}">
               🚀 Trigger
             </button>
           </div>

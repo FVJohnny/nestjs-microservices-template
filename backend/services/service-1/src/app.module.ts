@@ -7,7 +7,7 @@ import {
   HeartbeatModule,
   TracingModule,
   ErrorHandlingModule,
-  MessagingController,
+  SharedIntegrationEventsModule,
 } from '@libs/nestjs-common';
 import { DatabaseModule } from './database.module';
 import { IntegrationEventsModule } from './integration-events.module';
@@ -21,10 +21,9 @@ import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
     // Event Modules
     IntegrationEventsModule,
 
-    // CQRS (Global for all bounded contexts)
-    CqrsModule.forRoot(),
-
     // Common Modules
+    CqrsModule.forRoot(),
+    SharedIntegrationEventsModule,
     HeartbeatModule,
     TracingModule,
     ErrorHandlingModule,
@@ -33,7 +32,6 @@ import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
     // DDD Bounded Contexts
     UsersModule,
   ],
-  controllers: [MessagingController],
   providers: [
     {
       provide: APP_PIPE,

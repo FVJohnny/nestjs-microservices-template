@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { BaseIntegrationEvent } from '../events/base-integration-event';
+import { ParsedIntegrationMessage } from '../types/integration-event.types';
 
 export interface EventStats {
-  eventType: string;
+  eventName: string;
   topic: string;
-  count: number;
+  successCount: number;
+  failureCount: number;
   lastProcessed?: Date;
 }
 
@@ -18,118 +19,61 @@ export interface EventSummary {
 
 @Injectable()
 export class EventTrackerService {
-  private static instance: EventTrackerService;
-  private static isCreating = false;
-  private eventCounts = new Map<string, EventStats>();
-  private operationInProgress = false;
+  private stats = new Map<string, EventStats>();
   private readonly logger = new Logger(EventTrackerService.name);
 
-  constructor() {
-    if (!EventTrackerService.isCreating) {
-      EventTrackerService.instance = this;
-    }
-  }
-
-  static getInstance(): EventTrackerService {
-    if (!EventTrackerService.instance && !EventTrackerService.isCreating) {
-      EventTrackerService.isCreating = true;
-      EventTrackerService.instance = new EventTrackerService();
-      EventTrackerService.isCreating = false;
-    }
-    return EventTrackerService.instance || new EventTrackerService();
-  }
-
-  trackEvent(event: BaseIntegrationEvent): void {
-    // Prevent concurrent access issues
-    if (this.operationInProgress) return;
+  trackEvent(topic: string, event: ParsedIntegrationMessage, success: boolean): void {
+    const eventName = event.name;
     
-    try {
-      this.operationInProgress = true;
-      const eventType = event.name;
-      const topic = event.topic;
-      
-      this.logger.debug(`Tracking event ${eventType} for topic ${topic}`);
+    this.logger.debug(`Tracking event ${eventName} for topic ${topic}`);
+    
+    this.initializeStats(eventName, topic);
 
-      const key = `${eventType}@${topic}`;
-      const existingStats = this.eventCounts.get(key);
-
-      if (existingStats) {
-        existingStats.count += 1;
-        existingStats.lastProcessed = new Date();
-      } else {
-        // Create new entry for this event
-        this.eventCounts.set(key, {
-          eventType,
-          topic,
-          count: 1,
-          lastProcessed: new Date(),
-        });
-      }
-    } finally {
-      this.operationInProgress = false;
+    const key = this.key(eventName, topic);
+    const existingStats = this.stats.get(key);
+    if (!existingStats) {
+      this.logger.debug(`No stats found for event ${key}`);
+      return;
     }
+    
+    if (success) {
+      existingStats.successCount += 1;
+    } else {
+      existingStats.failureCount += 1;
+    }
+    existingStats.lastProcessed = new Date();
+    this.logger.debug(`Updated stats for event ${key}`);
   }
 
   getStats(): EventSummary {
-    // Prevent concurrent access issues
-    if (this.operationInProgress) {
-      // Return empty stats if operation in progress to avoid blocking
-      return {
-        service: process.env.SERVICE_NAME || 'unknown',
-        totalEventsProcessed: 0,
-        timestamp: new Date().toISOString(),
-        eventsByType: [],
-      };
-    }
+    const eventsByType = Array.from(this.stats.values());
+    const totalEventsProcessed = eventsByType.reduce((sum, stats) => sum + stats.successCount + stats.failureCount, 0);
 
-    try {
-      this.operationInProgress = true;
-      const eventsByType = Array.from(this.eventCounts.values());
-      const totalEventsProcessed = eventsByType.reduce((sum, stats) => sum + stats.count, 0);
-
-      return {
-        service: process.env.SERVICE_NAME || 'unknown',
-        totalEventsProcessed,
-        timestamp: new Date().toISOString(),
-        eventsByType: eventsByType.sort((a, b) => b.count - a.count),
-      };
-    } finally {
-      this.operationInProgress = false;
-    }
+    return {
+      service: process.env.SERVICE_NAME || 'unknown',
+      totalEventsProcessed,
+      timestamp: new Date().toISOString(),
+      eventsByType: eventsByType.sort((a, b) => a.eventName.localeCompare(b.eventName)),
+    };
   }
 
-  reset(): void {
-    if (this.operationInProgress) return;
-    
-    try {
-      this.operationInProgress = true;
-      this.eventCounts.clear();
-      this.logger.log('EventTrackerService: Cleared all event counts');
-    } finally {
-      this.operationInProgress = false;
+  initializeStats(eventName: string, topic: string): void {
+    const key = this.key(eventName, topic);
+    if (this.stats.has(key)) {
+      return;
     }
+    this.stats.set(key, {
+      eventName,
+      topic,
+      successCount: 0,
+      failureCount: 0,
+      lastProcessed: undefined,
+    });
+    this.logger.debug(`Initialized stats for event ${key}`);
   }
 
-  preRegisterEvent(name: string, topic: string): void {
-    if (this.operationInProgress) return;
-    
-    try {
-      this.operationInProgress = true;
-      const key = `${name}@${topic}`;
-      
-      // Only add if it doesn't already exist
-      if (!this.eventCounts.has(key)) {
-        this.eventCounts.set(key, {
-          eventType: name,
-          topic,
-          count: 0,
-          lastProcessed: undefined,
-        });
-        this.logger.debug(`Pre-registered event ${name}@${topic}`);
-      }
-    } finally {
-      this.operationInProgress = false;
-    }
+  private key(eventName: string, topic: string): string {
+    return `${topic} - ${eventName}`;
   }
 
 }

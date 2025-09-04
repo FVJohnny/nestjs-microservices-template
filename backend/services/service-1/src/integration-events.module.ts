@@ -8,6 +8,7 @@ import {
 import {
   INTEGRATION_EVENT_PUBLISHER_TOKEN,
   INTEGRATION_EVENT_LISTENER_TOKEN,
+  EventTrackerService,
 } from '@libs/nestjs-common';
 // import {
 //   SharedRedisModule,
@@ -27,9 +28,11 @@ import {
     },
     {
       provide: INTEGRATION_EVENT_LISTENER_TOKEN,
-      useFactory: (kafkaService: KafkaService) =>
-        new KafkaIntegrationEventListener(kafkaService),
-      inject: [KafkaService],
+      useFactory: (
+        kafkaService: KafkaService,
+        eventTracker: EventTrackerService,
+      ) => new KafkaIntegrationEventListener(kafkaService, eventTracker),
+      inject: [KafkaService, EventTrackerService],
     },
   ],
   exports: [

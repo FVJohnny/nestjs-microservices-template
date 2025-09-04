@@ -12,6 +12,7 @@
   --border-color: #3a3a3a;
   --gradient-gold: linear-gradient(135deg, #d4af37, #f4e4a6);
   --gradient-black: linear-gradient(135deg, #0a0a0a, #2a2a2a);
+  --gradient-red: linear-gradient(135deg, #dc2626, #f87171);
   --shadow-gold: 0 0 20px rgba(212, 175, 55, 0.3);
   --shadow-black: 0 8px 32px rgba(0, 0, 0, 0.6);
   
@@ -599,6 +600,17 @@ p {
 
 .event-count {
   background: var(--gradient-gold);
+  color: var(--primary-black);
+  padding: 0.2rem 0.4rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+}
+
+.event-count-error {
+  background: var(--gradient-red);
   color: var(--primary-black);
   padding: 0.2rem 0.4rem;
   border-radius: 10px;

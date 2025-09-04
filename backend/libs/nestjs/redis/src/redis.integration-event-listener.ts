@@ -1,4 +1,4 @@
-import { BaseIntegrationEventListener, type ParsedIntegrationMessage } from '@libs/nestjs-common';
+import { BaseIntegrationEventListener, EventTrackerService, type ParsedIntegrationMessage } from '@libs/nestjs-common';
 import { Injectable } from '@nestjs/common';
 
 import { RedisService } from './redis.service';
@@ -9,8 +9,11 @@ import { RedisService } from './redis.service';
  */
 @Injectable()
 export class RedisIntegrationEventListener extends BaseIntegrationEventListener {
-  constructor(private readonly redisService: RedisService) {
-    super();
+  constructor(
+    private readonly redisService: RedisService,
+    eventTracker: EventTrackerService,
+  ) {
+    super(eventTracker);
   }
 
   protected async subscribeToTopic(topicName: string): Promise<void> {
