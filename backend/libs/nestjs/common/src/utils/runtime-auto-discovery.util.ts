@@ -1,6 +1,6 @@
+import type { Type } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Type } from '@nestjs/common';
 
 interface RuntimeDiscoveryResult {
   handlers: Type<any>[];

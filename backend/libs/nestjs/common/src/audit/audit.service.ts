@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { AuditLog, AuditConfig } from './audit-log.interface';
+
 import { TracingLogger } from '../tracing/tracing.logger';
+import { AuditConfig,AuditLog } from './audit-log.interface';
 
 @Injectable()
 export class AuditService {

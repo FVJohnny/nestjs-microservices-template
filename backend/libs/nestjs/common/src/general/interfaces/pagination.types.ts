@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber, IsEnum } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+
 import { OrderTypes } from '../domain/criteria/OrderType';
 
 export class ControllerPaginationParams {

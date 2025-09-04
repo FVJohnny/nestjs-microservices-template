@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Counter, Histogram, Registry, collectDefaultMetrics } from 'prom-client';
+import { collectDefaultMetrics,Counter, Histogram, Registry } from 'prom-client';
 
 type HttpLabelValues = {
   method: string;

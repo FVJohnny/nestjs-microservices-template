@@ -1,4 +1,3 @@
-import { Criteria } from "../criteria/Criteria";
 
 /**
  * Base repository interface for domain entities.

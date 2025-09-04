@@ -1,5 +1,7 @@
-import { IEvent } from '@nestjs/cqrs';
-import { TracingMetadata, TracingMetadataParams } from '../../../tracing/tracing-metadata';
+import type { IEvent } from '@nestjs/cqrs';
+
+import type { TracingMetadataParams } from '../../../tracing/tracing-metadata';
+import { TracingMetadata } from '../../../tracing/tracing-metadata';
 
 /**
  * Base class for all domain events in the system.

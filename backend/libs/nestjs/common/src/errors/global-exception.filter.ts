@@ -1,15 +1,16 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpException,
   HttpStatus,
   Injectable,
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { BaseException } from './base.exception';
+
 import { TracingService } from '../tracing/tracing.service';
+import { BaseException } from './base.exception';
 
 /**
  * Standard error response format

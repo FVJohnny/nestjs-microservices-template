@@ -1,4 +1,5 @@
-import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+
 import { TracingMiddleware } from './tracing.middleware';
 import { TracingService } from './tracing.service';
 

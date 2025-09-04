@@ -1,7 +1,8 @@
-import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
-import { AuditService } from './audit.service';
-import { AuditMiddleware } from './audit.middleware';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+
 import { TracingModule } from '../tracing/tracing.module';
+import { AuditMiddleware } from './audit.middleware';
+import { AuditService } from './audit.service';
 
 @Module({
   imports: [TracingModule],

@@ -1,4 +1,4 @@
-import { IntegrationEventPublisher } from "../integration-events";
+import type { IntegrationEventPublisher } from "../integration-events";
 
 export interface MockEventBus {
   events: any[];

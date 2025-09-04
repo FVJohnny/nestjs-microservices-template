@@ -1,5 +1,5 @@
-import { Criteria } from '../domain/criteria/Criteria';
-import { Filter } from '../domain/criteria/Filter';
+import type { Criteria } from '../domain/criteria/Criteria';
+import type { Filter } from '../domain/criteria/Filter';
 import { Operator } from '../domain/criteria/FilterOperator';
 
 export interface InMemoryFilterResult<T> {

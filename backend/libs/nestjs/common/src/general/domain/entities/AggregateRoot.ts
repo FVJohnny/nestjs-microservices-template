@@ -1,5 +1,7 @@
-import { AggregateRoot as CQRSAggregateRoot, IEvent } from '@nestjs/cqrs';
 import { isDeepStrictEqual } from 'node:util';
+
+import type { IEvent } from '@nestjs/cqrs';
+import { AggregateRoot as CQRSAggregateRoot } from '@nestjs/cqrs';
 
 /**
  * Base class for aggregate roots in Domain-Driven Design

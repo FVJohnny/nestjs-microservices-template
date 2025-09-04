@@ -1,5 +1,6 @@
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { SwaggerSetupOptions } from './swagger-config.interface';
+
+import type { SwaggerSetupOptions } from './swagger-config.interface';
 
 export class SwaggerUtility {
   static setupSwagger(options: SwaggerSetupOptions): void {

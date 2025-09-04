@@ -1,5 +1,6 @@
-import { EventBus, ICommand } from '@nestjs/cqrs';
-import { AggregateRoot } from '../../domain/entities/AggregateRoot';
+import type { EventBus, ICommand } from '@nestjs/cqrs';
+
+import type { AggregateRoot } from '../../domain/entities/AggregateRoot';
 
 /**
  * Base class for all command handlers

@@ -1,4 +1,6 @@
-import { Logger, LoggerService } from '@nestjs/common';
+import type { LoggerService } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
+
 import { TracingService } from './tracing.service';
 
 export class TracingLogger extends Logger implements LoggerService {

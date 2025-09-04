@@ -1,7 +1,7 @@
 // Base classes
 export * from './base.exception';
-export * from './global-exception.filter';
 export * from './error-handling.module';
+export * from './global-exception.filter';
 
 // Domain exceptions
 export * from './domain.exceptions';

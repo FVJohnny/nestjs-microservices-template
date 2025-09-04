@@ -1,8 +1,9 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction,Request, Response } from 'express';
+
+import { TracingService } from '../tracing/tracing.service';
 import { AuditService } from './audit.service';
 import { AuditLog } from './audit-log.interface';
-import { TracingService } from '../tracing/tracing.service';
 
 @Injectable()
 export class AuditMiddleware implements NestMiddleware {

@@ -6,21 +6,21 @@ export * from './domain/events/domain-event.base';
 export * from './domain/entities/AggregateRoot';
 
 // Value Objects
-export { ValueObject } from './domain/value-object/ValueObject';
-export { StringValueObject } from './domain/value-object/StringValueObject';
-export { EnumValueObject } from './domain/value-object/EnumValueObject';
 export { CompositeValueObject } from './domain/value-object/CompositeValueObject';
+export { EnumValueObject } from './domain/value-object/EnumValueObject';
 export { InvalidArgumentError } from './domain/value-object/InvalidArgumentError';
+export { StringValueObject } from './domain/value-object/StringValueObject';
+export { ValueObject } from './domain/value-object/ValueObject';
 
 // Repositories
 export * from './domain/repositories/repository.base';
 
 // Criteria Pattern
 export * from './domain/criteria/Criteria';
-export * from './domain/criteria/Filters';
 export * from './domain/criteria/Filter';
 export * from './domain/criteria/FilterField';
 export * from './domain/criteria/FilterOperator';
+export * from './domain/criteria/Filters';
 export * from './domain/criteria/FilterValue';
 export * from './domain/criteria/Order';
 export * from './domain/criteria/OrderBy';

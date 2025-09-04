@@ -1,5 +1,6 @@
-import { TracingMetadataParams } from '../../tracing/tracing-metadata';
-import { BaseIntegrationEvent, BaseIntegrationEventProps } from './base-integration-event';
+import type { TracingMetadataParams } from '../../tracing/tracing-metadata';
+import type { BaseIntegrationEventProps } from './base-integration-event';
+import { BaseIntegrationEvent } from './base-integration-event';
 import { Topics } from './topics';
 
 interface UserCreatedIntegrationEventProps extends BaseIntegrationEventProps {
