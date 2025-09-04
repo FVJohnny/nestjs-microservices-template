@@ -9,8 +9,12 @@
     "dev": "make dev",
     "prod": "make prod",
     "nx": "nx",
-    "prepare": "husky"
+    "prepare": "command -v husky >/dev/null 2>&1 && husky || true"
   },
+  "workspaces": [
+    "backend/libs/nestjs/*",
+    "backend/services/*"
+  ],
   "devDependencies": {
     "husky": "^9.1.6",
     "@eslint/js": "^9.34.0",

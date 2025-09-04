@@ -7,8 +7,10 @@ export interface SwaggerConfig {
   customSiteTitle?: string;
 }
 
+import type { INestApplication } from '@nestjs/common';
+
 export interface SwaggerSetupOptions {
-  app: unknown;
+  app: INestApplication;
   config: SwaggerConfig;
   basePath?: string;
 }

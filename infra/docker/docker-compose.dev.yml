@@ -1,18 +1,20 @@
 services:
   service-1:
     image: node:22-alpine
-    working_dir: /app/services/service-1
+    working_dir: /app
     volumes:
-      - ${PWD}/backend:/app
-      - /app/services/service-1/node_modules
+      - ${PWD}:/app
+      - /app/node_modules
     command: >
       sh -c "\
-      npm --prefix /app/libs/nestjs/common ci --include=dev && npm --prefix /app/libs/nestjs/common run build && \
-      npm --prefix /app/libs/nestjs/kafka ci --include=dev && npm --prefix /app/libs/nestjs/kafka run build && \
-      npm --prefix /app/libs/nestjs/mongodb ci --include=dev && npm --prefix /app/libs/nestjs/mongodb run build && \
-      npm --prefix /app/libs/nestjs/redis ci --include=dev && npm --prefix /app/libs/nestjs/redis run build && \
-      npm --prefix /app/libs/nestjs/postgresql ci --include=dev && npm --prefix /app/libs/nestjs/postgresql run build && \
-      npm install && npm run build && npm run start:dev"
+      rm -rf backend/libs/nestjs/*/node_modules && \
+      npm install --workspaces && \
+      npm run -w backend/libs/nestjs/common build && \
+      npm run -w backend/libs/nestjs/kafka build && \
+      npm run -w backend/libs/nestjs/mongodb build && \
+      npm run -w backend/libs/nestjs/redis build && \
+      npm run -w backend/libs/nestjs/postgresql build && \
+      cd backend/services/service-1 && npm run start:dev"
     env_file:
       - .env
     environment:

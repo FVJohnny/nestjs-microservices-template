@@ -42,19 +42,15 @@ rebuild-dev:
 update-libs:
 	@echo "🚀 Updating all shared libraries and services..."
 	@echo ""
-	@echo "🔧 Building nestjs-common library..."
-	@cd backend/libs/nestjs/common && npm install && npm run build
-	@echo "🔧 Building nestjs-kafka library..."
-	@cd backend/libs/nestjs/kafka && npm install && npm run build
-	@echo "🔧 Building nestjs-mongodb library..."
-	@cd backend/libs/nestjs/mongodb && npm install && npm run build
-	@echo "🔧 Building nestjs-redis library..."
-	@cd backend/libs/nestjs/redis && npm install && npm run build
-	@echo "🔧 Building nestjs-postgresql library..."
-	@cd backend/libs/nestjs/postgresql && npm install && npm run build
+	@echo "📦 Installing dependencies at workspace root..."
+	@npm install --workspaces
 	@echo ""
-	@echo "📦 Updating service-1..."
-	@cd backend/services/service-1 && npm install
+	@echo "🔧 Building shared libraries..."
+	@npm run -w backend/libs/nestjs/common build
+	@npm run -w backend/libs/nestjs/kafka build
+	@npm run -w backend/libs/nestjs/mongodb build
+	@npm run -w backend/libs/nestjs/redis build
+	@npm run -w backend/libs/nestjs/postgresql build
 	@echo ""
 	@echo "🔄 Restarting service-1 container..."
 	@docker compose -f $(COMPOSE_DEV) restart service-1

@@ -20,12 +20,11 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@libs/nestjs-common": "file:../../libs/nestjs/common",
-    "@libs/nestjs-events": "file:../../libs/nestjs/events",
-    "@libs/nestjs-kafka": "file:../../libs/nestjs/kafka",
-    "@libs/nestjs-mongodb": "file:../../libs/nestjs/mongodb",
-    "@libs/nestjs-postgresql": "file:../../libs/nestjs/postgresql",
-    "@libs/nestjs-redis": "file:../../libs/nestjs/redis",
+    "@libs/nestjs-common": "^1.0.0",
+    "@libs/nestjs-kafka": "^1.0.0",
+    "@libs/nestjs-mongodb": "^1.0.0",
+    "@libs/nestjs-postgresql": "^1.0.0",
+    "@libs/nestjs-redis": "^1.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/cqrs": "^11.0.3",
