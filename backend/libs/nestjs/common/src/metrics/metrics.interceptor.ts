@@ -29,13 +29,15 @@ export class MetricsInterceptor implements NestInterceptor {
       tap({
         next: () => {
           const status = res?.statusCode || 200;
+          const duration = Number(process.hrtime.bigint() - start) / 1e9;
           endTimer({ status_code: String(status) });
-          this.metrics.observeHttpRequest({ method, route, status_code: status });
+          this.metrics.observeHttpRequest({ method, route, status_code: status }, duration);
         },
         error: () => {
           const status = res?.statusCode || 500;
+          const duration = Number(process.hrtime.bigint() - start) / 1e9;
           endTimer({ status_code: String(status) });
-          this.metrics.observeHttpRequest({ method, route, status_code: status });
+          this.metrics.observeHttpRequest({ method, route, status_code: status }, duration);
         },
       })
     );

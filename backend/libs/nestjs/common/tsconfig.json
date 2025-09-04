@@ -16,8 +16,9 @@
     "emitDecoratorMetadata": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {}
   },
-  "include": ["src/**/*", "../eslint/index.js"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

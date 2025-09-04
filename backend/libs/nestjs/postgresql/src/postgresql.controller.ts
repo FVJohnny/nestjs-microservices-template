@@ -79,7 +79,7 @@ export class PostgreSQLController {
     } catch (error) {
       return {
         status: 'unhealthy',
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         uptime: process.uptime(),
       };
     }
@@ -122,7 +122,7 @@ export class PostgreSQLController {
     } catch (error) {
       return {
         service: 'PostgreSQL',
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         uptime: process.uptime(),
       };
     }

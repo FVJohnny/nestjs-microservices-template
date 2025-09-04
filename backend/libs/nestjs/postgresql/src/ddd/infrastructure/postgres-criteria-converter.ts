@@ -8,11 +8,11 @@ export class PostgresCriteriaConverter {
   /**
    * Convert a Criteria object to TypeORM QueryBuilder with filters, ordering, and pagination
    */
-  static convert(
-    queryBuilder: SelectQueryBuilder<unknown>,
+  static convert<T extends Record<string, unknown>>(
+    queryBuilder: SelectQueryBuilder<T>,
     criteria: Criteria,
     entityAlias: string = 'entity'
-  ): SelectQueryBuilder<unknown> {
+  ): SelectQueryBuilder<T> {
     let builder = queryBuilder;
 
     // Apply filters from criteria
