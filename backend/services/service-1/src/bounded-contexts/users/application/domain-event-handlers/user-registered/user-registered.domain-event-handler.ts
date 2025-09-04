@@ -39,9 +39,10 @@ export class UserRegisteredDomainEventHandler
         integrationEvent.getTopic(),
         integrationEvent.toJSONString(),
       );
-    } catch (error) {
-      this.logger.error(`Failed to publish integration event`, error);
-      throw error;
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error('Failed to publish integration event', err);
+      throw err;
     }
   }
 }

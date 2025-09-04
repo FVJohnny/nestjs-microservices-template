@@ -38,7 +38,7 @@ export class UserMongodbRepository implements UserRepository {
         { $set: { ...primitives } },
         { upsert: true },
       );
-    } catch (error) {
+    } catch (error: unknown) {
       this.handleDatabaseError('save', user.id, error);
     }
   }
@@ -52,7 +52,7 @@ export class UserMongodbRepository implements UserRepository {
       }
 
       return User.fromValue(document);
-    } catch (error) {
+    } catch (error: unknown) {
       this.handleDatabaseError('findById', id, error);
     }
   }
@@ -68,7 +68,7 @@ export class UserMongodbRepository implements UserRepository {
       }
 
       return User.fromValue(document);
-    } catch (error) {
+    } catch (error: unknown) {
       this.handleDatabaseError('findByEmail', email.toValue(), error);
     }
   }
@@ -84,7 +84,7 @@ export class UserMongodbRepository implements UserRepository {
       }
 
       return User.fromValue(document);
-    } catch (error) {
+    } catch (error: unknown) {
       this.handleDatabaseError('findByUsername', username.toValue(), error);
     }
   }
@@ -95,7 +95,7 @@ export class UserMongodbRepository implements UserRepository {
         email: email.toValue(),
       });
       return count > 0;
-    } catch (error) {
+    } catch (error: unknown) {
       this.handleDatabaseError('existsByEmail', email.toValue(), error);
     }
   }
@@ -106,7 +106,7 @@ export class UserMongodbRepository implements UserRepository {
         username: username.toValue(),
       });
       return count > 0;
-    } catch (error) {
+    } catch (error: unknown) {
       this.handleDatabaseError('existsByUsername', username.toValue(), error);
     }
   }
@@ -115,7 +115,7 @@ export class UserMongodbRepository implements UserRepository {
     try {
       const documents = await this.collection.find().toArray();
       return documents.map((doc) => User.fromValue(doc));
-    } catch (error) {
+    } catch (error: unknown) {
       this.handleDatabaseError('findAll', '', error);
     }
   }
@@ -147,7 +147,7 @@ export class UserMongodbRepository implements UserRepository {
         data: documents.map((doc) => User.fromValue(doc)),
         total: count,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       this.handleDatabaseError('findByCriteria', '', error);
     }
   }
@@ -160,7 +160,7 @@ export class UserMongodbRepository implements UserRepository {
         convertedCriteria?.filter || {},
       );
       return count;
-    } catch (error) {
+    } catch (error: unknown) {
       this.handleDatabaseError('countByCriteria', 'criteria', error);
     }
   }
@@ -168,7 +168,7 @@ export class UserMongodbRepository implements UserRepository {
   async delete(id: string): Promise<void> {
     try {
       await this.collection.deleteOne({ id });
-    } catch (error) {
+    } catch (error: unknown) {
       this.handleDatabaseError('delete', id, error);
     }
   }
@@ -181,7 +181,7 @@ export class UserMongodbRepository implements UserRepository {
     try {
       const count = await this.collection.countDocuments({ id });
       return count > 0;
-    } catch (error) {
+    } catch (error: unknown) {
       this.handleDatabaseError('exists', id, error);
     }
   }
@@ -308,8 +308,9 @@ export class UserMongodbRepository implements UserRepository {
   private handleDatabaseError(
     operation: string,
     id: string,
-    error: Error,
+    error: unknown,
   ): never {
-    throw new InfrastructureException(operation, id, error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    throw new InfrastructureException(operation, id, err);
   }
 }

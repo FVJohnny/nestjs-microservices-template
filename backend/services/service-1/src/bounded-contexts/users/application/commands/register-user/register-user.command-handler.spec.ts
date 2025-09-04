@@ -1,6 +1,7 @@
 import { RegisterUserCommandHandler } from './register-user.command-handler';
 import { RegisterUserCommand } from './register-user.command';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
+import type { EventBus } from '@nestjs/cqrs';
 import {
   UserRole,
   UserRoleEnum,
@@ -15,15 +16,12 @@ import { UserRegisteredDomainEvent } from '../../../domain/events/user-registere
 describe('RegisterUserCommandHandler (Unit)', () => {
   let commandHandler: RegisterUserCommandHandler;
   let repository: UserInMemoryRepository;
-  let eventBus: MockEventBus;
+  let eventBus: EventBus;
 
   beforeEach(() => {
     repository = new UserInMemoryRepository();
     eventBus = createEventBusMock({ shouldFail: false });
-    commandHandler = new RegisterUserCommandHandler(
-      repository,
-      eventBus as any,
-    );
+    commandHandler = new RegisterUserCommandHandler(repository, eventBus);
   });
 
   describe('Happy Path', () => {
@@ -193,7 +191,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       const failingEventBus = createEventBusMock({ shouldFail: true });
       const handlerWithFailingEventBus = new RegisterUserCommandHandler(
         repository,
-        failingEventBus as any,
+        failingEventBus,
       );
 
       const command = new RegisterUserCommand({

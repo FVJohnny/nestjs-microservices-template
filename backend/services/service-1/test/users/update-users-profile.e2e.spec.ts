@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import type { Server } from 'http';
 import { ValidationPipe } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UpdateUserProfileController } from '../../src/bounded-contexts/users/interfaces/http/controllers/users/update-user-profile/update-user-profile.controller';
@@ -18,6 +19,7 @@ import { ErrorHandlingModule } from '@libs/nestjs-common';
 describe('Users E2E (update profile)', () => {
   let app: INestApplication;
   let repository: UserRepository;
+  let server: Server;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -33,6 +35,7 @@ describe('Users E2E (update profile)', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
     repository = app.get<UserRepository>(USER_REPOSITORY);
+    server = app.getHttpServer() as unknown as Server;
   });
 
   afterAll(async () => {
@@ -47,7 +50,7 @@ describe('Users E2E (update profile)', () => {
     await repository.save(user);
 
     // Act: call endpoint
-    await request(app.getHttpServer())
+    await request(server)
       .put(`/users/${user.id}/profile`)
       .send({ firstName: 'New', lastName: 'Surname' })
       .expect(200);
@@ -60,7 +63,7 @@ describe('Users E2E (update profile)', () => {
   });
 
   it('PUT /users/:id/profile returns 404 for missing user', async () => {
-    await request(app.getHttpServer())
+    await request(server)
       .put(`/users/non-existent-id/profile`)
       .send({ firstName: 'A', lastName: 'B' })
       .expect(404);
@@ -70,7 +73,7 @@ describe('Users E2E (update profile)', () => {
     const user = User.random();
     await repository.save(user);
 
-    await request(app.getHttpServer())
+    await request(server)
       .put(`/users/${user.id}/profile`)
       // Send numbers instead of strings
       .send({ firstName: 123, lastName: 456 })

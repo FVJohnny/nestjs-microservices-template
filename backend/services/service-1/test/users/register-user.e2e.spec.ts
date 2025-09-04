@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
+import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ErrorHandlingModule } from '@libs/nestjs-common';
 import { RegisterUserController } from '../../src/bounded-contexts/users/interfaces/http/controllers/users/register-user/register-user.controller';
@@ -10,6 +11,7 @@ import { UserInMemoryRepository } from '../../src/bounded-contexts/users/infrast
 
 describe('POST /users (E2E)', () => {
   let app: INestApplication;
+  let server: Server;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -24,6 +26,7 @@ describe('POST /users (E2E)', () => {
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
     await app.init();
+    server = app.getHttpServer() as unknown as Server;
   });
 
   afterAll(async () => {
@@ -39,10 +42,7 @@ describe('POST /users (E2E)', () => {
       role: 'user',
     };
 
-    const res = await request(app.getHttpServer())
-      .post('/users')
-      .send(body)
-      .expect(201);
+    const res = await request(server).post('/users').send(body).expect(201);
     expect(res.body.id).toBeDefined();
   });
 
@@ -54,15 +54,15 @@ describe('POST /users (E2E)', () => {
       lastName: 'Case',
       role: 'user',
     };
-    await request(app.getHttpServer()).post('/users').send(body).expect(201);
-    await request(app.getHttpServer())
+    await request(server).post('/users').send(body).expect(201);
+    await request(server)
       .post('/users')
       .send({ ...body, username: 'newuser' })
       .expect(409);
   });
 
   it('returns a client error for invalid email and too-short username', async () => {
-    await request(app.getHttpServer())
+    await request(server)
       .post('/users')
       .send({ email: 'not-an-email', username: 'ab', role: 'user' })
       .expect((res) => {

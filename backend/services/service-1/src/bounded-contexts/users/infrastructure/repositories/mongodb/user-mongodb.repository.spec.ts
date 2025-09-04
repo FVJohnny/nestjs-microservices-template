@@ -793,7 +793,9 @@ describe('UserMongodbRepository (Integration)', () => {
         ...mongoClient,
         db: (dbName?: string) => mongoClient.db(TEST_DB_NAME),
       };
-      repository = new UserMongodbRepository(testMongoClient as any);
+      repository = new UserMongodbRepository(
+        testMongoClient as unknown as MongoClient,
+      );
       console.log('Test setup completed');
     } catch (error) {
       console.error('Error in database setup:', error);

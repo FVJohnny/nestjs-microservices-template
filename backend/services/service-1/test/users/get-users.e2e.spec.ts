@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
+import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
 import { GetUsersController } from '../../src/bounded-contexts/users/interfaces/http/controllers/users/get-users/get-users.controller';
 import { GetUsersQueryHandler } from '../../src/bounded-contexts/users/application/queries/get-users/get-users.query-handler';
@@ -20,6 +21,7 @@ import { UserStatus } from '../../src/bounded-contexts/users/domain/value-object
 describe('GET /users (E2E)', () => {
   let app: INestApplication;
   let repository: UserRepository;
+  let server: Server;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -35,6 +37,7 @@ describe('GET /users (E2E)', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
     repository = app.get<UserRepository>(USER_REPOSITORY);
+    server = app.getHttpServer() as unknown as Server;
   });
 
   const clearRepo = async () => {
@@ -75,7 +78,7 @@ describe('GET /users (E2E)', () => {
     for (const u of users) await repository.save(u);
 
     // Act
-    const res = await request(app.getHttpServer()).get('/users').expect(200);
+    const res = await request(server).get('/users').expect(200);
 
     // Assert
     expect(Array.isArray(res.body.data)).toBe(true);
@@ -93,7 +96,7 @@ describe('GET /users (E2E)', () => {
     await repository.save(inactive);
     await repository.save(active);
 
-    const res = await request(app.getHttpServer())
+    const res = await request(server)
       .get('/users')
       .query({ status: 'inactive' })
       .expect(200);
@@ -119,28 +122,28 @@ describe('GET /users (E2E)', () => {
     });
     await Promise.all([admin, u1, u2].map((u) => repository.save(u)));
 
-    const byEmail = await request(app.getHttpServer())
+    const byEmail = await request(server)
       .get('/users')
       .query({ email: 'admin@' })
       .expect(200);
     expect(byEmail.body.data).toHaveLength(1);
     expect(byEmail.body.data[0].username).toBe('admin');
 
-    const byUsername = await request(app.getHttpServer())
+    const byUsername = await request(server)
       .get('/users')
       .query({ username: 'user1' })
       .expect(200);
     expect(byUsername.body.data).toHaveLength(1);
     expect(byUsername.body.data[0].username).toBe('user1');
 
-    const byFirst = await request(app.getHttpServer())
+    const byFirst = await request(server)
       .get('/users')
       .query({ firstName: 'Jane' })
       .expect(200);
     expect(byFirst.body.data).toHaveLength(1);
     expect(byFirst.body.data[0].username).toBe('user2');
 
-    const byLast = await request(app.getHttpServer())
+    const byLast = await request(server)
       .get('/users')
       .query({ lastName: 'Doe' })
       .expect(200);
@@ -160,14 +163,14 @@ describe('GET /users (E2E)', () => {
     await repository.save(admin);
     await repository.save(user);
 
-    const onlyAdmins = await request(app.getHttpServer())
+    const onlyAdmins = await request(server)
       .get('/users')
       .query({ role: 'admin' })
       .expect(200);
     expect(onlyAdmins.body.data).toHaveLength(1);
     expect(onlyAdmins.body.data[0].username).toBe('admin');
 
-    const onlyUsers = await request(app.getHttpServer())
+    const onlyUsers = await request(server)
       .get('/users')
       .query({ role: 'user' })
       .expect(200);
@@ -181,7 +184,7 @@ describe('GET /users (E2E)', () => {
     const c = User.random({ username: new Username('user2') });
     await Promise.all([a, b, c].map((u) => repository.save(u)));
 
-    const ordered = await request(app.getHttpServer())
+    const ordered = await request(server)
       .get('/users')
       .query({ orderBy: 'username', orderType: 'asc' })
       .expect(200);
@@ -191,7 +194,7 @@ describe('GET /users (E2E)', () => {
       'user2',
     ]);
 
-    const page = await request(app.getHttpServer())
+    const page = await request(server)
       .get('/users')
       .query({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 1 })
       .expect(200);
@@ -204,7 +207,7 @@ describe('GET /users (E2E)', () => {
   it('rejects invalid orderType with 400 (validation)', async () => {
     const u = User.random({ username: new Username('alpha') });
     await repository.save(u);
-    await request(app.getHttpServer())
+    await request(server)
       .get('/users')
       .query({ orderBy: 'username', orderType: 'ASC' })
       .expect(400);

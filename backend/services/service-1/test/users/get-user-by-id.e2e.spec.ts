@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
+import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ErrorHandlingModule } from '@libs/nestjs-common';
 import { GetUserController } from '../../src/bounded-contexts/users/interfaces/http/controllers/users/get-user-by-id/get-user-by-id.controller';
@@ -40,17 +41,15 @@ describe('GET /users/:id (E2E)', () => {
     const user = User.random();
     await repository.save(user);
 
-    const res = await request(app.getHttpServer())
-      .get(`/users/${user.id}`)
-      .expect(200);
+    const server: Server = app.getHttpServer();
+    const res = await request(server).get(`/users/${user.id}`).expect(200);
     expect(res.body.id).toBe(user.id);
     expect(res.body.username).toBe(user.username.toValue());
     expect(res.body.email).toBe(user.email.toValue());
   });
 
   it('returns 404 when not found', async () => {
-    await request(app.getHttpServer())
-      .get(`/users/non-existent-id`)
-      .expect(404);
+    const server: Server = app.getHttpServer();
+    await request(server).get(`/users/non-existent-id`).expect(404);
   });
 });

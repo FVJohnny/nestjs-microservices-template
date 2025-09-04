@@ -29,7 +29,7 @@ async function bootstrap() {
 
   // Setup Swagger using shared utility
   SwaggerUtility.setupSwagger({
-    app: app as any,
+    app,
     config: {
       title: 'Service-1 API',
       description: 'Channels microservice API',

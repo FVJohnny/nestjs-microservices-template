@@ -1,6 +1,7 @@
 import { UpdateUserProfileCommandHandler } from './update-user-profile.command-handler';
 import { UpdateUserProfileCommand } from './update-user-profile.command';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
+import type { EventBus } from '@nestjs/cqrs';
 import {
   createEventBusMock,
   MockEventBus,
@@ -16,16 +17,13 @@ import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
 describe('UpdateUserProfileCommandHandler (Unit)', () => {
   let commandHandler: UpdateUserProfileCommandHandler;
   let repository: UserInMemoryRepository;
-  let eventBus: MockEventBus;
+  let eventBus: EventBus;
   let existingUser: User;
 
   beforeEach(async () => {
     repository = new UserInMemoryRepository();
     eventBus = createEventBusMock({ shouldFail: false });
-    commandHandler = new UpdateUserProfileCommandHandler(
-      repository,
-      eventBus as any,
-    );
+    commandHandler = new UpdateUserProfileCommandHandler(repository, eventBus);
 
     // Create an existing user for testing
     existingUser = User.random({
@@ -163,7 +161,7 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       const failingEventBus = createEventBusMock({ shouldFail: true });
       const handlerWithFailingEventBus = new UpdateUserProfileCommandHandler(
         repository,
-        failingEventBus as any,
+        failingEventBus,
       );
 
       const command = new UpdateUserProfileCommand({
