@@ -4,10 +4,6 @@ import { type KafkaMessage } from 'kafkajs';
 
 import { KafkaService } from './kafka-service';
 
-/**
- * Kafka implementation of EventListener
- * Adapts Kafka messages to the generic format and routes them to event handlers
- */
 @Injectable()
 export class KafkaIntegrationEventListener extends BaseIntegrationEventListener {
   constructor(private readonly kafkaService: KafkaService) {
@@ -33,7 +29,6 @@ export class KafkaIntegrationEventListener extends BaseIntegrationEventListener 
 
   protected parseMessage(message: KafkaMessage): ParsedIntegrationMessage {
     try {
-      // Extract message data from Kafka message format
       const messageValue = message.value?.toString();
       const messageKey = message.key?.toString();
       

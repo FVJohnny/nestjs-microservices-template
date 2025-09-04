@@ -3,10 +3,6 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { KafkaService } from './kafka-service';
 
-/**
- * Kafka implementation of EventPublisher interface.
- * Provides type-safe event publishing through Kafka.
- */
 @Injectable()
 export class KafkaIntegrationEventPublisher implements IntegrationEventPublisher {
   private readonly logger = new Logger(KafkaIntegrationEventPublisher.name);

@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Consumer, Kafka, Producer } from 'kafkajs';
 
 import { createKafkaConfig } from './kafka-config.helper';
@@ -12,8 +12,6 @@ import { createKafkaConfig } from './kafka-config.helper';
 export class KafkaService implements OnModuleInit, OnModuleDestroy {
   private consumer: Consumer;
   private producer: Producer;
-  private readonly logger = new Logger(KafkaService.name);
-  
   
   constructor() {
 
@@ -26,8 +24,6 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
     });
     this.producer = kafka.producer();
   }
-
-
 
   async onModuleInit() {
     await Promise.all([
@@ -42,11 +38,6 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
       this.producer.disconnect()
     ]);
   }
-
-  // // Expose consumer stats for monitoring
-  // getConsumerStats() {
-  //   return this.kafkaConsumer.getStats();
-  // }
 
   getConsumer(): Consumer {
     return this.consumer;
