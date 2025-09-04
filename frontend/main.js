@@ -1,10 +1,69 @@
 const kafkaBtns = document.querySelectorAll('.kafka-btn');
 
-// Service configuration
-const services = [
-  { id: 1, name: 'Service 1', type: 'NestJS', baseUrl: '/api/service-1' },
-  { id: 3, name: 'Service 3', type: 'FastAPI', baseUrl: '/api/service-3' }
-];
+// Service configuration - dynamically detect services
+const services = [];
+
+// Auto-detect services by checking their health endpoints
+async function discoverServices() {
+  const maxServices = 10; // Check up to service-10
+  
+  for (let i = 1; i <= maxServices; i++) {
+    try {
+      const response = await fetch(`/api/service-${i}/health`, { 
+        method: 'GET',
+        timeout: 1000
+      });
+      
+      if (response.ok) {
+        services.push({
+          id: i,
+          name: `Service ${i}`,
+          type: 'NestJS',
+          baseUrl: `/api/service-${i}`
+        });
+        
+        // Create HTML elements for this service
+        createServiceCard(i);
+      }
+    } catch (error) {
+      // Service doesn't exist or is not responding, skip it
+      continue;
+    }
+  }
+  
+  if (services.length === 0) {
+    document.querySelector('.services-grid').innerHTML = '<div class="no-services">No services detected. Make sure at least one service is running.</div>';
+  }
+}
+
+// Create service card HTML dynamically
+function createServiceCard(serviceId) {
+  const servicesGrid = document.querySelector('.services-grid');
+  
+  const cardHTML = `
+    <div class="service-card" id="service-${serviceId}-card">
+      <div class="service-header">
+        <h3>Service ${serviceId}</h3>
+        <span class="service-type">NestJS</span>
+      </div>
+      <div class="service-status">
+        <div class="status-indicator" id="service-${serviceId}-status">
+          <span class="status-dot"></span>
+          <span class="status-text">Checking...</span>
+        </div>
+      </div>
+      <div class="service-metrics">
+        <div class="metric-details" id="service-${serviceId}-details">
+          <div class="topics-breakdown">
+            <!-- Topic details will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  servicesGrid.insertAdjacentHTML('beforeend', cardHTML);
+}
 
 // Update service status and metrics using generic messaging endpoints
 async function updateServiceStatus(service) {
@@ -162,7 +221,7 @@ function updateEventDetails(statsData, container, envData = null) {
           <div class="event-actions">
             <span class="event-count">${event.successCount}</span>
             <span class="event-count-error">${event.failureCount}</span>
-            <button class="trigger-event-btn" data-topic="${event.topic}" data-event="${event.eventName}" data-service-url="${statsData.service}">
+            <button class="trigger-event-btn" data-topic="${event.topic}" data-event="${event.eventName}" data-service-id="${statsData.service}">
               🚀 Trigger
             </button>
           </div>
@@ -270,7 +329,7 @@ async function updateAllServices() {
 }
 
 // Function to trigger a specific event for a specific topic and event type
-async function triggerSpecificEvent(topic, name, serviceUrl, buttonElement) {
+async function triggerSpecificEvent(topic, name, serviceId, buttonElement) {
   const button = buttonElement;
   const originalText = button.textContent;
   
@@ -278,15 +337,15 @@ async function triggerSpecificEvent(topic, name, serviceUrl, buttonElement) {
     button.textContent = '⏳ Sending...';
     button.disabled = true;
     
-    // Determine endpoint based on service
-    let endpoint;
-    if (serviceUrl.toLowerCase().includes('service-1') || serviceUrl.toLowerCase().includes('nestjs')) {
-      endpoint = `/api/service-1/integration-events/publish`;
-    } else if (serviceUrl.toLowerCase().includes('service-3') || serviceUrl.toLowerCase().includes('fastapi')) {
-      endpoint = `/api/service-3/integration-events/publish`;
-    } else {
-      throw new Error(`Unable to determine service endpoint for: ${serviceUrl}`);
+    // Extract service number from service ID string
+    const match = serviceId.match(/service-(\d+)/i);
+    const serviceNum = match ? match[1] : null;
+    
+    if (!serviceNum) {
+      throw new Error(`Unable to determine service number from: ${serviceId}`);
     }
+    
+    const endpoint = `/api/service-${serviceNum}/integration-events/publish`;
     
     const payload = {
       topic: topic,
@@ -309,8 +368,7 @@ async function triggerSpecificEvent(topic, name, serviceUrl, buttonElement) {
       console.log(`Event ${name} on topic ${topic} sent successfully:`, result);
       
       // Update service status to reflect the new event count
-      const serviceId = serviceUrl.toLowerCase().includes('service-1') ? 1 : 3;
-      const service = services.find(s => s.id === serviceId);
+      const service = services.find(s => s.id == serviceNum);
       if (service) {
         setTimeout(() => updateServiceStatus(service), 1000);
       }
@@ -338,33 +396,14 @@ async function triggerKafkaEvent(serviceNumber) {
     button.textContent = '⏳ Sending...';
     button.disabled = true;
     
-    // Use generic messaging endpoint
-    let endpoint, payload;
-    
-    switch(serviceNumber) {
-      case '1':
-        // Service 1: Use generic messaging endpoint
-        endpoint = `/api/service-1/integration-events/publish`;
-        payload = {
-          topic: "users",
-          message: {
-            name: "user.example",
-          }
-        }
-        break;
-      case '3':
-        // Service 3: Use generic messaging endpoint
-        endpoint = `/api/service-3/integration-events/publish`;
-        payload = {
-          topic: "trading-signals",
-          message: {
-            name: "trading-signal.received",
-          }
-        }
-        break;
-      default:
-        throw new Error(`Unknown service number: ${serviceNumber}`);
-    }
+    // Use generic messaging endpoint for any service
+    const endpoint = `/api/service-${serviceNumber}/integration-events/publish`;
+    const payload = {
+      topic: "users",
+      message: {
+        name: "user.example",
+      }
+    };
     
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -414,10 +453,21 @@ document.addEventListener('click', (e) => {
     e.preventDefault();
     const topic = e.target.getAttribute('data-topic');
     const name = e.target.getAttribute('data-event');
-    const serviceUrl = e.target.getAttribute('data-service-url');
-    triggerSpecificEvent(topic, name, serviceUrl, e.target);
+    const serviceId = e.target.getAttribute('data-service-id');
+    triggerSpecificEvent(topic, name, serviceId, e.target);
   }
 });
 
-// Initialize dashboard with independent polling for each service
-startServicePolling();
+// Initialize dashboard
+async function initializeDashboard() {
+  // First discover available services
+  await discoverServices();
+  
+  // Then start polling for discovered services
+  if (services.length > 0) {
+    startServicePolling();
+  }
+}
+
+// Initialize dashboard with service discovery
+initializeDashboard();

@@ -17,18 +17,6 @@ services:
         value: service-1
 
 
-
-  - type: pserv
-    name: service-3
-    region: frankfurt
-    env: docker
-    rootDir: backend
-    dockerfilePath: services/service-3/Dockerfile
-    plan: starter
-    autoDeploy: true
-    envVars:
-      - fromGroup: Groupito
-
   - type: web
     name: frontend
     region: frankfurt
@@ -40,5 +28,3 @@ services:
     envVars:
       - key: SERVICE_1_URL
         value: http://service-1-pdn6:10000/
-      - key: SERVICE_3_URL
-        value: http://service-3-qjlp:8000/ 

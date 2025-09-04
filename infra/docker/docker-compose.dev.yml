@@ -59,34 +59,6 @@ services:
         condition: service_healthy
 
 
-  service-3:
-    image: python:3.12-slim
-    working_dir: /app
-    volumes:
-      - ${PWD}/backend/services/service-3:/app
-    command: sh -c "pip install --upgrade pip && pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=development
-      - PORT=8000
-      - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
-      - KAFKA_USERNAME=${KAFKA_USERNAME:-}
-      - KAFKA_PASSWORD=${KAFKA_PASSWORD:-}
-      - REDIS_HOST=${REDIS_HOST:-redis}
-      - REDIS_PORT=${REDIS_PORT:-6379}
-      - REDIS_USERNAME=${REDIS_USERNAME:-}
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
-      - REDIS_DB=${REDIS_DB:-0}
-      - REDIS_TLS=${REDIS_TLS:-false}
-    ports:
-      - "3003:8000"
-    networks:
-      - backend
-    depends_on:
-      kafka:
-        condition: service_healthy
-
   frontend:
     image: nginx:alpine
     volumes:
@@ -98,10 +70,8 @@ services:
       - backend
     environment:
       - SERVICE_1_URL=http://service-1:3000/
-      - SERVICE_3_URL=http://service-3:8000/
     depends_on:
       - service-1
-      - service-3
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
