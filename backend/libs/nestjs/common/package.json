@@ -9,10 +9,8 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@types/lodash.isequal": "^4.5.8",
     "@types/uuid": "^10.0.0",
     "@types/uuid-validate": "^0.0.3",
-    "lodash.isequal": "^4.5.0",
     "prom-client": "^14.2.0",
     "uuid": "^11.1.0",
     "uuid-validate": "^0.0.3"

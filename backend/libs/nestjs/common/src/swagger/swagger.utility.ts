@@ -28,14 +28,16 @@ export class SwaggerUtility {
     }
     
     const swaggerConfig = builder.build();
-    const document = SwaggerModule.createDocument(app, swaggerConfig, {
+    // Narrow unknown to the type SwaggerModule expects
+    const nestApp = app as Parameters<typeof SwaggerModule.createDocument>[0];
+    const document = SwaggerModule.createDocument(nestApp, swaggerConfig, {
       include: [],
       deepScanRoutes: true,
     });
     
     // Setup Swagger UI
     const swaggerPath = config.path || 'docs';
-    SwaggerModule.setup(swaggerPath, app, document, {
+    SwaggerModule.setup(swaggerPath, nestApp, document, {
       customSiteTitle: config.customSiteTitle || config.title,
       swaggerOptions: basePath
         ? { url: `${basePath}/${swaggerPath}-json` }

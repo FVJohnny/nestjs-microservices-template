@@ -163,13 +163,21 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
    * Get message statistics for all topics
    */
   getMessageStats() {
-    const stats = [];
-    for (const [topicName, handler] of this.eventHandlers.entries()) {
+    const stats: Array<{
+      topic: string;
+      handlerName: string;
+      messagesProcessed: number;
+      messagesSucceeded: number;
+      messagesFailed: number;
+      averageProcessingTime: number;
+      lastProcessedAt: Date | null;
+    }> = [];
+    for (const [topicName, handlers] of this.eventHandlers.entries()) {
       const messageStats = this.messageStats.get(topicName);
       if (messageStats) {
         stats.push({
           topic: topicName,
-          handlerName: handler.constructor.name,
+          handlerName: handlers[0]?.handlerName ?? 'Unknown',
           messagesProcessed: messageStats.messagesProcessed,
           messagesSucceeded: messageStats.messagesSucceeded,
           messagesFailed: messageStats.messagesFailed,

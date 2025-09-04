@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Inject,Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
 import { ApiBody,ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { INTEGRATION_EVENT_PUBLISHER_TOKEN, IntegrationEventPublisher } from './event-publisher.interface';
+import { INTEGRATION_EVENT_PUBLISHER_TOKEN } from './event-publisher.interface';
+import type { IntegrationEventPublisher } from './event-publisher.interface';
 import { EventTrackerService } from './event-tracker.service';
-import { INTEGRATION_EVENT_LISTENER_TOKEN, IntegrationEventListener } from './integration-event-listener.base';
+import { INTEGRATION_EVENT_LISTENER_TOKEN } from './integration-event-listener.base';
+import type { IntegrationEventListener } from './integration-event-listener.base';
 
 /**
  * Generic messaging controller that works with any event source implementation

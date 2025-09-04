@@ -5,7 +5,14 @@ services:
     volumes:
       - ${PWD}/backend:/app
       - /app/services/service-1/node_modules
-    command: sh -c "npm install && npm run start:dev"
+    command: >
+      sh -c "\
+      npm --prefix /app/libs/nestjs/common ci --include=dev && npm --prefix /app/libs/nestjs/common run build && \
+      npm --prefix /app/libs/nestjs/kafka ci --include=dev && npm --prefix /app/libs/nestjs/kafka run build && \
+      npm --prefix /app/libs/nestjs/mongodb ci --include=dev && npm --prefix /app/libs/nestjs/mongodb run build && \
+      npm --prefix /app/libs/nestjs/redis ci --include=dev && npm --prefix /app/libs/nestjs/redis run build && \
+      npm --prefix /app/libs/nestjs/postgresql ci --include=dev && npm --prefix /app/libs/nestjs/postgresql run build && \
+      npm install && npm run build && npm run start:dev"
     env_file:
       - .env
     environment:
