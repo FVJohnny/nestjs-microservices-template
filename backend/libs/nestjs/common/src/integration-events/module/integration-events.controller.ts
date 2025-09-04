@@ -175,8 +175,6 @@ export class MessagingController {
     },
   })
   async getListenerStats() {
-    const backend = this.integrationEventListener.constructor.name.replace('IntegrationEventListener', '');
-    
     // Get new event tracking stats using singleton
     const trackingStats = EventTrackerService.getInstance().getStats();
     

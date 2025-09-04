@@ -30,16 +30,12 @@ export class MetricsInterceptor implements NestInterceptor {
         next: () => {
           const status = res?.statusCode || 200;
           endTimer({ status_code: String(status) });
-          const end = process.hrtime.bigint();
-          const durationSeconds = Number(end - start) / 1e9;
-          this.metrics.observeHttpRequest({ method, route, status_code: status }, durationSeconds);
+          this.metrics.observeHttpRequest({ method, route, status_code: status });
         },
         error: () => {
           const status = res?.statusCode || 500;
           endTimer({ status_code: String(status) });
-          const end = process.hrtime.bigint();
-          const durationSeconds = Number(end - start) / 1e9;
-          this.metrics.observeHttpRequest({ method, route, status_code: status }, durationSeconds);
+          this.metrics.observeHttpRequest({ method, route, status_code: status });
         },
       })
     );

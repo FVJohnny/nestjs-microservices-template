@@ -8,6 +8,8 @@ import { Topics } from './topics';
  */
 
 export interface TradingSignalReceivedIntegrationEventProps extends BaseIntegrationEventProps {
+  signalType?: string;
+  source?: string;
 }
 export class TradingSignalReceivedIntegrationEvent extends BaseIntegrationEvent {
   readonly version = '1.0';

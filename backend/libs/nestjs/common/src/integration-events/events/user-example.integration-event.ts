@@ -3,6 +3,8 @@ import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './base-int
 import { Topics } from './topics';
 
 export interface UserExampleIntegrationEventProps extends BaseIntegrationEventProps {
+  userId?: string;
+  action?: string;
 }
 
 export class UserExampleIntegrationEvent extends BaseIntegrationEvent {

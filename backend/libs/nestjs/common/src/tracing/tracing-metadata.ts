@@ -5,8 +5,8 @@ import { TracingService } from './tracing.service';
 export interface TracingMetadataParams {
   causationId: string;
 }
-export interface TracingMetadata extends TracingMetadataParams {}
-export class TracingMetadata {
+export class TracingMetadata implements TracingMetadataParams {
+  public readonly causationId: string;
   public readonly id: string;
   public readonly correlationId: string;
   public readonly userId: string;
