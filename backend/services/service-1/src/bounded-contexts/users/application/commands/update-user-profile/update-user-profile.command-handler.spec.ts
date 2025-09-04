@@ -17,13 +17,16 @@ import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
 describe('UpdateUserProfileCommandHandler (Unit)', () => {
   let commandHandler: UpdateUserProfileCommandHandler;
   let repository: UserInMemoryRepository;
-  let eventBus: EventBus;
+  let eventBus: MockEventBus;
   let existingUser: User;
 
   beforeEach(async () => {
     repository = new UserInMemoryRepository();
     eventBus = createEventBusMock({ shouldFail: false });
-    commandHandler = new UpdateUserProfileCommandHandler(repository, eventBus);
+    commandHandler = new UpdateUserProfileCommandHandler(
+      repository,
+      eventBus as unknown as EventBus,
+    );
 
     // Create an existing user for testing
     existingUser = User.random({
@@ -161,7 +164,7 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       const failingEventBus = createEventBusMock({ shouldFail: true });
       const handlerWithFailingEventBus = new UpdateUserProfileCommandHandler(
         repository,
-        failingEventBus,
+        failingEventBus as unknown as EventBus,
       );
 
       const command = new UpdateUserProfileCommand({

@@ -16,12 +16,15 @@ import { UserRegisteredDomainEvent } from '../../../domain/events/user-registere
 describe('RegisterUserCommandHandler (Unit)', () => {
   let commandHandler: RegisterUserCommandHandler;
   let repository: UserInMemoryRepository;
-  let eventBus: EventBus;
+  let eventBus: MockEventBus;
 
   beforeEach(() => {
     repository = new UserInMemoryRepository();
     eventBus = createEventBusMock({ shouldFail: false });
-    commandHandler = new RegisterUserCommandHandler(repository, eventBus);
+    commandHandler = new RegisterUserCommandHandler(
+      repository,
+      eventBus as unknown as EventBus,
+    );
   });
 
   describe('Happy Path', () => {
@@ -191,7 +194,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       const failingEventBus = createEventBusMock({ shouldFail: true });
       const handlerWithFailingEventBus = new RegisterUserCommandHandler(
         repository,
-        failingEventBus,
+        failingEventBus as unknown as EventBus,
       );
 
       const command = new RegisterUserCommand({

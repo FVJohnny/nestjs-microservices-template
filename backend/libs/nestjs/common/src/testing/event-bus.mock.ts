@@ -1,6 +1,5 @@
 import type { DomainEvent } from "../general";
 import type { IntegrationEventPublisher } from "../integration-events";
-import type { EventBus } from '@nestjs/cqrs';
 
 export interface MockEventBus {
   events: DomainEvent[];
@@ -25,7 +24,7 @@ export interface CreateEventBusMockOptions {
  * @param options.shouldFail If true, publish/publishAll methods will throw errors
  * @returns MockEventBus instance with captured events and configurable failure behavior
  */
-export function createEventBusMock(options: CreateEventBusMockOptions = {}): EventBus {
+export function createEventBusMock(options: CreateEventBusMockOptions = {}): MockEventBus {
   const { shouldFail = false } = options;
   
   const events: DomainEvent[] = [];
@@ -60,7 +59,7 @@ export function createEventBusMock(options: CreateEventBusMockOptions = {}): Eve
     subscribe: () => {},
   };
   
-  return mockEventBus as unknown as EventBus;
+  return mockEventBus;
 }
 
 export interface MockIntegrationEventPublisher extends IntegrationEventPublisher {
