@@ -1,5 +1,4 @@
-import type { TracingMetadataParams } from '../../../tracing';
-import { TracingMetadata } from '../../../tracing';
+import { TracingMetadata, type TracingMetadataParams } from '../../../tracing';
 
 export abstract class BaseCommand {
   public metadata?: TracingMetadata;

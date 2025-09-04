@@ -1,4 +1,4 @@
-import { Module, DynamicModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE, APP_INTERCEPTOR } from '@nestjs/core';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -7,7 +7,6 @@ import {
   HeartbeatModule,
   TracingModule,
   ErrorHandlingModule,
-  AuditModule,
   MessagingController,
 } from '@libs/nestjs-common';
 import { DatabaseModule } from './database.module';
@@ -29,7 +28,6 @@ import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
     HeartbeatModule,
     TracingModule,
     ErrorHandlingModule,
-    AuditModule,
     MetricsModule,
 
     // DDD Bounded Contexts

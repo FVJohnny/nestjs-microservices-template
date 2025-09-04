@@ -6,9 +6,6 @@ export * from './swagger/swagger-config.interface';
 // Error handling exports
 export * from './errors';
 
-// Audit exports
-export * from './audit';
-
 // Metrics exports
 export * from './metrics';
 

@@ -10,8 +10,8 @@ import {
 import { Request, Response } from 'express';
 
 import { TracingService } from '../tracing/tracing.service';
+import type { Metadata } from '../utils/metadata';
 import { BaseException } from './base.exception';
-
 /**
  * Standard error response format
  */
@@ -24,7 +24,7 @@ export interface ErrorResponse {
     timestamp: string;
     path: string;
     correlationId?: string;
-    metadata?: Record<string, any>;
+    metadata?: Metadata;
     stack?: string;
   };
 }
@@ -101,12 +101,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     timestamp: string,
   ): ErrorResponse {
     const status = exception.getStatus();
-    const response = exception.getResponse();
+    const response = exception.getResponse() as string | { message: string };
     
     // Extract message from NestJS exception response
     const message = typeof response === 'string' 
       ? response 
-      : (response as any)?.message || exception.message;
+      : response?.message || exception.message;
 
     return {
       success: false,
@@ -171,8 +171,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         ? [`[causeStack: ${exception.cause.stack}]`]
         : []),
     ];
-
-    console.log("Cause: ", exception instanceof BaseException && exception.cause);
 
     const logMessage = logParts.join('\n');
     

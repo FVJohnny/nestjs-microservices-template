@@ -1,5 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 
+import type { Metadata } from '../utils/metadata';
 import { BaseException } from './base.exception';
 
 /**
@@ -8,9 +9,9 @@ import { BaseException } from './base.exception';
 export class DomainValidationException extends BaseException {
   constructor(
     field: string,
-    value: any,
+    value: unknown,
     rule: string,
-    metadata?: Record<string, any>,
+    metadata?: Metadata,
   ) {
     super(
       `Domain validation failed for field '${field}': ${rule}`,
@@ -28,7 +29,7 @@ export class InvalidOperationException extends BaseException {
   constructor(
     operation: string,
     currentState: string,
-    metadata?: Record<string, any>,
+    metadata?: Metadata,
   ) {
     super(
       `Operation '${operation}' is not allowed in current state '${currentState}'`,
@@ -47,7 +48,7 @@ export class AggregateConstraintException extends BaseException {
     aggregateName: string,
     constraintName: string,
     details: string,
-    metadata?: Record<string, any>,
+    metadata?: Metadata,
   ) {
     super(
       `Aggregate constraint violation in ${aggregateName}: ${constraintName} - ${details}`,

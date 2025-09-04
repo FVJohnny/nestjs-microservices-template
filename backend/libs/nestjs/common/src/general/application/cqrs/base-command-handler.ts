@@ -2,13 +2,9 @@ import type { EventBus, ICommand } from '@nestjs/cqrs';
 
 import type { AggregateRoot } from '../../domain/entities/AggregateRoot';
 
-/**
- * Base class for all command handlers
- * 
- * Provides common functionality including authorization, validation and domain event publishing
- * Implements the template method pattern with: authorize → validate → handle
- */
-export abstract class BaseCommandHandler<TCommand extends ICommand, TResult = any> {
+
+export interface ICommandResult {}
+export abstract class BaseCommandHandler<TCommand extends ICommand, TResult extends ICommandResult | void> {
   
   constructor(protected readonly eventBus: EventBus) {}
 

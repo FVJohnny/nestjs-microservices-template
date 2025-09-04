@@ -1,5 +1,5 @@
 import { ICommand } from '@nestjs/cqrs';
-import { BaseCommand, TracingMetadataParams } from '@libs/nestjs-common';
+import { BaseCommand, ICommandResult, TracingMetadataParams } from '@libs/nestjs-common';
 
 export class RegisterUserCommand extends BaseCommand implements ICommand {
   public readonly email: string;
@@ -18,6 +18,6 @@ export class RegisterUserCommand extends BaseCommand implements ICommand {
   }
 }
 
-export class RegisterUserCommandResponse {
+export class RegisterUserCommandResponse implements ICommandResult {
   id: string;
 }

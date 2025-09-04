@@ -1,5 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 
+import type { Metadata } from '../utils/metadata';
 import { BaseException } from './base.exception';
 
 /**
@@ -17,7 +18,7 @@ export class MessageBrokerException extends BaseException {
     operation: string,
     topic: string,
     details: string,
-    metadata?: Record<string, any>,
+    metadata?: Metadata,
     cause?: Error,
   ) {
     super(
@@ -38,7 +39,7 @@ export class ExternalServiceException extends BaseException {
     serviceName: string,
     operation: string,
     details: string,
-    metadata?: Record<string, any>,
+    metadata?: Metadata,
     cause?: Error,
   ) {
     super(

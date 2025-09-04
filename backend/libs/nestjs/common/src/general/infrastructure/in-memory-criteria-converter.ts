@@ -1,6 +1,8 @@
 import type { Criteria } from '../domain/criteria/Criteria';
 import type { Filter } from '../domain/criteria/Filter';
 import { Operator } from '../domain/criteria/FilterOperator';
+import type { Order } from '../domain/criteria/Order';
+import type { AggregateRoot } from '../domain/entities/AggregateRoot';
 
 export interface InMemoryFilterResult<T> {
   filterFn: (items: T[]) => T[];
@@ -16,15 +18,15 @@ export class InMemoryCriteriaConverter {
   /**
    * Convert a Criteria object to in-memory filter functions
    */
-  static convert<T extends { toValue(): any }>(criteria: Criteria): InMemoryFilterResult<T> {
+  static convert(criteria: Criteria): InMemoryFilterResult<AggregateRoot> {
     return {
-      filterFn: (items: T[]) => this.applyFilters(items, criteria),
-      sortFn: criteria.order ? (a: T, b: T) => this.applySorting(a, b, criteria.order!) : undefined,
-      paginationFn: (items: T[]) => this.applyPagination(items, criteria.offset, criteria.limit),
+      filterFn: (items: AggregateRoot[]) => this.applyFilters(items, criteria),
+      sortFn: criteria.order ? (a: AggregateRoot, b: AggregateRoot) => this.applySorting(a, b, criteria.order!) : undefined,
+      paginationFn: (items: AggregateRoot[]) => this.applyPagination(items, criteria.offset, criteria.limit),
     };
   }
 
-  private static applyFilters<T extends { toValue(): any }>(items: T[], criteria: Criteria): T[] {
+  private static applyFilters(items: AggregateRoot[], criteria: Criteria): AggregateRoot[] {
     if (!criteria.hasFilters()) {
       return items;
     }
@@ -42,7 +44,7 @@ export class InMemoryCriteriaConverter {
     });
   }
 
-  private static matchesFilter(primitives: any, field: string, operator: string, filterValue: any): boolean {
+  private static matchesFilter(primitives: Record<string, unknown>, field: string, operator: string, filterValue: unknown): boolean {
     // Get value from nested path
     let userValue = this.getNestedValue(primitives, field);
     
@@ -57,21 +59,25 @@ export class InMemoryCriteriaConverter {
     return this.applyOperator(userValue, operator, filterValue, field);
   }
 
-  private static getNestedValue(obj: any, path: string): any {
+  private static getNestedValue(obj: object, path: string): unknown {
     const keys = path.split('.');
-    let current = obj;
+    let current: unknown = obj;
     
     for (const key of keys) {
       if (current === null || current === undefined) {
         return undefined;
       }
-      current = current[key];
+      if (typeof current === 'object') {
+        current = (current as Record<string, unknown>)[key];
+      } else {
+        return undefined;
+      }
     }
     
     return current;
   }
 
-  private static applyOperator(userValue: any, operator: string, filterValue: any, field: string): boolean {
+  private static applyOperator(userValue: unknown, operator: string, filterValue: unknown, field: string): boolean {
     const userValueStr = String(userValue).toLowerCase();
     const filterValueStr = String(filterValue).toLowerCase();
 
@@ -82,11 +88,11 @@ export class InMemoryCriteriaConverter {
         return userValueStr !== filterValueStr;
       case Operator.GT:
         return this.isDateField(field) 
-          ? new Date(userValue) > new Date(filterValue)
+          ? new Date(String(userValue)) > new Date(String(filterValue))
           : Number(userValue) > Number(filterValue);
       case Operator.LT:
         return this.isDateField(field)
-          ? new Date(userValue) < new Date(filterValue)
+          ? new Date(String(userValue)) < new Date(String(filterValue))
           : Number(userValue) < Number(filterValue);
       case Operator.CONTAINS:
         return userValueStr.includes(filterValueStr);
@@ -109,7 +115,7 @@ export class InMemoryCriteriaConverter {
     return dateFieldPatterns.some(pattern => pattern.test(field));
   }
 
-  private static applySorting<T extends { toValue(): any }>(a: T, b: T, order: any): number {
+  private static applySorting(a: AggregateRoot, b: AggregateRoot, order: Order): number {
     const aPrimitives = a.toValue();
     const bPrimitives = b.toValue();
     const orderBy = order.orderBy.toValue();

@@ -1,10 +1,11 @@
 import { HttpStatus } from '@nestjs/common';
 
+import type { Metadata } from '../utils/metadata';
 import { BaseException } from './base.exception';
 
 export class NotFoundException extends BaseException {
   constructor(
-    metadata?: Record<string, any>,
+    metadata?: Metadata,
   ) {
     super(
       `Entity not found`,
@@ -19,7 +20,7 @@ export class AlreadyExistsException extends BaseException {
   constructor(
     field: string,
     value: string,
-    metadata?: Record<string, any>,
+    metadata?: Metadata,
   ) {
     super(
       `Entity already exists with ${field}: ${value}`,
@@ -35,7 +36,7 @@ export class InfrastructureException extends BaseException {
     operation: string,
     details: string,
     cause: Error,
-    metadata?: Record<string, any>,
+    metadata?: Metadata,
   ) {
     super(
       `Infrastructure operation '${operation}' failed: ${details}`,

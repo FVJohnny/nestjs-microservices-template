@@ -1,5 +1,7 @@
 import type { HttpStatus } from '@nestjs/common';
 
+import type { Metadata } from '../utils/metadata';
+
 /**
  * Base exception class for all application errors
  * Provides structure and metadata for error handling
@@ -13,7 +15,7 @@ export abstract class BaseException extends Error {
     message: string,
     public readonly code: string,
     public readonly httpStatus: HttpStatus,
-    public readonly metadata?: Record<string, any>,
+    public readonly metadata?: Metadata,
     public readonly cause?: Error,
   ) {
     super(message);
@@ -29,7 +31,7 @@ export abstract class BaseException extends Error {
   /**
    * Convert exception to JSON for logging and API responses
    */
-  toJSON(): Record<string, any> {
+  toJSON(): Record<string, unknown> {
     return {
       name: this.name,
       message: this.message,
