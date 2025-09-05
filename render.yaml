@@ -3,8 +3,10 @@ services:
     name: service-1
     region: frankfurt
     env: docker
-    rootDir: backend
-    dockerfilePath: services/service-1/Dockerfile
+    # Use the repo root as the Docker build context so Dockerfile
+    # can COPY both libs/ and services/ directories
+    rootDir: .
+    dockerfilePath: backend/services/service-1/Dockerfile
     plan: starter
     autoDeploy: true
     envVars:
