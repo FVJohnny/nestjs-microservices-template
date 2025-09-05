@@ -34,7 +34,6 @@ function serviceCard(svc) {
       <section class="events">
         <div class="events-head">
           <div>Integration Event Handlers</div>
-          <div class="muted">topic • event • success/error</div>
         </div>
         <div class="events-list" id="svc-${svc.id}-events"></div>
       </section>
@@ -55,7 +54,11 @@ async function discoverServices(max = 10) {
       const svc = { id: i, name: `service-${i}`, baseUrl, env: env.environment ?? 'unknown' };
       services.push(svc);
       grid.appendChild(serviceCard(svc));
-    } catch {}
+      
+      // Update environment display after card is in DOM
+      const envEl = document.getElementById(`svc-${svc.id}-env`);
+      if (envEl) envEl.textContent = `env: ${svc.env}`;
+    } catch { }
   }
   if (!services.length) {
     grid.appendChild(el('<div class="empty">No services detected. Start a service to see it here.</div>'));
@@ -67,21 +70,15 @@ async function discoverServices(max = 10) {
 
 async function refreshService(svc) {
   const healthEl = document.getElementById(`svc-${svc.id}-health`);
-  const envEl = document.getElementById(`svc-${svc.id}-env`);
   const totalEl = document.getElementById(`svc-${svc.id}-total`);
   const succEl = document.getElementById(`svc-${svc.id}-succ`);
   const errEl = document.getElementById(`svc-${svc.id}-err`);
   const listEl = document.getElementById(`svc-${svc.id}-events`);
 
   try {
-    const [envRes, statsRes] = await Promise.all([
-      fetch(`${svc.baseUrl}/health/environment`, { headers: { Accept: 'application/json' } }),
-      fetch(`${svc.baseUrl}/integration-events/listener/stats`, { headers: { Accept: 'application/json' } })
-    ]);
-    const env = await envRes.json().catch(() => ({}));
+    const statsRes = await fetch(`${svc.baseUrl}/integration-events/listener/stats`, { headers: { Accept: 'application/json' } });
     const stats = await statsRes.json().catch(() => ({}));
 
-    envEl.textContent = `env: ${env.environment ?? 'unknown'}`;
     healthEl.textContent = 'online';
     healthEl.classList.remove('err');
     healthEl.classList.add('ok');
@@ -96,28 +93,31 @@ async function refreshService(svc) {
 
     listEl.innerHTML = events.length
       ? events
-          .map((e) => {
-            const s = e.successCount || 0;
-            const f = e.failureCount || 0;
-            const t = s + f || 1;
-            const pct = Math.round((s / t) * 100);
-            return `
+        .map((e) => {
+          const s = e.successCount || 0;
+          const f = e.failureCount || 0;
+          const t = s + f || 1;
+          const pct = Math.round((s / t) * 100);
+          return `
             <div class="evt">
               <div class="evt-main">
                 <div>
                   <span class="topic">${e.topic}</span>
                   <span class="name">${e.eventName}</span>
                 </div>
-                <div class="evt-stats">
-                  <span class="ok">${s}</span>
-                  <span class="sep">/</span>
-                  <span class="err">${f}</span>
+                <div class="evt-actions">
+                  <div class="evt-stats">
+                    <span class="ok">${s}</span>
+                    <span class="sep">/</span>
+                    <span class="err">${f}</span>
+                  </div>
+                  <button class="evt-trigger-btn" onclick="triggerEvent(event, '${svc.id}', '${e.topic}', '${e.eventName}')" title="Trigger ${e.eventName}">⚡</button>
                 </div>
               </div>
               <div class="bar"><span class="bar-fill" style="width:${pct}%"></span></div>
             </div>`;
-          })
-          .join('')
+        })
+        .join('')
       : '<div class="evt empty">No events processed yet</div>';
   } catch (e) {
     healthEl.textContent = 'offline';
@@ -131,6 +131,65 @@ async function refreshAll() {
   const ts = new Date().toLocaleTimeString();
   document.getElementById('last-updated').textContent = `Last updated ${ts}`;
   await Promise.all(services.map((s) => refreshService(s)));
+}
+
+async function triggerEvent(evt, serviceId, topic, eventName) {
+  const btn = evt.target;
+  const originalText = btn.textContent;
+
+  try {
+    btn.textContent = '⏳';
+    btn.disabled = true;
+
+    // Find the service to get its baseUrl
+    const service = services.find(s => s.id == serviceId);
+    if (!service) {
+      throw new Error(`Service ${serviceId} not found`);
+    }
+
+    // Create a test payload for the event
+    const payload = {
+      topic,
+      message: {
+        name: eventName,
+        id: `test-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        triggeredBy: 'frontend-dashboard',
+        testData: `Test event for ${eventName}`
+      }
+    };
+
+    // Try to publish via the service's messaging endpoint
+    const response = await fetch(`${service.baseUrl}/integration-events/publish`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+      btn.textContent = '✅';
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }, 2000);
+
+      // Refresh the service stats after a short delay
+      setTimeout(() => refreshService(service), 1000);
+    } else {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+  } catch (error) {
+    console.error('Failed to trigger event:', error);
+    btn.textContent = '❌';
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }, 2000);
+  }
 }
 
 async function init() {
