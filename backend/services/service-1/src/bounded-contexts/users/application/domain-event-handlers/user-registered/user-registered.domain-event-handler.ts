@@ -1,11 +1,9 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
 import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 import {
   UserCreatedIntegrationEvent,
-  type IntegrationEventPublisher,
+  OutboxService,
   TracingLogger,
-  INTEGRATION_EVENT_PUBLISHER_TOKEN,
 } from '@libs/nestjs-common';
 
 @EventsHandler(UserRegisteredDomainEvent)
@@ -16,10 +14,7 @@ export class UserRegisteredDomainEventHandler
     UserRegisteredDomainEventHandler.name,
   );
 
-  constructor(
-    @Inject(INTEGRATION_EVENT_PUBLISHER_TOKEN)
-    private readonly integrationEventPublisher: IntegrationEventPublisher,
-  ) {}
+  constructor(private readonly outboxService: OutboxService) {}
 
   async handle(event: UserRegisteredDomainEvent): Promise<void> {
     this.logger.log('Handling UserRegisteredEvent...');
@@ -34,15 +29,10 @@ export class UserRegisteredDomainEventHandler
       { causationId: event.metadata.id },
     );
 
-    try {
-      await this.integrationEventPublisher.publish(
-        integrationEvent.getTopic(),
-        integrationEvent.toJSONString(),
-      );
-    } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      this.logger.error('Failed to publish integration event', err);
-      throw err;
-    }
+    await this.outboxService.storeEvent(
+      integrationEvent.name,
+      integrationEvent.getTopic(),
+      integrationEvent.toJSONString(),
+    );
   }
 }

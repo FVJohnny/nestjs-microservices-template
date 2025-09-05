@@ -13,6 +13,7 @@ import {
 import { DatabaseModule } from './database.module';
 import { IntegrationEventsModule } from './integration-events.module';
 import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
+import { OutboxModule } from '@libs/nestjs-common';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
 
     // Event Modules
     IntegrationEventsModule,
+    OutboxModule.forRoot(),
 
     // Common Modules
     CqrsModule.forRoot(),

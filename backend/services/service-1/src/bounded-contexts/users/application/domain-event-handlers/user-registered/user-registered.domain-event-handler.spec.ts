@@ -3,23 +3,24 @@ import { UserRegisteredDomainEvent } from '../../../domain/events/user-registere
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { UserRole } from '../../../domain/value-objects/user-role.vo';
-import {
-  Topics,
-  createIntegrationEventPublisherMock,
-  MockIntegrationEventPublisher,
-} from '@libs/nestjs-common';
+import { Topics, OutboxService } from '@libs/nestjs-common';
 
 describe('UserRegisteredDomainEventHandler (Unit)', () => {
   let eventHandler: UserRegisteredDomainEventHandler;
-  let mockIntegrationEventPublisher: MockIntegrationEventPublisher;
+  let mockOutboxService: jest.Mocked<OutboxService>;
+  let storeEventSpy: jest.MockedFunction<OutboxService['storeEvent']>;
 
   beforeEach(() => {
-    mockIntegrationEventPublisher = createIntegrationEventPublisherMock({
-      shouldFail: false,
-    });
-    eventHandler = new UserRegisteredDomainEventHandler(
-      mockIntegrationEventPublisher,
-    );
+    const storeEventMock = jest.fn();
+
+    mockOutboxService = {
+      storeEvent: storeEventMock,
+      processOutboxEvents: jest.fn(),
+      cleanupProcessedEvents: jest.fn(),
+    } as unknown as jest.Mocked<OutboxService>;
+
+    storeEventSpy = storeEventMock;
+    eventHandler = new UserRegisteredDomainEventHandler(mockOutboxService);
   });
 
   describe('Happy Path', () => {
@@ -36,12 +37,19 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       await eventHandler.handle(event);
 
       // Assert
-      expect(mockIntegrationEventPublisher.publishedEvents).toHaveLength(1);
+      expect(storeEventSpy).toHaveBeenCalledTimes(1);
+      expect(storeEventSpy).toHaveBeenCalledWith(
+        Topics.USERS.events.USER_CREATED,
+        Topics.USERS.topic,
+        expect.stringContaining('"userId":"test-user-id"'),
+      );
 
-      const publishedEvent = mockIntegrationEventPublisher.publishedEvents[0];
-      expect(publishedEvent.topic).toBe('users');
+      const storedCall = storeEventSpy.mock.calls[0];
+      const [eventType, topic, payload] = storedCall;
+      expect(eventType).toBe(Topics.USERS.events.USER_CREATED);
+      expect(topic).toBe('users');
 
-      const publishedData = JSON.parse(publishedEvent.message);
+      const publishedData = JSON.parse(payload);
       expect(publishedData.data.userId).toBe('test-user-id');
       expect(publishedData.data.email).toBe('test@example.com');
       expect(publishedData.data.username).toBe('testuser');
@@ -61,8 +69,9 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       await eventHandler.handle(event);
 
       // Assert
-      const publishedEvent = mockIntegrationEventPublisher.publishedEvents[0];
-      const publishedData = JSON.parse(publishedEvent.message);
+      const storedCall = storeEventSpy.mock.calls[0];
+      const [, , payload] = storedCall;
+      const publishedData = JSON.parse(payload);
 
       expect(publishedData.data.email).toBe('test.user+tag@example-domain.com');
       expect(publishedData.data.username).toBe('user_name-123');
@@ -81,9 +90,12 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       await eventHandler.handle(event);
 
       // Assert
-      const publishedEvent = JSON.parse(
-        mockIntegrationEventPublisher.publishedEvents[0].message,
-      );
+      const storedCall = storeEventSpy.mock.calls[0];
+      const [eventType, topic, payload] = storedCall;
+      const publishedEvent = JSON.parse(payload);
+
+      expect(eventType).toBe(Topics.USERS.events.USER_CREATED);
+      expect(topic).toBe(Topics.USERS.topic);
       expect(publishedEvent.topic).toBe(Topics.USERS.topic);
       expect(publishedEvent.name).toEqual(Topics.USERS.events.USER_CREATED);
       expect(publishedEvent.version).toBeDefined();
@@ -125,18 +137,23 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       }
 
       // Assert
-      expect(mockIntegrationEventPublisher.publishedEvents).toHaveLength(2);
+      expect(storeEventSpy).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('Error Cases', () => {
-    it('should handle integration event publisher failures and rethrow error', async () => {
+    it('should handle outbox service failures and rethrow error', async () => {
       // Arrange
-      const failingPublisher = createIntegrationEventPublisherMock({
-        shouldFail: true,
-      });
+      const failingOutboxService = {
+        storeEvent: jest
+          .fn()
+          .mockRejectedValue(new Error('Outbox service failed')),
+        processOutboxEvents: jest.fn(),
+        cleanupProcessedEvents: jest.fn(),
+      } as unknown as jest.Mocked<OutboxService>;
+
       const failingEventHandler = new UserRegisteredDomainEventHandler(
-        failingPublisher,
+        failingOutboxService,
       );
 
       const event = new UserRegisteredDomainEvent({
@@ -148,17 +165,22 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
       // Act & Assert
       await expect(failingEventHandler.handle(event)).rejects.toThrow(
-        'IntegrationEventPublisher publish failed',
+        'Outbox service failed',
       );
     });
 
-    it('should log error and rethrow when publisher throws', async () => {
+    it('should propagate database errors from outbox service', async () => {
       // Arrange
-      const failingPublisher = createIntegrationEventPublisherMock({
-        shouldFail: true,
-      });
+      const failingOutboxService = {
+        storeEvent: jest
+          .fn()
+          .mockRejectedValue(new Error('Database connection failed')),
+        processOutboxEvents: jest.fn(),
+        cleanupProcessedEvents: jest.fn(),
+      } as unknown as jest.Mocked<OutboxService>;
+
       const failingEventHandler = new UserRegisteredDomainEventHandler(
-        failingPublisher,
+        failingOutboxService,
       );
 
       const event = new UserRegisteredDomainEvent({
@@ -170,29 +192,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
       // Act & Assert
       await expect(failingEventHandler.handle(event)).rejects.toThrow(
-        'IntegrationEventPublisher publish failed',
-      );
-    });
-
-    it('should handle timeout errors from integration event publisher', async () => {
-      // Arrange
-      const failingPublisher = createIntegrationEventPublisherMock({
-        shouldFail: true,
-      });
-      const failingEventHandler = new UserRegisteredDomainEventHandler(
-        failingPublisher,
-      );
-
-      const event = new UserRegisteredDomainEvent({
-        userId: 'timeout-user',
-        email: new Email('timeout@example.com'),
-        username: new Username('timeout'),
-        role: UserRole.user(),
-      });
-
-      // Act & Assert
-      await expect(failingEventHandler.handle(event)).rejects.toThrow(
-        'IntegrationEventPublisher publish failed',
+        'Database connection failed',
       );
     });
   });
