@@ -40,10 +40,15 @@ RUN npm run -w backend/services/service-1 build
 FROM node:22-alpine AS deps
 WORKDIR /app
 
-# Copy service package files and install prod dependencies
-COPY backend/services/service-1/package*.json ./services/service-1/
-WORKDIR /app/services/service-1
-RUN npm ci --omit=dev
+# Install production dependencies for all workspaces
+COPY ./package*.json ./
+COPY backend/services/service-1/package*.json ./backend/services/service-1/
+COPY backend/libs/common/package*.json ./backend/libs/common/
+COPY backend/libs/kafka/package*.json ./backend/libs/kafka/
+COPY backend/libs/mongodb/package*.json ./backend/libs/mongodb/
+COPY backend/libs/redis/package*.json ./backend/libs/redis/
+COPY backend/libs/postgresql/package*.json ./backend/libs/postgresql/
+RUN npm ci --omit=dev --workspaces
 
 # --- Runtime stage: minimal image with prod deps and built code ---
 FROM node:22-alpine AS runner
@@ -54,7 +59,7 @@ ENV NODE_ENV=production
 COPY --from=builder /app/backend/libs ./libs
 
 # Copy service files and node_modules to the service directory
-COPY --from=deps /app/services/service-1/node_modules ./services/service-1/node_modules
+COPY --from=deps /app/node_modules ./node_modules
 # Make service node_modules visible to libs at /app/libs/** by symlinking at /app/node_modules
 RUN ln -s /app/services/service-1/node_modules /app/node_modules
 COPY --from=builder /app/backend/services/service-1/dist ./services/service-1/dist
