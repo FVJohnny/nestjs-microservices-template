@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import type { ParsedIntegrationMessage } from '../types/integration-event.types';
-import { EventTrackerService } from '../../event-tracker/event-tracker.service';
 import { IIntegrationEventHandler } from './integration-event-handler.base';
 
 interface HandlerInfo {
@@ -23,10 +22,6 @@ export interface IntegrationEventListener {
 export abstract class BaseIntegrationEventListener implements IntegrationEventListener {
   protected readonly logger = new Logger(this.constructor.name);
   protected readonly eventHandlers = new Map<string, HandlerInfo[]>(); // topic -> array of handlers
-
-  constructor(
-    private readonly eventTracker: EventTrackerService,
-  ) {}
 
   async registerEventHandler(topicName: string, handler: IIntegrationEventHandler): Promise<void> {
     // Extract event type from handler's event class
@@ -78,11 +73,6 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
     if (topicHandlers.length === 1) {
       await this.subscribeToTopic(topicName);
     }
-
-    // Pre-register the event in the tracker with 0 count
-    if (this.eventTracker) {
-      this.eventTracker.initializeStats(topicName, eventName);
-    }
     
     this.logger.log(`Registered event handler '${handler.constructor.name}' for topic '${topicName}' and event name '${eventName}'.   (${topicHandlers.length} handlers total)`);
   }
@@ -91,7 +81,7 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
    * Handle incoming messages from the event source
    * Parses the message and delegates to the appropriate event handler
    */
-  protected async handleMessage(topicName: string, message: ParsedIntegrationMessage) {
+  public async handleMessage(topicName: string, message: ParsedIntegrationMessage) {
     try {
 
       // Find the appropriate event handler based on event type
@@ -111,11 +101,7 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
       }
 
       await handlerInfo.handler.handle(message);
-
-      this.eventTracker.trackEvent(topicName, message, true);
     } catch (error) {
-      this.eventTracker.trackEvent(topicName, message, false);
-
       const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : '';
       this.logger.error(`Error handling message for topic '${topicName}': ${errorMessage} ${errorStack}`);

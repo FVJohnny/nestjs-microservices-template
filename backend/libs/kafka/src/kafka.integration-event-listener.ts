@@ -1,4 +1,4 @@
-import { BaseIntegrationEventListener, EventTrackerService, type ParsedIntegrationMessage } from '@libs/nestjs-common';
+import { BaseIntegrationEventListener, type ParsedIntegrationMessage } from '@libs/nestjs-common';
 import { Injectable } from '@nestjs/common';
 import { type KafkaMessage } from 'kafkajs';
 
@@ -8,9 +8,8 @@ import { KafkaService } from './kafka-service';
 export class KafkaIntegrationEventListener extends BaseIntegrationEventListener {
   constructor(
     private readonly kafkaService: KafkaService,
-    eventTracker: EventTrackerService,
   ) {
-    super(eventTracker);
+    super();
   }
 
   protected async subscribeToTopic(topicName: string): Promise<void> {
