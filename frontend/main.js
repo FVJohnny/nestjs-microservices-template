@@ -17,23 +17,9 @@ function serviceCard(svc) {
         </div>
         <div class="chip" id="svc-${svc.id}-health">checking…</div>
       </header>
-      <section class="stats">
-        <div class="kpi">
-          <div class="kpi-label">Total Events</div>
-          <div class="kpi-value" id="svc-${svc.id}-total">0</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Success</div>
-          <div class="kpi-value ok" id="svc-${svc.id}-succ">0</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Errors</div>
-          <div class="kpi-value err" id="svc-${svc.id}-err">0</div>
-        </div>
-      </section>
       <section class="events">
         <div class="events-head">
-          <div>Integration Event Handlers</div>
+          <div>Service Events</div>
         </div>
         <div class="events-list" id="svc-${svc.id}-events"></div>
       </section>
@@ -70,13 +56,10 @@ async function discoverServices(max = 10) {
 
 async function refreshService(svc) {
   const healthEl = document.getElementById(`svc-${svc.id}-health`);
-  const totalEl = document.getElementById(`svc-${svc.id}-total`);
-  const succEl = document.getElementById(`svc-${svc.id}-succ`);
-  const errEl = document.getElementById(`svc-${svc.id}-err`);
   const listEl = document.getElementById(`svc-${svc.id}-events`);
 
   try {
-    const statsRes = await fetch(`${svc.baseUrl}/integration-events/listener/stats`, { headers: { Accept: 'application/json' } });
+    const statsRes = await fetch(`${svc.baseUrl}/event-tracker/stats`, { headers: { Accept: 'application/json' } });
     const stats = await statsRes.json().catch(() => ({}));
 
     healthEl.textContent = 'online';
@@ -84,12 +67,6 @@ async function refreshService(svc) {
     healthEl.classList.add('ok');
 
     const events = Array.isArray(stats.eventsByType) ? stats.eventsByType : [];
-    const total = events.reduce((a, e) => a + (e.successCount || 0) + (e.failureCount || 0), 0);
-    const succ = events.reduce((a, e) => a + (e.successCount || 0), 0);
-    const err = events.reduce((a, e) => a + (e.failureCount || 0), 0);
-    totalEl.textContent = total;
-    succEl.textContent = succ;
-    errEl.textContent = err;
 
     listEl.innerHTML = events.length
       ? events

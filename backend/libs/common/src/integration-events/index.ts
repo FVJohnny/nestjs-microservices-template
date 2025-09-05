@@ -18,5 +18,5 @@ export * from './module/integration-events.controller';
 export * from './events';
 
 // Event Tracking
-export * from './module/event-tracker.service';
+export * from '../event-tracker/event-tracker.service';
 export * from './module/integration-events.module';

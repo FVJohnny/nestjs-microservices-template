@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import type { ParsedIntegrationMessage } from '../types/integration-event.types';
-import { EventTrackerService } from './event-tracker.service';
+import { EventTrackerService } from '../../event-tracker/event-tracker.service';
 import { IIntegrationEventHandler } from './integration-event-handler.base';
 
 interface HandlerInfo {
@@ -81,7 +81,7 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
 
     // Pre-register the event in the tracker with 0 count
     if (this.eventTracker) {
-      this.eventTracker.initializeStats(eventName, topicName);
+      this.eventTracker.initializeStats(topicName, eventName);
     }
     
     this.logger.log(`Registered event handler '${handler.constructor.name}' for topic '${topicName}' and event name '${eventName}'.   (${topicHandlers.length} handlers total)`);

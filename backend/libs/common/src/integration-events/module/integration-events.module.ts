@@ -1,16 +1,10 @@
 import { Global,Module } from '@nestjs/common';
 
-import { EventTrackerService } from './event-tracker.service';
 import { IntegrationEventsController } from './integration-events.controller';
 
 @Global()
 @Module({
-  providers: [
-    EventTrackerService,
-  ],
+  providers: [],
   controllers: [IntegrationEventsController],
-  exports: [
-    EventTrackerService,
-  ],
 })
 export class SharedIntegrationEventsModule {}

@@ -1,9 +1,8 @@
-import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Inject, Post } from '@nestjs/common';
 import { ApiBody,ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { INTEGRATION_EVENT_PUBLISHER_TOKEN } from './event-publisher.interface';
 import type { IntegrationEventPublisher } from './event-publisher.interface';
-import { EventTrackerService } from './event-tracker.service';
 import { INTEGRATION_EVENT_LISTENER_TOKEN } from './integration-event-listener.base';
 import type { IntegrationEventListener } from './integration-event-listener.base';
 
@@ -19,7 +18,6 @@ export class IntegrationEventsController {
     private readonly integrationEventPublisher: IntegrationEventPublisher,
     @Inject(INTEGRATION_EVENT_LISTENER_TOKEN)
     private readonly integrationEventListener: IntegrationEventListener,
-    private readonly eventTracker: EventTrackerService,
   ) {}
 
   @Post('publish')
@@ -103,50 +101,4 @@ export class IntegrationEventsController {
       };
     }
   }
-
-
-  @Get('listener/stats')
-  @ApiOperation({ 
-    summary: 'Get event listener statistics',
-    description: 'Returns statistics about subscribed topics and handlers' 
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Event listener statistics',
-    schema: {
-      type: 'object',
-      properties: {
-        service: { type: 'string', example: 'Copy Signals AI' },
-        totalEventsProcessed: { type: 'number', example: 123 },
-        eventsByType: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              eventName: { type: 'string', example: 'channel.create' },
-              topic: { type: 'string', example: 'trading-signals' },
-              successCount: { type: 'number', example: 123 },
-              failureCount: { type: 'number', example: 0 },
-              lastProcessed: { type: 'string', format: 'date-time', example: '2023-04-01T12:34:56.789Z' },
-            },
-          },
-        },
-        timestamp: { type: 'string', format: 'date-time', example: '2023-04-01T12:34:56.789Z' },
-      },
-    },
-  })
-  async getListenerStats() {
-    // Get new event tracking stats using singleton
-    const trackingStats = this.eventTracker.getStats();
-    
-    // Return only the new event tracking format - no legacy merging
-    return {
-      // New event tracking format
-      service: trackingStats.service,
-      totalEventsProcessed: trackingStats.totalEventsProcessed,
-      eventsByType: trackingStats.eventsByType,
-      timestamp: trackingStats.timestamp,
-    };
-  }
-
 }

@@ -10,6 +10,7 @@ import {
   INTEGRATION_EVENT_LISTENER_TOKEN,
   EventTrackerService,
 } from '@libs/nestjs-common';
+import { EventTrackerModule } from '@libs/nestjs-common';
 // import {
 //   SharedRedisModule,
 //   RedisService,
@@ -18,7 +19,7 @@ import {
 // } from '@libs/nestjs-redis';
 @Global()
 @Module({
-  imports: [SharedKafkaModule],
+  imports: [SharedKafkaModule, EventTrackerModule],
   providers: [
     {
       provide: INTEGRATION_EVENT_PUBLISHER_TOKEN,

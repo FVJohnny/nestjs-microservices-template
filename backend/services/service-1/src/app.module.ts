@@ -8,6 +8,7 @@ import {
   TracingModule,
   ErrorHandlingModule,
   SharedIntegrationEventsModule,
+  EventTrackerModule,
 } from '@libs/nestjs-common';
 import { DatabaseModule } from './database.module';
 import { IntegrationEventsModule } from './integration-events.module';
@@ -15,6 +16,8 @@ import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
 
 @Module({
   imports: [
+    EventTrackerModule,
+
     // Database Modules
     DatabaseModule,
 
