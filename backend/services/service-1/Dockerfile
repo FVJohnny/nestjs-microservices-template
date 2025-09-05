@@ -56,12 +56,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Copy built shared libraries from builder stage (includes dist/ directories)
-COPY --from=builder /app/backend/libs ./libs
+COPY --from=builder /app/backend/libs ./backend/libs
 
 # Copy service files and node_modules to the service directory
 COPY --from=deps /app/node_modules ./node_modules
-# Make service node_modules visible to libs at /app/libs/** by symlinking at /app/node_modules
-RUN ln -s /app/services/service-1/node_modules /app/node_modules
 COPY --from=builder /app/backend/services/service-1/dist ./services/service-1/dist
 COPY --from=builder /app/backend/services/service-1/package*.json ./services/service-1/
 
