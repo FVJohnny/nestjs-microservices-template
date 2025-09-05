@@ -22,12 +22,24 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@libs/nestjs-common": ["../../libs/nestjs/common/dist"],
-      "@libs/nestjs-events": ["../../libs/nestjs/events/dist"],
-      "@libs/nestjs-kafka": ["../../libs/nestjs/kafka/dist"],
-      "@libs/nestjs-mongodb": ["../../libs/nestjs/mongodb/dist"],
-      "@libs/nestjs-postgresql": ["../../libs/nestjs/postgresql/dist"],
-      "@libs/nestjs-redis": ["../../libs/nestjs/redis/dist"]
+      "@libs/nestjs-common": [
+        "../../libs/common/dist"
+      ],
+      "@libs/nestjs-events": [
+        "../../libs/events/dist"
+      ],
+      "@libs/nestjs-kafka": [
+        "../../libs/kafka/dist"
+      ],
+      "@libs/nestjs-mongodb": [
+        "../../libs/mongodb/dist"
+      ],
+      "@libs/nestjs-postgresql": [
+        "../../libs/postgresql/dist"
+      ],
+      "@libs/nestjs-redis": [
+        "../../libs/redis/dist"
+      ]
     }
   }
 }

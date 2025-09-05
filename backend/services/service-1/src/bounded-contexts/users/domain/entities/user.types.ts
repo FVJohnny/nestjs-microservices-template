@@ -4,7 +4,7 @@ import { Name } from '../value-objects/name.vo';
 import { UserRole } from '../value-objects/user-role.vo';
 import { UserStatus } from '../value-objects/user-status.vo';
 import { UserProfile, UserProfileDTO } from '../value-objects/user-profile.vo';
-import { AggregateRootDTO } from '@libs/nestjs-common';
+import { SharedAggregateRootDTO } from '@libs/nestjs-common';
 
 export interface CreateUserProps {
   email: Email;
@@ -25,7 +25,7 @@ export interface UserAttributes {
   updatedAt: Date;
 }
 
-export class UserDTO extends AggregateRootDTO {
+export class UserDTO extends SharedAggregateRootDTO {
   id: string;
   email: string;
   username: string;

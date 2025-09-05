@@ -13,11 +13,11 @@ module.exports = {
   coverageDirectory: '../coverage',
   moduleFileExtensions: ['js', 'json', 'ts'],
   moduleNameMapper: {
-    '^@libs/nestjs-common(.*)$': '<rootDir>/../../../libs/nestjs/common/src$1',
-    '^@libs/nestjs-kafka(.*)$': '<rootDir>/../../../libs/nestjs/kafka/src$1',
-    '^@libs/nestjs-mongodb(.*)$': '<rootDir>/../../../libs/nestjs/mongodb/src$1',
-    '^@libs/nestjs-redis(.*)$': '<rootDir>/../../../libs/nestjs/redis/src$1',
-    '^@libs/nestjs-postgresql(.*)$': '<rootDir>/../../../libs/nestjs/postgresql/src$1',
+    '^@libs/nestjs-common(.*)$': '<rootDir>/../../../libs/common/src$1',
+    '^@libs/nestjs-kafka(.*)$': '<rootDir>/../../../libs/kafka/src$1',
+    '^@libs/nestjs-mongodb(.*)$': '<rootDir>/../../../libs/mongodb/src$1',
+    '^@libs/nestjs-redis(.*)$': '<rootDir>/../../../libs/redis/src$1',
+    '^@libs/nestjs-postgresql(.*)$': '<rootDir>/../../../libs/postgresql/src$1',
     '^express$': '<rootDir>/../node_modules/express/index.js'
   }
 };

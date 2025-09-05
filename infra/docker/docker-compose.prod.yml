@@ -1,8 +1,8 @@
 services:
   service-1:
     build:
-      context: ${PWD}/backend
-      dockerfile: services/service-1/Dockerfile
+      context: ${PWD}
+      dockerfile: backend/services/service-1/Dockerfile
     image: copy-signals-service-1:latest
     env_file:
       - .env

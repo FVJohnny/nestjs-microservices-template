@@ -2,7 +2,7 @@ import type { Criteria } from '../domain/criteria/Criteria';
 import type { Filter } from '../domain/criteria/Filter';
 import { Operator } from '../domain/criteria/FilterOperator';
 import type { Order } from '../domain/criteria/Order';
-import type { AggregateRoot, AggregateRootDTO } from '../domain/entities/AggregateRoot';
+import type { SharedAggregateRoot, SharedAggregateRootDTO } from '../domain/entities/AggregateRoot';
 
 export interface InMemoryFilterResult<T> {
   filterFn: (items: T[]) => T[];
@@ -18,7 +18,7 @@ export class InMemoryCriteriaConverter {
   /**
    * Convert a Criteria object to in-memory filter functions
    */
-  static convert<T extends AggregateRoot>(criteria: Criteria): InMemoryFilterResult<T> {
+  static convert<T extends SharedAggregateRoot>(criteria: Criteria): InMemoryFilterResult<T> {
     return {
       filterFn: (items: T[]) => this.applyFilters(items, criteria),
       sortFn: criteria.order ? (a: T, b: T) => this.applySorting(a, b, criteria.order!) : undefined,
@@ -26,7 +26,7 @@ export class InMemoryCriteriaConverter {
     };
   }
 
-  private static applyFilters<T extends AggregateRoot>(items: T[], criteria: Criteria): T[] {
+  private static applyFilters<T extends SharedAggregateRoot>(items: T[], criteria: Criteria): T[] {
     if (!criteria.hasFilters()) {
       return items;
     }
@@ -44,7 +44,7 @@ export class InMemoryCriteriaConverter {
     });
   }
 
-  private static matchesFilter(primitives: AggregateRootDTO, field: string, operator: string, filterValue: unknown): boolean {
+  private static matchesFilter(primitives: SharedAggregateRootDTO, field: string, operator: string, filterValue: unknown): boolean {
     // Get value from nested path
     let userValue = this.getNestedValue(primitives, field);
     
@@ -115,7 +115,7 @@ export class InMemoryCriteriaConverter {
     return dateFieldPatterns.some(pattern => pattern.test(field));
   }
 
-  private static applySorting(a: AggregateRoot, b: AggregateRoot, order: Order): number {
+  private static applySorting(a: SharedAggregateRoot, b: SharedAggregateRoot, order: Order): number {
     const aPrimitives = a.toValue();
     const bPrimitives = b.toValue();
     const orderBy = order.orderBy.toValue();

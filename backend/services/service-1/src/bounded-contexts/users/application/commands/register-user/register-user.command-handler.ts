@@ -47,7 +47,7 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<
 
     await this.userRepository.save(user);
 
-    await this.sendDomainEvents(user);
+    await this.sendDomainEvents<User>(user);
 
     return { id: user.id };
   }

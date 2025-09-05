@@ -1,0 +1,44 @@
+{
+  "name": "nestjs-redis",
+  "sourceRoot": "backend/libs/redis/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
+      "options": {
+        "outputPath": "backend/libs/redis/dist",
+        "main": "backend/libs/redis/src/index.ts",
+        "tsConfig": "backend/libs/redis/tsconfig.json",
+        "assets": []
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "backend/libs/redis/src/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
+      "options": {
+        "jestConfig": "backend/libs/redis/jest.config.js"
+      }
+    }
+  },
+  "tags": [
+    "type:lib",
+    "scope:nestjs",
+    "topic:redis"
+  ]
+}

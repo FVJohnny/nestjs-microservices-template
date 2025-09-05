@@ -1,0 +1,45 @@
+{
+  "name": "nestjs-kafka",
+  "sourceRoot": "backend/libs/kafka/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
+      "options": {
+        "outputPath": "backend/libs/kafka/dist",
+        "main": "backend/libs/kafka/src/index.ts",
+        "tsConfig": "backend/libs/kafka/tsconfig.json",
+        "assets": []
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "backend/libs/kafka/src/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
+      "options": {
+        "jestConfig": "backend/libs/kafka/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [
+    "type:lib",
+    "scope:nestjs",
+    "topic:kafka"
+  ]
+}

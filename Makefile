@@ -46,11 +46,14 @@ update-libs:
 	@npm install --workspaces
 	@echo ""
 	@echo "🔧 Building shared libraries..."
-	@npm run -w backend/libs/nestjs/common build
-	@npm run -w backend/libs/nestjs/kafka build
-	@npm run -w backend/libs/nestjs/mongodb build
-	@npm run -w backend/libs/nestjs/redis build
-	@npm run -w backend/libs/nestjs/postgresql build
+	@npm run -w backend/libs/common build
+	@npm run -w backend/libs/kafka build
+	@npm run -w backend/libs/mongodb build
+	@npm run -w backend/libs/redis build
+	@npm run -w backend/libs/postgresql build
+	@echo ""
+	@echo "📦 Installing dependencies at service-1..."
+	@npm install --workspaces
 	@echo ""
 	@echo "🔄 Restarting service-1 container..."
 	@docker compose -f $(COMPOSE_DEV) restart service-1

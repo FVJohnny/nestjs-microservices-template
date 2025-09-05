@@ -1,26 +1,26 @@
 import { isDeepStrictEqual } from 'node:util';
 
-import { AggregateRoot as CQRSAggregateRoot,type IEvent} from '@nestjs/cqrs';
+import { AggregateRoot, type IEvent} from '@nestjs/cqrs';
 
 /**
  * Base class for aggregate roots in Domain-Driven Design
  */
-export abstract class AggregateRoot extends CQRSAggregateRoot<IEvent> {
+export abstract class SharedAggregateRoot extends AggregateRoot<IEvent> {
 
   /**
    * Convert the aggregate to its primitive representation
    * This is used for persistence and serialization
    */
-  abstract toValue(): AggregateRootDTO;
+  abstract toValue(): SharedAggregateRootDTO;
 
   /**
    * Compares two aggregate roots for equality based on their primitive values
    * Uses Node's built-in deep equality check
    */
-  equals(other?: AggregateRoot | null): boolean {
+  equals(other?: SharedAggregateRoot | null): boolean {
     return isDeepStrictEqual(this.toValue(), other?.toValue());
   }
 }
 
-export class AggregateRootDTO {  
+export class SharedAggregateRootDTO {  
 }
