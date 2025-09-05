@@ -1,30 +1,29 @@
-import { Filters } from './Filters';
-import { Order } from './Order';
-
+import { Filters } from './filters/Filters';
+import { Order } from './order/Order';
+import { PaginationOffset } from './pagination/PaginationOffset';
+import { PaginationCursor } from './pagination/PaginationCursor';
 
 interface CriteriaProps {
   filters?: Filters;
   order?: Order;
-  limit?: number;
-  offset?: number;
-  withTotal?: boolean;
+  pagination?: PaginationOffset | PaginationCursor;
 }
-export class Criteria {
+export class Criteria implements CriteriaProps {
   readonly filters: Filters;
   readonly order: Order;
-  readonly limit?: number;
-  readonly offset?: number;
-  readonly withTotal?: boolean;
+  readonly pagination: PaginationOffset | PaginationCursor;
 
   constructor(props: CriteriaProps = {}) {
     this.filters = props.filters || Filters.none();
     this.order = props.order || Order.none();
-    this.limit = props.limit;
-    this.offset = props.offset;
-    this.withTotal = props.withTotal;
+    this.pagination = props.pagination || new PaginationOffset();
   }
 
   public hasFilters(): boolean {
     return this.filters.filters.length > 0;
+  }
+
+  public hasWithTotal(): boolean {
+    return this.pagination instanceof PaginationOffset && this.pagination.withTotal;
   }
 }

@@ -1,13 +1,15 @@
 import type { Criteria } from '../domain/criteria/Criteria';
-import type { Filter } from '../domain/criteria/Filter';
-import { Operator } from '../domain/criteria/FilterOperator';
-import type { Order } from '../domain/criteria/Order';
+import type { Filter } from '../domain/criteria/filters/Filter';
+import { Operator } from '../domain/criteria/filters/FilterOperator';
+import type { Order } from '../domain/criteria/order/Order';
+import { PaginationCursor } from '../domain/criteria/pagination/PaginationCursor';
+import { PaginationOffset } from '../domain/criteria/pagination/PaginationOffset';
 import type { SharedAggregateRoot, SharedAggregateRootDTO } from '../domain/entities/AggregateRoot';
 
 export interface InMemoryFilterResult<T> {
   filterFn: (items: T[]) => T[];
   sortFn?: (a: T, b: T) => number;
-  paginationFn: (items: T[]) => T[];
+    paginationFn: (items: T[]) => {data: T[], total: number | null};
 }
 
 /**
@@ -22,7 +24,7 @@ export class InMemoryCriteriaConverter {
     return {
       filterFn: (items: T[]) => this.applyFilters(items, criteria),
       sortFn: criteria.order ? (a: T, b: T) => this.applySorting(a, b, criteria.order!) : undefined,
-      paginationFn: (items: T[]) => this.applyPagination(items, criteria.offset, criteria.limit),
+      paginationFn: (items: T[]) => this.applyPagination(items, criteria.pagination),
     };
   }
 
@@ -130,17 +132,32 @@ export class InMemoryCriteriaConverter {
     return order.orderType.isAsc() ? comparison : -comparison;
   }
 
-  private static applyPagination<T>(items: T[], offset?: number, limit?: number): T[] {
+  private static applyPagination<T>(items: T[], pagination: PaginationOffset | PaginationCursor)
+  : {data: T[], total: number | null} {
     let result = items;
-    
-    if (offset) {
-      result = result.slice(offset);
+    let total = null;
+
+    if (pagination instanceof PaginationOffset) {
+      if (pagination.withTotal) {
+        total = items.length;
+      }
+      if (pagination.offset) {
+        result = result.slice(pagination.offset);
+      }
+      if (pagination.limit) {
+        result = result.slice(0, pagination.limit);
+      }
     }
     
-    if (limit) {
-      result = result.slice(0, limit);
+    if (pagination instanceof PaginationCursor) {
+      if (pagination.after) {
+        //result = result.slice(pagination.after);
+      }
+      if (pagination.limit) {
+        result = result.slice(0, pagination.limit);
+      }
     }
     
-    return result;
+    return {data: result, total};
   }
 }

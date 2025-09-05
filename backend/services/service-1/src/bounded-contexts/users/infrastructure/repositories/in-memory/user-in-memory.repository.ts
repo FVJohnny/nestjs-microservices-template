@@ -73,9 +73,10 @@ export class UserInMemoryRepository implements UserRepository {
       result.sort(sortFn);
     }
 
+    const paginatedResults = paginationFn(result);
     return Promise.resolve({
-      data: paginationFn(result),
-      total: criteria.withTotal ? result.length : null,
+      data: paginatedResults.data,
+      total: criteria.hasWithTotal() ? paginatedResults.total : null,
     });
   }
 

@@ -138,11 +138,11 @@ export class UserMongodbRepository implements UserRepository {
         query = query.skip(options.skip);
       }
 
-      const documents = await query.toArray();
-      const count = criteria.withTotal
+      const count = criteria.hasWithTotal()
         ? await this.collection.countDocuments(filter)
         : null;
 
+      const documents = await query.toArray();
       return {
         data: documents.map((doc) => User.fromValue(doc)),
         total: count,

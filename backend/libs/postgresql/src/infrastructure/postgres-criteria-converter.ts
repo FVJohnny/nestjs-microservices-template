@@ -1,4 +1,4 @@
-import { type Criteria, Operator, parseFromString } from '@libs/nestjs-common';
+import { type Criteria, Operator, PaginationCursor, PaginationOffset, parseFromString } from '@libs/nestjs-common';
 import type { SelectQueryBuilder } from 'typeorm';
 
 /**
@@ -84,14 +84,15 @@ export class PostgresCriteriaConverter {
     }
 
     // Apply pagination from criteria
-    if (criteria.limit) {
-      builder = builder.limit(criteria.limit);
+    if (criteria.pagination instanceof PaginationOffset) {
+      builder = builder.limit(criteria.pagination.limit);
+      builder = builder.offset(criteria.pagination.offset);
     }
     
-    if (criteria.offset) {
-      builder = builder.offset(criteria.offset);
+    if (criteria.pagination instanceof PaginationCursor) {
+      builder = builder.limit(criteria.pagination.limit);
     }
-
+    
     return builder;
   }
 

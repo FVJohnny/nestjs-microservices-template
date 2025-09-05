@@ -17,7 +17,7 @@ import {
   OrderTypes,
   Order,
   BaseQueryHandler,
-  OffsetPageResultPagination,
+  PaginationOffset,
 } from '@libs/nestjs-common';
 
 @QueryHandler(GetUsersQuery)
@@ -105,27 +105,25 @@ export class GetUsersQueryHandler extends BaseQueryHandler<
       );
     }
 
+    const pagination = new PaginationOffset(
+      query.pagination?.limit,
+      query.pagination?.offset,
+      query.pagination?.withTotal,
+    );
+
     const criteria = new Criteria({
       filters,
       order,
-      limit: query.pagination?.limit,
-      offset: query.pagination?.offset,
-      withTotal: query.pagination?.withTotal,
+      pagination,
     });
 
-    const offsetPageResult = await this.userRepository.findByCriteria(criteria);
-
-    const pagination: OffsetPageResultPagination = {
-      kind: 'offset',
-      limit: query.pagination?.limit || 0,
-      offset: query.pagination?.offset || 0,
-      hasNext: true,
-      total: offsetPageResult.total,
-    };
-
+    const result = await this.userRepository.findByCriteria(criteria);
     return {
-      data: offsetPageResult.data.map((user) => user.toValue()),
-      pagination,
+      data: result.data.map((user) => user.toValue()),
+      pagination: {
+        hasNext: true,
+        total: result.total,
+      },
     };
   }
 

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 
-import { OrderTypes } from '../domain/criteria/OrderType';
+import { OrderTypes } from '../domain/criteria/order/OrderType';
 
 export class ControllerPaginationParams {
 @ApiProperty({ required: false, description: 'Sort by field' })
@@ -15,10 +15,8 @@ export class ControllerPaginationParams {
   orderType?: OrderTypes;
 
   @ApiProperty({ required: false, description: 'Maximum number of results' })
-  @IsOptional()
   limit?: number;
 
   @ApiProperty({ required: false, description: 'Number of results to skip' })
-  @IsOptional()
   offset?: number;
 }

@@ -23,6 +23,7 @@ import {
   OrderType,
   OrderTypes,
   Operator,
+  PaginationOffset,
 } from '@libs/nestjs-common';
 import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
 import { UserTestFactory } from '../../../test-utils';
@@ -698,7 +699,9 @@ describe('UserInMemoryRepository', () => {
     describe('findByCriteria - Pagination', () => {
       it('should apply limit', async () => {
         // Arrange
-        const criteria = new Criteria({ limit: 2 });
+        const criteria = new Criteria({
+          pagination: new PaginationOffset(2, 0, true),
+        });
 
         // Act
         const result = await repository.findByCriteria(criteria);
@@ -710,7 +713,9 @@ describe('UserInMemoryRepository', () => {
       it('should apply offset', async () => {
         // Arrange
         const allUsers = await repository.findAll();
-        const criteria = new Criteria({ offset: 1 });
+        const criteria = new Criteria({
+          pagination: new PaginationOffset(0, 1, true),
+        });
 
         // Act
         const result = await repository.findByCriteria(criteria);
@@ -721,7 +726,9 @@ describe('UserInMemoryRepository', () => {
 
       it('should combine limit and offset', async () => {
         // Arrange
-        const criteria = new Criteria({ limit: 1, offset: 1 });
+        const criteria = new Criteria({
+          pagination: new PaginationOffset(1, 1, true),
+        });
 
         // Act
         const result = await repository.findByCriteria(criteria);
@@ -732,7 +739,9 @@ describe('UserInMemoryRepository', () => {
 
       it('should handle offset larger than collection size', async () => {
         // Arrange
-        const criteria = new Criteria({ offset: 10 });
+        const criteria = new Criteria({
+          pagination: new PaginationOffset(0, 10, true),
+        });
 
         // Act
         const result = await repository.findByCriteria(criteria);
@@ -743,7 +752,9 @@ describe('UserInMemoryRepository', () => {
 
       it('should handle limit larger than remaining items', async () => {
         // Arrange
-        const criteria = new Criteria({ limit: 10, offset: 2 });
+        const criteria = new Criteria({
+          pagination: new PaginationOffset(10, 2, true),
+        });
 
         // Act
         const result = await repository.findByCriteria(criteria);
@@ -768,7 +779,9 @@ describe('UserInMemoryRepository', () => {
 
       it('should return total count when withTotal is true', async () => {
         // Arrange
-        const criteria = new Criteria({ withTotal: true });
+        const criteria = new Criteria({
+          pagination: new PaginationOffset(0, 0, true),
+        });
 
         // Act
         const result = await repository.findByCriteria(criteria);
@@ -781,8 +794,7 @@ describe('UserInMemoryRepository', () => {
       it('should return correct total with pagination (limit only)', async () => {
         // Arrange
         const criteria = new Criteria({
-          limit: 2,
-          withTotal: true,
+          pagination: new PaginationOffset(2, 0, true),
         });
 
         // Act
@@ -796,8 +808,7 @@ describe('UserInMemoryRepository', () => {
       it('should return correct total with pagination (offset only)', async () => {
         // Arrange
         const criteria = new Criteria({
-          offset: 1,
-          withTotal: true,
+          pagination: new PaginationOffset(1, 1, true),
         });
 
         // Act
@@ -811,9 +822,7 @@ describe('UserInMemoryRepository', () => {
       it('should return correct total with pagination (limit and offset)', async () => {
         // Arrange
         const criteria = new Criteria({
-          limit: 1,
-          offset: 1,
-          withTotal: true,
+          pagination: new PaginationOffset(1, 1, true),
         });
 
         // Act
@@ -833,8 +842,7 @@ describe('UserInMemoryRepository', () => {
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
-          limit: 1,
-          withTotal: true,
+          pagination: new PaginationOffset(1, 0, true),
         });
 
         // Act
@@ -854,7 +862,7 @@ describe('UserInMemoryRepository', () => {
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
-          withTotal: true,
+          pagination: new PaginationOffset(0, 0, true),
         });
 
         // Act
@@ -873,9 +881,7 @@ describe('UserInMemoryRepository', () => {
         );
         const criteria = new Criteria({
           order,
-          limit: 2,
-          offset: 1,
-          withTotal: true,
+          pagination: new PaginationOffset(2, 1, true),
         });
 
         // Act
@@ -889,8 +895,7 @@ describe('UserInMemoryRepository', () => {
       it('should handle edge case where offset equals total records', async () => {
         // Arrange
         const criteria = new Criteria({
-          offset: 3, // Equal to total number of test users
-          withTotal: true,
+          pagination: new PaginationOffset(3, 0, true),
         });
 
         // Act
@@ -904,8 +909,7 @@ describe('UserInMemoryRepository', () => {
       it('should handle edge case where offset exceeds total records', async () => {
         // Arrange
         const criteria = new Criteria({
-          offset: 10, // Much larger than total
-          withTotal: true,
+          pagination: new PaginationOffset(10, 10, true),
         });
 
         // Act
@@ -934,9 +938,7 @@ describe('UserInMemoryRepository', () => {
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
-          limit: 2,
-          offset: 1,
-          withTotal: true,
+          pagination: new PaginationOffset(2, 1, true),
         });
 
         // Act
@@ -956,8 +958,7 @@ describe('UserInMemoryRepository', () => {
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
-          limit: 1,
-          withTotal: true,
+          pagination: new PaginationOffset(1, 0, true),
         });
 
         // Act
@@ -977,9 +978,7 @@ describe('UserInMemoryRepository', () => {
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
-          limit: 1,
-          offset: 1,
-          withTotal: true,
+          pagination: new PaginationOffset(1, 1, true),
         });
 
         // Act
@@ -1006,7 +1005,7 @@ describe('UserInMemoryRepository', () => {
         const criteria = new Criteria({
           filters: new Filters([filter]),
           order,
-          limit: 1,
+          pagination: new PaginationOffset(1, 0, true),
         });
 
         // Act
@@ -1031,8 +1030,7 @@ describe('UserInMemoryRepository', () => {
         const criteria = new Criteria({
           filters: new Filters([filter]),
           order,
-          limit: 10,
-          offset: 0,
+          pagination: new PaginationOffset(10, 0, true),
         });
 
         // Act
@@ -1100,8 +1098,7 @@ describe('UserInMemoryRepository', () => {
         );
         const criteria = new Criteria({
           filters: new Filters([filter]),
-          limit: 1,
-          offset: 1,
+          pagination: new PaginationOffset(1, 1),
         });
 
         // Act
@@ -1292,7 +1289,7 @@ describe('UserInMemoryRepository', () => {
       const result = await repository.findByCriteria(
         new Criteria({
           filters: new Filters([filter]),
-          limit: 50,
+          pagination: new PaginationOffset(50, 0),
         }),
       );
       const end = performance.now();

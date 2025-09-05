@@ -6,7 +6,6 @@ import {
   GetUsersQueryResponse,
 } from '../../../../../application/queries';
 import { GetUsersControllerParams } from './get-users.params';
-import { SortParam } from '@libs/nestjs-common';
 
 @ApiTags('users')
 @Controller('users')
@@ -23,14 +22,6 @@ export class GetUsersController {
   async getUsers(
     @Query() params: GetUsersControllerParams,
   ): Promise<GetUsersQueryResponse> {
-    const sort: SortParam | undefined =
-      params.orderBy && params.orderType
-        ? {
-            field: params.orderBy,
-            order: params.orderType,
-          }
-        : undefined;
-
     const query = new GetUsersQuery({
       status: params.status,
       role: params.role,
@@ -41,7 +32,10 @@ export class GetUsersController {
       pagination: {
         limit: params.limit,
         offset: params.offset,
-        sort,
+        sort: {
+          field: params.orderBy,
+          order: params.orderType,
+        },
       },
     });
     return await this.queryBus.execute(query);

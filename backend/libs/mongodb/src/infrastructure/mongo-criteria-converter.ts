@@ -1,4 +1,4 @@
-import { type Criteria, type Filter, Operator, parseFromString } from '@libs/nestjs-common';
+import { type Criteria, type Filter, Operator, PaginationCursor, PaginationOffset, parseFromString } from '@libs/nestjs-common';
 /**
  * MongoDB query options interface
  */
@@ -70,14 +70,15 @@ export class MongoCriteriaConverter {
     }
 
     // Apply pagination from criteria
-    if (criteria.limit) {
-      options.limit = criteria.limit;
+    if (criteria.pagination instanceof PaginationOffset) {
+      options.limit = criteria.pagination.limit;
+      options.skip = criteria.pagination.offset;
     }
     
-    if (criteria.offset) {
-      options.skip = criteria.offset;
+    if (criteria.pagination instanceof PaginationCursor) {
+      options.limit = criteria.pagination.limit;
     }
-
+    
     return { filter, options };
   }
 

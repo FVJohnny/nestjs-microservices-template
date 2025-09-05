@@ -17,14 +17,16 @@ export * from './domain/repositories/repository.base';
 
 // Criteria Pattern
 export * from './domain/criteria/Criteria';
-export * from './domain/criteria/Filter';
-export * from './domain/criteria/FilterField';
-export * from './domain/criteria/FilterOperator';
-export * from './domain/criteria/Filters';
-export * from './domain/criteria/FilterValue';
-export * from './domain/criteria/Order';
-export * from './domain/criteria/OrderBy';
-export * from './domain/criteria/OrderType';
+export * from './domain/criteria/filters/Filter';
+export * from './domain/criteria/filters/FilterField';
+export * from './domain/criteria/filters/FilterOperator';
+export * from './domain/criteria/filters/Filters';
+export * from './domain/criteria/filters/FilterValue';
+export * from './domain/criteria/order/Order';
+export * from './domain/criteria/order/OrderBy';
+export * from './domain/criteria/order/OrderType';
+export * from './domain/criteria/pagination/PaginationCursor';
+export * from './domain/criteria/pagination/PaginationOffset';
 
 // Infrastructure
 export * from './infrastructure/in-memory-criteria-converter';
