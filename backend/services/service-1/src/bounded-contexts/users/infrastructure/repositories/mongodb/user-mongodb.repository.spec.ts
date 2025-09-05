@@ -10,6 +10,7 @@ import {
   FilterValue,
   Operator,
   InfrastructureException,
+  PaginationOffset,
 } from '@libs/nestjs-common';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
@@ -404,7 +405,7 @@ describe('UserMongodbRepository (Integration)', () => {
     it('should apply limit', async () => {
       // Arrange
       const criteria = new Criteria({
-        limit: 1,
+        pagination: new PaginationOffset(1, 0),
       });
 
       // Act
@@ -418,7 +419,7 @@ describe('UserMongodbRepository (Integration)', () => {
       // Arrange
       const offset = 1;
       const criteria = new Criteria({
-        offset,
+        pagination: new PaginationOffset(0, offset),
       });
 
       // Act
@@ -431,8 +432,7 @@ describe('UserMongodbRepository (Integration)', () => {
     it('should combine limit and offset', async () => {
       // Arrange
       const criteria = new Criteria({
-        limit: 1,
-        offset: 1,
+        pagination: new PaginationOffset(1, 1),
       });
 
       // Act
@@ -463,7 +463,9 @@ describe('UserMongodbRepository (Integration)', () => {
 
     it('should return total count when withTotal is true', async () => {
       // Arrange
-      const criteria = new Criteria({ withTotal: true });
+      const criteria = new Criteria({
+        pagination: new PaginationOffset(0, 0, true),
+      });
 
       // Act
       const result = await repository.findByCriteria(criteria);
@@ -476,8 +478,7 @@ describe('UserMongodbRepository (Integration)', () => {
     it('should return correct total with pagination (limit only)', async () => {
       // Arrange
       const criteria = new Criteria({
-        limit: 2,
-        withTotal: true,
+        pagination: new PaginationOffset(2, 0, true),
       });
 
       // Act
@@ -491,8 +492,7 @@ describe('UserMongodbRepository (Integration)', () => {
     it('should return correct total with pagination (offset only)', async () => {
       // Arrange
       const criteria = new Criteria({
-        offset: 1,
-        withTotal: true,
+        pagination: new PaginationOffset(0, 1, true),
       });
 
       // Act
@@ -506,9 +506,7 @@ describe('UserMongodbRepository (Integration)', () => {
     it('should return correct total with pagination (limit and offset)', async () => {
       // Arrange
       const criteria = new Criteria({
-        limit: 1,
-        offset: 1,
-        withTotal: true,
+        pagination: new PaginationOffset(1, 1, true),
       });
 
       // Act
@@ -529,8 +527,7 @@ describe('UserMongodbRepository (Integration)', () => {
       );
       const criteria = new Criteria({
         filters: new Filters([filter]),
-        limit: 1,
-        withTotal: true,
+        pagination: new PaginationOffset(1, 0, true),
       });
 
       // Act
@@ -550,7 +547,7 @@ describe('UserMongodbRepository (Integration)', () => {
       );
       const criteria = new Criteria({
         filters: new Filters([filter]),
-        withTotal: true,
+        pagination: new PaginationOffset(0, 0, true),
       });
 
       // Act
@@ -564,9 +561,7 @@ describe('UserMongodbRepository (Integration)', () => {
     it('should return correct total with sorting and pagination', async () => {
       // Arrange
       const criteria = new Criteria({
-        limit: 2,
-        offset: 1,
-        withTotal: true,
+        pagination: new PaginationOffset(2, 1, true),
       });
 
       // Act
@@ -580,8 +575,7 @@ describe('UserMongodbRepository (Integration)', () => {
     it('should handle edge case where offset equals total records', async () => {
       // Arrange
       const criteria = new Criteria({
-        offset: 3, // Equal to total number of test users
-        withTotal: true,
+        pagination: new PaginationOffset(0, 3, true), // Equal to total number of test users
       });
 
       // Act
@@ -595,8 +589,7 @@ describe('UserMongodbRepository (Integration)', () => {
     it('should handle edge case where offset exceeds total records', async () => {
       // Arrange
       const criteria = new Criteria({
-        offset: 10, // Much larger than total
-        withTotal: true,
+        pagination: new PaginationOffset(0, 10, true), // Much larger than total
       });
 
       // Act
@@ -625,9 +618,7 @@ describe('UserMongodbRepository (Integration)', () => {
       );
       const criteria = new Criteria({
         filters: new Filters([filter]),
-        limit: 2,
-        offset: 1,
-        withTotal: true,
+        pagination: new PaginationOffset(2, 1, true),
       });
 
       // Act

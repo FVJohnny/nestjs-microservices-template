@@ -808,7 +808,7 @@ describe('UserInMemoryRepository', () => {
       it('should return correct total with pagination (offset only)', async () => {
         // Arrange
         const criteria = new Criteria({
-          pagination: new PaginationOffset(1, 1, true),
+          pagination: new PaginationOffset(0, 1, true),
         });
 
         // Act
@@ -895,7 +895,7 @@ describe('UserInMemoryRepository', () => {
       it('should handle edge case where offset equals total records', async () => {
         // Arrange
         const criteria = new Criteria({
-          pagination: new PaginationOffset(3, 0, true),
+          pagination: new PaginationOffset(0, 3, true),
         });
 
         // Act
