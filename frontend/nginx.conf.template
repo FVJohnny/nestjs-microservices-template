@@ -6,15 +6,17 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    # API proxies (values provided via env)
-    location /api/service-1/ {
-        proxy_pass ${SERVICE_1_URL};
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+    # API proxies (defaults point to service-N:3000 inside the network)
+    location /api/service-1/ { proxy_pass ${SERVICE_1_URL:-http://service-1:3000/}; proxy_http_version 1.1; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /api/service-2/ { proxy_pass ${SERVICE_2_URL:-http://service-2:3000/}; proxy_http_version 1.1; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /api/service-3/ { proxy_pass ${SERVICE_3_URL:-http://service-3:3000/}; proxy_http_version 1.1; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /api/service-4/ { proxy_pass ${SERVICE_4_URL:-http://service-4:3000/}; proxy_http_version 1.1; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /api/service-5/ { proxy_pass ${SERVICE_5_URL:-http://service-5:3000/}; proxy_http_version 1.1; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /api/service-6/ { proxy_pass ${SERVICE_6_URL:-http://service-6:3000/}; proxy_http_version 1.1; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /api/service-7/ { proxy_pass ${SERVICE_7_URL:-http://service-7:3000/}; proxy_http_version 1.1; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /api/service-8/ { proxy_pass ${SERVICE_8_URL:-http://service-8:3000/}; proxy_http_version 1.1; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /api/service-9/ { proxy_pass ${SERVICE_9_URL:-http://service-9:3000/}; proxy_http_version 1.1; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /api/service-10/ { proxy_pass ${SERVICE_10_URL:-http://service-10:3000/}; proxy_http_version 1.1; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
 
     # Fallback to static files
     location / {
