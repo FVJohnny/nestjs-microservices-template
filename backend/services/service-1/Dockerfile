@@ -55,6 +55,8 @@ COPY --from=builder /app/backend/libs ./libs
 
 # Copy service files and node_modules to the service directory
 COPY --from=deps /app/services/service-1/node_modules ./services/service-1/node_modules
+# Make service node_modules visible to libs at /app/libs/** by symlinking at /app/node_modules
+RUN ln -s /app/services/service-1/node_modules /app/node_modules
 COPY --from=builder /app/backend/services/service-1/dist ./services/service-1/dist
 COPY --from=builder /app/backend/services/service-1/package*.json ./services/service-1/
 
