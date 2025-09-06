@@ -8,8 +8,13 @@ import type { SharedAggregateRoot, SharedAggregateRootDTO } from '../domain/enti
 
 export interface InMemoryFilterResult<T> {
   filterFn: (items: T[]) => T[];
-  sortFn?: (a: T, b: T) => number;
-    paginationFn: (items: T[]) => {data: T[], total: number | null};
+  sortFn: (a: T, b: T) => number;
+  paginationFn: (items: T[]) => {data: T[], total: number | null};
+}
+
+export interface InMemoryQueryResult<T> {
+  data: T[];
+  total: number | null;
 }
 
 /**
@@ -18,13 +23,45 @@ export interface InMemoryFilterResult<T> {
  */
 export class InMemoryCriteriaConverter {
   /**
+   * Query an in-memory array with criteria and return filtered, sorted, and paginated results
+   */
+  static query<T extends SharedAggregateRoot>(items: T[], criteria: Criteria): InMemoryQueryResult<T> {
+    const { filterFn, sortFn, paginationFn } = this.convert<T>(criteria);
+    
+    let filteredItems = filterFn(items);
+    
+    filteredItems = filteredItems.sort(sortFn);
+    
+    return paginationFn(filteredItems);
+  }
+
+  /**
+   * Apply criteria to an in-memory array and return results (alias for query)
+   */
+  static apply<T extends SharedAggregateRoot>(items: T[], criteria: Criteria): InMemoryQueryResult<T> {
+    return this.query(items, criteria);
+  }
+
+  /**
+   * Count items in an in-memory array with criteria (without pagination)
+   */
+  static count<T extends SharedAggregateRoot>(items: T[], criteria: Criteria): number {
+    const { filterFn } = this.convert(criteria);
+    return filterFn(items).length;
+  }
+
+  /**
    * Convert a Criteria object to in-memory filter functions
    */
   static convert<T extends SharedAggregateRoot>(criteria: Criteria): InMemoryFilterResult<T> {
+    const shouldSort = criteria.order && 
+                      criteria.order.orderBy.toValue().trim() !== '' && 
+                      criteria.order.orderType.toValue() !== 'none';
+    
     return {
-      filterFn: (items: T[]) => this.applyFilters(items, criteria),
-      sortFn: criteria.order ? (a: T, b: T) => this.applySorting(a, b, criteria.order!) : undefined,
-      paginationFn: (items: T[]) => this.applyPagination(items, criteria.pagination),
+      filterFn: (items: T[]) => this.applyFilters<T>(items, criteria),
+      sortFn: shouldSort ? (a: T, b: T) => this.applySorting(a, b, criteria.order!) : () => 0,
+      paginationFn: (items: T[]) => this.applyPagination<T>(items, criteria),
     };
   }
 
@@ -132,32 +169,108 @@ export class InMemoryCriteriaConverter {
     return order.orderType.isAsc() ? comparison : -comparison;
   }
 
-  private static applyPagination<T>(items: T[], pagination: PaginationOffset | PaginationCursor)
+  private static applyPagination<T extends SharedAggregateRoot>(items: T[], criteria: Criteria)
   : {data: T[], total: number | null} {
     let result = items;
     let total = null;
 
-    if (pagination instanceof PaginationOffset) {
-      if (pagination.withTotal) {
+    if (criteria.pagination instanceof PaginationOffset) {
+      if (criteria.pagination.withTotal) {
         total = items.length;
       }
-      if (pagination.offset) {
-        result = result.slice(pagination.offset);
+      if (criteria.pagination.offset) {
+        result = result.slice(criteria.pagination.offset);
       }
-      if (pagination.limit) {
-        result = result.slice(0, pagination.limit);
+      if (criteria.pagination.limit) {
+        result = result.slice(0, criteria.pagination.limit);
       }
     }
     
-    if (pagination instanceof PaginationCursor) {
-      if (pagination.after) {
-        //result = result.slice(pagination.after);
+    if (criteria.pagination instanceof PaginationCursor) {
+      if (criteria.pagination.after && criteria.pagination.tiebrakerId && criteria.order) {
+        result = this.applyCursorPagination<T>(result, criteria);
       }
-      if (pagination.limit) {
-        result = result.slice(0, pagination.limit);
+      if (criteria.pagination.limit) {
+        result = result.slice(0, criteria.pagination.limit);
       }
     }
     
     return {data: result, total};
+  }
+
+  private static applyCursorPagination<T extends SharedAggregateRoot>(items: T[], criteria: Criteria): T[] {
+    const pagination = criteria.pagination as PaginationCursor;
+    const orderBy = criteria.order!.orderBy.toValue();
+    const isDesc = criteria.order!.orderType.toValue() === 'desc';
+    const afterValue = this.parseFromString(pagination.after!);
+    const tiebrakerId = pagination.tiebrakerId!;
+    
+    return items.filter(item => {
+      const primitives = item.toValue();
+      const itemValue = this.getNestedValue(primitives, orderBy);
+      const itemId = this.getNestedValue(primitives, 'id');
+      
+      if (itemValue === undefined || itemValue === null) {
+        return false;
+      }
+      
+      // Convert values to comparable types
+      const parsedItemValue = this.parseFromString(String(itemValue));
+      
+      if (isDesc) {
+        // For descending order: include items where orderBy < afterValue OR (orderBy = afterValue AND id < tiebrakerId)
+        return this.compareValues(parsedItemValue, afterValue) < 0 || 
+               (this.compareValues(parsedItemValue, afterValue) === 0 && String(itemId) < tiebrakerId);
+      } else {
+        // For ascending order: include items where orderBy > afterValue OR (orderBy = afterValue AND id > tiebrakerId)
+        return this.compareValues(parsedItemValue, afterValue) > 0 || 
+               (this.compareValues(parsedItemValue, afterValue) === 0 && String(itemId) > tiebrakerId);
+      }
+    });
+  }
+
+  private static parseFromString(value: string): unknown {
+    // Try to parse as number first
+    const asNumber = Number(value);
+    if (!isNaN(asNumber) && isFinite(asNumber)) {
+      return asNumber;
+    }
+    
+    // Try to parse as boolean
+    if (value.toLowerCase() === 'true') return true;
+    if (value.toLowerCase() === 'false') return false;
+    
+    // Try to parse as Date
+    const asDate = new Date(value);
+    if (!isNaN(asDate.getTime()) && value.match(/\d{4}-\d{2}-\d{2}/)) {
+      return asDate;
+    }
+    
+    // Return as string
+    return value;
+  }
+
+  private static compareValues(a: unknown, b: unknown): number {
+    // Handle null/undefined
+    if (a === null || a === undefined) return b === null || b === undefined ? 0 : -1;
+    if (b === null || b === undefined) return 1;
+    
+    // If both are numbers, compare numerically
+    if (typeof a === 'number' && typeof b === 'number') {
+      return a - b;
+    }
+    
+    // If both are dates, compare by time
+    if (a instanceof Date && b instanceof Date) {
+      return a.getTime() - b.getTime();
+    }
+    
+    // If both are booleans, compare as numbers
+    if (typeof a === 'boolean' && typeof b === 'boolean') {
+      return Number(a) - Number(b);
+    }
+    
+    // Default to string comparison
+    return String(a).localeCompare(String(b));
   }
 }

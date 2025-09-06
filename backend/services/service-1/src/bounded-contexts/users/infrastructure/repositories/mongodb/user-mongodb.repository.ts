@@ -122,24 +122,10 @@ export class UserMongodbRepository implements UserRepository {
 
   async findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
     try {
-      const { filter, options } = MongoCriteriaConverter.convert(criteria);
-
-      let query = this.collection.find(filter);
-
-      if (options.sort) {
-        query = query.sort(options.sort);
-      }
-
-      if (options.limit) {
-        query = query.limit(options.limit);
-      }
-
-      if (options.skip) {
-        query = query.skip(options.skip);
-      }
+      const query = MongoCriteriaConverter.query(this.collection, criteria);
 
       const count = criteria.hasWithTotal()
-        ? await this.collection.countDocuments(filter)
+        ? await this.countByCriteria(criteria)
         : null;
 
       const documents = await query.toArray();
@@ -152,14 +138,13 @@ export class UserMongodbRepository implements UserRepository {
     }
   }
 
+  async count(criteria: Criteria): Promise<number> {
+    return this.countByCriteria(criteria);
+  }
+
   async countByCriteria(criteria: Criteria): Promise<number> {
     try {
-      const convertedCriteria = MongoCriteriaConverter.convert(criteria);
-
-      const count = await this.collection.countDocuments(
-        convertedCriteria?.filter || {},
-      );
-      return count;
+      return await MongoCriteriaConverter.count(this.collection, criteria);
     } catch (error: unknown) {
       this.handleDatabaseError('countByCriteria', 'criteria', error);
     }

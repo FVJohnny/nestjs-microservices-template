@@ -1,4 +1,6 @@
 import { type Criteria, type Filter, Operator, PaginationCursor, PaginationOffset, parseFromString } from '@libs/nestjs-common';
+import { type Collection, type FindCursor, type Document, type WithId } from 'mongodb';
+
 /**
  * MongoDB query options interface
  */
@@ -9,10 +11,20 @@ interface MongoQueryOptions {
 }
 
 /**
+ * MongoDB filter condition interface
+ */
+interface MongoFilterCondition extends Record<string, unknown> {
+  [field: string]: unknown;
+  $or?: MongoFilterCondition[];
+  $and?: MongoFilterCondition[];
+}
+
+
+/**
  * MongoDB criteria conversion result
  */
 interface MongoCriteriaResult {
-  filter: Record<string, unknown>;
+  filters: MongoFilterCondition[];
   options: MongoQueryOptions;
 }
 
@@ -21,45 +33,75 @@ interface MongoCriteriaResult {
  */
 export class MongoCriteriaConverter {
   /**
+   * Query a MongoDB collection with criteria and return configured cursor
+   */
+  static query<T extends Document = Document>(collection: Collection<T>, criteria: Criteria): FindCursor<WithId<T>> {
+    const { filters: filter, options } = this.convert(criteria);
+    const mongoFilter = filter.length === 0 ? {} : {$and: filter};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return collection.find(mongoFilter as any, options);
+  }
+
+  /**
+   * Apply criteria to a MongoDB collection and return configured cursor (alias for query)
+   */
+  static apply<T extends Document = Document>(collection: Collection<T>, criteria: Criteria): FindCursor<WithId<T>> {
+    return this.query(collection, criteria);
+  }
+
+  /**
+   * Count documents in a MongoDB collection with criteria
+   */
+  static async count<T extends Document = Document>(collection: Collection<T>, criteria: Criteria): Promise<number> {
+    const { filters } = this.convert(criteria);
+    const mongoFilter = filters.length === 0 ? {} : { $and: filters };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return collection.countDocuments(mongoFilter as any);
+  }
+
+  /**
    * Convert a Criteria object to MongoDB filter and options
    */
   static convert(criteria: Criteria): MongoCriteriaResult {
-    const filter: Record<string, unknown> = {};
     const options: MongoQueryOptions = {};
+    const filters: MongoFilterCondition[] = [];
 
     // Apply filters from criteria
-    if (criteria.filters && criteria.filters.filters) {
+    if (criteria.filters && criteria.filters.filters.length > 0) {
       criteria.filters.filters.forEach((filterObj: Filter) => {
-      const fieldName = filterObj.field.toValue();
-      const operator = filterObj.operator.toValue();
-      const value = filterObj.value.toValue();
+        const fieldName = filterObj.field.toValue();
+        const operator = filterObj.operator.toValue();
+        const value = filterObj.value.toValue();
+        const condition: MongoFilterCondition = {};
 
-      switch (operator) {
-        case Operator.EQUAL:
-          filter[fieldName] = parseFromString(value);
-          break;
-        case Operator.NOT_EQUAL:
-          filter[fieldName] = { $ne: parseFromString(value) };
-          break;
-        case Operator.CONTAINS:
-          filter[fieldName] = { $regex: value, $options: 'i' };
-          break;
-        case Operator.NOT_CONTAINS:
-          filter[fieldName] = { $not: { $regex: value, $options: 'i' } };
-          break;
-        case Operator.GT:
-          filter[fieldName] = { $gt: parseFromString(value) };
-          break;
-        case Operator.LT:
-          filter[fieldName] = { $lt: parseFromString(value) };
-          break;
-      }
-    });
+        switch (operator) {
+          case Operator.EQUAL:
+            condition[fieldName] = parseFromString(value);
+            break;
+          case Operator.NOT_EQUAL:
+            condition[fieldName] = { $ne: parseFromString(value) };
+            break;
+          case Operator.CONTAINS:
+            condition[fieldName] = { $regex: value, $options: 'i' };
+            break;
+          case Operator.NOT_CONTAINS:
+            condition[fieldName] = { $not: { $regex: value, $options: 'i' } };
+            break;
+          case Operator.GT:
+            condition[fieldName] = { $gt: parseFromString(value) };
+            break;
+          case Operator.LT:
+            condition[fieldName] = { $lt: parseFromString(value) };
+            break;
+        }
+        
+        filters.push(condition);
+      });
     }
 
+    const orderByValue = criteria.order.orderBy.toValue();
     // Apply sorting from criteria
-    if (criteria.order && criteria.order.orderBy && criteria.order.orderType) {
-      const orderByValue = criteria.order.orderBy.toValue();
+    if (orderByValue && criteria.order.orderType) {
       const orderTypeValue = criteria.order.orderType.toValue();
       
       // Only add sort if orderBy field is not empty and orderType is not 'none'
@@ -77,9 +119,23 @@ export class MongoCriteriaConverter {
     
     if (criteria.pagination instanceof PaginationCursor) {
       options.limit = criteria.pagination.limit;
+      if (criteria.pagination.after && criteria.pagination.tiebrakerId && orderByValue) {
+        const comparator = criteria.order.orderType.toValue() === 'desc' ? '$lt' : '$gt';
+        
+        // Add cursor condition to the and conditions
+        filters.push({
+          $or: [
+            { [orderByValue]: { [comparator]: parseFromString(criteria.pagination.after) } },
+            { 
+              [orderByValue]: parseFromString(criteria.pagination.after),
+              id: { [comparator]: criteria.pagination.tiebrakerId } 
+            },
+          ],
+        });
+      }
     }
     
-    return { filter, options };
+    return { filters, options };
   }
 
 }
