@@ -122,16 +122,16 @@ export class UserMongodbRepository implements UserRepository {
 
   async findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
     try {
-      const query = MongoCriteriaConverter.query(this.collection, criteria);
+      const queryResult = await MongoCriteriaConverter.executeQuery(
+        this.collection,
+        criteria,
+      );
 
-      const count = criteria.hasWithTotal()
-        ? await this.countByCriteria(criteria)
-        : null;
-
-      const documents = await query.toArray();
       return {
-        data: documents.map((doc) => User.fromValue(doc)),
-        total: count,
+        data: queryResult.data.map((doc) => User.fromValue(doc)),
+        total: queryResult.total,
+        cursor: queryResult.cursor,
+        hasNext: queryResult.hasNext,
       };
     } catch (error: unknown) {
       this.handleDatabaseError('findByCriteria', '', error);

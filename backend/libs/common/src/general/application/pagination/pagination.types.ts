@@ -22,9 +22,10 @@ export interface PageResultOffset<T> {
 export interface PaginationCursorParams {
   limit?: number;
   after?: string;
-  sort: {
-    field?: string;
-    order?: PaginationOrder;
+  tieBreakerId?: string;
+  sort?: {
+    field: string;
+    order: PaginationOrder;
   };
 }
 export interface PageResultCursor<T> {

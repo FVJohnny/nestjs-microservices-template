@@ -9,12 +9,14 @@ import type { SharedAggregateRoot, SharedAggregateRootDTO } from '../domain/enti
 export interface InMemoryFilterResult<T> {
   filterFn: (items: T[]) => T[];
   sortFn: (a: T, b: T) => number;
-  paginationFn: (items: T[]) => {data: T[], total: number | null};
+  paginationFn: (items: T[]) => {data: T[], total: number | null, hasNext?: boolean};
 }
 
 export interface InMemoryQueryResult<T> {
   data: T[];
   total: number | null;
+  hasNext?: boolean;
+  cursor?: string;
 }
 
 /**
@@ -32,11 +34,22 @@ export class InMemoryCriteriaConverter {
     
     filteredItems = filteredItems.sort(sortFn);
     
-    return paginationFn(filteredItems);
+    const paginatedResults = paginationFn(filteredItems);
+    
+    // Generate cursor from the last element's orderBy field value
+    let cursor: string | undefined;
+    if (paginatedResults.data.length > 0 && criteria.order.hasOrder()) {
+      cursor = this.generateCursor(paginatedResults.data, criteria);
+    }
+    
+    return {
+      ...paginatedResults,
+      cursor,
+    };
   }
 
   /**
-   * Apply criteria to an in-memory array and return results (alias for query)
+   * Alias for query method - kept for backward compatibility
    */
   static apply<T extends SharedAggregateRoot>(items: T[], criteria: Criteria): InMemoryQueryResult<T> {
     return this.query(items, criteria);
@@ -170,9 +183,10 @@ export class InMemoryCriteriaConverter {
   }
 
   private static applyPagination<T extends SharedAggregateRoot>(items: T[], criteria: Criteria)
-  : {data: T[], total: number | null} {
+  : {data: T[], total: number | null, hasNext?: boolean} {
     let result = items;
     let total = null;
+    let hasNext: boolean | undefined;
 
     if (criteria.pagination instanceof PaginationOffset) {
       if (criteria.pagination.withTotal) {
@@ -187,15 +201,19 @@ export class InMemoryCriteriaConverter {
     }
     
     if (criteria.pagination instanceof PaginationCursor) {
-      if (criteria.pagination.after && criteria.pagination.tiebrakerId && criteria.order) {
+      if (criteria.pagination.after && criteria.order) {
         result = this.applyCursorPagination<T>(result, criteria);
       }
-      if (criteria.pagination.limit) {
+      // For cursor pagination, handle limit=0 differently than offset pagination
+      const shouldApplyLimit = criteria.pagination.limit !== undefined;
+      if (shouldApplyLimit) {
+        // Check if there are more items than the limit
+        hasNext = criteria.pagination.limit > 0 && result.length > criteria.pagination.limit;
         result = result.slice(0, criteria.pagination.limit);
       }
     }
     
-    return {data: result, total};
+    return {data: result, total, hasNext};
   }
 
   private static applyCursorPagination<T extends SharedAggregateRoot>(items: T[], criteria: Criteria): T[] {
@@ -203,7 +221,7 @@ export class InMemoryCriteriaConverter {
     const orderBy = criteria.order!.orderBy.toValue();
     const isDesc = criteria.order!.orderType.toValue() === 'desc';
     const afterValue = this.parseFromString(pagination.after!);
-    const tiebrakerId = pagination.tiebrakerId!;
+    const tiebrakerId = pagination.tiebrakerId;
     
     return items.filter(item => {
       const primitives = item.toValue();
@@ -217,14 +235,26 @@ export class InMemoryCriteriaConverter {
       // Convert values to comparable types
       const parsedItemValue = this.parseFromString(String(itemValue));
       
-      if (isDesc) {
-        // For descending order: include items where orderBy < afterValue OR (orderBy = afterValue AND id < tiebrakerId)
-        return this.compareValues(parsedItemValue, afterValue) < 0 || 
-               (this.compareValues(parsedItemValue, afterValue) === 0 && String(itemId) < tiebrakerId);
+      if (tiebrakerId) {
+        // With tiebreaker: handle ties using ID
+        if (isDesc) {
+          // For descending order: include items where orderBy < afterValue OR (orderBy = afterValue AND id < tiebrakerId)
+          return this.compareValues(parsedItemValue, afterValue) < 0 || 
+                 (this.compareValues(parsedItemValue, afterValue) === 0 && String(itemId) < tiebrakerId);
+        } else {
+          // For ascending order: include items where orderBy > afterValue OR (orderBy = afterValue AND id > tiebrakerId)
+          return this.compareValues(parsedItemValue, afterValue) > 0 || 
+                 (this.compareValues(parsedItemValue, afterValue) === 0 && String(itemId) > tiebrakerId);
+        }
       } else {
-        // For ascending order: include items where orderBy > afterValue OR (orderBy = afterValue AND id > tiebrakerId)
-        return this.compareValues(parsedItemValue, afterValue) > 0 || 
-               (this.compareValues(parsedItemValue, afterValue) === 0 && String(itemId) > tiebrakerId);
+        // Without tiebreaker: simple comparison
+        if (isDesc) {
+          // For descending order: include items where orderBy < afterValue
+          return this.compareValues(parsedItemValue, afterValue) < 0;
+        } else {
+          // For ascending order: include items where orderBy > afterValue
+          return this.compareValues(parsedItemValue, afterValue) > 0;
+        }
       }
     });
   }
@@ -272,5 +302,16 @@ export class InMemoryCriteriaConverter {
     
     // Default to string comparison
     return String(a).localeCompare(String(b));
+  }
+
+  private static generateCursor<T extends SharedAggregateRoot>(data: T[], criteria: Criteria): string | undefined {
+    const lastItem = data[data.length - 1];
+    const orderByField = criteria.order.orderBy.toValue();
+    const lastItemValue = lastItem.toValue() as unknown as Record<string, unknown>;
+    const cursorValue = lastItemValue[orderByField];
+    
+    return cursorValue != null && typeof cursorValue !== 'object'
+      ? String(cursorValue as string)
+      : undefined;
   }
 }

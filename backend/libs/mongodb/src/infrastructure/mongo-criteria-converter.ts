@@ -29,6 +29,16 @@ interface MongoCriteriaResult {
 }
 
 /**
+ * MongoDB query result with metadata
+ */
+export interface MongoQueryResult<T> {
+  data: T[];
+  total: number | null;
+  hasNext?: boolean;
+  cursor?: string;
+}
+
+/**
  * Converts DDD Criteria to MongoDB filter objects
  */
 export class MongoCriteriaConverter {
@@ -43,10 +53,32 @@ export class MongoCriteriaConverter {
   }
 
   /**
-   * Apply criteria to a MongoDB collection and return configured cursor (alias for query)
+   * Execute a full query with metadata including cursor and hasNext
    */
-  static apply<T extends Document = Document>(collection: Collection<T>, criteria: Criteria): FindCursor<WithId<T>> {
-    return this.query(collection, criteria);
+  static async executeQuery<T extends Document = Document>(
+    collection: Collection<T>, 
+    criteria: Criteria
+  ): Promise<MongoQueryResult<WithId<T>>> {
+    const query = this.query(collection, criteria);
+    const documents = await query.toArray();
+
+    const total = criteria.hasWithTotal() 
+      ? await this.count(collection, criteria)
+      : null;
+
+    // Generate cursor from the last element's orderBy field value
+    const cursor = this.generateCursor(documents, criteria);
+    
+    // Calculate hasNext
+    const hasNext = documents.length === criteria.pagination.limit && 
+                   criteria.pagination.limit > 0;
+
+    return {
+      data: documents,
+      total,
+      cursor,
+      hasNext,
+    };
   }
 
   /**
@@ -136,6 +168,23 @@ export class MongoCriteriaConverter {
     }
     
     return { filters, options };
+  }
+
+  private static generateCursor<T extends Document = Document>(
+    documents: WithId<T>[], 
+    criteria: Criteria
+  ): string | undefined {
+
+    if (documents.length == 0 || !criteria.order.hasOrder()) {
+      return undefined;
+    }
+    const lastDocument = documents[documents.length - 1];
+    const orderByField = criteria.order.orderBy.toValue();
+    const cursorValue = (lastDocument as Record<string, unknown>)[orderByField];
+    
+    return cursorValue != null && typeof cursorValue !== 'object'
+      ? String(cursorValue as string)
+      : undefined;
   }
 
 }

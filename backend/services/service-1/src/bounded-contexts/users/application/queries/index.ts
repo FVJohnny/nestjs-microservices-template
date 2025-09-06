@@ -5,3 +5,7 @@ export * from './get-user-by-id/get-user-by-id.response';
 export * from './get-users/get-users.query';
 export * from './get-users/get-users.query-handler';
 export * from './get-users/get-users.response';
+
+export * from './get-users-cursor/get-users-cursor.query';
+export * from './get-users-cursor/get-users-cursor.query-handler';
+export * from './get-users-cursor/get-users-cursor.response';

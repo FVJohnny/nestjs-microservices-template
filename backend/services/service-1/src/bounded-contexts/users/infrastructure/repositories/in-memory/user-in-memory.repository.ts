@@ -64,19 +64,13 @@ export class UserInMemoryRepository implements UserRepository {
 
   findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
     const users = Array.from(this.users.values());
-    const { filterFn, sortFn, paginationFn } =
-      InMemoryCriteriaConverter.convert<User>(criteria);
+    const queryResult = InMemoryCriteriaConverter.query<User>(users, criteria);
 
-    const result = filterFn(users);
-
-    if (sortFn) {
-      result.sort(sortFn);
-    }
-
-    const paginatedResults = paginationFn(result);
     return Promise.resolve({
-      data: paginatedResults.data,
-      total: criteria.hasWithTotal() ? paginatedResults.total : null,
+      data: queryResult.data,
+      total: criteria.hasWithTotal() ? queryResult.total : null,
+      cursor: queryResult.cursor,
+      hasNext: queryResult.hasNext,
     });
   }
 
