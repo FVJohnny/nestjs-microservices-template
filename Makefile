@@ -3,7 +3,7 @@
 COMPOSE_DEV=infra/docker/docker-compose.dev.yml
 COMPOSE_PROD=infra/docker/docker-compose.prod.yml
 
-.PHONY: dev dev-d dev-down dev-logs prod prod-d prod-down prod-logs rebuild-prod rebuild-dev update-libs dev-restart-service1
+.PHONY: dev dev-d dev-down dev-logs prod prod-d prod-down prod-logs rebuild-prod rebuild-dev update-libs dev-restart-service1 zip
 
 ## Development (hot reload)
 dev:
@@ -72,3 +72,5 @@ prod-restart-service1:
 	@docker compose -f $(COMPOSE_PROD) up --build service-1
 	@echo "✅ Service-1 restarted!"
 	
+zip:
+	@zip -r project.zip . -x "*/node_modules/*" "*/dist/*" "node_modules/*" "dist/*"
