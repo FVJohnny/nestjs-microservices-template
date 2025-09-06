@@ -10,12 +10,27 @@ export interface PaginationOffsetParams {
   };
 }
 
-export interface OffsetPageResultPagination {
-  hasNext: boolean;
-  total?: number | null; // optional
+export interface PageResultOffset<T> {
+  data: T[];
+  pagination: {
+    hasNext: boolean;
+    total?: number | null;
+  };
 }
 
-export interface OffsetPageResult<T> {
+
+export interface PaginationCursorParams {
+  limit?: number;
+  after?: string;
+  sort: {
+    field?: string;
+    order?: PaginationOrder;
+  };
+}
+export interface PageResultCursor<T> {
   data: T[];
-  pagination: OffsetPageResultPagination;
+  pagination: {
+    hasNext: boolean;
+    cursor?: string;
+  };
 }
