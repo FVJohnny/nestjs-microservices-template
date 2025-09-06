@@ -458,7 +458,7 @@ describe('GetUsersCursorQueryHandler', () => {
       }
 
       // Act - Traverse through all pages
-      const allUsernames = [];
+      const allUsernames: string[] = [];
       let cursor: string | undefined;
       let hasNext = true;
 

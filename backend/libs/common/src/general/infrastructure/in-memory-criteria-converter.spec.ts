@@ -491,19 +491,6 @@ describe('InMemoryCriteriaConverter', () => {
   });
 
   describe('Helper Methods', () => {
-    describe('apply method', () => {
-      it('should work as alias for query', () => {
-        const entities = createBasicTestEntities();
-        const criteria = new Criteria({ filters: new Filters([createFilter('status', Operator.EQUAL, 'active')]) });
-        
-        const queryResult = InMemoryCriteriaConverter.query(entities, criteria);
-        const applyResult = InMemoryCriteriaConverter.apply(entities, criteria);
-        
-        expect(applyResult.data).toEqual(queryResult.data);
-        expect(applyResult.total).toEqual(queryResult.total);
-      });
-    });
-
     describe('count method', () => {
       it('should count filtered items without pagination', () => {
         const entities = createTestEntities(20);

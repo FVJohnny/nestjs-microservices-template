@@ -22,5 +22,6 @@ export abstract class SharedAggregateRoot extends AggregateRoot<IEvent> {
   }
 }
 
-export class SharedAggregateRootDTO {  
+export class SharedAggregateRootDTO implements Record<string, unknown> {
+  [key: string]: unknown;
 }

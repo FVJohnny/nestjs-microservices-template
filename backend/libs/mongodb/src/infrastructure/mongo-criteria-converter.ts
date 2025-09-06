@@ -1,4 +1,5 @@
 import { type Criteria, type Filter, Operator, PaginationCursor, PaginationOffset, parseFromString } from '@libs/nestjs-common';
+import { Primitives } from 'backend/libs/common/dist/general/domain/value-object/ValueObject';
 import { type Collection, type FindCursor, type Document, type WithId } from 'mongodb';
 
 /**
@@ -180,11 +181,9 @@ export class MongoCriteriaConverter {
     }
     const lastDocument = documents[documents.length - 1];
     const orderByField = criteria.order.orderBy.toValue();
-    const cursorValue = (lastDocument as Record<string, unknown>)[orderByField];
-    
-    return cursorValue != null && typeof cursorValue !== 'object'
-      ? String(cursorValue as string)
-      : undefined;
+    const cursorValue = lastDocument[orderByField] as Primitives;
+
+    return String(cursorValue);
   }
 
 }

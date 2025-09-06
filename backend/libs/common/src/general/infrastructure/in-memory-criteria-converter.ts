@@ -5,6 +5,7 @@ import type { Order } from '../domain/criteria/order/Order';
 import { PaginationCursor } from '../domain/criteria/pagination/PaginationCursor';
 import { PaginationOffset } from '../domain/criteria/pagination/PaginationOffset';
 import type { SharedAggregateRoot, SharedAggregateRootDTO } from '../domain/entities/AggregateRoot';
+import { Primitives } from '../domain/value-object/ValueObject';
 
 export interface InMemoryFilterResult<T> {
   filterFn: (items: T[]) => T[];
@@ -37,22 +38,12 @@ export class InMemoryCriteriaConverter {
     const paginatedResults = paginationFn(filteredItems);
     
     // Generate cursor from the last element's orderBy field value
-    let cursor: string | undefined;
-    if (paginatedResults.data.length > 0 && criteria.order.hasOrder()) {
-      cursor = this.generateCursor(paginatedResults.data, criteria);
-    }
+    const cursor = this.generateCursor(paginatedResults.data, criteria);
     
     return {
       ...paginatedResults,
       cursor,
     };
-  }
-
-  /**
-   * Alias for query method - kept for backward compatibility
-   */
-  static apply<T extends SharedAggregateRoot>(items: T[], criteria: Criteria): InMemoryQueryResult<T> {
-    return this.query(items, criteria);
   }
 
   /**
@@ -305,13 +296,16 @@ export class InMemoryCriteriaConverter {
   }
 
   private static generateCursor<T extends SharedAggregateRoot>(data: T[], criteria: Criteria): string | undefined {
+
+    if (data.length == 0 || !criteria.order.hasOrder()) {
+      return undefined;
+    }
+    
     const lastItem = data[data.length - 1];
     const orderByField = criteria.order.orderBy.toValue();
-    const lastItemValue = lastItem.toValue() as unknown as Record<string, unknown>;
-    const cursorValue = lastItemValue[orderByField];
+    const lastItemValue = lastItem.toValue();
+    const cursorValue = lastItemValue[orderByField] as Primitives;
     
-    return cursorValue != null && typeof cursorValue !== 'object'
-      ? String(cursorValue as string)
-      : undefined;
+    return String(cursorValue);
   }
 }
