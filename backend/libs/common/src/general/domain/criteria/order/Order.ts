@@ -31,6 +31,6 @@ export class Order {
   }
 
   public hasOrder() {
-    return !this.orderType.isNone();
+    return this.orderBy.toValue().trim() !== '' && !this.orderType.isNone();
   }
 }

@@ -27,7 +27,7 @@ export * from './outbox';
 
 // Utility exports
 export * from './utils/runtime-auto-discovery.util';
-export * from './utils/string-cast';
+export * from './utils/data';
 
 // Tracing
 export * from './tracing';

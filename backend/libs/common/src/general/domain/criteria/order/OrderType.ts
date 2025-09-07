@@ -30,6 +30,10 @@ export class OrderType extends EnumValueObject<OrderTypes> {
     return this.toValue() === OrderTypes.ASC;
   }
 
+  public isDesc(): boolean {
+    return this.toValue() === OrderTypes.DESC;
+  }
+
   protected throwErrorForInvalidValue(value: OrderTypes): void {
     throw new InvalidArgumentError(`The order type ${value} is invalid`);
   }

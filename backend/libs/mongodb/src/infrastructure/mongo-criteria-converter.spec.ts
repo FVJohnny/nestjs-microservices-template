@@ -85,7 +85,7 @@ describe('MongoCriteriaConverter', () => {
     it('should convert empty criteria to default options', () => {
       const result = MongoCriteriaConverter.convert(new Criteria());
       expect(result.filters).toEqual([]);
-      expect(result.options).toEqual({ limit: 10, skip: 0 });
+      expect(result.options).toEqual({ limit: 10, skip: 0, sort: undefined });
     });
 
     it('should query database with empty criteria and return all documents with default pagination', async () => {
@@ -104,7 +104,7 @@ describe('MongoCriteriaConverter', () => {
         const criteria = new Criteria({ pagination: new PaginationOffset(5, 0) });
         const result = MongoCriteriaConverter.convert(criteria);
         expect(result.filters).toEqual([]);
-        expect(result.options).toEqual({ limit: 5, skip: 0 });
+        expect(result.options).toEqual({ limit: 5, skip: 0, sort: undefined });
       });
 
       it('should query database with limit and return limited results', async () => {
@@ -123,7 +123,7 @@ describe('MongoCriteriaConverter', () => {
         const criteria = new Criteria({ pagination: new PaginationOffset(0, 5) });
         const result = MongoCriteriaConverter.convert(criteria);
         expect(result.filters).toEqual([]);
-        expect(result.options).toEqual({ limit: 0, skip: 5 });
+        expect(result.options).toEqual({ limit: 0, skip: 5, sort: undefined });
       });
 
       it('should query database with offset and skip documents', async () => {
@@ -132,8 +132,8 @@ describe('MongoCriteriaConverter', () => {
         
         const results = await MongoCriteriaConverter.query(collection, criteria).toArray();
         
-        expect(results).toHaveLength(7);
-        expect(results[0].id).toBe(4);
+        expect(results).toHaveLength(7); // limit is 0, returns all remaining after offset  
+        expect(results[0].id).toBe(4); // offset 3, so starts at id 4
       });
     });
 
@@ -142,7 +142,7 @@ describe('MongoCriteriaConverter', () => {
         const criteria = new Criteria({ pagination: new PaginationOffset(3, 5) });
         const result = MongoCriteriaConverter.convert(criteria);
         expect(result.filters).toEqual([]);
-        expect(result.options).toEqual({ limit: 3, skip: 5 });
+        expect(result.options).toEqual({ limit: 3, skip: 5, sort: undefined });
       });
 
       it('should query database with combined limit and offset', async () => {
@@ -168,7 +168,7 @@ describe('MongoCriteriaConverter', () => {
         const criteria = new Criteria({ pagination: new PaginationOffset(limit, offset, withTotal) });
         const result = MongoCriteriaConverter.convert(criteria);
         expect(result.filters).toEqual([]);
-        expect(result.options).toEqual({ limit, skip: offset });
+        expect(result.options).toEqual({ limit: limit, skip: offset, sort: undefined });
       });
     });
 
@@ -183,7 +183,7 @@ describe('MongoCriteriaConverter', () => {
       
       expect(result.filters).toHaveLength(1);
       expect(result.filters[0]).toEqual({ category: 'A' });
-      expect(result.options).toEqual({ limit: 3, skip: 2 });
+      expect(result.options).toEqual({ limit: 3, skip: 2, sort: undefined });
     });
 
     it('should work with pagination and sorting combined', () => {
@@ -202,7 +202,7 @@ describe('MongoCriteriaConverter', () => {
       const criteria = new Criteria({ pagination: new PaginationOffset() });
       const result = MongoCriteriaConverter.convert(criteria);
       expect(result.filters).toEqual([]);
-      expect(result.options).toEqual({ limit: 10, skip: 0 });
+      expect(result.options).toEqual({ limit: 10, skip: 0, sort: undefined });
     });
 
     it('should handle edge cases gracefully', () => {
@@ -216,7 +216,7 @@ describe('MongoCriteriaConverter', () => {
         const criteria = new Criteria({ pagination: new PaginationOffset(limit, skip) });
         const result = MongoCriteriaConverter.convert(criteria);
         expect(result.filters).toEqual([]);
-        expect(result.options).toEqual({ limit, skip });
+        expect(result.options).toEqual({ limit: limit, skip, sort: undefined });
       });
     });
 
@@ -234,7 +234,7 @@ describe('MongoCriteriaConverter', () => {
       const expectedSkips = [0, 5, 10, 15];
       results.forEach((result, index) => {
         expect(result.filters).toEqual([]);
-        expect(result.options).toEqual({ limit: 5, skip: expectedSkips[index] });
+        expect(result.options).toEqual({ limit: 5, skip: expectedSkips[index], sort: undefined });
       });
     });
 
@@ -261,25 +261,31 @@ describe('MongoCriteriaConverter', () => {
   });
 
   describe('PaginationCursor', () => {
-    it('should convert basic cursor pagination without after/tiebrakerId', () => {
-      const criteria = new Criteria({ pagination: new PaginationCursor({ limit: 5 }) });
+    it('should convert basic cursor pagination without cursor', () => {
+      const order = new Order(new OrderBy('id'), new OrderType(OrderTypes.ASC));
+      const criteria = new Criteria({ 
+        order,
+        pagination: new PaginationCursor({ limit: 5 }) 
+      });
       const result = MongoCriteriaConverter.convert(criteria);
       
       expect(result.options.limit).toBe(5);
       expect(result.options.skip).toBeUndefined();
+      expect(result.options.sort).toEqual({ id: 1 }); // cursor pagination adds id sort
       expect(result.filters).toEqual([]);
     });
 
-    it('should apply cursor pagination with after and tiebrakerId', () => {
+    it('should apply cursor pagination with cursor', () => {
       const order = new Order(new OrderBy('score'), new OrderType(OrderTypes.ASC));
+      const cursor = PaginationCursor.encodeCursor('30', '3');
       const criteria = new Criteria({
         order,
-        pagination: new PaginationCursor({ limit: 3, after: '30', tiebrakerId: '3' }),
+        pagination: new PaginationCursor({ limit: 3, cursor }),
       });
 
       const result = MongoCriteriaConverter.convert(criteria);
       
-      expect(result.options).toEqual({ limit: 3, sort: { score: 1 } });
+      expect(result.options).toEqual({ limit: 3, sort: { score: 1, id: 1 } });
       expect(result.filters).toHaveLength(1);
       expect(result.filters[0].$or).toHaveLength(2);
       expect(result.filters[0].$or![0]).toEqual({ score: { $gt: 30 } });
@@ -288,14 +294,15 @@ describe('MongoCriteriaConverter', () => {
 
     it('should handle cursor pagination with descending order', () => {
       const order = new Order(new OrderBy('score'), new OrderType(OrderTypes.DESC));
+      const cursor = PaginationCursor.encodeCursor('70', '7');
       const criteria = new Criteria({
         order,
-        pagination: new PaginationCursor({ limit: 3, after: '70', tiebrakerId: '7' }),
+        pagination: new PaginationCursor({ limit: 3, cursor }),
       });
 
       const result = MongoCriteriaConverter.convert(criteria);
       
-      expect(result.options).toEqual({ limit: 3, sort: { score: -1 } });
+      expect(result.options).toEqual({ limit: 3, sort: { score: -1, id: -1 } });
       expect(result.filters).toHaveLength(1);
       expect(result.filters[0].$or).toHaveLength(2);
       expect(result.filters[0].$or![0]).toEqual({ score: { $lt: 70 } });
@@ -304,15 +311,16 @@ describe('MongoCriteriaConverter', () => {
 
     it('should work with cursor pagination and filters combined', () => {
       const order = new Order(new OrderBy('score'), new OrderType(OrderTypes.ASC));
+      const cursor = PaginationCursor.encodeCursor('50', '5');
       const criteria = new Criteria({
         filters: new Filters([createFilter('score', Operator.GT, '20')]),
         order,
-        pagination: new PaginationCursor({ limit: 2, after: '50', tiebrakerId: '5' }),
+        pagination: new PaginationCursor({ limit: 2, cursor }),
       });
 
       const result = MongoCriteriaConverter.convert(criteria);
       
-      expect(result.options).toEqual({ limit: 2, sort: { score: 1 } });
+      expect(result.options).toEqual({ limit: 2, sort: { score: 1, id: 1 } });
       expect(result.filters).toHaveLength(2);
       expect(result.filters[0]).toEqual({ score: { $gt: 20 } });
       expect(result.filters[1].$or).toHaveLength(2);
@@ -332,9 +340,10 @@ describe('MongoCriteriaConverter', () => {
       await collection.insertMany(testDocs);
       
       const order = new Order(new OrderBy('score'), new OrderType(OrderTypes.ASC));
+      const cursor = PaginationCursor.encodeCursor('30', '3');
       const criteria = new Criteria({
         order,
-        pagination: new PaginationCursor({ limit: 2, after: '30', tiebrakerId: '3' }),
+        pagination: new PaginationCursor({ limit: 2, cursor }),
       });
       const results = await MongoCriteriaConverter.query(collection, criteria).toArray();
 
@@ -356,9 +365,10 @@ describe('MongoCriteriaConverter', () => {
       await collection.insertMany(testDocs);
       
       const order = new Order(new OrderBy('priority'), new OrderType(OrderTypes.DESC));
+      const cursor = PaginationCursor.encodeCursor('80', '2');
       const criteria = new Criteria({
         order,
-        pagination: new PaginationCursor({ limit: 2, after: '80', tiebrakerId: '2' }),
+        pagination: new PaginationCursor({ limit: 2, cursor }),
       });
       const results = await MongoCriteriaConverter.query(collection, criteria).toArray();
 
@@ -388,7 +398,7 @@ describe('MongoCriteriaConverter', () => {
       const criteria = new Criteria({
         filters: new Filters(filters),
         order,
-        pagination: new PaginationCursor({ limit: 2, after: '25', tiebrakerId: '2' }),
+        pagination: new PaginationCursor({ limit: 2, cursor: PaginationCursor.encodeCursor('25', '2') }),
       });
       const results = await MongoCriteriaConverter.query(collection, criteria).toArray();
 
@@ -407,7 +417,7 @@ describe('MongoCriteriaConverter', () => {
         
         expect(result.filters).toHaveLength(1);
         expect(result.filters[0]).toEqual({ name: 'test' });
-        expect(result.options).toEqual({ limit: 10, skip: 0 });
+        expect(result.options).toEqual({ limit: 10, skip: 0, sort: undefined });
       });
 
       it('should query database with equal filter and return matching documents', async () => {
@@ -431,7 +441,7 @@ describe('MongoCriteriaConverter', () => {
       const criteria = new Criteria({ filters: new Filters([createFilter(field, operator, value)]) });
       const result = MongoCriteriaConverter.convert(criteria);
       expect(result.filters).toEqual([expectedFilter]);
-      expect(result.options).toEqual({ limit: 10, skip: 0 });
+      expect(result.options).toEqual({ limit: 10, skip: 0, sort: undefined });
     };
 
     it('should convert not equal filter', () => {
@@ -464,7 +474,7 @@ describe('MongoCriteriaConverter', () => {
       const result = MongoCriteriaConverter.convert(criteria);
 
       expect(result.filters).toEqual([{ status: 'active' }, { age: { $gt: 21 } }]);
-      expect(result.options).toEqual({ limit: 10, skip: 0 });
+      expect(result.options).toEqual({ limit: 10, skip: 0, sort: undefined });
     });
 
     it('should query database with not equal filter', async () => {

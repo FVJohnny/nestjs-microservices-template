@@ -21,8 +21,7 @@ export interface PageResultOffset<T> {
 
 export interface PaginationCursorParams {
   limit?: number;
-  after?: string;
-  tieBreakerId?: string;
+  cursor?: string;
   sort?: {
     field: string;
     order: PaginationOrder;

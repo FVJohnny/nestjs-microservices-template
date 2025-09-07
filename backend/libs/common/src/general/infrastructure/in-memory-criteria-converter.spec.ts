@@ -355,7 +355,7 @@ describe('InMemoryCriteriaConverter', () => {
     describe('Offset', () => {
       it('should skip results correctly', () => {
         const entities = createTestEntities(10);
-        const criteria = new Criteria({ pagination: new PaginationOffset(0, 3) });
+        const criteria = new Criteria({ pagination: new PaginationOffset(10, 3) });
         
         const result = InMemoryCriteriaConverter.query(entities, criteria);
         
@@ -417,17 +417,21 @@ describe('InMemoryCriteriaConverter', () => {
   });
 
   describe('PaginationCursor', () => {
-    it('should handle basic cursor pagination without after/tiebrakerId', () => {
+    it('should handle basic cursor pagination without cursor', () => {
       const entities = createTestEntities(10);
-      const criteria = new Criteria({ pagination: new PaginationCursor({ limit: 5 }) });
+      const order = new Order(new OrderBy('id'), new OrderType(OrderTypes.ASC));
+      const criteria = new Criteria({ 
+        order,
+        pagination: new PaginationCursor({ limit: 5 }) 
+      });
       
       const result = InMemoryCriteriaConverter.query(entities, criteria);
       
       expect(result.data).toHaveLength(5);
-      expect(result.data.map(e => e.toValue().id)).toEqual(['id-1', 'id-2', 'id-3', 'id-4', 'id-5']);
+      expect(result.data.map(e => e.toValue().id)).toEqual(['id-1', 'id-10', 'id-2', 'id-3', 'id-4']);
     });
 
-    it('should apply cursor pagination with after and tiebrakerId (ascending)', () => {
+    it('should apply cursor pagination with cursor (ascending)', () => {
       const entities = [
         new TestEntity({ id: 'id-1', name: 'Item 1', email: 'test@test.com', age: 20, score: 10, category: 'A', status: 'active', isActive: true, salary: 50000, department: 'Engineering', createdAt: new Date(), tags: [] }),
         new TestEntity({ id: 'id-2', name: 'Item 2', email: 'test@test.com', age: 20, score: 20, category: 'A', status: 'active', isActive: true, salary: 50000, department: 'Engineering', createdAt: new Date(), tags: [] }),
@@ -437,9 +441,10 @@ describe('InMemoryCriteriaConverter', () => {
       ];
       
       const order = new Order(new OrderBy('score'), new OrderType(OrderTypes.ASC));
+      const cursor = PaginationCursor.encodeCursor('30', 'id-3');
       const criteria = new Criteria({
         order,
-        pagination: new PaginationCursor({ limit: 2, after: '30', tiebrakerId: 'id-3' }),
+        pagination: new PaginationCursor({ cursor, limit: 2 }),
       });
       
       const result = InMemoryCriteriaConverter.query(entities, criteria);
@@ -448,7 +453,7 @@ describe('InMemoryCriteriaConverter', () => {
       expect(result.data.map(e => e.toValue().id)).toEqual(['id-4', 'id-5']);
     });
 
-    it('should apply cursor pagination with after and tiebrakerId (descending)', () => {
+    it('should apply cursor pagination with cursor (descending)', () => {
       const entities = [
         new TestEntity({ id: 'id-1', name: 'Item 1', email: 'test@test.com', age: 20, score: 50, category: 'A', status: 'active', isActive: true, salary: 50000, department: 'Engineering', createdAt: new Date(), tags: [] }),
         new TestEntity({ id: 'id-2', name: 'Item 2', email: 'test@test.com', age: 20, score: 40, category: 'A', status: 'active', isActive: true, salary: 50000, department: 'Engineering', createdAt: new Date(), tags: [] }),
@@ -458,9 +463,10 @@ describe('InMemoryCriteriaConverter', () => {
       ];
       
       const order = new Order(new OrderBy('score'), new OrderType(OrderTypes.DESC));
+      const cursor = PaginationCursor.encodeCursor('30', 'id-3');
       const criteria = new Criteria({
         order,
-        pagination: new PaginationCursor({ limit: 2, after: '30', tiebrakerId: 'id-3' }),
+        pagination: new PaginationCursor({ cursor, limit: 2 }),
       });
       
       const result = InMemoryCriteriaConverter.query(entities, criteria);
@@ -477,10 +483,11 @@ describe('InMemoryCriteriaConverter', () => {
       const entities = createTestEntities(10, { status: 'active' });
       const order = new Order(new OrderBy('score'), new OrderType(OrderTypes.ASC));
       const filters = [createFilter('status', Operator.EQUAL, 'active')];
+      const cursor = PaginationCursor.encodeCursor('30', 'id-3');
       const criteria = new Criteria({
         filters: new Filters(filters),
         order,
-        pagination: new PaginationCursor({ limit: 3, after: '30', tiebrakerId: 'id-3' }),
+        pagination: new PaginationCursor({ cursor, limit: 3 }),
       });
       
       const result = InMemoryCriteriaConverter.query(entities, criteria);

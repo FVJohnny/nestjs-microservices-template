@@ -12,6 +12,7 @@ import {
 } from '../../../domain/value-objects/user-status.vo';
 import { UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { UserTestFactory } from '../../../test-utils';
+import { PaginationCursor } from '@libs/nestjs-common';
 
 describe('GetUsersCursorQueryHandler', () => {
   let handler: GetUsersCursorQueryHandler;
@@ -169,7 +170,6 @@ describe('GetUsersCursorQueryHandler', () => {
       expect(page1.data.map((u) => u.username)).toEqual(['admin', 'user1']);
       expect(page1.pagination.hasNext).toBe(true);
       expect(page1.pagination.cursor).toBeDefined();
-      expect(page1.pagination.cursor).toBe('user1'); // cursor should be the username of the last item
     });
 
     it('should use cursor to get next page', async () => {
@@ -192,7 +192,7 @@ describe('GetUsersCursorQueryHandler', () => {
           pagination: {
             sort: { field: 'username', order: 'asc' },
             limit: 2,
-            after: page1.pagination.cursor,
+            cursor: page1.pagination.cursor,
           },
         }),
       );
@@ -226,17 +226,17 @@ describe('GetUsersCursorQueryHandler', () => {
           pagination: {
             sort: { field: 'username', order: 'desc' },
             limit: 1,
-            after: page1Desc.pagination.cursor,
+            cursor: page1Desc.pagination.cursor,
           },
         }),
       );
 
       // Assert
       expect(page1Desc.data.map((u) => u.username)).toEqual(['user2']);
-      expect(page1Desc.pagination.cursor).toBe('user2');
+      expect(page1Desc.pagination.cursor).toBeDefined();
 
       expect(page2Desc.data.map((u) => u.username)).toEqual(['user1']);
-      expect(page2Desc.pagination.cursor).toBe('user1');
+      expect(page2Desc.pagination.cursor).toBeDefined();
     });
 
     it('should return empty results when cursor is beyond available data', async () => {
@@ -244,12 +244,13 @@ describe('GetUsersCursorQueryHandler', () => {
       await seedUsers();
 
       // Act
+      const beyondCursor = PaginationCursor.encodeCursor('zzz', 'some-id'); // cursor beyond any existing username
       const result = await handler.execute(
         new GetUsersCursorQuery({
           pagination: {
             sort: { field: 'username', order: 'asc' },
             limit: 10,
-            after: 'zzz', // cursor beyond any existing username
+            cursor: beyondCursor,
           },
         }),
       );
@@ -281,7 +282,7 @@ describe('GetUsersCursorQueryHandler', () => {
           pagination: {
             sort: { field: 'username', order: 'asc' },
             limit: 1,
-            after: page1.pagination.cursor,
+            cursor: page1.pagination.cursor,
           },
         }),
       );
@@ -468,7 +469,7 @@ describe('GetUsersCursorQueryHandler', () => {
             pagination: {
               sort: { field: 'username', order: 'asc' },
               limit: 2,
-              after: cursor,
+              cursor: cursor,
             },
           }),
         );

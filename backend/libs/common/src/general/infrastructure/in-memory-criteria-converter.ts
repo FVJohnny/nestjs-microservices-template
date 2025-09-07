@@ -1,3 +1,4 @@
+import { compareValues, getNestedValue, parseFromString } from '../../utils/data';
 import type { Criteria } from '../domain/criteria/Criteria';
 import type { Filter } from '../domain/criteria/filters/Filter';
 import { Operator } from '../domain/criteria/filters/FilterOperator';
@@ -58,9 +59,7 @@ export class InMemoryCriteriaConverter {
    * Convert a Criteria object to in-memory filter functions
    */
   static convert<T extends SharedAggregateRoot>(criteria: Criteria): InMemoryFilterResult<T> {
-    const shouldSort = criteria.order && 
-                      criteria.order.orderBy.toValue().trim() !== '' && 
-                      criteria.order.orderType.toValue() !== 'none';
+    const shouldSort = criteria.order.hasOrder();
     
     return {
       filterFn: (items: T[]) => this.applyFilters<T>(items, criteria),
@@ -89,7 +88,7 @@ export class InMemoryCriteriaConverter {
 
   private static matchesFilter(primitives: SharedAggregateRootDTO, field: string, operator: string, filterValue: unknown): boolean {
     // Get value from nested path
-    let userValue = this.getNestedValue(primitives, field);
+    let userValue = getNestedValue(primitives, field);
     
     if (userValue === undefined || userValue === null) {
       return false;
@@ -99,63 +98,41 @@ export class InMemoryCriteriaConverter {
       userValue = userValue.join(',');
     }
 
-    return this.applyOperator(userValue, operator, filterValue, field);
+    return this.applyOperator(userValue, operator, filterValue);
   }
 
-  private static getNestedValue(obj: object, path: string): unknown {
-    const keys = path.split('.');
-    let current: unknown = obj;
-    
-    for (const key of keys) {
-      if (current === null || current === undefined) {
-        return undefined;
-      }
-      if (typeof current === 'object') {
-        current = (current as Record<string, unknown>)[key];
-      } else {
-        return undefined;
+
+
+  private static applyOperator(userValue: unknown, operator: string, filterValue: unknown): boolean {
+    // For string operations (CONTAINS, NOT_CONTAINS), use raw string values
+    if (operator === Operator.CONTAINS || operator === Operator.NOT_CONTAINS) {
+      const userStr = String(userValue);
+      const filterStr = String(filterValue);
+      
+      switch (operator) {
+        case Operator.CONTAINS:
+          return userStr.toLowerCase().includes(filterStr.toLowerCase());
+        case Operator.NOT_CONTAINS:
+          return !userStr.toLowerCase().includes(filterStr.toLowerCase());
       }
     }
-    
-    return current;
-  }
 
-  private static applyOperator(userValue: unknown, operator: string, filterValue: unknown, field: string): boolean {
-    const userValueStr = String(userValue).toLowerCase();
-    const filterValueStr = String(filterValue).toLowerCase();
+    // For other operations, parse values for proper type comparison
+    const a = parseFromString(String(userValue));
+    const b = parseFromString(String(filterValue));
 
     switch (operator) {
       case Operator.EQUAL:
-        return userValueStr === filterValueStr;
+        return compareValues(a, b) === 0;
       case Operator.NOT_EQUAL:
-        return userValueStr !== filterValueStr;
+        return compareValues(a, b) !== 0;
       case Operator.GT:
-        return this.isDateField(field) 
-          ? new Date(String(userValue)) > new Date(String(filterValue))
-          : Number(userValue) > Number(filterValue);
+        return compareValues(a, b) > 0;
       case Operator.LT:
-        return this.isDateField(field)
-          ? new Date(String(userValue)) < new Date(String(filterValue))
-          : Number(userValue) < Number(filterValue);
-      case Operator.CONTAINS:
-        return userValueStr.includes(filterValueStr);
-      case Operator.NOT_CONTAINS:
-        return !userValueStr.includes(filterValueStr);
+        return compareValues(a, b) < 0;
       default:
         return true;
     }
-  }
-
-  private static isDateField(field: string): boolean {
-    const dateFieldPatterns = [
-      /.*at$/i,        // createdAt, updatedAt, deletedAt, etc.
-      /.*date$/i,      // startDate, endDate, etc.
-      /.*time$/i,      // lastTime, accessTime, etc.
-      /^date.*$/i,     // dateCreated, dateUpdated, etc.
-      /^time.*$/i,     // timeCreated, timeUpdated, etc.
-    ];
-    
-    return dateFieldPatterns.some(pattern => pattern.test(field));
   }
 
   private static applySorting(a: SharedAggregateRoot, b: SharedAggregateRoot, order: Order): number {
@@ -163,137 +140,109 @@ export class InMemoryCriteriaConverter {
     const bPrimitives = b.toValue();
     const orderBy = order.orderBy.toValue();
     
-    const aValue = this.getNestedValue(aPrimitives, orderBy);
-    const bValue = this.getNestedValue(bPrimitives, orderBy);
+    const aValue = getNestedValue(aPrimitives, orderBy);
+    const bValue = getNestedValue(bPrimitives, orderBy);
     
+
     if (aValue === null || aValue === undefined) return 1;
     if (bValue === null || bValue === undefined) return -1;
     
-    const comparison = aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
-    return order.orderType.isAsc() ? comparison : -comparison;
+    const comparison = compareValues(aValue, bValue);
+    const dir = order.orderType.isAsc() ? 1 : -1;
+
+    if (comparison !== 0) {
+      return dir * comparison;
+    }
+
+    // If values are equal, sort by id
+    const aId = getNestedValue(aPrimitives, 'id');
+    const bId = getNestedValue(bPrimitives, 'id');
+
+    if (aId === null || aId === undefined) return 1;
+    if (bId === null || bId === undefined) return -1;
+
+    return dir * compareValues(aId, bId);
   }
 
   private static applyPagination<T extends SharedAggregateRoot>(items: T[], criteria: Criteria)
   : {data: T[], total: number | null, hasNext?: boolean} {
     let result = items;
-    let total = null;
+    let total: number | null = null;
     let hasNext: boolean | undefined;
-
+  
     if (criteria.pagination instanceof PaginationOffset) {
-      if (criteria.pagination.withTotal) {
-        total = items.length;
-      }
-      if (criteria.pagination.offset) {
-        result = result.slice(criteria.pagination.offset);
-      }
-      if (criteria.pagination.limit) {
-        result = result.slice(0, criteria.pagination.limit);
+      const off = criteria.pagination.offset;
+      const lim = criteria.pagination.limit;
+      if (criteria.pagination.withTotal) total = items.length;
+  
+      if (lim === 0) {
+        // limit=0 means no limit, return all items after offset
+        result = items.slice(off);
+        hasNext = false;
+      } else {
+        const window = items.slice(off, off + lim + 1); // +1 peek
+        hasNext = window.length > lim;
+        result = window.slice(0, lim);
       }
     }
-    
+  
     if (criteria.pagination instanceof PaginationCursor) {
-      if (criteria.pagination.after && criteria.order) {
-        result = this.applyCursorPagination<T>(result, criteria);
-      }
-      // For cursor pagination, handle limit=0 differently than offset pagination
-      const shouldApplyLimit = criteria.pagination.limit !== undefined;
-      if (shouldApplyLimit) {
-        // Check if there are more items than the limit
-        hasNext = criteria.pagination.limit > 0 && result.length > criteria.pagination.limit;
-        result = result.slice(0, criteria.pagination.limit);
+      // first, apply the seek to drop items before the cursor
+      const seeked = this.applyCursorPagination<T>(items, criteria);
+      const lim = criteria.pagination.limit ?? seeked.length;
+  
+      // For cursor pagination, limit=0 means return 0 items
+      if (lim === 0) {
+        result = [];
+        hasNext = false;
+      } else {
+        const window = seeked.slice(0, lim + 1); // +1 peek
+        hasNext = window.length > lim;
+        result = window.slice(0, lim);
       }
     }
     
-    return {data: result, total, hasNext};
+    return { data: result, total, hasNext };
   }
 
   private static applyCursorPagination<T extends SharedAggregateRoot>(items: T[], criteria: Criteria): T[] {
-    const pagination = criteria.pagination as PaginationCursor;
+    if (!(criteria.pagination instanceof PaginationCursor) 
+      || !criteria.order.hasOrder()
+      || !criteria.pagination.cursor
+    ) {
+      return items;
+    }
+
     const orderBy = criteria.order!.orderBy.toValue();
-    const isDesc = criteria.order!.orderType.toValue() === 'desc';
-    const afterValue = this.parseFromString(pagination.after!);
-    const tiebrakerId = pagination.tiebrakerId;
+    const isDesc = criteria.order!.orderType.isDesc();
+    const cursor = criteria.pagination.decodeCursor();
     
     return items.filter(item => {
       const primitives = item.toValue();
-      const itemValue = this.getNestedValue(primitives, orderBy);
-      const itemId = this.getNestedValue(primitives, 'id');
+      const itemValue = getNestedValue(primitives, orderBy);
+      const itemId = getNestedValue(primitives, 'id');
       
       if (itemValue === undefined || itemValue === null) {
         return false;
       }
       
       // Convert values to comparable types
-      const parsedItemValue = this.parseFromString(String(itemValue));
+      const parsedItemValue = parseFromString(String(itemValue));
+      const parsedAfter = parseFromString(String(cursor.after));
       
-      if (tiebrakerId) {
         // With tiebreaker: handle ties using ID
         if (isDesc) {
           // For descending order: include items where orderBy < afterValue OR (orderBy = afterValue AND id < tiebrakerId)
-          return this.compareValues(parsedItemValue, afterValue) < 0 || 
-                 (this.compareValues(parsedItemValue, afterValue) === 0 && String(itemId) < tiebrakerId);
+          return compareValues(parsedItemValue, parsedAfter) < 0 || 
+                 (compareValues(parsedItemValue, parsedAfter) === 0 && String(itemId) < cursor.tiebreakerId);
         } else {
           // For ascending order: include items where orderBy > afterValue OR (orderBy = afterValue AND id > tiebrakerId)
-          return this.compareValues(parsedItemValue, afterValue) > 0 || 
-                 (this.compareValues(parsedItemValue, afterValue) === 0 && String(itemId) > tiebrakerId);
+          return compareValues(parsedItemValue, parsedAfter) > 0 || 
+                 (compareValues(parsedItemValue, parsedAfter) === 0 && String(itemId) > cursor.tiebreakerId);
         }
-      } else {
-        // Without tiebreaker: simple comparison
-        if (isDesc) {
-          // For descending order: include items where orderBy < afterValue
-          return this.compareValues(parsedItemValue, afterValue) < 0;
-        } else {
-          // For ascending order: include items where orderBy > afterValue
-          return this.compareValues(parsedItemValue, afterValue) > 0;
-        }
-      }
     });
   }
 
-  private static parseFromString(value: string): unknown {
-    // Try to parse as number first
-    const asNumber = Number(value);
-    if (!isNaN(asNumber) && isFinite(asNumber)) {
-      return asNumber;
-    }
-    
-    // Try to parse as boolean
-    if (value.toLowerCase() === 'true') return true;
-    if (value.toLowerCase() === 'false') return false;
-    
-    // Try to parse as Date
-    const asDate = new Date(value);
-    if (!isNaN(asDate.getTime()) && value.match(/\d{4}-\d{2}-\d{2}/)) {
-      return asDate;
-    }
-    
-    // Return as string
-    return value;
-  }
-
-  private static compareValues(a: unknown, b: unknown): number {
-    // Handle null/undefined
-    if (a === null || a === undefined) return b === null || b === undefined ? 0 : -1;
-    if (b === null || b === undefined) return 1;
-    
-    // If both are numbers, compare numerically
-    if (typeof a === 'number' && typeof b === 'number') {
-      return a - b;
-    }
-    
-    // If both are dates, compare by time
-    if (a instanceof Date && b instanceof Date) {
-      return a.getTime() - b.getTime();
-    }
-    
-    // If both are booleans, compare as numbers
-    if (typeof a === 'boolean' && typeof b === 'boolean') {
-      return Number(a) - Number(b);
-    }
-    
-    // Default to string comparison
-    return String(a).localeCompare(String(b));
-  }
 
   private static generateCursor<T extends SharedAggregateRoot>(data: T[], criteria: Criteria): string | undefined {
 
@@ -305,7 +254,8 @@ export class InMemoryCriteriaConverter {
     const orderByField = criteria.order.orderBy.toValue();
     const lastItemValue = lastItem.toValue();
     const cursorValue = lastItemValue[orderByField] as Primitives;
+    const tiebreakerId = String(lastItemValue.id);
     
-    return String(cursorValue);
+    return PaginationCursor.encodeCursor(String(cursorValue), tiebreakerId);
   }
 }

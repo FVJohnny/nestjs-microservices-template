@@ -99,19 +99,14 @@ export class GetUsersCursorQueryHandler extends BaseQueryHandler<
 
     const filters = new Filters(filterList);
 
-    let order = Order.none();
-    const sortConfig = query.pagination?.sort;
-    if (sortConfig?.field) {
-      order = Order.fromValues(
-        sortConfig.field,
-        sortConfig.order || OrderTypes.ASC,
-      );
-    }
+    const sort = query.pagination?.sort;
+    const order = sort
+      ? Order.fromValues(sort.field, sort.order || OrderTypes.ASC)
+      : Order.fromValues('id', OrderTypes.ASC); // Default sort by id for cursor pagination
 
     const pagination = new PaginationCursor({
       limit: query.pagination?.limit,
-      after: query.pagination?.after,
-      tiebrakerId: query.pagination?.tieBreakerId,
+      cursor: query.pagination?.cursor,
     });
 
     const criteria = new Criteria({
