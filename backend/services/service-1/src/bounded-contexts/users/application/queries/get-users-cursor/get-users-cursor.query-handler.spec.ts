@@ -323,7 +323,6 @@ describe('GetUsersCursorQueryHandler', () => {
         pagination: {
           sort: { field: 'username', order: 'asc' },
           limit: 2,
-          tieBreakerId: 'id',
         },
       });
       const result = await handler.execute(query);
