@@ -232,11 +232,9 @@ export class InMemoryCriteriaConverter {
       
         // With tiebreaker: handle ties using ID
         if (isDesc) {
-          // For descending order: include items where orderBy < afterValue OR (orderBy = afterValue AND id < tiebrakerId)
           return compareValues(parsedItemValue, parsedAfter) < 0 || 
                  (compareValues(parsedItemValue, parsedAfter) === 0 && String(itemId) < cursor.tiebreakerId);
         } else {
-          // For ascending order: include items where orderBy > afterValue OR (orderBy = afterValue AND id > tiebrakerId)
           return compareValues(parsedItemValue, parsedAfter) > 0 || 
                  (compareValues(parsedItemValue, parsedAfter) === 0 && String(itemId) > cursor.tiebreakerId);
         }

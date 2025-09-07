@@ -471,10 +471,6 @@ describe('InMemoryCriteriaConverter', () => {
       
       const result = InMemoryCriteriaConverter.query(entities, criteria);
       
-      // For descending order with cursor after score=30, tiebrakerId='id-3':
-      // - Include items where score < 30 OR (score = 30 AND id < 'id-3')
-      // - id-2b has score=30 and 'id-2b' < 'id-3' lexicographically, so it should be included
-      // - id-5 has score=20 which is < 30, so it should be included
       expect(result.data).toHaveLength(2);
       expect(result.data.map(e => e.toValue().id)).toEqual(['id-2b', 'id-5']);
     });
