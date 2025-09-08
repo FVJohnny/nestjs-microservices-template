@@ -4,7 +4,6 @@ import prettier from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 
 export default [
-  // Ignores
   {
     ignores: [
       '**/dist/**',
