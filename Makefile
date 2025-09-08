@@ -7,10 +7,15 @@ COMPOSE_PROD=infra/docker/docker-compose.prod.yml
 
 ## Development (hot reload)
 dev:
+	@npm i
+	@npm run build
 	@docker compose -f $(COMPOSE_DEV) up --build
 
 dev-d:
+	@npm i
+	@npm run build
 	@docker compose -f $(COMPOSE_DEV) up --build -d
+	@docker compose -f $(COMPOSE_DEV) logs -f service-1
 
 dev-down:
 	@docker compose -f $(COMPOSE_DEV) down

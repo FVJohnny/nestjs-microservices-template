@@ -1,0 +1,956 @@
+{
+  "graph": {
+    "nodes": {
+      "service-1": {
+        "name": "service-1",
+        "type": "app",
+        "data": {
+          "root": "backend/services/service-1",
+          "name": "service-1",
+          "tags": [
+            "npm:private",
+            "type:app",
+            "scope:service"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "format",
+                "start",
+                "start:dev",
+                "start:debug",
+                "start:prod",
+                "test:watch",
+                "test:cov",
+                "test:debug",
+                "test:e2e"
+              ]
+            },
+            "description": "",
+            "js": {
+              "packageName": "my-nestjs-app",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "format": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "format"
+              },
+              "metadata": {
+                "scriptContent": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+                "runCommand": "npm run format"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "start": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "start"
+              },
+              "metadata": {
+                "scriptContent": "nest start",
+                "runCommand": "npm run start"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "start:dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "start:dev"
+              },
+              "metadata": {
+                "scriptContent": "nest start --watch",
+                "runCommand": "npm run start:dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "start:debug": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "start:debug"
+              },
+              "metadata": {
+                "scriptContent": "nest start --debug --watch",
+                "runCommand": "npm run start:debug"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "start:prod": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "start:prod"
+              },
+              "metadata": {
+                "scriptContent": "node dist/main",
+                "runCommand": "npm run start:prod"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:watch": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:watch"
+              },
+              "metadata": {
+                "scriptContent": "jest --watch",
+                "runCommand": "npm run test:watch"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:cov": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:cov"
+              },
+              "metadata": {
+                "scriptContent": "jest --coverage",
+                "runCommand": "npm run test:cov"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:debug": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:debug"
+              },
+              "metadata": {
+                "scriptContent": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+                "runCommand": "npm run test:debug"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:e2e": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:e2e"
+              },
+              "metadata": {
+                "scriptContent": "jest --config ./test/jest-e2e.json",
+                "runCommand": "npm run test:e2e"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{projectRoot}/dist"
+              ],
+              "options": {
+                "outputPath": "backend/services/service-1/dist",
+                "main": "backend/services/service-1/src/main.ts",
+                "tsConfig": "backend/services/service-1/tsconfig.json",
+                "assets": []
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true
+            },
+            "serve": {
+              "executor": "@nx/js:node",
+              "defaultConfiguration": "development",
+              "dependsOn": [
+                "build"
+              ],
+              "options": {
+                "buildTarget": "service-1:build",
+                "inspect": false
+              },
+              "configurations": {
+                "development": {
+                  "buildTarget": "service-1:build:development"
+                },
+                "production": {
+                  "buildTarget": "service-1:build:production"
+                }
+              },
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "options": {
+                "lintFilePatterns": [
+                  "backend/services/service-1/src/**/*.ts",
+                  "backend/services/service-1/test/**/*.ts"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "{workspaceRoot}/.eslintrc.json",
+                "{workspaceRoot}/.eslintignore"
+              ],
+              "cache": true
+            },
+            "test": {
+              "executor": "@nx/jest:jest",
+              "outputs": [
+                "{workspaceRoot}/coverage/{projectRoot}"
+              ],
+              "options": {
+                "jestConfig": "backend/services/service-1/jest.config.js"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "cache": true
+            }
+          },
+          "sourceRoot": "backend/services/service-1/src",
+          "projectType": "application",
+          "implicitDependencies": [
+            "nestjs-common",
+            "nestjs-kafka",
+            "nestjs-mongodb",
+            "nestjs-redis",
+            "nestjs-postgresql"
+          ]
+        }
+      },
+      "nestjs-postgresql": {
+        "name": "nestjs-postgresql",
+        "type": "lib",
+        "data": {
+          "root": "backend/libs/postgresql",
+          "name": "nestjs-postgresql",
+          "tags": [
+            "npm:public",
+            "npm:nestjs",
+            "npm:postgresql",
+            "npm:typeorm",
+            "npm:database",
+            "npm:shared",
+            "type:lib",
+            "scope:nestjs",
+            "topic:postgresql"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev"
+              ]
+            },
+            "description": "Shared PostgreSQL utilities for NestJS services",
+            "js": {
+              "packageName": "@libs/nestjs-postgresql",
+              "packageMain": "dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "tsc --watch",
+                "runCommand": "npm run dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": [
+                "^nx-release-publish"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{projectRoot}/dist"
+              ],
+              "options": {
+                "outputPath": "backend/libs/postgresql/dist",
+                "main": "backend/libs/postgresql/src/index.ts",
+                "tsConfig": "backend/libs/postgresql/tsconfig.json",
+                "assets": []
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "options": {
+                "lintFilePatterns": [
+                  "backend/libs/postgresql/src/**/*.ts"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "{workspaceRoot}/.eslintrc.json",
+                "{workspaceRoot}/.eslintignore"
+              ],
+              "cache": true
+            },
+            "test": {
+              "executor": "@nx/jest:jest",
+              "outputs": [
+                "{workspaceRoot}/coverage/{projectRoot}"
+              ],
+              "options": {
+                "jestConfig": "backend/libs/postgresql/jest.config.js"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "cache": true
+            }
+          },
+          "sourceRoot": "backend/libs/postgresql/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "nestjs-mongodb": {
+        "name": "nestjs-mongodb",
+        "type": "lib",
+        "data": {
+          "root": "backend/libs/mongodb",
+          "name": "nestjs-mongodb",
+          "tags": [
+            "npm:public",
+            "npm:nestjs",
+            "npm:mongodb",
+            "npm:mongoose",
+            "npm:database",
+            "npm:shared",
+            "type:lib",
+            "scope:nestjs",
+            "topic:mongodb"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "build:watch"
+              ]
+            },
+            "description": "Shared MongoDB module for NestJS services",
+            "js": {
+              "packageName": "@libs/nestjs-mongodb",
+              "packageMain": "dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build:watch": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build:watch"
+              },
+              "metadata": {
+                "scriptContent": "tsc --watch",
+                "runCommand": "npm run build:watch"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": [
+                "^nx-release-publish"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{projectRoot}/dist"
+              ],
+              "options": {
+                "outputPath": "backend/libs/mongodb/dist",
+                "main": "backend/libs/mongodb/src/index.ts",
+                "tsConfig": "backend/libs/mongodb/tsconfig.json",
+                "assets": []
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "options": {
+                "lintFilePatterns": [
+                  "backend/libs/mongodb/src/**/*.ts"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "{workspaceRoot}/.eslintrc.json",
+                "{workspaceRoot}/.eslintignore"
+              ],
+              "cache": true
+            },
+            "test": {
+              "executor": "@nx/jest:jest",
+              "outputs": [
+                "{workspaceRoot}/coverage/{projectRoot}"
+              ],
+              "options": {
+                "jestConfig": "backend/libs/mongodb/jest.config.js"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "cache": true
+            }
+          },
+          "sourceRoot": "backend/libs/mongodb/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@libs/nestjs-eslint": {
+        "name": "@libs/nestjs-eslint",
+        "type": "lib",
+        "data": {
+          "root": "backend/libs/eslint",
+          "name": "@libs/nestjs-eslint",
+          "tags": [
+            "npm:public"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@libs/nestjs-eslint",
+              "packageMain": "index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": [
+                "^nx-release-publish"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "nestjs-common": {
+        "name": "nestjs-common",
+        "type": "lib",
+        "data": {
+          "root": "backend/libs/common",
+          "name": "nestjs-common",
+          "tags": [
+            "npm:public",
+            "npm:nestjs",
+            "npm:common",
+            "npm:heartbeat",
+            "npm:health",
+            "npm:shared",
+            "type:lib",
+            "scope:nestjs"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev"
+              ]
+            },
+            "description": "Shared common utilities for NestJS services (e.g., Heartbeat module)",
+            "js": {
+              "packageName": "@libs/nestjs-common",
+              "packageMain": "dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "tsc --watch",
+                "runCommand": "npm run dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": [
+                "^nx-release-publish"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{projectRoot}/dist"
+              ],
+              "options": {
+                "outputPath": "backend/libs/common/dist",
+                "main": "backend/libs/common/src/index.ts",
+                "tsConfig": "backend/libs/common/tsconfig.json",
+                "assets": []
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "options": {
+                "lintFilePatterns": [
+                  "backend/libs/common/src/**/*.ts"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "{workspaceRoot}/.eslintrc.json",
+                "{workspaceRoot}/.eslintignore"
+              ],
+              "cache": true
+            },
+            "test": {
+              "executor": "@nx/jest:jest",
+              "outputs": [
+                "{workspaceRoot}/coverage/{projectRoot}"
+              ],
+              "options": {
+                "jestConfig": "backend/libs/common/jest.config.js",
+                "passWithNoTests": true
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "cache": true
+            }
+          },
+          "sourceRoot": "backend/libs/common/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "nestjs-kafka": {
+        "name": "nestjs-kafka",
+        "type": "lib",
+        "data": {
+          "root": "backend/libs/kafka",
+          "name": "nestjs-kafka",
+          "tags": [
+            "npm:public",
+            "type:lib",
+            "scope:nestjs",
+            "topic:kafka"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "build:watch"
+              ]
+            },
+            "description": "Shared Kafka module for NestJS services",
+            "js": {
+              "packageName": "@libs/nestjs-kafka",
+              "packageMain": "dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build:watch": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build:watch"
+              },
+              "metadata": {
+                "scriptContent": "tsc --watch",
+                "runCommand": "npm run build:watch"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": [
+                "^nx-release-publish"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{projectRoot}/dist"
+              ],
+              "options": {
+                "outputPath": "backend/libs/kafka/dist",
+                "main": "backend/libs/kafka/src/index.ts",
+                "tsConfig": "backend/libs/kafka/tsconfig.json",
+                "assets": []
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "options": {
+                "lintFilePatterns": [
+                  "backend/libs/kafka/src/**/*.ts"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "{workspaceRoot}/.eslintrc.json",
+                "{workspaceRoot}/.eslintignore"
+              ],
+              "cache": true
+            },
+            "test": {
+              "executor": "@nx/jest:jest",
+              "outputs": [
+                "{workspaceRoot}/coverage/{projectRoot}"
+              ],
+              "options": {
+                "jestConfig": "backend/libs/kafka/jest.config.js",
+                "passWithNoTests": true
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "cache": true
+            }
+          },
+          "sourceRoot": "backend/libs/kafka/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "nestjs-redis": {
+        "name": "nestjs-redis",
+        "type": "lib",
+        "data": {
+          "root": "backend/libs/redis",
+          "name": "nestjs-redis",
+          "tags": [
+            "npm:public",
+            "npm:nestjs",
+            "npm:redis",
+            "npm:cache",
+            "npm:database",
+            "npm:channel",
+            "npm:repository",
+            "npm:shared",
+            "type:lib",
+            "scope:nestjs",
+            "topic:redis"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "build:watch"
+              ]
+            },
+            "description": "Shared Redis module for NestJS services with Channel repository implementation",
+            "js": {
+              "packageName": "@libs/nestjs-redis",
+              "packageMain": "dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build:watch": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build:watch"
+              },
+              "metadata": {
+                "scriptContent": "tsc --watch",
+                "runCommand": "npm run build:watch"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": [
+                "^nx-release-publish"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{projectRoot}/dist"
+              ],
+              "options": {
+                "outputPath": "backend/libs/redis/dist",
+                "main": "backend/libs/redis/src/index.ts",
+                "tsConfig": "backend/libs/redis/tsconfig.json",
+                "assets": []
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "options": {
+                "lintFilePatterns": [
+                  "backend/libs/redis/src/**/*.ts"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "{workspaceRoot}/.eslintrc.json",
+                "{workspaceRoot}/.eslintignore"
+              ],
+              "cache": true
+            },
+            "test": {
+              "executor": "@nx/jest:jest",
+              "outputs": [
+                "{workspaceRoot}/coverage/{projectRoot}"
+              ],
+              "options": {
+                "jestConfig": "backend/libs/redis/jest.config.js"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "cache": true
+            }
+          },
+          "sourceRoot": "backend/libs/redis/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      }
+    },
+    "dependencies": {
+      "service-1": [
+        {
+          "source": "service-1",
+          "target": "nestjs-common",
+          "type": "implicit"
+        },
+        {
+          "source": "service-1",
+          "target": "nestjs-kafka",
+          "type": "implicit"
+        },
+        {
+          "source": "service-1",
+          "target": "nestjs-mongodb",
+          "type": "implicit"
+        },
+        {
+          "source": "service-1",
+          "target": "nestjs-redis",
+          "type": "implicit"
+        },
+        {
+          "source": "service-1",
+          "target": "nestjs-postgresql",
+          "type": "implicit"
+        },
+        {
+          "source": "service-1",
+          "target": "nestjs-common",
+          "type": "static"
+        },
+        {
+          "source": "service-1",
+          "target": "nestjs-kafka",
+          "type": "static"
+        },
+        {
+          "source": "service-1",
+          "target": "nestjs-mongodb",
+          "type": "static"
+        },
+        {
+          "source": "service-1",
+          "target": "nestjs-postgresql",
+          "type": "static"
+        },
+        {
+          "source": "service-1",
+          "target": "nestjs-redis",
+          "type": "static"
+        }
+      ],
+      "nestjs-postgresql": [
+        {
+          "source": "nestjs-postgresql",
+          "target": "nestjs-common",
+          "type": "static"
+        },
+        {
+          "source": "nestjs-postgresql",
+          "target": "@libs/nestjs-eslint",
+          "type": "static"
+        }
+      ],
+      "nestjs-mongodb": [
+        {
+          "source": "nestjs-mongodb",
+          "target": "nestjs-common",
+          "type": "static"
+        },
+        {
+          "source": "nestjs-mongodb",
+          "target": "@libs/nestjs-eslint",
+          "type": "static"
+        }
+      ],
+      "@libs/nestjs-eslint": [],
+      "nestjs-common": [
+        {
+          "source": "nestjs-common",
+          "target": "@libs/nestjs-eslint",
+          "type": "static"
+        }
+      ],
+      "nestjs-kafka": [
+        {
+          "source": "nestjs-kafka",
+          "target": "@libs/nestjs-eslint",
+          "type": "static"
+        },
+        {
+          "source": "nestjs-kafka",
+          "target": "nestjs-common",
+          "type": "static"
+        }
+      ],
+      "nestjs-redis": [
+        {
+          "source": "nestjs-redis",
+          "target": "@libs/nestjs-eslint",
+          "type": "static"
+        },
+        {
+          "source": "nestjs-redis",
+          "target": "nestjs-common",
+          "type": "static"
+        }
+      ]
+    }
+  }
+}

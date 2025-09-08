@@ -26,7 +26,6 @@
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
-    "@libs/nestjs-eslint": "file:../eslint",
     "@types/node": "^22.10.7",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",

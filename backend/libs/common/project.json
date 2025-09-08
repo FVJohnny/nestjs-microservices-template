@@ -4,15 +4,13 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
+      "executor": "nx:run-commands",
       "outputs": [
         "{projectRoot}/dist"
       ],
       "options": {
-        "outputPath": "backend/libs/common/dist",
-        "main": "backend/libs/common/src/index.ts",
-        "tsConfig": "backend/libs/common/tsconfig.json",
-        "assets": []
+        "command": "npm run build",
+        "cwd": "backend/libs/common"
       }
     },
     "lint": {

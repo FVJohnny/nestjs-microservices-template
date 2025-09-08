@@ -4,16 +4,15 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
+      "executor": "nx:run-commands",
       "outputs": [
         "{projectRoot}/dist"
       ],
       "options": {
-        "outputPath": "backend/libs/redis/dist",
-        "main": "backend/libs/redis/src/index.ts",
-        "tsConfig": "backend/libs/redis/tsconfig.json",
-        "assets": []
-      }
+        "command": "npm run build",
+        "cwd": "backend/libs/redis"
+      },
+      "dependsOn": ["^build"]
     },
     "lint": {
       "executor": "@nx/eslint:lint",
@@ -40,5 +39,6 @@
     "type:lib",
     "scope:nestjs",
     "topic:redis"
-  ]
+  ],
+  "implicitDependencies": ["nestjs-common"]
 }

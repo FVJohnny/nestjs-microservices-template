@@ -16,7 +16,6 @@
     "kafkajs": "^2.2.4"
   },
   "devDependencies": {
-    "@libs/nestjs-eslint": "file:../eslint",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",

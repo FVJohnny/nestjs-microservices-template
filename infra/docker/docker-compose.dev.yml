@@ -4,9 +4,8 @@ services:
     working_dir: /app
     volumes:
       - ${PWD}:/app
-      - /app/node_modules
     command: >
-      sh -c "\ rm -rf backend/libs/*/node_modules && \ npm install --workspaces && \ npm run -w backend/libs/common build && \ npm run -w backend/libs/kafka build && \ npm run -w backend/libs/mongodb build && \ npm run -w backend/libs/redis build && \ npm run -w backend/libs/postgresql build && \ cd backend/services/service-1 && npm run start:dev"
+      sh -c "\ cd backend/services/service-1 && npm run start:dev"
     env_file:
       - .env
     environment:
