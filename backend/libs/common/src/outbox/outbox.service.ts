@@ -24,7 +24,7 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    this.logger.log('Starting outbox processor...');
+    this.logger.log('Starting outbox processorrrr...');
     await this.processOutboxEvents();
 
     this.processingInterval = setInterval(
@@ -46,7 +46,15 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   }
 
   async storeEvent(eventName: string, topic: string, payload: string): Promise<void> {
-    const event = new OutboxEvent(randomUUID(), eventName, topic, payload);
+    const event = new OutboxEvent({
+      id: randomUUID(),
+      eventName,
+      topic,
+      payload,
+      createdAt: new Date(),
+      retryCount: 0,
+      maxRetries: 3,
+    });
     await this.repository.save(event);
     this.logger.debug(`Stored outbox event: ${eventName} for topic: ${topic}`);
   }
@@ -71,7 +79,8 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   private async processEvent(event: OutboxEvent): Promise<void> {
     try {
       await this.publisher.publish(event.topic, event.payload);
-      await this.repository.markAsProcessed(event.id);
+      event.markAsProcessed();
+      await this.repository.save(event);
       this.logger.debug(`Successfully processed outbox event: ${event.id}`);
     } catch (error) {
       await this.handleEventError(event, error);
@@ -82,7 +91,8 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     this.logger.error(`Failed to process outbox event ${event.id}:`, error as Error);
 
     if (event.retryCount < event.maxRetries) {
-      await this.repository.incrementRetryCount(event.id);
+      await event.incrementRetry();
+      await this.repository.save(event);
       this.logger.warn(
         `Incremented retry count for event ${event.id}: ${event.retryCount + 1}/${event.maxRetries}`,
       );

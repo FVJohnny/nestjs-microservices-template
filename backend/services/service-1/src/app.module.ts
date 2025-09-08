@@ -13,6 +13,7 @@ import { DatabaseModule } from './database.module';
 import { IntegrationEventsModule } from './integration-events.module';
 import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
 import { OutboxModule } from '@libs/nestjs-common';
+import { MongoOutboxRepository } from '@libs/nestjs-mongodb';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { OutboxModule } from '@libs/nestjs-common';
 
     // Event Modules
     IntegrationEventsModule,
-    OutboxModule.forRoot(),
+    OutboxModule.forRoot({ repository: MongoOutboxRepository }),
 
     // Common Modules
     CqrsModule.forRoot(),
