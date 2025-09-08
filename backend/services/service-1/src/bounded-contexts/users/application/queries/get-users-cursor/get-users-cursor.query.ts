@@ -1,9 +1,9 @@
-import { IQuery } from '@nestjs/cqrs';
-import {
+import type { IQuery } from '@nestjs/cqrs';
+import type {
   TracingMetadata,
-  BaseQuery,
   PaginationCursorParams,
 } from '@libs/nestjs-common';
+import { BaseQuery } from '@libs/nestjs-common';
 
 export class GetUsersCursorQuery extends BaseQuery implements IQuery {
   public readonly status?: string;

@@ -1,14 +1,14 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import type { INestApplication } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
 import { GetUsersController } from '../../src/bounded-contexts/users/interfaces/http/controllers/users/get-users/get-users.controller';
 import { GetUsersQueryHandler } from '../../src/bounded-contexts/users/application/queries/get-users/get-users.query-handler';
-import {
-  USER_REPOSITORY,
-  UserRepository,
-} from '../../src/bounded-contexts/users/domain/repositories/user.repository';
+import type { UserRepository } from '../../src/bounded-contexts/users/domain/repositories/user.repository';
+import { USER_REPOSITORY } from '../../src/bounded-contexts/users/domain/repositories/user.repository';
 import { UserInMemoryRepository } from '../../src/bounded-contexts/users/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '../../src/bounded-contexts/users/domain/entities/user.entity';
 import { Email } from '../../src/bounded-contexts/users/domain/value-objects/email.vo';

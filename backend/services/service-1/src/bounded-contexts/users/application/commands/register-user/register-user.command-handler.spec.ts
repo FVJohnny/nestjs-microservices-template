@@ -6,10 +6,10 @@ import {
   UserRole,
   UserRoleEnum,
 } from '../../../domain/value-objects/user-role.vo';
+import type { MockEventBus } from '@libs/nestjs-common';
 import {
   AlreadyExistsException,
   createEventBusMock,
-  MockEventBus,
 } from '@libs/nestjs-common';
 import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 

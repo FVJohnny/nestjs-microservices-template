@@ -1,5 +1,5 @@
-import { IQuery } from '@nestjs/cqrs';
-import { TracingMetadata } from '@libs/nestjs-common';
+import type { IQuery } from '@nestjs/cqrs';
+import type { TracingMetadata } from '@libs/nestjs-common';
 import { BaseQuery } from '@libs/nestjs-common';
 
 export class GetUserByIdQuery extends BaseQuery implements IQuery {

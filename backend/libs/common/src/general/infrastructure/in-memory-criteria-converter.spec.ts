@@ -13,10 +13,8 @@ import { Filters } from "../domain/criteria/filters/Filters";
 import { Order } from "../domain/criteria/order/Order";
 import { OrderBy } from "../domain/criteria/order/OrderBy";
 import { OrderType, OrderTypes } from "../domain/criteria/order/OrderType";
-import {
-  SharedAggregateRoot,
-  SharedAggregateRootDTO,
-} from "../domain/entities/AggregateRoot";
+import type { SharedAggregateRootDTO } from "../domain/entities/AggregateRoot";
+import { SharedAggregateRoot } from "../domain/entities/AggregateRoot";
 
 interface TestEntityDTO extends SharedAggregateRootDTO {
   id: string;

@@ -2,11 +2,8 @@ import { UpdateUserProfileCommandHandler } from './update-user-profile.command-h
 import { UpdateUserProfileCommand } from './update-user-profile.command';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import type { EventBus } from '@nestjs/cqrs';
-import {
-  createEventBusMock,
-  MockEventBus,
-  NotFoundException,
-} from '@libs/nestjs-common';
+import type { MockEventBus } from '@libs/nestjs-common';
+import { createEventBusMock, NotFoundException } from '@libs/nestjs-common';
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';

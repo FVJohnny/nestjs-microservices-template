@@ -1,8 +1,8 @@
-import { PaginatedRepoResult, Repository } from '@libs/nestjs-common';
-import { User } from '../entities/user.entity';
-import { Email } from '../value-objects/email.vo';
-import { Username } from '../value-objects/username.vo';
-import { Criteria } from '@libs/nestjs-common';
+import type { PaginatedRepoResult, Repository } from '@libs/nestjs-common';
+import type { User } from '../entities/user.entity';
+import type { Email } from '../value-objects/email.vo';
+import type { Username } from '../value-objects/username.vo';
+import type { Criteria } from '@libs/nestjs-common';
 
 export const USER_REPOSITORY = Symbol('UserRepository');
 export interface UserRepository extends Repository<User, string> {

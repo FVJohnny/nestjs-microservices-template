@@ -1,6 +1,6 @@
-import { ICommand } from '@nestjs/cqrs';
+import type { ICommand } from '@nestjs/cqrs';
 import { BaseCommand } from '@libs/nestjs-common';
-import { TracingMetadata } from '@libs/nestjs-common';
+import type { TracingMetadata } from '@libs/nestjs-common';
 
 export class UpdateUserProfileCommand extends BaseCommand implements ICommand {
   public readonly userId: string;

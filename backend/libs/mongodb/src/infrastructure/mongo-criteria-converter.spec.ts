@@ -1,4 +1,5 @@
-import { MongoClient, Db, Collection } from "mongodb";
+import type { Db, Collection } from "mongodb";
+import { MongoClient } from "mongodb";
 import { MongoCriteriaConverter } from "./mongo-criteria-converter";
 import {
   Criteria,

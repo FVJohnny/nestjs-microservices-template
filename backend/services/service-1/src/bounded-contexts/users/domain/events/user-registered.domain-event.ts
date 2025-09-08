@@ -1,7 +1,7 @@
 import { DomainEvent } from '@libs/nestjs-common';
-import { UserRole } from '../value-objects/user-role.vo';
-import { Email } from '../value-objects/email.vo';
-import { Username } from '../value-objects/username.vo';
+import type { UserRole } from '../value-objects/user-role.vo';
+import type { Email } from '../value-objects/email.vo';
+import type { Username } from '../value-objects/username.vo';
 
 interface UserRegisteredDomainEventParams {
   userId: string;

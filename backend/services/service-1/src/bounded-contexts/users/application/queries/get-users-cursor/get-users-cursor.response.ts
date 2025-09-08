@@ -1,4 +1,4 @@
-import { UserDTO } from '../../../domain/entities/user.types';
-import { PageResultCursor } from '@libs/nestjs-common';
+import type { UserDTO } from '../../../domain/entities/user.types';
+import type { PageResultCursor } from '@libs/nestjs-common';
 
 export type GetUsersCursorQueryResponse = PageResultCursor<UserDTO>;

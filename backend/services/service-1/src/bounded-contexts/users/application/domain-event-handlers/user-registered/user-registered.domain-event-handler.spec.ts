@@ -3,7 +3,8 @@ import { UserRegisteredDomainEvent } from '../../../domain/events/user-registere
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { UserRole } from '../../../domain/value-objects/user-role.vo';
-import { Topics, OutboxService } from '@libs/nestjs-common';
+import type { OutboxService } from '@libs/nestjs-common';
+import { Topics } from '@libs/nestjs-common';
 
 describe('UserRegisteredDomainEventHandler (Unit)', () => {
   let eventHandler: UserRegisteredDomainEventHandler;

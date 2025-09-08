@@ -13,7 +13,7 @@ import type {
   SharedAggregateRoot,
   SharedAggregateRootDTO,
 } from "../domain/entities/AggregateRoot";
-import { Primitives } from "../domain/value-object/ValueObject";
+import type { Primitives } from "../domain/value-object/ValueObject";
 
 export interface InMemoryFilterResult<T> {
   filterFn: (items: T[]) => T[];

@@ -1,3 +1,4 @@
+import type { Primitives } from "@libs/nestjs-common";
 import {
   Criteria,
   type Filter,
@@ -5,7 +6,6 @@ import {
   PaginationCursor,
   PaginationOffset,
   parseFromString,
-  Primitives,
 } from "@libs/nestjs-common";
 import {
   type Collection,

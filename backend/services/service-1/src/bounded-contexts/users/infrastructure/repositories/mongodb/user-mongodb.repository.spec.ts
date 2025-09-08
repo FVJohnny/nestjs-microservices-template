@@ -273,7 +273,7 @@ describe('UserMongodbRepository (Integration)', () => {
 
       // Assert
       expect(results).toHaveLength(testUsers.length);
-      results.forEach((result, index) => {
+      results.forEach((result, _index) => {
         const testUser = testUsers.find((user) => user.id === result.id);
         expect(result.equals(testUser)).toBe(true);
       });
@@ -782,7 +782,7 @@ describe('UserMongodbRepository (Integration)', () => {
       // Create repository instance that uses the test database
       const testMongoClient = {
         ...mongoClient,
-        db: (dbName?: string) => mongoClient.db(TEST_DB_NAME),
+        db: (_dbName?: string) => mongoClient.db(TEST_DB_NAME),
       };
       repository = new UserMongodbRepository(
         testMongoClient as unknown as MongoClient,
