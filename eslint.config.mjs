@@ -17,7 +17,6 @@ export default [
     ],
   },
 
-  // Base configs - recommended rules only
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   prettier,
@@ -35,17 +34,14 @@ export default [
       },
     },
     rules: {
-      // Keep these useful rules ON
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-      
-      // General rules
       'prefer-const': 'error',
       'eqeqeq': 'error',
     },
   },
 
-  // Test files - more relaxed
+  // Test files
   {
     files: ['**/*.{test,spec}.{js,ts}', '**/*.e2e-spec.ts'],
     rules: {

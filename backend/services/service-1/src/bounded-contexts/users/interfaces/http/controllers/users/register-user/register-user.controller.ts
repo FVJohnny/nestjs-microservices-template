@@ -6,6 +6,7 @@ import {
   RegisterUserCommandResponse,
 } from '../../../../../application/commands';
 import { RegisterUserControllerParams } from './register-user.params';
+
 @ApiTags('users')
 @Controller('users')
 export class RegisterUserController {

@@ -291,7 +291,7 @@ export class InMemoryCriteriaConverter {
     data: T[],
     criteria: Criteria,
   ): string | undefined {
-    if (data.length == 0 || !criteria.order.hasOrder()) {
+    if (data.length === 0 || !criteria.order.hasOrder()) {
       return undefined;
     }
 

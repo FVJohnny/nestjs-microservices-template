@@ -63,8 +63,8 @@ export class MongoCriteriaConverter {
   ): FindCursor<WithId<T>> {
     const { filters: filter, options } = this.convert(criteria);
     const mongoFilter = filter.length === 0 ? {} : { $and: filter };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return collection.find(mongoFilter as any, options);
+
+    return collection.find(mongoFilter, options);
   }
 
   /**
@@ -134,8 +134,8 @@ export class MongoCriteriaConverter {
   ): Promise<number> {
     const { filters } = this.convert(criteria);
     const mongoFilter = filters.length === 0 ? {} : { $and: filters };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return collection.countDocuments(mongoFilter as any);
+
+    return collection.countDocuments(mongoFilter);
   }
 
   /**
@@ -167,7 +167,7 @@ export class MongoCriteriaConverter {
     documents: WithId<T>[],
     criteria: Criteria,
   ): string | undefined {
-    if (documents.length == 0 || !criteria.order.hasOrder()) {
+    if (documents.length === 0 || !criteria.order.hasOrder()) {
       return undefined;
     }
     const lastDocument = documents[documents.length - 1];
