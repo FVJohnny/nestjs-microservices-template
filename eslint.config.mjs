@@ -5,18 +5,19 @@ import prettier from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 
 export default [
-  // Ignore patterns
+  // Ignores
   {
     ignores: [
       '**/dist/**',
-      '**/coverage/**', 
+      '**/coverage/**',
       '**/node_modules/**',
       '**/*.d.ts',
+      '**/jest.config.js',
       '**/*.config.js',
     ],
   },
 
-  // Base configs
+  // Base configs - recommended rules only
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   prettier,
@@ -34,20 +35,19 @@ export default [
       },
     },
     rules: {
-      // TypeScript
+      // Keep these useful rules ON
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       
-      // General
+      // General rules
       'prefer-const': 'error',
+      'eqeqeq': 'error',
     },
   },
 
-  // Test files - more relaxed rules
+  // Test files - more relaxed
   {
-    files: [
-      '**/*.{test,spec}.{js,ts}', 
-      '**/*.e2e-spec.ts',
-    ],
+    files: ['**/*.{test,spec}.{js,ts}', '**/*.e2e-spec.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
     },
