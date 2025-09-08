@@ -12,7 +12,7 @@ export interface OutboxEventValue {
 export class OutboxEvent {
   // Sentinel date representing "never processed" - Unix epoch (January 1, 1970)
   static readonly NEVER_PROCESSED = new Date(0);
-  
+
   id: string;
   eventName: string;
   topic: string;

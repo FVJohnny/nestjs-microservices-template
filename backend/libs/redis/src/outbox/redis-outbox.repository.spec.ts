@@ -1,5 +1,5 @@
 import { RedisOutboxRepository } from './redis-outbox.repository';
-import { OutboxEvent } from '@libs/nestjs-common';
+import { OutboxEvent, type OutboxEventValue } from '@libs/nestjs-common';
 import { RedisService } from '../redis.service';
 
 describe('RedisOutboxRepository', () => {
@@ -55,19 +55,19 @@ describe('RedisOutboxRepository', () => {
           id: 'evt-oldest',
           eventName: 'UserRegistered',
           createdAt: new Date(now - 3000),
-          payload: { userId: 'usr-001', email: 'oldest@test.com' },
+          payload: JSON.stringify({ userId: 'usr-001', email: 'oldest@test.com' }),
         }),
         createRealisticEvent({
           id: 'evt-middle',
           eventName: 'OrderPlaced',
           createdAt: new Date(now - 2000),
-          payload: { orderId: 'ord-001', amount: 99.99 },
+          payload: JSON.stringify({ orderId: 'ord-001', amount: 99.99 }),
         }),
         createRealisticEvent({
           id: 'evt-newest',
           eventName: 'PaymentReceived',
           createdAt: new Date(now - 1000),
-          payload: { paymentId: 'pay-001', status: 'completed' },
+          payload: JSON.stringify({ paymentId: 'pay-001', status: 'completed' }),
         }),
       ];
 
@@ -128,7 +128,7 @@ describe('RedisOutboxRepository', () => {
 
       const event = createRealisticEvent({
         id: 'evt-large',
-        payload: largePayload,
+        payload: JSON.stringify(largePayload),
       });
 
       await repo.save(event);
@@ -147,7 +147,7 @@ describe('RedisOutboxRepository', () => {
       const event = createRealisticEvent({
         id: 'evt-transition',
         eventName: 'StateTransitionTest',
-        payload: { state: 'initial' },
+        payload: JSON.stringify({ state: 'initial' }),
       });
 
       // Initially unprocessed
@@ -205,7 +205,7 @@ describe('RedisOutboxRepository', () => {
         id: 'evt-preserve',
         eventName: 'CompleteEventTest',
         topic: 'preservation-test',
-        payload: { nested: { deep: { value: 'test' } } },
+        payload: JSON.stringify({ nested: { deep: { value: 'test' } } }),
         createdAt: new Date('2024-01-15T10:30:00Z'),
         retryCount: 2,
         maxRetries: 10,
@@ -382,11 +382,11 @@ describe('RedisOutboxRepository', () => {
       const eventId = 'evt-concurrent';
       const event1 = createRealisticEvent({
         id: eventId,
-        payload: { version: 1 },
+        payload: JSON.stringify({ version: 1 }),
       });
       const event2 = createRealisticEvent({
         id: eventId,
-        payload: { version: 2 },
+        payload: JSON.stringify({ version: 2 }),
         processedAt: new Date(),
       });
 
@@ -415,7 +415,7 @@ describe('RedisOutboxRepository', () => {
 
       const event = createRealisticEvent({
         id: 'evt-special',
-        payload: specialPayload,
+        payload: JSON.stringify(specialPayload),
       });
 
       await repo.save(event);
@@ -453,18 +453,7 @@ describe('RedisOutboxRepository', () => {
 
 // Helper functions moved to the end
 function createRealisticEventFactory() {
-  return function createRealisticEvent(
-    overrides: Partial<{
-      id: string;
-      eventName: string;
-      topic: string;
-      payload: any;
-      createdAt: Date;
-      processedAt?: Date;
-      retryCount: number;
-      maxRetries: number;
-    }> = {},
-  ): OutboxEvent {
+  return function createRealisticEvent(props?: Partial<OutboxEventValue>): OutboxEvent {
     const defaultPayload = {
       userId: 'user-123',
       action: 'USER_CREATED',
@@ -473,17 +462,14 @@ function createRealisticEventFactory() {
     };
 
     return new OutboxEvent({
-      id: overrides.id ?? `evt-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      eventName: overrides.eventName ?? 'UserCreated',
-      topic: overrides.topic ?? 'user-events',
-      payload:
-        typeof overrides.payload === 'object'
-          ? JSON.stringify(overrides.payload)
-          : (overrides.payload ?? JSON.stringify(defaultPayload)),
-      createdAt: overrides.createdAt ?? new Date(),
-      processedAt: overrides.processedAt ?? OutboxEvent.NEVER_PROCESSED,
-      retryCount: overrides.retryCount ?? 0,
-      maxRetries: overrides.maxRetries ?? 3,
+      id: props?.id ?? `evt-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      eventName: props?.eventName ?? 'UserCreated',
+      topic: props?.topic ?? 'user-events',
+      payload: props?.payload ?? JSON.stringify(defaultPayload),
+      createdAt: props?.createdAt ?? new Date(),
+      processedAt: props?.processedAt ?? OutboxEvent.NEVER_PROCESSED,
+      retryCount: props?.retryCount ?? 0,
+      maxRetries: props?.maxRetries ?? 3,
     });
   };
 }
