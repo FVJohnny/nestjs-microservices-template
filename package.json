@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nx run-many -t build",
-    "test": "nx run-many --target=test --all --exclude=nestjs-microservices-monorepo-template,@libs/nestjs-eslint && nx run-many --target=test:e2e --all",
+    "test": "nx run-many --target=test --all --exclude=nestjs-microservices-monorepo-template && nx run-many --target=test:e2e --all",
     "lint": "nx run-many -t lint --fix --exclude=nestjs-microservices-monorepo-template",
     "dev": "make dev",
     "prod": "make prod",
