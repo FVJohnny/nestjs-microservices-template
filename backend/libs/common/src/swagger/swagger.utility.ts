@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import type { SwaggerSetupOptions } from './swagger-config.interface';
