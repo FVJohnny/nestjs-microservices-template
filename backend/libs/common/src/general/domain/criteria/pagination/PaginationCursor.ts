@@ -1,4 +1,4 @@
-import { Pagination, PaginationType } from "./Pagination";
+import { Pagination, PaginationType } from './Pagination';
 
 interface PaginationCursorProps {
   limit?: number;
@@ -16,14 +16,13 @@ export class PaginationCursor extends Pagination {
   }
 
   decodeCursor() {
-    return JSON.parse(
-      Buffer.from(this.cursor!, "base64url").toString("utf-8"),
-    ) as { after: string; tiebreakerId: string };
+    return JSON.parse(Buffer.from(this.cursor!, 'base64url').toString('utf-8')) as {
+      after: string;
+      tiebreakerId: string;
+    };
   }
 
   static encodeCursor(after: string, tiebreakerId: string) {
-    return Buffer.from(JSON.stringify({ after, tiebreakerId })).toString(
-      "base64url",
-    );
+    return Buffer.from(JSON.stringify({ after, tiebreakerId })).toString('base64url');
   }
 }

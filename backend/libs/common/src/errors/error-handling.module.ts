@@ -1,7 +1,7 @@
-import { Global, Module } from "@nestjs/common";
-import { APP_FILTER } from "@nestjs/core";
+import { Global, Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 
-import { GlobalExceptionFilter } from "./global-exception.filter";
+import { GlobalExceptionFilter } from './global-exception.filter';
 
 /**
  * Global error handling module

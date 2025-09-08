@@ -1,6 +1,6 @@
-import type { HttpStatus } from "@nestjs/common";
+import type { HttpStatus } from '@nestjs/common';
 
-import type { Metadata } from "../utils/metadata";
+import type { Metadata } from '../utils/metadata';
 
 /**
  * Base exception class for all application errors

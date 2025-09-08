@@ -6,10 +6,7 @@ import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Name } from '../../../domain/value-objects/name.vo';
 import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
-import {
-  UserStatus,
-  UserStatusEnum,
-} from '../../../domain/value-objects/user-status.vo';
+import { UserStatus, UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
 import { UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { UserTestFactory } from '../../../test-utils';
 
@@ -106,11 +103,7 @@ describe('GetUsersQueryHandler', () => {
       const result = await handler.execute(query);
 
       // Assert
-      expect(result.data.map((u) => u.username)).toEqual([
-        'admin',
-        'user1',
-        'user2',
-      ]);
+      expect(result.data.map((u) => u.username)).toEqual(['admin', 'user1', 'user2']);
     });
 
     it('should apply limit and offset', async () => {
@@ -167,9 +160,7 @@ describe('GetUsersQueryHandler', () => {
 
       // Assert
       expect(onlyUsers.data).toHaveLength(2);
-      expect(new Set(onlyUsers.data.map((u) => u.role))).toEqual(
-        new Set([UserRoleEnum.USER]),
-      );
+      expect(new Set(onlyUsers.data.map((u) => u.role))).toEqual(new Set([UserRoleEnum.USER]));
     });
   });
 });

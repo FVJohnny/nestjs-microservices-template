@@ -1,20 +1,20 @@
-import { Logger, type LoggerService } from "@nestjs/common";
+import { Logger, type LoggerService } from '@nestjs/common';
 
-import { TracingService } from "./tracing.service";
+import { TracingService } from './tracing.service';
 
 type LogMessage = string | number | boolean | object | Error;
 
 export class TracingLogger extends Logger implements LoggerService {
   constructor(context?: string) {
-    super(context || "TracingLogger");
+    super(context || 'TracingLogger');
   }
 
   private formatMessage(message: LogMessage): string {
     const correlationId = TracingService.getCorrelationId();
     const context = TracingService.getContext();
 
-    const prefix = correlationId ? `[${correlationId}]` : "";
-    const userInfo = context?.userId ? `[UserId: ${context.userId}]` : "";
+    const prefix = correlationId ? `[${correlationId}]` : '';
+    const userInfo = context?.userId ? `[UserId: ${context.userId}]` : '';
 
     const contextWithoutCorrelationId = { ...context };
     delete contextWithoutCorrelationId.correlationId;
@@ -22,7 +22,7 @@ export class TracingLogger extends Logger implements LoggerService {
     const contextText =
       Object.keys(contextWithoutCorrelationId).length > 0
         ? `[Context: ${JSON.stringify(contextWithoutCorrelationId)}]`
-        : "";
+        : '';
 
     return `${prefix}${userInfo} ${message}.  ${contextText}`;
   }

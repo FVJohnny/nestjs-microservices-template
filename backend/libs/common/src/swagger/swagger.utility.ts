@@ -1,7 +1,7 @@
-import { Logger } from "@nestjs/common";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { Logger } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-import type { SwaggerSetupOptions } from "./swagger-config.interface";
+import type { SwaggerSetupOptions } from './swagger-config.interface';
 
 export class SwaggerUtility {
   private static readonly logger = new Logger(SwaggerUtility.name);
@@ -12,7 +12,7 @@ export class SwaggerUtility {
     const enableSwagger = config.enabled ?? true;
 
     if (!enableSwagger) {
-      this.logger.log("Swagger documentation disabled");
+      this.logger.log('Swagger documentation disabled');
       return;
     }
 
@@ -20,7 +20,7 @@ export class SwaggerUtility {
     const builder = new DocumentBuilder()
       .setTitle(config.title)
       .setDescription(config.description)
-      .setVersion(config.version || "1.0");
+      .setVersion(config.version || '1.0');
 
     // Add server configuration for reverse proxy
     if (basePath) {
@@ -36,12 +36,10 @@ export class SwaggerUtility {
     });
 
     // Setup Swagger UI
-    const swaggerPath = config.path || "docs";
+    const swaggerPath = config.path || 'docs';
     SwaggerModule.setup(swaggerPath, nestApp, document, {
       customSiteTitle: config.customSiteTitle || config.title,
-      swaggerOptions: basePath
-        ? { url: `${basePath}/${swaggerPath}-json` }
-        : undefined,
+      swaggerOptions: basePath ? { url: `${basePath}/${swaggerPath}-json` } : undefined,
     });
 
     // Log the Swagger URL

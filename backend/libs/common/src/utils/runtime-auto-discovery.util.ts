@@ -1,6 +1,6 @@
-import { Logger, type Type } from "@nestjs/common";
-import * as fs from "fs";
-import * as path from "path";
+import { Logger, type Type } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
 
 interface RuntimeDiscoveryResult {
   handlers: Type<unknown>[];
@@ -14,64 +14,50 @@ interface RuntimeDiscoveryResult {
 export class RuntimeAutoDiscovery {
   private static readonly logger = new Logger(RuntimeAutoDiscovery.name);
 
-  static discoverAllComponents(
-    boundedContextPath: string,
-  ): RuntimeDiscoveryResult {
+  static discoverAllComponents(boundedContextPath: string): RuntimeDiscoveryResult {
     const result: RuntimeDiscoveryResult = {
       handlers: [],
       controllers: [],
     };
 
     try {
-      this.logger.log(
-        `🔍 Starting runtime auto-discovery from: ${boundedContextPath}`,
-      );
+      this.logger.log(`🔍 Starting runtime auto-discovery from: ${boundedContextPath}`);
 
       // Discover handlers
       result.handlers = [
+        ...this.discoverHandlers(boundedContextPath, 'application/commands', '.command-handler.js'),
+        ...this.discoverHandlers(boundedContextPath, 'application/queries', '.query-handler.js'),
         ...this.discoverHandlers(
           boundedContextPath,
-          "application/commands",
-          ".command-handler.js",
+          'application/domain-event-handlers',
+          '.domain-event-handler.js',
         ),
         ...this.discoverHandlers(
           boundedContextPath,
-          "application/queries",
-          ".query-handler.js",
-        ),
-        ...this.discoverHandlers(
-          boundedContextPath,
-          "application/domain-event-handlers",
-          ".domain-event-handler.js",
-        ),
-        ...this.discoverHandlers(
-          boundedContextPath,
-          "interfaces/integration-events",
-          ".integration-event-handler.js",
+          'interfaces/integration-events',
+          '.integration-event-handler.js',
         ),
       ];
 
       // Discover controllers
       result.controllers = this.discoverControllers(
         boundedContextPath,
-        "interfaces/http/controllers",
-        ".controller.js",
+        'interfaces/http/controllers',
+        '.controller.js',
       );
 
       this.logger.log(
         `✅ Runtime auto-discovery complete: handlers=${result.handlers.length}, controllers=${result.controllers.length}`,
       );
 
+      this.logger.log(`📋 Discovered handlers: ${result.handlers.map((h) => h.name).join(', ')}`);
       this.logger.log(
-        `📋 Discovered handlers: ${result.handlers.map((h) => h.name).join(", ")}`,
-      );
-      this.logger.log(
-        `📋 Discovered controllers: ${result.controllers.map((c) => c.name).join(", ")}`,
+        `📋 Discovered controllers: ${result.controllers.map((c) => c.name).join(', ')}`,
       );
 
       return result;
     } catch (error) {
-      this.logger.error("❌ Runtime auto-discovery failed:", error);
+      this.logger.error('❌ Runtime auto-discovery failed:', error);
       return result;
     }
   }
@@ -84,9 +70,7 @@ export class RuntimeAutoDiscovery {
     const handlers: Type<unknown>[] = [];
     const fullPath = path.join(basePath, subPath);
 
-    this.logger.debug(
-      `🔍 Looking for handlers in: ${fullPath} with suffix: ${suffix}`,
-    );
+    this.logger.debug(`🔍 Looking for handlers in: ${fullPath} with suffix: ${suffix}`);
 
     if (!fs.existsSync(fullPath)) {
       this.logger.debug(`⚠️  Path does not exist: ${fullPath}`);
@@ -96,7 +80,7 @@ export class RuntimeAutoDiscovery {
     try {
       const files = this.getAllFilesRecursively(fullPath, suffix);
       this.logger.debug(
-        `📁 Found ${files.length} files with suffix ${suffix}: ${files.join(", ")}`,
+        `📁 Found ${files.length} files with suffix ${suffix}: ${files.join(', ')}`,
       );
 
       for (const filePath of files) {
@@ -107,17 +91,10 @@ export class RuntimeAutoDiscovery {
 
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           const module = require(filePath);
-          this.logger.debug(
-            `📦 Module exports: ${Object.keys(module).join(", ")}`,
-          );
+          this.logger.debug(`📦 Module exports: ${Object.keys(module).join(', ')}`);
 
-          const handlerClass = this.extractComponentFromModule(
-            module,
-            "Handler",
-          );
-          this.logger.debug(
-            `🎯 Extracted handler class: ${handlerClass?.name || "null"}`,
-          );
+          const handlerClass = this.extractComponentFromModule(module, 'Handler');
+          this.logger.debug(`🎯 Extracted handler class: ${handlerClass?.name || 'null'}`);
 
           if (handlerClass) {
             handlers.push(handlerClass);
@@ -126,17 +103,11 @@ export class RuntimeAutoDiscovery {
             );
           }
         } catch (error) {
-          console.warn(
-            `⚠️ Failed to load handler from ${filePath}:`,
-            (error as Error).message,
-          );
+          console.warn(`⚠️ Failed to load handler from ${filePath}:`, (error as Error).message);
         }
       }
     } catch (error) {
-      console.warn(
-        `⚠️ Failed to scan handlers in ${fullPath}:`,
-        (error as Error).message,
-      );
+      console.warn(`⚠️ Failed to scan handlers in ${fullPath}:`, (error as Error).message);
     }
 
     return handlers;
@@ -164,10 +135,7 @@ export class RuntimeAutoDiscovery {
 
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           const module = require(filePath);
-          const controllerClass = this.extractComponentFromModule(
-            module,
-            "Controller",
-          );
+          const controllerClass = this.extractComponentFromModule(module, 'Controller');
 
           if (controllerClass) {
             controllers.push(controllerClass);
@@ -176,17 +144,11 @@ export class RuntimeAutoDiscovery {
             );
           }
         } catch (error) {
-          console.warn(
-            `⚠️ Failed to load controller from ${filePath}:`,
-            (error as Error).message,
-          );
+          console.warn(`⚠️ Failed to load controller from ${filePath}:`, (error as Error).message);
         }
       }
     } catch (error) {
-      console.warn(
-        `⚠️ Failed to scan controllers in ${fullPath}:`,
-        (error as Error).message,
-      );
+      console.warn(`⚠️ Failed to scan controllers in ${fullPath}:`, (error as Error).message);
     }
 
     return controllers;
@@ -208,10 +170,7 @@ export class RuntimeAutoDiscovery {
         }
       }
     } catch (error) {
-      console.warn(
-        `⚠️ Failed to read directory ${dir}:`,
-        (error as Error).message,
-      );
+      console.warn(`⚠️ Failed to read directory ${dir}:`, (error as Error).message);
     }
 
     return files;
@@ -228,7 +187,7 @@ export class RuntimeAutoDiscovery {
       const exportValue = module[exportName];
 
       if (
-        typeof exportValue === "function" &&
+        typeof exportValue === 'function' &&
         exportValue.prototype &&
         exportName.endsWith(typeSuffix)
       ) {
@@ -240,7 +199,7 @@ export class RuntimeAutoDiscovery {
     const defaultExport = module.default;
     if (
       defaultExport &&
-      typeof defaultExport === "function" &&
+      typeof defaultExport === 'function' &&
       defaultExport.prototype &&
       defaultExport.name &&
       defaultExport.name.endsWith(typeSuffix)

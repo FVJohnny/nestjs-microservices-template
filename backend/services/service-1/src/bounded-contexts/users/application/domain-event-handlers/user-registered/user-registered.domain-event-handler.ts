@@ -1,18 +1,10 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
-import {
-  UserCreatedIntegrationEvent,
-  OutboxService,
-  TracingLogger,
-} from '@libs/nestjs-common';
+import { UserCreatedIntegrationEvent, OutboxService, TracingLogger } from '@libs/nestjs-common';
 
 @EventsHandler(UserRegisteredDomainEvent)
-export class UserRegisteredDomainEventHandler
-  implements IEventHandler<UserRegisteredDomainEvent>
-{
-  private readonly logger = new TracingLogger(
-    UserRegisteredDomainEventHandler.name,
-  );
+export class UserRegisteredDomainEventHandler implements IEventHandler<UserRegisteredDomainEvent> {
+  private readonly logger = new TracingLogger(UserRegisteredDomainEventHandler.name);
 
   constructor(private readonly outboxService: OutboxService) {}
 

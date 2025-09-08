@@ -1,7 +1,7 @@
-import { Filters } from "./filters/Filters";
-import { Order } from "./order/Order";
-import { PaginationOffset } from "./pagination/PaginationOffset";
-import { PaginationCursor } from "./pagination/PaginationCursor";
+import { Filters } from './filters/Filters';
+import { Order } from './order/Order';
+import { PaginationOffset } from './pagination/PaginationOffset';
+import { PaginationCursor } from './pagination/PaginationCursor';
 
 interface CriteriaProps {
   filters?: Filters;
@@ -25,9 +25,7 @@ export class Criteria implements CriteriaProps {
   }
 
   public hasWithTotal(): boolean {
-    return (
-      this.pagination instanceof PaginationOffset && this.pagination.withTotal
-    );
+    return this.pagination instanceof PaginationOffset && this.pagination.withTotal;
   }
 
   public withNoPagination(): Criteria {
@@ -40,7 +38,7 @@ export class Criteria implements CriteriaProps {
   private validate(): void {
     if (this.pagination instanceof PaginationCursor) {
       if (!this.order.hasOrder()) {
-        throw new Error("Cursor pagination requires an order value");
+        throw new Error('Cursor pagination requires an order value');
       }
     }
   }

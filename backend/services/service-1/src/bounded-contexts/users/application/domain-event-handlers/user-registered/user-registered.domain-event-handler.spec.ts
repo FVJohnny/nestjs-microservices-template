@@ -146,16 +146,12 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
     it('should handle outbox service failures and rethrow error', async () => {
       // Arrange
       const failingOutboxService = {
-        storeEvent: jest
-          .fn()
-          .mockRejectedValue(new Error('Outbox service failed')),
+        storeEvent: jest.fn().mockRejectedValue(new Error('Outbox service failed')),
         processOutboxEvents: jest.fn(),
         cleanupProcessedEvents: jest.fn(),
       } as unknown as jest.Mocked<OutboxService>;
 
-      const failingEventHandler = new UserRegisteredDomainEventHandler(
-        failingOutboxService,
-      );
+      const failingEventHandler = new UserRegisteredDomainEventHandler(failingOutboxService);
 
       const event = new UserRegisteredDomainEvent({
         userId: 'failing-user-id',
@@ -165,24 +161,18 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       });
 
       // Act & Assert
-      await expect(failingEventHandler.handle(event)).rejects.toThrow(
-        'Outbox service failed',
-      );
+      await expect(failingEventHandler.handle(event)).rejects.toThrow('Outbox service failed');
     });
 
     it('should propagate database errors from outbox service', async () => {
       // Arrange
       const failingOutboxService = {
-        storeEvent: jest
-          .fn()
-          .mockRejectedValue(new Error('Database connection failed')),
+        storeEvent: jest.fn().mockRejectedValue(new Error('Database connection failed')),
         processOutboxEvents: jest.fn(),
         cleanupProcessedEvents: jest.fn(),
       } as unknown as jest.Mocked<OutboxService>;
 
-      const failingEventHandler = new UserRegisteredDomainEventHandler(
-        failingOutboxService,
-      );
+      const failingEventHandler = new UserRegisteredDomainEventHandler(failingOutboxService);
 
       const event = new UserRegisteredDomainEvent({
         userId: 'network-error-user',
@@ -192,9 +182,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       });
 
       // Act & Assert
-      await expect(failingEventHandler.handle(event)).rejects.toThrow(
-        'Database connection failed',
-      );
+      await expect(failingEventHandler.handle(event)).rejects.toThrow('Database connection failed');
     });
   });
 });

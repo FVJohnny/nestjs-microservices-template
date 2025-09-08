@@ -3,10 +3,7 @@ import type { Username } from '../value-objects/username.vo';
 import type { Name } from '../value-objects/name.vo';
 import type { UserRole } from '../value-objects/user-role.vo';
 import type { UserStatus } from '../value-objects/user-status.vo';
-import type {
-  UserProfile,
-  UserProfileDTO,
-} from '../value-objects/user-profile.vo';
+import type { UserProfile, UserProfileDTO } from '../value-objects/user-profile.vo';
 import { SharedAggregateRootDTO } from '@libs/nestjs-common';
 
 export interface CreateUserProps {

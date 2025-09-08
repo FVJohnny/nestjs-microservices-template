@@ -1,9 +1,9 @@
-import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
-import { BaseIntegrationEvent } from "../events";
-import { ParsedIntegrationMessage } from "../types/integration-event.types";
-import { INTEGRATION_EVENT_LISTENER_TOKEN } from "./integration-event-listener.base";
-import type { IntegrationEventListener } from "./integration-event-listener.base";
+import { BaseIntegrationEvent } from '../events';
+import { ParsedIntegrationMessage } from '../types/integration-event.types';
+import { INTEGRATION_EVENT_LISTENER_TOKEN } from './integration-event-listener.base';
+import type { IntegrationEventListener } from './integration-event-listener.base';
 
 /**
  * Base event handler that auto-registers itself with its topic
@@ -12,9 +12,7 @@ import type { IntegrationEventListener } from "./integration-event-listener.base
  * @template T The specific integration event type this handler processes
  */
 @Injectable()
-export abstract class BaseIntegrationEventHandler<
-    T extends BaseIntegrationEvent,
-  >
+export abstract class BaseIntegrationEventHandler<T extends BaseIntegrationEvent>
   implements IIntegrationEventHandler, OnModuleInit
 {
   protected readonly logger = new Logger(this.constructor.name);
@@ -29,10 +27,7 @@ export abstract class BaseIntegrationEventHandler<
 
   async onModuleInit() {
     // Auto-register this event handler with its topic
-    await this.integrationEventListener.registerEventHandler(
-      this.topicName,
-      this,
-    );
+    await this.integrationEventListener.registerEventHandler(this.topicName, this);
   }
 
   /**
@@ -40,9 +35,7 @@ export abstract class BaseIntegrationEventHandler<
    */
   async handle(message: ParsedIntegrationMessage): Promise<void> {
     const event = this.eventClass.fromJSON(message);
-    this.logger.log(
-      `Processing ${this.topicName} event [${message.id}] - ${event.name}`,
-    );
+    this.logger.log(`Processing ${this.topicName} event [${message.id}] - ${event.name}`);
     await this.handleEvent(event);
   }
 

@@ -1,7 +1,7 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
-import { Consumer, Kafka, Producer } from "kafkajs";
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Consumer, Kafka, Producer } from 'kafkajs';
 
-import { createKafkaConfig } from "./kafka-config.helper";
+import { createKafkaConfig } from './kafka-config.helper';
 
 /**
  * Generic Kafka service that provides both consumer and publisher functionality.
@@ -18,7 +18,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
     const kafka = new Kafka(kafkaConfig);
 
     this.consumer = kafka.consumer({
-      groupId: kafkaConfig.clientId || "default-group",
+      groupId: kafkaConfig.clientId || 'default-group',
     });
     this.producer = kafka.producer();
   }

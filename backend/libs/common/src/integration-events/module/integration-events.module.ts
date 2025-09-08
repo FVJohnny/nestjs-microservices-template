@@ -1,6 +1,6 @@
-import { Global, Module } from "@nestjs/common";
+import { Global, Module } from '@nestjs/common';
 
-import { IntegrationEventsController } from "./integration-events.controller";
+import { IntegrationEventsController } from './integration-events.controller';
 
 @Global()
 @Module({

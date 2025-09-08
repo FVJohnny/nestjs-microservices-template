@@ -1,5 +1,5 @@
-import type { DomainEvent } from "../general";
-import type { IntegrationEventPublisher } from "../integration-events";
+import type { DomainEvent } from '../general';
+import type { IntegrationEventPublisher } from '../integration-events';
 
 export interface MockEventBus {
   events: DomainEvent[];
@@ -24,9 +24,7 @@ export interface CreateEventBusMockOptions {
  * @param options.shouldFail If true, publish/publishAll methods will throw errors
  * @returns MockEventBus instance with captured events and configurable failure behavior
  */
-export function createEventBusMock(
-  options: CreateEventBusMockOptions = {},
-): MockEventBus {
+export function createEventBusMock(options: CreateEventBusMockOptions = {}): MockEventBus {
   const { shouldFail = false } = options;
 
   const events: DomainEvent[] = [];
@@ -34,7 +32,7 @@ export function createEventBusMock(
   // Create mock functions without jest dependency
   const publishMock = (event: DomainEvent) => {
     if (shouldFail) {
-      throw new Error("EventBus publish failed");
+      throw new Error('EventBus publish failed');
     }
     events.push(event);
     return Promise.resolve();
@@ -42,7 +40,7 @@ export function createEventBusMock(
 
   const publishAllMock = (eventArray: DomainEvent[]) => {
     if (shouldFail) {
-      throw new Error("EventBus publishAll failed");
+      throw new Error('EventBus publishAll failed');
     }
     events.push(...eventArray);
     return Promise.resolve();
@@ -64,8 +62,7 @@ export function createEventBusMock(
   return mockEventBus;
 }
 
-export interface MockIntegrationEventPublisher
-  extends IntegrationEventPublisher {
+export interface MockIntegrationEventPublisher extends IntegrationEventPublisher {
   publishedEvents: Array<{ topic: string; message: string }>;
 }
 
@@ -84,7 +81,7 @@ export function createIntegrationEventPublisherMock(options: {
   // Create mock functions without jest dependency
   const publishMock = (topic: string, message: string) => {
     if (options.shouldFail) {
-      throw new Error("IntegrationEventPublisher publish failed");
+      throw new Error('IntegrationEventPublisher publish failed');
     }
     publishedEvents.push({ topic, message });
     return Promise.resolve();

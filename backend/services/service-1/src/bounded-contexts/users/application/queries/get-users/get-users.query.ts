@@ -1,8 +1,5 @@
 import type { IQuery } from '@nestjs/cqrs';
-import type {
-  PaginationOffsetParams,
-  TracingMetadata,
-} from '@libs/nestjs-common';
+import type { PaginationOffsetParams, TracingMetadata } from '@libs/nestjs-common';
 import { BaseQuery } from '@libs/nestjs-common';
 
 export class GetUsersQuery extends BaseQuery implements IQuery {

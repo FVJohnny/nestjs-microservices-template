@@ -6,8 +6,8 @@ export function parseFromString(value: string): unknown {
   }
 
   // Try to parse as boolean
-  if (value.toLowerCase() === "true") return true;
-  if (value.toLowerCase() === "false") return false;
+  if (value.toLowerCase() === 'true') return true;
+  if (value.toLowerCase() === 'false') return false;
 
   // Try to parse as Date
   const date = new Date(value);
@@ -19,12 +19,11 @@ export function parseFromString(value: string): unknown {
 
 export function compareValues(a: unknown, b: unknown): number {
   // Handle null/undefined
-  if (a === null || a === undefined)
-    return b === null || b === undefined ? 0 : -1;
+  if (a === null || a === undefined) return b === null || b === undefined ? 0 : -1;
   if (b === null || b === undefined) return 1;
 
   // If both are numbers, compare numerically
-  if (typeof a === "number" && typeof b === "number") {
+  if (typeof a === 'number' && typeof b === 'number') {
     return a - b;
   }
 
@@ -34,7 +33,7 @@ export function compareValues(a: unknown, b: unknown): number {
   }
 
   // If both are booleans, compare as numbers
-  if (typeof a === "boolean" && typeof b === "boolean") {
+  if (typeof a === 'boolean' && typeof b === 'boolean') {
     return Number(a) - Number(b);
   }
 
@@ -43,14 +42,14 @@ export function compareValues(a: unknown, b: unknown): number {
 }
 
 export function getNestedValue(obj: object, path: string): unknown {
-  const keys = path.split(".");
+  const keys = path.split('.');
   let current: unknown = obj;
 
   for (const key of keys) {
     if (current === null || current === undefined) {
       return undefined;
     }
-    if (typeof current === "object") {
+    if (typeof current === 'object') {
       current = (current as Record<string, unknown>)[key];
     } else {
       return undefined;

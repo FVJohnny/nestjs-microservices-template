@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
-import { OutboxEvent } from "../outbox-event.entity";
-import { OutboxRepository } from "../outbox.repository";
+import { Injectable } from '@nestjs/common';
+import { OutboxEvent } from '../outbox-event.entity';
+import { OutboxRepository } from '../outbox.repository';
 
 @Injectable()
 export class InMemoryOutboxRepository extends OutboxRepository {
@@ -42,8 +42,6 @@ export class InMemoryOutboxRepository extends OutboxRepository {
   }
 
   async deleteProcessed(olderThan: Date): Promise<void> {
-    this.events = this.events.filter(
-      (e) => !e.isProcessed() || e.processedAt! > olderThan,
-    );
+    this.events = this.events.filter((e) => !e.isProcessed() || e.processedAt! > olderThan);
   }
 }

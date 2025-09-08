@@ -110,9 +110,7 @@ describe('UserMongodbRepository (Integration)', () => {
       await repository.save(user);
 
       // Act
-      const result = await repository.findByEmail(
-        new Email('test@example.com'),
-      );
+      const result = await repository.findByEmail(new Email('test@example.com'));
 
       // Assert
       expect(result).not.toBeNull();
@@ -121,9 +119,7 @@ describe('UserMongodbRepository (Integration)', () => {
 
     it('should return null when email does not exist', async () => {
       // Act
-      const result = await repository.findByEmail(
-        new Email('nonexistent@example.com'),
-      );
+      const result = await repository.findByEmail(new Email('nonexistent@example.com'));
 
       // Assert
       expect(result).toBeNull();
@@ -146,9 +142,7 @@ describe('UserMongodbRepository (Integration)', () => {
 
     it('should return null when username does not exist', async () => {
       // Act
-      const result = await repository.findByUsername(
-        new Username('nonexistentuser'),
-      );
+      const result = await repository.findByUsername(new Username('nonexistentuser'));
 
       // Assert
       expect(result).toBeNull();
@@ -162,9 +156,7 @@ describe('UserMongodbRepository (Integration)', () => {
       await repository.save(user);
 
       // Act
-      const result = await repository.existsByEmail(
-        new Email('existing@example.com'),
-      );
+      const result = await repository.existsByEmail(new Email('existing@example.com'));
 
       // Assert
       expect(result).toBe(true);
@@ -172,9 +164,7 @@ describe('UserMongodbRepository (Integration)', () => {
 
     it('should return false when email does not exist', async () => {
       // Act
-      const result = await repository.existsByEmail(
-        new Email('nonexistent@example.com'),
-      );
+      const result = await repository.existsByEmail(new Email('nonexistent@example.com'));
 
       // Assert
       expect(result).toBe(false);
@@ -188,9 +178,7 @@ describe('UserMongodbRepository (Integration)', () => {
       await repository.save(user);
 
       // Act
-      const result = await repository.existsByUsername(
-        new Username('existinguser'),
-      );
+      const result = await repository.existsByUsername(new Username('existinguser'));
 
       // Assert
       expect(result).toBe(true);
@@ -198,9 +186,7 @@ describe('UserMongodbRepository (Integration)', () => {
 
     it('should return false when username does not exist', async () => {
       // Act
-      const result = await repository.existsByUsername(
-        new Username('nonexistentuser'),
-      );
+      const result = await repository.existsByUsername(new Username('nonexistentuser'));
 
       // Assert
       expect(result).toBe(false);
@@ -693,17 +679,13 @@ describe('UserMongodbRepository (Integration)', () => {
       const originalCollection = (repository as any).collection;
       const mockCollection = {
         ...originalCollection,
-        updateOne: jest
-          .fn()
-          .mockRejectedValue(new Error('Mock database error')),
+        updateOne: jest.fn().mockRejectedValue(new Error('Mock database error')),
       };
       (repository as any).collection = mockCollection;
 
       try {
         // Act & Assert
-        await expect(repository.save(user)).rejects.toThrow(
-          InfrastructureException,
-        );
+        await expect(repository.save(user)).rejects.toThrow(InfrastructureException);
       } finally {
         // Restore original collection
         (repository as any).collection = originalCollection;
@@ -735,16 +717,12 @@ describe('UserMongodbRepository (Integration)', () => {
       expect(loadedUser).not.toBeNull();
       expect(loadedUser!.id).toBe(originalUser.id);
       expect(loadedUser!.email.toValue()).toBe(originalUser.email.toValue());
-      expect(loadedUser!.username.toValue()).toBe(
-        originalUser.username.toValue(),
-      );
+      expect(loadedUser!.username.toValue()).toBe(originalUser.username.toValue());
       expect(loadedUser!.profile.firstName.toValue()).toBe('Modified');
       expect(loadedUser!.profile.lastName.toValue()).toBe('Testuser');
       expect(loadedUser!.status.toValue()).toBe(originalUser.status.toValue());
       expect(loadedUser!.role.toValue()).toEqual(originalUser.role.toValue());
-      expect(loadedUser!.createdAt.getTime()).toBe(
-        originalUser.createdAt.getTime(),
-      );
+      expect(loadedUser!.createdAt.getTime()).toBe(originalUser.createdAt.getTime());
       expect(loadedUser!.updatedAt.getTime()).toBeGreaterThanOrEqual(
         originalUser.updatedAt.getTime(),
       );
@@ -784,9 +762,7 @@ describe('UserMongodbRepository (Integration)', () => {
         ...mongoClient,
         db: (_dbName?: string) => mongoClient.db(TEST_DB_NAME),
       };
-      repository = new UserMongodbRepository(
-        testMongoClient as unknown as MongoClient,
-      );
+      repository = new UserMongodbRepository(testMongoClient as unknown as MongoClient);
       console.log('Test setup completed');
     } catch (error) {
       console.error('Error in database setup:', error);

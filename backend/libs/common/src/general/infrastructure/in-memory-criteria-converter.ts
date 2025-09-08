@@ -1,19 +1,12 @@
-import {
-  compareValues,
-  getNestedValue,
-  parseFromString,
-} from "../../utils/data";
-import type { Criteria } from "../domain/criteria/Criteria";
-import type { Filter } from "../domain/criteria/filters/Filter";
-import { Operator } from "../domain/criteria/filters/FilterOperator";
-import type { Order } from "../domain/criteria/order/Order";
-import { PaginationCursor } from "../domain/criteria/pagination/PaginationCursor";
-import { PaginationOffset } from "../domain/criteria/pagination/PaginationOffset";
-import type {
-  SharedAggregateRoot,
-  SharedAggregateRootDTO,
-} from "../domain/entities/AggregateRoot";
-import type { Primitives } from "../domain/value-object/ValueObject";
+import { compareValues, getNestedValue, parseFromString } from '../../utils/data';
+import type { Criteria } from '../domain/criteria/Criteria';
+import type { Filter } from '../domain/criteria/filters/Filter';
+import { Operator } from '../domain/criteria/filters/FilterOperator';
+import type { Order } from '../domain/criteria/order/Order';
+import { PaginationCursor } from '../domain/criteria/pagination/PaginationCursor';
+import { PaginationOffset } from '../domain/criteria/pagination/PaginationOffset';
+import type { SharedAggregateRoot, SharedAggregateRootDTO } from '../domain/entities/AggregateRoot';
+import type { Primitives } from '../domain/value-object/ValueObject';
 
 export interface InMemoryFilterResult<T> {
   filterFn: (items: T[]) => T[];
@@ -64,10 +57,7 @@ export class InMemoryCriteriaConverter {
   /**
    * Count items in an in-memory array with criteria (without pagination)
    */
-  static count<T extends SharedAggregateRoot>(
-    items: T[],
-    criteria: Criteria,
-  ): number {
+  static count<T extends SharedAggregateRoot>(items: T[], criteria: Criteria): number {
     const { filterFn } = this.convert(criteria);
     return filterFn(items).length;
   }
@@ -75,24 +65,17 @@ export class InMemoryCriteriaConverter {
   /**
    * Convert a Criteria object to in-memory filter functions
    */
-  static convert<T extends SharedAggregateRoot>(
-    criteria: Criteria,
-  ): InMemoryFilterResult<T> {
+  static convert<T extends SharedAggregateRoot>(criteria: Criteria): InMemoryFilterResult<T> {
     const shouldSort = criteria.order.hasOrder();
 
     return {
       filterFn: (items: T[]) => this.applyFilters<T>(items, criteria),
-      sortFn: shouldSort
-        ? (a: T, b: T) => this.applySorting(a, b, criteria.order)
-        : () => 0,
+      sortFn: shouldSort ? (a: T, b: T) => this.applySorting(a, b, criteria.order) : () => 0,
       paginationFn: (items: T[]) => this.applyPagination<T>(items, criteria),
     };
   }
 
-  private static applyFilters<T extends SharedAggregateRoot>(
-    items: T[],
-    criteria: Criteria,
-  ): T[] {
+  private static applyFilters<T extends SharedAggregateRoot>(items: T[], criteria: Criteria): T[] {
     if (!criteria.hasFilters()) {
       return items;
     }
@@ -124,7 +107,7 @@ export class InMemoryCriteriaConverter {
     }
 
     if (Array.isArray(userValue)) {
-      userValue = userValue.join(",");
+      userValue = userValue.join(',');
     }
 
     return this.applyOperator(userValue, operator, filterValue);
@@ -189,8 +172,8 @@ export class InMemoryCriteriaConverter {
     }
 
     // If values are equal, sort by id
-    const aId = getNestedValue(aPrimitives, "id");
-    const bId = getNestedValue(bPrimitives, "id");
+    const aId = getNestedValue(aPrimitives, 'id');
+    const bId = getNestedValue(bPrimitives, 'id');
 
     if (aId === null || aId === undefined) return 1;
     if (bId === null || bId === undefined) return -1;
@@ -260,7 +243,7 @@ export class InMemoryCriteriaConverter {
     return items.filter((item) => {
       const primitives = item.toValue();
       const itemValue = getNestedValue(primitives, orderBy);
-      const itemId = getNestedValue(primitives, "id");
+      const itemId = getNestedValue(primitives, 'id');
 
       if (itemValue === undefined || itemValue === null) {
         return false;

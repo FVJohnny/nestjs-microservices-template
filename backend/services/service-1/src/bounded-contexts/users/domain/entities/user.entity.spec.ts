@@ -260,9 +260,7 @@ describe('User Entity', () => {
       // Assert
       expect(user.hasRole(adminRole)).toBe(true);
       expect(user.role.toValue()).toBe(UserRoleEnum.ADMIN);
-      expect(user.updatedAt.getTime()).toBeGreaterThan(
-        originalUpdatedAt.getTime(),
-      );
+      expect(user.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
     });
 
     it('should not update timestamp when changing to same role', () => {
@@ -427,9 +425,7 @@ describe('User Entity', () => {
 
       const events = user.getUncommittedEvents();
       expect(events).toHaveLength(2);
-      expect(
-        events.every((e) => e instanceof UserProfileUpdatedDomainEvent),
-      ).toBe(true);
+      expect(events.every((e) => e instanceof UserProfileUpdatedDomainEvent)).toBe(true);
     });
   });
 
@@ -469,9 +465,7 @@ describe('User Entity', () => {
       user.activate();
 
       // Assert
-      expect(user.updatedAt.getTime()).toBeGreaterThan(
-        originalUpdatedAt.getTime(),
-      );
+      expect(user.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
     });
 
     it('should preserve domain event order', () => {

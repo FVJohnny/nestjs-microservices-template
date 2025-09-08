@@ -1,19 +1,13 @@
-import {
-  Injectable,
-  Logger,
-  Inject,
-  OnModuleInit,
-  OnModuleDestroy,
-} from "@nestjs/common";
-import { OutboxRepository } from "./outbox.repository";
+import { Injectable, Logger, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { OutboxRepository } from './outbox.repository';
 import {
   INTEGRATION_EVENT_PUBLISHER_TOKEN,
   IntegrationEventPublisher,
-} from "../integration-events";
-import { randomUUID } from "crypto";
-import { OutboxEvent } from "./outbox-event.entity";
+} from '../integration-events';
+import { randomUUID } from 'crypto';
+import { OutboxEvent } from './outbox-event.entity';
 
-export const OUTBOX_REPOSITORY_TOKEN = "OutboxRepository";
+export const OUTBOX_REPOSITORY_TOKEN = 'OutboxRepository';
 
 @Injectable()
 export class OutboxService implements OnModuleInit, OnModuleDestroy {
@@ -29,34 +23,28 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    this.logger.log("Starting outbox processor...");
+    this.logger.log('Starting outbox processor...');
     await this.processOutboxEvents();
 
     this.processingInterval = setInterval(
       () =>
         this.processOutboxEvents().catch((error) =>
-          this.logger.error("Error in outbox processing interval:", error),
+          this.logger.error('Error in outbox processing interval:', error),
         ),
       this.PROCESSING_INTERVAL_MS,
     );
 
-    this.logger.log(
-      `Outbox processor started with ${this.PROCESSING_INTERVAL_MS}ms interval`,
-    );
+    this.logger.log(`Outbox processor started with ${this.PROCESSING_INTERVAL_MS}ms interval`);
   }
 
   async onModuleDestroy(): Promise<void> {
     if (this.processingInterval) {
       clearInterval(this.processingInterval);
     }
-    this.logger.log("Outbox processor stopped");
+    this.logger.log('Outbox processor stopped');
   }
 
-  async storeEvent(
-    eventName: string,
-    topic: string,
-    payload: string,
-  ): Promise<void> {
+  async storeEvent(eventName: string, topic: string, payload: string): Promise<void> {
     const event = new OutboxEvent(randomUUID(), eventName, topic, payload);
     await this.repository.save(event);
     this.logger.debug(`Stored outbox event: ${eventName} for topic: ${topic}`);
@@ -76,7 +64,7 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   async cleanupProcessedEvents(): Promise<void> {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     await this.repository.deleteProcessed(sevenDaysAgo);
-    this.logger.debug("Cleaned up processed outbox events older than 7 days");
+    this.logger.debug('Cleaned up processed outbox events older than 7 days');
   }
 
   private async processEvent(event: OutboxEvent): Promise<void> {
@@ -89,10 +77,7 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private async handleEventError(
-    event: OutboxEvent,
-    error: unknown,
-  ): Promise<void> {
+  private async handleEventError(event: OutboxEvent, error: unknown): Promise<void> {
     this.logger.error(`Failed to process outbox event ${event.id}:`, error);
 
     if (event.retryCount < event.maxRetries) {
@@ -101,9 +86,7 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
         `Incremented retry count for event ${event.id}: ${event.retryCount + 1}/${event.maxRetries}`,
       );
     } else {
-      this.logger.error(
-        `Max retries exceeded for event ${event.id}, giving up`,
-      );
+      this.logger.error(`Max retries exceeded for event ${event.id}, giving up`);
     }
   }
 }

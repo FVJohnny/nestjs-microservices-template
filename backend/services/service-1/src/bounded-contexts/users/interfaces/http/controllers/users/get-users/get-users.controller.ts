@@ -1,10 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import {
-  GetUsersQuery,
-  GetUsersQueryResponse,
-} from '../../../../../application/queries';
+import { GetUsersQuery, GetUsersQueryResponse } from '../../../../../application/queries';
 import { GetUsersControllerParams } from './get-users.params';
 
 @ApiTags('users')
@@ -19,9 +16,7 @@ export class GetUsersController {
     description: 'User IDs retrieved successfully',
     type: Object,
   })
-  async getUsers(
-    @Query() params: GetUsersControllerParams,
-  ): Promise<GetUsersQueryResponse> {
+  async getUsers(@Query() params: GetUsersControllerParams): Promise<GetUsersQueryResponse> {
     const query = new GetUsersQuery({
       status: params.status,
       role: params.role,

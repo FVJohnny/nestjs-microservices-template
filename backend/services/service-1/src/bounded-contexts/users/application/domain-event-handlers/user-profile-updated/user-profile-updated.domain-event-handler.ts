@@ -6,9 +6,7 @@ import { UserProfileUpdatedDomainEvent } from '../../../domain/events/user-profi
 export class UserProfileUpdatedDomainEventHandler
   implements IEventHandler<UserProfileUpdatedDomainEvent>
 {
-  private readonly logger = new Logger(
-    UserProfileUpdatedDomainEventHandler.name,
-  );
+  private readonly logger = new Logger(UserProfileUpdatedDomainEventHandler.name);
 
   handle(event: UserProfileUpdatedDomainEvent): Promise<void> {
     this.logger.log(`User profile updated for user: ${event.aggregateId}`);

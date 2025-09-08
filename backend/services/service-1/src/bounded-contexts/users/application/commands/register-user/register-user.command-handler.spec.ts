@@ -2,15 +2,9 @@ import { RegisterUserCommandHandler } from './register-user.command-handler';
 import { RegisterUserCommand } from './register-user.command';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import type { EventBus } from '@nestjs/cqrs';
-import {
-  UserRole,
-  UserRoleEnum,
-} from '../../../domain/value-objects/user-role.vo';
+import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import type { MockEventBus } from '@libs/nestjs-common';
-import {
-  AlreadyExistsException,
-  createEventBusMock,
-} from '@libs/nestjs-common';
+import { AlreadyExistsException, createEventBusMock } from '@libs/nestjs-common';
 import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 
 describe('RegisterUserCommandHandler (Unit)', () => {
@@ -21,10 +15,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
   beforeEach(() => {
     repository = new UserInMemoryRepository();
     eventBus = createEventBusMock({ shouldFail: false });
-    commandHandler = new RegisterUserCommandHandler(
-      repository,
-      eventBus as unknown as EventBus,
-    );
+    commandHandler = new RegisterUserCommandHandler(repository, eventBus as unknown as EventBus);
   });
 
   describe('Happy Path', () => {
@@ -148,15 +139,9 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       const savedUser = await repository.findById(result.id);
       expect(savedUser!.createdAt).toBeInstanceOf(Date);
       expect(savedUser!.updatedAt).toBeInstanceOf(Date);
-      expect(savedUser!.createdAt.getTime()).toBeGreaterThanOrEqual(
-        beforeCreation.getTime(),
-      );
-      expect(savedUser!.createdAt.getTime()).toBeLessThanOrEqual(
-        afterCreation.getTime(),
-      );
-      expect(savedUser!.updatedAt.getTime()).toBe(
-        savedUser!.createdAt.getTime(),
-      );
+      expect(savedUser!.createdAt.getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
+      expect(savedUser!.createdAt.getTime()).toBeLessThanOrEqual(afterCreation.getTime());
+      expect(savedUser!.updatedAt.getTime()).toBe(savedUser!.createdAt.getTime());
       expect(savedUser!.lastLoginAt).toBeUndefined();
     });
 
@@ -231,9 +216,9 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       });
 
       // Act & Assert
-      await expect(
-        commandHandler.execute(duplicateEmailCommand),
-      ).rejects.toThrow(AlreadyExistsException);
+      await expect(commandHandler.execute(duplicateEmailCommand)).rejects.toThrow(
+        AlreadyExistsException,
+      );
     });
 
     it('should throw BadRequestException when username already exists', async () => {
@@ -256,9 +241,9 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       });
 
       // Act & Assert
-      await expect(
-        commandHandler.execute(duplicateUsernameCommand),
-      ).rejects.toThrow(AlreadyExistsException);
+      await expect(commandHandler.execute(duplicateUsernameCommand)).rejects.toThrow(
+        AlreadyExistsException,
+      );
     });
   });
 });

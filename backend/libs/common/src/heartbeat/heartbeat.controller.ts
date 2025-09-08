@@ -1,15 +1,15 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get } from '@nestjs/common';
 
 @Controller()
 export class HeartbeatController {
-  @Get("health")
+  @Get('health')
   getHealth(): string {
-    return "ok";
+    return 'ok';
   }
 
-  @Get("health/environment")
+  @Get('health/environment')
   getEnvironment(): { environment: string; timestamp: string } {
-    const environment = process.env.NODE_ENV || "development";
+    const environment = process.env.NODE_ENV || 'development';
     return {
       environment,
       timestamp: new Date().toISOString(),

@@ -1,11 +1,8 @@
-import type { EventBus, ICommand } from "@nestjs/cqrs";
+import type { EventBus, ICommand } from '@nestjs/cqrs';
 
-import type { SharedAggregateRoot } from "../../domain/entities/AggregateRoot";
+import type { SharedAggregateRoot } from '../../domain/entities/AggregateRoot';
 
-export abstract class BaseCommandHandler<
-  TCommand extends ICommand,
-  TResult extends object | void,
-> {
+export abstract class BaseCommandHandler<TCommand extends ICommand, TResult extends object | void> {
   constructor(protected readonly eventBus: EventBus) {}
 
   /**
@@ -58,9 +55,7 @@ export abstract class BaseCommandHandler<
    *
    * @param entity - The aggregate root containing domain events to publish
    */
-  protected async sendDomainEvents<T extends SharedAggregateRoot>(
-    entity: T,
-  ): Promise<void> {
+  protected async sendDomainEvents<T extends SharedAggregateRoot>(entity: T): Promise<void> {
     const events = entity.getUncommittedEvents();
 
     // Publish each domain event through the event bus

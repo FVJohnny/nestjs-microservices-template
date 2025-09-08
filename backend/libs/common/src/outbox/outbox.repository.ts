@@ -1,4 +1,4 @@
-import type { OutboxEvent } from "./outbox-event.entity";
+import type { OutboxEvent } from './outbox-event.entity';
 
 export abstract class OutboxRepository {
   abstract save(event: OutboxEvent): Promise<void>;

@@ -1,4 +1,4 @@
-import type { Primitives } from "@libs/nestjs-common";
+import type { Primitives } from '@libs/nestjs-common';
 import {
   Criteria,
   type Filter,
@@ -6,13 +6,8 @@ import {
   PaginationCursor,
   PaginationOffset,
   parseFromString,
-} from "@libs/nestjs-common";
-import {
-  type Collection,
-  type FindCursor,
-  type Document,
-  type WithId,
-} from "mongodb";
+} from '@libs/nestjs-common';
+import { type Collection, type FindCursor, type Document, type WithId } from 'mongodb';
 
 /**
  * MongoDB query options interface
@@ -101,14 +96,10 @@ export class MongoCriteriaConverter {
     const documents = await query.toArray();
 
     // Check if we got more documents than requested
-    const hasNext =
-      documents.length > criteria.pagination.limit &&
-      criteria.pagination.limit > 0;
+    const hasNext = documents.length > criteria.pagination.limit && criteria.pagination.limit > 0;
 
     // Trim to actual limit
-    const resultDocuments = hasNext
-      ? documents.slice(0, criteria.pagination.limit)
-      : documents;
+    const resultDocuments = hasNext ? documents.slice(0, criteria.pagination.limit) : documents;
 
     const total = criteria.hasWithTotal()
       ? await this.count(collection, criteria.withNoPagination())
@@ -199,10 +190,10 @@ export class MongoCriteriaConverter {
           condition[fieldName] = { $ne: parseFromString(value) };
           break;
         case Operator.CONTAINS:
-          condition[fieldName] = { $regex: value, $options: "i" };
+          condition[fieldName] = { $regex: value, $options: 'i' };
           break;
         case Operator.NOT_CONTAINS:
-          condition[fieldName] = { $not: { $regex: value, $options: "i" } };
+          condition[fieldName] = { $not: { $regex: value, $options: 'i' } };
           break;
         case Operator.GT:
           condition[fieldName] = { $gt: parseFromString(value) };
@@ -218,9 +209,7 @@ export class MongoCriteriaConverter {
     return filters;
   }
 
-  private static buildCursorFilter(
-    criteria: Criteria,
-  ): MongoFilterCondition | undefined {
+  private static buildCursorFilter(criteria: Criteria): MongoFilterCondition | undefined {
     if (!(criteria.pagination instanceof PaginationCursor)) {
       return undefined;
     }
@@ -233,7 +222,7 @@ export class MongoCriteriaConverter {
     const orderByValue = criteria.order.orderBy?.toValue();
     const cursor = criteria.pagination.decodeCursor();
 
-    const comparator = criteria.order.orderType.isAsc() ? "$gt" : "$lt";
+    const comparator = criteria.order.orderType.isAsc() ? '$gt' : '$lt';
 
     return {
       $or: [
@@ -246,9 +235,7 @@ export class MongoCriteriaConverter {
     };
   }
 
-  private static buildSortOptions(
-    criteria: Criteria,
-  ): Record<string, 1 | -1> | undefined {
+  private static buildSortOptions(criteria: Criteria): Record<string, 1 | -1> | undefined {
     if (!criteria.order.hasOrder()) {
       return undefined;
     }

@@ -4,8 +4,8 @@ import {
   PaginationCursor,
   PaginationOffset,
   parseFromString,
-} from "@libs/nestjs-common";
-import type { SelectQueryBuilder } from "typeorm";
+} from '@libs/nestjs-common';
+import type { SelectQueryBuilder } from 'typeorm';
 
 /**
  * Converts DDD Criteria to TypeORM QueryBuilder operations
@@ -17,7 +17,7 @@ export class PostgresCriteriaConverter {
   static convert<T extends Record<string, unknown>>(
     queryBuilder: SelectQueryBuilder<T>,
     criteria: Criteria,
-    entityAlias: string = "entity",
+    entityAlias: string = 'entity',
   ): SelectQueryBuilder<T> {
     let builder = queryBuilder;
 
@@ -29,7 +29,7 @@ export class PostgresCriteriaConverter {
         const operator = filter.operator.toValue();
         const value = filter.value.toValue();
 
-        const whereMethod = index === 0 ? "where" : "andWhere";
+        const whereMethod = index === 0 ? 'where' : 'andWhere';
 
         switch (operator) {
           case Operator.EQUAL:
@@ -57,17 +57,15 @@ export class PostgresCriteriaConverter {
             break;
 
           case Operator.CONTAINS:
-            builder = builder[whereMethod](
-              `LOWER(${fieldName}) LIKE LOWER(:${paramName})`,
-              { [paramName]: `%${value}%` },
-            );
+            builder = builder[whereMethod](`LOWER(${fieldName}) LIKE LOWER(:${paramName})`, {
+              [paramName]: `%${value}%`,
+            });
             break;
 
           case Operator.NOT_CONTAINS:
-            builder = builder[whereMethod](
-              `LOWER(${fieldName}) NOT LIKE LOWER(:${paramName})`,
-              { [paramName]: `%${value}%` },
-            );
+            builder = builder[whereMethod](`LOWER(${fieldName}) NOT LIKE LOWER(:${paramName})`, {
+              [paramName]: `%${value}%`,
+            });
             break;
 
           default:
@@ -83,9 +81,8 @@ export class PostgresCriteriaConverter {
       const orderTypeValue = criteria.order.orderType.toValue();
 
       // Only add sort if orderBy field is not empty and orderType is not 'none'
-      if (orderByValue?.trim() !== "" && orderTypeValue !== "none") {
-        const direction =
-          orderTypeValue.toLowerCase() === "desc" ? "DESC" : "ASC";
+      if (orderByValue?.trim() !== '' && orderTypeValue !== 'none') {
+        const direction = orderTypeValue.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
         builder = builder.orderBy(`${entityAlias}.${orderByValue}`, direction);
       }
     }

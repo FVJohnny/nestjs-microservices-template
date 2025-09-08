@@ -1,27 +1,27 @@
-import { Controller, Get } from "@nestjs/common";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Controller, Get } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { PostgreSQLConfigService } from "./postgresql-config.service";
+import { PostgreSQLConfigService } from './postgresql-config.service';
 
-@ApiTags("PostgreSQL")
-@Controller("postgresql")
+@ApiTags('PostgreSQL')
+@Controller('postgresql')
 export class PostgreSQLController {
   constructor(private readonly configService: PostgreSQLConfigService) {}
 
-  @Get("health")
+  @Get('health')
   @ApiOperation({
-    summary: "Check PostgreSQL connection health",
-    description: "Returns the health status of the PostgreSQL connection",
+    summary: 'Check PostgreSQL connection health',
+    description: 'Returns the health status of the PostgreSQL connection',
   })
   @ApiResponse({
     status: 200,
-    description: "PostgreSQL health status",
+    description: 'PostgreSQL health status',
     schema: {
-      type: "object",
+      type: 'object',
       properties: {
-        status: { type: "string" },
-        config: { type: "object" },
-        uptime: { type: "number" },
+        status: { type: 'string' },
+        config: { type: 'object' },
+        uptime: { type: 'number' },
       },
     },
   })
@@ -30,7 +30,7 @@ export class PostgreSQLController {
       const config = this.configService.getPostgreSQLConfig();
 
       return {
-        status: "healthy",
+        status: 'healthy',
         config: {
           host: config.host,
           port: config.port,
@@ -41,27 +41,27 @@ export class PostgreSQLController {
       };
     } catch (error) {
       return {
-        status: "unhealthy",
+        status: 'unhealthy',
         error: error instanceof Error ? error.message : String(error),
         uptime: process.uptime(),
       };
     }
   }
 
-  @Get("stats")
+  @Get('stats')
   @ApiOperation({
-    summary: "Get PostgreSQL connection statistics",
-    description: "Returns detailed statistics about the PostgreSQL connection",
+    summary: 'Get PostgreSQL connection statistics',
+    description: 'Returns detailed statistics about the PostgreSQL connection',
   })
   @ApiResponse({
     status: 200,
-    description: "PostgreSQL connection statistics",
+    description: 'PostgreSQL connection statistics',
     schema: {
-      type: "object",
+      type: 'object',
       properties: {
-        service: { type: "string" },
-        environment: { type: "object" },
-        uptime: { type: "number" },
+        service: { type: 'string' },
+        environment: { type: 'object' },
+        uptime: { type: 'number' },
       },
     },
   })
@@ -70,7 +70,7 @@ export class PostgreSQLController {
       const config = this.configService.getPostgreSQLConfig();
 
       return {
-        service: "PostgreSQL",
+        service: 'PostgreSQL',
         environment: {
           host: config.host,
           port: config.port,
@@ -80,13 +80,11 @@ export class PostgreSQLController {
           ssl: !!config.ssl,
         },
         uptime: process.uptime(),
-        connectionUrl: this.configService
-          .getConnectionUrl()
-          .replace(/:[^:@]+@/, ":***masked***@"),
+        connectionUrl: this.configService.getConnectionUrl().replace(/:[^:@]+@/, ':***masked***@'),
       };
     } catch (error) {
       return {
-        service: "PostgreSQL",
+        service: 'PostgreSQL',
         error: error instanceof Error ? error.message : String(error),
         uptime: process.uptime(),
       };

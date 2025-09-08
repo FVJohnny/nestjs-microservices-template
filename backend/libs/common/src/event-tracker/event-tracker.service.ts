@@ -1,7 +1,7 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from '@nestjs/common';
 
-import type { ParsedIntegrationMessage } from "../integration-events/types/integration-event.types";
-import { DomainEvent } from "../general";
+import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
+import { DomainEvent } from '../general';
 
 // Integration event stats
 export interface EventStats {
@@ -26,15 +26,11 @@ export class EventTrackerService {
 
   private stats = new Map<string, EventStats>();
 
-  static DomainEventTopic = "Domain Events";
+  static DomainEventTopic = 'Domain Events';
 
   // ===== Integration Events =====
-  trackEvent(
-    topic: string,
-    event: ParsedIntegrationMessage,
-    success: boolean,
-  ): void {
-    const eventName = event.name || "Unknown";
+  trackEvent(topic: string, event: ParsedIntegrationMessage, success: boolean): void {
+    const eventName = event.name || 'Unknown';
     this.logger.debug(`Tracking event ${eventName} for topic ${topic}`);
     this.initializeStats(topic, eventName);
 
@@ -48,7 +44,7 @@ export class EventTrackerService {
   }
 
   trackDomainEvent(event: DomainEvent, success: boolean): void {
-    const eventName = event.constructor.name || "Unknown";
+    const eventName = event.constructor.name || 'Unknown';
     this.trackEvent(
       EventTrackerService.DomainEventTopic,
       {
@@ -60,9 +56,7 @@ export class EventTrackerService {
   }
 
   initializeStats(topic: string, eventName: string): void {
-    this.logger.debug(
-      `Initializing stats for topic '${topic}' and event '${eventName}'`,
-    );
+    this.logger.debug(`Initializing stats for topic '${topic}' and event '${eventName}'`);
     const key = this.integrationKey(eventName, topic);
     if (!this.stats.has(key)) {
       this.stats.set(key, {
@@ -82,12 +76,10 @@ export class EventTrackerService {
       0,
     );
     return {
-      service: process.env.SERVICE_NAME || "unknown",
+      service: process.env.SERVICE_NAME || 'unknown',
       totalEventsProcessed,
       timestamp: new Date().toISOString(),
-      eventsByType: eventsByType.sort((a, b) =>
-        a.eventName.localeCompare(b.eventName),
-      ),
+      eventsByType: eventsByType.sort((a, b) => a.eventName.localeCompare(b.eventName)),
     };
   }
 

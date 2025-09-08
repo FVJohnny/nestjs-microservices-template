@@ -1,12 +1,10 @@
-import { IntegrationEventPublisher } from "@libs/nestjs-common";
-import { Injectable, Logger } from "@nestjs/common";
+import { IntegrationEventPublisher } from '@libs/nestjs-common';
+import { Injectable, Logger } from '@nestjs/common';
 
-import { RedisService } from "./redis.service";
+import { RedisService } from './redis.service';
 
 @Injectable()
-export class RedisIntegrationEventPublisher
-  implements IntegrationEventPublisher
-{
+export class RedisIntegrationEventPublisher implements IntegrationEventPublisher {
   private readonly logger = new Logger(RedisIntegrationEventPublisher.name);
 
   constructor(private readonly redisService: RedisService) {}
@@ -21,18 +19,11 @@ export class RedisIntegrationEventPublisher
     }
 
     try {
-      this.logger.debug(
-        `[Redis] Publishing event to channel: ${topic}. Message: ${message}`,
-      );
+      this.logger.debug(`[Redis] Publishing event to channel: ${topic}. Message: ${message}`);
       await client.publish(topic, message);
-      this.logger.debug(
-        `[Redis] Event published to ${topic}. Message: ${message}`,
-      );
+      this.logger.debug(`[Redis] Event published to ${topic}. Message: ${message}`);
     } catch (error) {
-      this.logger.error(
-        `[Redis] Failed to publish event to channel ${topic}:`,
-        error,
-      );
+      this.logger.error(`[Redis] Failed to publish event to channel ${topic}:`, error);
       throw error;
     }
   }

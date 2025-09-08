@@ -1,21 +1,21 @@
 export class Topics {
   static readonly CHANNELS = {
-    topic: "channels",
+    topic: 'channels',
     events: {
-      CHANNEL_CREATED: "channel.created",
+      CHANNEL_CREATED: 'channel.created',
     },
   };
   static readonly TRADING_SIGNALS = {
-    topic: "trading-signals",
+    topic: 'trading-signals',
     events: {
-      TRADING_SIGNAL_RECEIVED: "trading-signal.received",
+      TRADING_SIGNAL_RECEIVED: 'trading-signal.received',
     },
   };
   static readonly USERS = {
-    topic: "users",
+    topic: 'users',
     events: {
-      USER_CREATED: "user.created",
-      USER_EXAMPLE: "user.example",
+      USER_CREATED: 'user.created',
+      USER_EXAMPLE: 'user.example',
     },
   };
 }

@@ -57,9 +57,7 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       expect(updatedUser!.profile.lastName.toValue()).toBe('Name');
 
       // Verify updatedAt timestamp was updated
-      expect(updatedUser!.updatedAt.getTime()).toBeGreaterThan(
-        oldUpdatedAt.getTime(),
-      );
+      expect(updatedUser!.updatedAt.getTime()).toBeGreaterThan(oldUpdatedAt.getTime());
     });
 
     it('should handle empty strings for names', async () => {
@@ -117,9 +115,7 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       expect(updatedUser!.username.toValue()).toBe(originalUsername);
       expect(updatedUser!.role.toValue()).toEqual(originalRole);
       expect(updatedUser!.status.toValue()).toBe(originalStatus);
-      expect(updatedUser!.createdAt.getTime()).toBe(
-        existingUser.createdAt.getTime(),
-      );
+      expect(updatedUser!.createdAt.getTime()).toBe(existingUser.createdAt.getTime());
     });
 
     it('should handle names with special characters', async () => {
@@ -151,9 +147,7 @@ describe('UpdateUserProfileCommandHandler (Unit)', () => {
       });
 
       // Act & Assert
-      await expect(commandHandler.execute(command)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(commandHandler.execute(command)).rejects.toThrow(NotFoundException);
     });
 
     it('should handle EventBus publishing failures', async () => {

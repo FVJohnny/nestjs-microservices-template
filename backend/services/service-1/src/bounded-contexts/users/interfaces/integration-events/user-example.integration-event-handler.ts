@@ -1,9 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import {
-  IntegrationEventHandler,
-  UserExampleIntegrationEvent,
-} from '@libs/nestjs-common';
+import { IntegrationEventHandler, UserExampleIntegrationEvent } from '@libs/nestjs-common';
 import { RegisterUserCommand } from '../../application/commands';
 import { UserRoleEnum } from '../../domain/value-objects/user-role.vo';
 
@@ -14,9 +11,7 @@ export class UserExampleIntegrationEventHandler {
   constructor(private readonly commandBus: CommandBus) {}
 
   async handleEvent(event: UserExampleIntegrationEvent): Promise<void> {
-    this.logger.log(
-      `Handling UserExample integration event: ${JSON.stringify(event.toJSON())}`,
-    );
+    this.logger.log(`Handling UserExample integration event: ${JSON.stringify(event.toJSON())}`);
 
     try {
       // Generate random user data
@@ -34,8 +29,7 @@ export class UserExampleIntegrationEventHandler {
         `✅ Created example user: ${command.email} (${command.firstName} ${command.lastName}) via UserExample integration event`,
       );
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       this.logger.error(
         `❌ Failed to create example user via UserExample integration event: ${errorMessage}`,
       );

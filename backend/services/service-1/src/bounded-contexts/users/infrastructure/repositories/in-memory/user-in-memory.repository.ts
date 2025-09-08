@@ -3,11 +3,7 @@ import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import {
-  Criteria,
-  InMemoryCriteriaConverter,
-  PaginatedRepoResult,
-} from '@libs/nestjs-common';
+import { Criteria, InMemoryCriteriaConverter, PaginatedRepoResult } from '@libs/nestjs-common';
 
 @Injectable()
 export class UserInMemoryRepository implements UserRepository {

@@ -1,4 +1,4 @@
-import type { KafkaConfig } from "kafkajs";
+import type { KafkaConfig } from 'kafkajs';
 
 /**
  * Helper function to create Kafka configuration with proper authentication
@@ -7,16 +7,14 @@ import type { KafkaConfig } from "kafkajs";
 export function createKafkaConfig(): KafkaConfig {
   const kafkaConfig: KafkaConfig = {
     clientId: process.env.KAFKA_SERVICE_ID,
-    brokers: process.env.KAFKA_BROKERS
-      ? process.env.KAFKA_BROKERS.split(",")
-      : ["localhost:9092"],
+    brokers: process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',') : ['localhost:9092'],
   };
 
   // Only add SSL and SASL if credentials are provided (for cloud Kafka)
   if (process.env.KAFKA_USERNAME && process.env.KAFKA_PASSWORD) {
     kafkaConfig.ssl = true;
     kafkaConfig.sasl = {
-      mechanism: "scram-sha-256",
+      mechanism: 'scram-sha-256',
       username: process.env.KAFKA_USERNAME,
       password: process.env.KAFKA_PASSWORD,
     };

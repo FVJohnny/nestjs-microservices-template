@@ -2,10 +2,7 @@ import { QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { GetUsersQuery } from './get-users.query';
 import { GetUsersQueryResponse } from './get-users.response';
-import {
-  USER_REPOSITORY,
-  type UserRepository,
-} from '../../../domain/repositories/user.repository';
+import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
 import {
   Criteria,
   Filters,
@@ -21,10 +18,7 @@ import {
 } from '@libs/nestjs-common';
 
 @QueryHandler(GetUsersQuery)
-export class GetUsersQueryHandler extends BaseQueryHandler<
-  GetUsersQuery,
-  GetUsersQueryResponse
-> {
+export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUsersQueryResponse> {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,

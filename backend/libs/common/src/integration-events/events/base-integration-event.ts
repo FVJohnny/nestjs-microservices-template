@@ -1,4 +1,4 @@
-import { TracingMetadata, type TracingMetadataParams } from "../../tracing";
+import { TracingMetadata, type TracingMetadataParams } from '../../tracing';
 
 /**
  * Base interface for all integration event props.
@@ -19,10 +19,7 @@ export abstract class BaseIntegrationEvent {
   readonly occurredOn: Date;
   readonly metadata: TracingMetadata;
 
-  constructor(
-    props: BaseIntegrationEventProps,
-    metadata?: TracingMetadataParams,
-  ) {
+  constructor(props: BaseIntegrationEventProps, metadata?: TracingMetadataParams) {
     this.occurredOn = props.occurredOn || new Date();
     this.metadata = new TracingMetadata(metadata);
   }
@@ -58,7 +55,7 @@ export abstract class BaseIntegrationEvent {
    */
   static fromJSON(json: Record<string, unknown>): BaseIntegrationEvent {
     throw new Error(
-      `${this.name}.fromJSON() must be implemented by subclass. Received: ${Object.keys(json).join(", ")}`,
+      `${this.name}.fromJSON() must be implemented by subclass. Received: ${Object.keys(json).join(', ')}`,
     );
   }
 
@@ -68,19 +65,19 @@ export abstract class BaseIntegrationEvent {
    */
   validate(): void {
     if (!this.name) {
-      throw new Error("name is required");
+      throw new Error('name is required');
     }
     if (!this.version) {
-      throw new Error("version is required");
+      throw new Error('version is required');
     }
     if (!this.topic) {
-      throw new Error("topic is required");
+      throw new Error('topic is required');
     }
     if (!this.occurredOn) {
-      throw new Error("occurredOn is required");
+      throw new Error('occurredOn is required');
     }
     if (!this.metadata) {
-      throw new Error("metadata is required");
+      throw new Error('metadata is required');
     }
   }
 

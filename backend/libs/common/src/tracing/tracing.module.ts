@@ -1,7 +1,7 @@
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
-import { TracingMiddleware } from "./tracing.middleware";
-import { TracingService } from "./tracing.service";
+import { TracingMiddleware } from './tracing.middleware';
+import { TracingService } from './tracing.service';
 
 @Module({
   providers: [TracingService],
@@ -9,6 +9,6 @@ import { TracingService } from "./tracing.service";
 })
 export class TracingModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(TracingMiddleware).forRoutes("*"); // Apply to all routes
+    consumer.apply(TracingMiddleware).forRoutes('*'); // Apply to all routes
   }
 }

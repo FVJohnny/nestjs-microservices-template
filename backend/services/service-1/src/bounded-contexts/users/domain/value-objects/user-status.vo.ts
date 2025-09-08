@@ -1,7 +1,4 @@
-import {
-  EnumValueObject,
-  DomainValidationException,
-} from '@libs/nestjs-common';
+import { EnumValueObject, DomainValidationException } from '@libs/nestjs-common';
 
 export enum UserStatusEnum {
   ACTIVE = 'active',
@@ -16,11 +13,7 @@ export class UserStatus extends EnumValueObject<UserStatusEnum> {
   }
 
   protected throwErrorForInvalidValue(value: UserStatusEnum): void {
-    throw new DomainValidationException(
-      'userStatus',
-      value,
-      `Invalid user status: ${value}`,
-    );
+    throw new DomainValidationException('userStatus', value, `Invalid user status: ${value}`);
   }
 
   static active(): UserStatus {

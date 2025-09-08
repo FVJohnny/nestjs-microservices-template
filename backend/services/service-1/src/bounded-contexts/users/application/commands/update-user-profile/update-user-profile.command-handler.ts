@@ -1,10 +1,7 @@
 import { CommandHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { UpdateUserProfileCommand } from './update-user-profile.command';
-import {
-  USER_REPOSITORY,
-  type UserRepository,
-} from '../../../domain/repositories/user.repository';
+import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
 import { Name } from '../../../domain/value-objects/name.vo';
 import { EventBus } from '@nestjs/cqrs';
 import { BaseCommandHandler, NotFoundException } from '@libs/nestjs-common';

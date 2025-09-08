@@ -1,2 +1,2 @@
-export * from "./swagger.utility";
-export * from "./swagger-config.interface";
+export * from './swagger.utility';
+export * from './swagger-config.interface';

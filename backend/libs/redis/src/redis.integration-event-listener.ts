@@ -1,10 +1,7 @@
-import {
-  BaseIntegrationEventListener,
-  type ParsedIntegrationMessage,
-} from "@libs/nestjs-common";
-import { Injectable } from "@nestjs/common";
+import { BaseIntegrationEventListener, type ParsedIntegrationMessage } from '@libs/nestjs-common';
+import { Injectable } from '@nestjs/common';
 
-import { RedisService } from "./redis.service";
+import { RedisService } from './redis.service';
 
 /**
  * Redis implementation of EventListener
@@ -19,9 +16,7 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
   protected async subscribeToTopic(topicName: string): Promise<void> {
     const client = this.redisService.getSubscriberClient();
     if (!client) {
-      this.logger.warn(
-        `No Redis subscriber client available, cannot subscribe to ${topicName}`,
-      );
+      this.logger.warn(`No Redis subscriber client available, cannot subscribe to ${topicName}`);
       return;
     }
 
@@ -30,20 +25,15 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
       await client.subscribe(topicName);
 
       // Set up message handler (only once, not for each topic)
-      if (!client.listenerCount("message")) {
-        client.on("message", (channel: string, message: string) => {
-          this.handleMessage(channel, this.parseMessage(message)).catch(
-            this.logger.error,
-          );
+      if (!client.listenerCount('message')) {
+        client.on('message', (channel: string, message: string) => {
+          this.handleMessage(channel, this.parseMessage(message)).catch(this.logger.error);
         });
       }
 
       this.logger.log(`Subscribed to Redis topic/channel: ${topicName}`);
     } catch (error) {
-      this.logger.error(
-        `Failed to subscribe to Redis topic/channel ${topicName}:`,
-        error,
-      );
+      this.logger.error(`Failed to subscribe to Redis topic/channel ${topicName}:`, error);
       throw error;
     }
   }
@@ -61,10 +51,7 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
       await client.unsubscribe(topicName);
       this.logger.log(`Unsubscribed from Redis channel: ${topicName}`);
     } catch (error) {
-      this.logger.error(
-        `Failed to unsubscribe from Redis channel ${topicName}:`,
-        error,
-      );
+      this.logger.error(`Failed to unsubscribe from Redis channel ${topicName}:`, error);
     }
   }
 

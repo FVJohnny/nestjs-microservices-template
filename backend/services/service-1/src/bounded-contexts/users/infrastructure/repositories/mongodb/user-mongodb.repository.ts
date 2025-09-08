@@ -5,11 +5,7 @@ import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { UserDTO } from '../../../domain/entities/user.types';
-import {
-  Criteria,
-  InfrastructureException,
-  PaginatedRepoResult,
-} from '@libs/nestjs-common';
+import { Criteria, InfrastructureException, PaginatedRepoResult } from '@libs/nestjs-common';
 import { MongoCriteriaConverter } from '@libs/nestjs-mongodb';
 import { MONGO_CLIENT_TOKEN } from '@libs/nestjs-mongodb';
 
@@ -122,10 +118,7 @@ export class UserMongodbRepository implements UserRepository {
 
   async findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
     try {
-      const queryResult = await MongoCriteriaConverter.executeQuery(
-        this.collection,
-        criteria,
-      );
+      const queryResult = await MongoCriteriaConverter.executeQuery(this.collection, criteria);
 
       return {
         data: queryResult.data.map((doc) => User.fromValue(doc)),
@@ -178,15 +171,10 @@ export class UserMongodbRepository implements UserRepository {
   private async initializeIndexes(): Promise<void> {
     try {
       // Check if collection exists first
-      const collections = await this.mongoClient
-        .db()
-        .listCollections({ name: 'users' })
-        .toArray();
+      const collections = await this.mongoClient.db().listCollections({ name: 'users' }).toArray();
       if (collections.length === 0) {
         // Collection doesn't exist yet, indexes will be created when first document is inserted
-        this.logger.log(
-          'Users collection does not exist yet, skipping index initialization',
-        );
+        this.logger.log('Users collection does not exist yet, skipping index initialization');
         return;
       }
 
@@ -229,17 +217,11 @@ export class UserMongodbRepository implements UserRepository {
 
       // Query performance indexes
       if (!indexNames.includes('idx_user_role')) {
-        await this.collection.createIndex(
-          { role: 1 },
-          { name: 'idx_user_role' },
-        );
+        await this.collection.createIndex({ role: 1 }, { name: 'idx_user_role' });
       }
 
       if (!indexNames.includes('idx_user_status_role')) {
-        await this.collection.createIndex(
-          { status: 1, role: 1 },
-          { name: 'idx_user_status_role' },
-        );
+        await this.collection.createIndex({ status: 1, role: 1 }, { name: 'idx_user_status_role' });
       }
 
       // Name search indexes
@@ -255,17 +237,11 @@ export class UserMongodbRepository implements UserRepository {
 
       // Sorting indexes
       if (!indexNames.includes('idx_user_created_desc')) {
-        await this.collection.createIndex(
-          { createdAt: -1 },
-          { name: 'idx_user_created_desc' },
-        );
+        await this.collection.createIndex({ createdAt: -1 }, { name: 'idx_user_created_desc' });
       }
 
       if (!indexNames.includes('idx_user_updated_desc')) {
-        await this.collection.createIndex(
-          { updatedAt: -1 },
-          { name: 'idx_user_updated_desc' },
-        );
+        await this.collection.createIndex({ updatedAt: -1 }, { name: 'idx_user_updated_desc' });
       }
 
       // Compound indexes for common query patterns
@@ -290,11 +266,7 @@ export class UserMongodbRepository implements UserRepository {
   /**
    * Handle database errors consistently
    */
-  private handleDatabaseError(
-    operation: string,
-    id: string,
-    error: unknown,
-  ): never {
+  private handleDatabaseError(operation: string, id: string, error: unknown): never {
     const err = error instanceof Error ? error : new Error(String(error));
     throw new InfrastructureException(operation, id, err);
   }

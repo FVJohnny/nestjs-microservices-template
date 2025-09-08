@@ -1,52 +1,51 @@
-import { Controller, Get } from "@nestjs/common";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Controller, Get } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { EventTrackerService } from "./event-tracker.service";
+import { EventTrackerService } from './event-tracker.service';
 
 /**
  * Generic messaging controller that works with any event source implementation
  * (Kafka, Redis, RabbitMQ, etc.) through dependency injection
  */
-@ApiTags("Event-Tracker")
-@Controller("event-tracker")
+@ApiTags('Event-Tracker')
+@Controller('event-tracker')
 export class EventTrackerController {
   constructor(private readonly eventTracker: EventTrackerService) {}
 
-  @Get("stats")
+  @Get('stats')
   @ApiOperation({
-    summary: "Get event tracker statistics",
-    description:
-      "Returns statistics about integration events and domain events",
+    summary: 'Get event tracker statistics',
+    description: 'Returns statistics about integration events and domain events',
   })
   @ApiResponse({
     status: 200,
-    description: "Event tracker statistics",
+    description: 'Event tracker statistics',
     schema: {
-      type: "object",
+      type: 'object',
       properties: {
-        service: { type: "string", example: "Copy Signals AI" },
-        totalEventsProcessed: { type: "number", example: 123 },
+        service: { type: 'string', example: 'Copy Signals AI' },
+        totalEventsProcessed: { type: 'number', example: 123 },
         eventsByType: {
-          type: "array",
+          type: 'array',
           items: {
-            type: "object",
+            type: 'object',
             properties: {
-              eventName: { type: "string", example: "channel.create" },
-              topic: { type: "string", example: "trading-signals" },
-              successCount: { type: "number", example: 123 },
-              failureCount: { type: "number", example: 0 },
+              eventName: { type: 'string', example: 'channel.create' },
+              topic: { type: 'string', example: 'trading-signals' },
+              successCount: { type: 'number', example: 123 },
+              failureCount: { type: 'number', example: 0 },
               lastProcessed: {
-                type: "string",
-                format: "date-time",
-                example: "2023-04-01T12:34:56.789Z",
+                type: 'string',
+                format: 'date-time',
+                example: '2023-04-01T12:34:56.789Z',
               },
             },
           },
         },
         timestamp: {
-          type: "string",
-          format: "date-time",
-          example: "2023-04-01T12:34:56.789Z",
+          type: 'string',
+          format: 'date-time',
+          example: '2023-04-01T12:34:56.789Z',
         },
       },
     },

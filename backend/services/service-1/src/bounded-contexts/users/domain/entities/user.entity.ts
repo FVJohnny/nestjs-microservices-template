@@ -61,11 +61,8 @@ export class User extends SharedAggregateRoot implements UserAttributes {
     return new User({
       id,
       email: props?.email || new Email('user@example.com'),
-      username:
-        props?.username ||
-        new Username('user' + Math.floor(Math.random() * 10000)),
-      profile:
-        props?.profile ?? new UserProfile(new Name('John'), new Name('Doe')),
+      username: props?.username || new Username('user' + Math.floor(Math.random() * 10000)),
+      profile: props?.profile ?? new UserProfile(new Name('John'), new Name('Doe')),
       status: props?.status ?? new UserStatus(UserStatusEnum.ACTIVE),
       role: props?.role ?? UserRole.random(),
       lastLoginAt: props?.lastLoginAt,
@@ -129,10 +126,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       id: value.id,
       email: new Email(value.email),
       username: new Username(value.username),
-      profile: new UserProfile(
-        new Name(value.profile.firstName),
-        new Name(value.profile.lastName),
-      ),
+      profile: new UserProfile(new Name(value.profile.firstName), new Name(value.profile.lastName)),
       status: new UserStatus(value.status as UserStatusEnum),
       role: new UserRole(value.role as UserRoleEnum),
       lastLoginAt: value.lastLoginAt ? new Date(value.lastLoginAt) : undefined,

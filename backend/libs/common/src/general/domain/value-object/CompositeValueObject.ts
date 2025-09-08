@@ -1,4 +1,4 @@
-import { isDeepStrictEqual } from "util";
+import { isDeepStrictEqual } from 'util';
 
 /**
  * Base class for composite value objects that contain multiple value objects or primitives.

@@ -61,10 +61,7 @@ export class UserTestFactory {
       const user = User.random({
         email: new Email(`user${i}@${domain}`),
         username: new Username(`user${i}`),
-        profile: new UserProfile(
-          new Name(`FirstName${i}`),
-          new Name(`LastName${i}`),
-        ),
+        profile: new UserProfile(new Name(`FirstName${i}`), new Name(`LastName${i}`)),
         role: baseProps?.role,
         status: baseProps?.status,
       });

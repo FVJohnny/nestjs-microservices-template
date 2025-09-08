@@ -1,7 +1,4 @@
-import {
-  StringValueObject,
-  DomainValidationException,
-} from '@libs/nestjs-common';
+import { StringValueObject, DomainValidationException } from '@libs/nestjs-common';
 
 export class Username extends StringValueObject {
   private static readonly MIN_LENGTH = 3;
@@ -15,11 +12,7 @@ export class Username extends StringValueObject {
 
   static validate(username: string): void {
     if (!username || username.trim().length === 0) {
-      throw new DomainValidationException(
-        'username',
-        username,
-        'Username cannot be empty',
-      );
+      throw new DomainValidationException('username', username, 'Username cannot be empty');
     }
 
     const trimmed = username.trim();
