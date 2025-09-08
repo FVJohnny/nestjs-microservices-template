@@ -1,12 +1,12 @@
-import { Logger } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { IntegrationEventHandler, UserExampleIntegrationEvent } from '@libs/nestjs-common';
 import { RegisterUserCommand } from '../../application/commands';
 import { UserRoleEnum } from '../../domain/value-objects/user-role.vo';
+import { CorrelationLogger } from '@libs/nestjs-common';
 
 @IntegrationEventHandler(UserExampleIntegrationEvent)
 export class UserExampleIntegrationEventHandler {
-  private readonly logger = new Logger(UserExampleIntegrationEventHandler.name);
+  private readonly logger = new CorrelationLogger(UserExampleIntegrationEventHandler.name);
 
   constructor(private readonly commandBus: CommandBus) {}
 

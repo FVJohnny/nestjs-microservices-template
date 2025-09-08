@@ -1,11 +1,11 @@
 services:
   service-1:
     image: node:22-alpine
-    working_dir: /app
+    working_dir: /app/backend/services/service-1
     volumes:
       - ${PWD}:/app
     command: >
-      sh -c "\ cd backend/services/service-1 && npm run start:dev"
+      sh -c "npm run start:dev"
     env_file:
       - .env
     environment:

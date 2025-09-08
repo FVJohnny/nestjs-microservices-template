@@ -1,6 +1,8 @@
-import { Logger, type Type } from '@nestjs/common';
+import { type Type } from '@nestjs/common';
+
 import * as fs from 'fs';
 import * as path from 'path';
+import { CorrelationLogger } from '../logger';
 
 interface RuntimeDiscoveryResult {
   handlers: Type<unknown>[];
@@ -12,7 +14,7 @@ interface RuntimeDiscoveryResult {
  * This scans and requires files at module initialization time
  */
 export class RuntimeAutoDiscovery {
-  private static readonly logger = new Logger(RuntimeAutoDiscovery.name);
+  private static readonly logger = new CorrelationLogger(RuntimeAutoDiscovery.name);
 
   static discoverAllComponents(boundedContextPath: string): RuntimeDiscoveryResult {
     const result: RuntimeDiscoveryResult = {
@@ -57,7 +59,7 @@ export class RuntimeAutoDiscovery {
 
       return result;
     } catch (error) {
-      this.logger.error('❌ Runtime auto-discovery failed:', error);
+      this.logger.error('❌ Runtime auto-discovery failed:', error as Error);
       return result;
     }
   }

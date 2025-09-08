@@ -1,11 +1,12 @@
 import { IntegrationEventPublisher } from '@libs/nestjs-common';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { CorrelationLogger } from '@libs/nestjs-common';
 
 import { RedisService } from './redis.service';
 
 @Injectable()
 export class RedisIntegrationEventPublisher implements IntegrationEventPublisher {
-  private readonly logger = new Logger(RedisIntegrationEventPublisher.name);
+  private readonly logger = new CorrelationLogger(RedisIntegrationEventPublisher.name);
 
   constructor(private readonly redisService: RedisService) {}
 
@@ -23,7 +24,7 @@ export class RedisIntegrationEventPublisher implements IntegrationEventPublisher
       await client.publish(topic, message);
       this.logger.debug(`[Redis] Event published to ${topic}. Message: ${message}`);
     } catch (error) {
-      this.logger.error(`[Redis] Failed to publish event to channel ${topic}:`, error);
+      this.logger.error(`[Redis] Failed to publish event to channel ${topic}:`, error as Error);
       throw error;
     }
   }

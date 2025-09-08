@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { OutboxRepository } from './outbox.repository';
 import {
   INTEGRATION_EVENT_PUBLISHER_TOKEN,
@@ -6,12 +6,13 @@ import {
 } from '../integration-events';
 import { randomUUID } from 'crypto';
 import { OutboxEvent } from './outbox-event.entity';
+import { CorrelationLogger } from '../logger';
 
 export const OUTBOX_REPOSITORY_TOKEN = 'OutboxRepository';
 
 @Injectable()
 export class OutboxService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(OutboxService.name);
+  private readonly logger = new CorrelationLogger(OutboxService.name);
   private readonly PROCESSING_INTERVAL_MS = 1000;
   private processingInterval?: NodeJS.Timeout;
 
@@ -78,7 +79,7 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async handleEventError(event: OutboxEvent, error: unknown): Promise<void> {
-    this.logger.error(`Failed to process outbox event ${event.id}:`, error);
+    this.logger.error(`Failed to process outbox event ${event.id}:`, error as Error);
 
     if (event.retryCount < event.maxRetries) {
       await this.repository.incrementRetryCount(event.id);

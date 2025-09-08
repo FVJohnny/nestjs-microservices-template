@@ -1,4 +1,4 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { MongoClient, Collection } from 'mongodb';
 import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
@@ -8,10 +8,11 @@ import { UserDTO } from '../../../domain/entities/user.types';
 import { Criteria, InfrastructureException, PaginatedRepoResult } from '@libs/nestjs-common';
 import { MongoCriteriaConverter } from '@libs/nestjs-mongodb';
 import { MONGO_CLIENT_TOKEN } from '@libs/nestjs-mongodb';
+import { CorrelationLogger } from '@libs/nestjs-common';
 
 @Injectable()
 export class UserMongodbRepository implements UserRepository {
-  private readonly logger = new Logger(UserMongodbRepository.name);
+  private readonly logger = new CorrelationLogger(UserMongodbRepository.name);
   private readonly collection: Collection<UserDTO>;
 
   constructor(

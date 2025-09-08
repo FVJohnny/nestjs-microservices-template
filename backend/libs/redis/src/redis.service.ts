@@ -1,9 +1,10 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { CorrelationLogger } from '@libs/nestjs-common';
 import { Redis } from 'ioredis';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(RedisService.name);
+  private readonly logger = new CorrelationLogger(RedisService.name);
   private databaseClient: Redis | null = null;
   private publisherClient: Redis | null = null;
   private subscriberClient: Redis | null = null;

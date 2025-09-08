@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import type { ParsedIntegrationMessage } from '../types/integration-event.types';
 import { IIntegrationEventHandler } from './integration-event-handler.base';
+import { CorrelationLogger } from '../../logger';
 
 interface HandlerInfo {
   handler: IIntegrationEventHandler;
@@ -20,7 +21,7 @@ export interface IntegrationEventListener {
  */
 @Injectable()
 export abstract class BaseIntegrationEventListener implements IntegrationEventListener {
-  protected readonly logger = new Logger(this.constructor.name);
+  protected readonly logger = new CorrelationLogger(this.constructor.name);
   protected readonly eventHandlers = new Map<string, HandlerInfo[]>(); // topic -> array of handlers
 
   async registerEventHandler(topicName: string, handler: IIntegrationEventHandler): Promise<void> {

@@ -2,9 +2,10 @@ import { Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import type { SwaggerSetupOptions } from './swagger-config.interface';
+import { CorrelationLogger } from '../logger';
 
 export class SwaggerUtility {
-  private static readonly logger = new Logger(SwaggerUtility.name);
+  private static readonly logger = new CorrelationLogger(SwaggerUtility.name);
   static setupSwagger(options: SwaggerSetupOptions): void {
     const { app, config, basePath } = options;
 

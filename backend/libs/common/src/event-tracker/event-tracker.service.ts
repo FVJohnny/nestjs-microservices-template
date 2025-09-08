@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { CorrelationLogger } from '../logger';
 
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
 import { DomainEvent } from '../general';
@@ -22,7 +23,7 @@ export interface AllEventsSummary {
 
 @Injectable()
 export class EventTrackerService {
-  private readonly logger = new Logger(EventTrackerService.name);
+  private readonly logger = new CorrelationLogger(EventTrackerService.name);
 
   private stats = new Map<string, EventStats>();
 

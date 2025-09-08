@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { EventTrackerService } from './event-tracker.service';
 import {
   INTEGRATION_EVENT_LISTENER_TOKEN,
@@ -6,13 +6,14 @@ import {
 } from '../integration-events/module/integration-event-listener.base';
 import type { IIntegrationEventHandler } from '../integration-events/module/integration-event-handler.base';
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
+import { CorrelationLogger } from '../logger';
 
 /**
  * Universal Integration Event Tracker that intercepts Integration Event Listener methods
  */
 @Injectable()
 export class IntegrationEventTrackerInterceptor {
-  private readonly logger = new Logger(IntegrationEventTrackerInterceptor.name);
+  private readonly logger = new CorrelationLogger(IntegrationEventTrackerInterceptor.name);
 
   constructor(
     private readonly eventTracker: EventTrackerService,

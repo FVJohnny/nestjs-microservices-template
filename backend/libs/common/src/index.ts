@@ -31,3 +31,5 @@ export * from './utils/data';
 
 // Tracing
 export * from './tracing';
+// Logger
+export * from './logger';

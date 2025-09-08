@@ -5,8 +5,8 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  Logger,
 } from '@nestjs/common';
+import { CorrelationLogger } from '../logger';
 import { Request, Response } from 'express';
 
 import { TracingService } from '../tracing/tracing.service';
@@ -36,7 +36,7 @@ export interface ErrorResponse {
 @Injectable()
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(GlobalExceptionFilter.name);
+  private readonly logger = new CorrelationLogger(GlobalExceptionFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();

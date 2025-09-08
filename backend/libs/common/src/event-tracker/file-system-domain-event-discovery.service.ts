@@ -1,10 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { CorrelationLogger } from '../logger';
 
 @Injectable()
 export class FileSystemDomainEventDiscoveryService {
-  private readonly logger = new Logger(FileSystemDomainEventDiscoveryService.name);
+  private readonly logger = new CorrelationLogger(FileSystemDomainEventDiscoveryService.name);
 
   async discoverDomainEvents(): Promise<Set<string>> {
     const eventNames = new Set<string>();
@@ -49,7 +50,7 @@ export class FileSystemDomainEventDiscoveryService {
 
       files.forEach((eventName) => eventNames.add(eventName));
     } catch (error) {
-      this.logger.debug(`Could not scan ${eventsPath}:`, error);
+      this.logger.error(`Could not scan ${eventsPath}:`, error as Error);
     }
   }
 

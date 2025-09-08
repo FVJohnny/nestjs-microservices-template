@@ -1,9 +1,10 @@
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 
 import { BaseIntegrationEvent } from '../events';
 import { ParsedIntegrationMessage } from '../types/integration-event.types';
 import { INTEGRATION_EVENT_LISTENER_TOKEN } from './integration-event-listener.base';
 import type { IntegrationEventListener } from './integration-event-listener.base';
+import { CorrelationLogger } from '../../logger';
 
 /**
  * Base event handler that auto-registers itself with its topic
@@ -15,7 +16,7 @@ import type { IntegrationEventListener } from './integration-event-listener.base
 export abstract class BaseIntegrationEventHandler<T extends BaseIntegrationEvent>
   implements IIntegrationEventHandler, OnModuleInit
 {
-  protected readonly logger = new Logger(this.constructor.name);
+  protected readonly logger = new CorrelationLogger(this.constructor.name);
 
   abstract readonly topicName: string;
   eventClass!: { fromJSON(json: unknown): T };

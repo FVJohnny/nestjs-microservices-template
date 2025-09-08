@@ -1,11 +1,12 @@
 import { IntegrationEventPublisher } from '@libs/nestjs-common';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { CorrelationLogger } from '@libs/nestjs-common';
 
 import { KafkaService } from './kafka-service';
 
 @Injectable()
 export class KafkaIntegrationEventPublisher implements IntegrationEventPublisher {
-  private readonly logger = new Logger(KafkaIntegrationEventPublisher.name);
+  private readonly logger = new CorrelationLogger(KafkaIntegrationEventPublisher.name);
 
   constructor(private readonly kafkaService: KafkaService) {}
 
@@ -21,9 +22,9 @@ export class KafkaIntegrationEventPublisher implements IntegrationEventPublisher
           },
         ],
       });
-      this.logger.debug(`Event published to Kafka topic ${topic}`, JSON.parse(message));
+      this.logger.debug(`Event published to Kafka topic ${topic}. Message: ${message}`);
     } catch (error) {
-      this.logger.error(`Failed to publish event to Kafka topic ${topic}:`, error);
+      this.logger.error(`Failed to publish event to Kafka topic ${topic}:`, error as Error);
       throw error;
     }
   }

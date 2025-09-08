@@ -33,7 +33,7 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
 
       this.logger.log(`Subscribed to Redis topic/channel: ${topicName}`);
     } catch (error) {
-      this.logger.error(`Failed to subscribe to Redis topic/channel ${topicName}:`, error);
+      this.logger.error(`Failed to subscribe to Redis topic/channel ${topicName}:`, error as Error);
       throw error;
     }
   }
@@ -51,7 +51,7 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
       await client.unsubscribe(topicName);
       this.logger.log(`Unsubscribed from Redis channel: ${topicName}`);
     } catch (error) {
-      this.logger.error(`Failed to unsubscribe from Redis channel ${topicName}:`, error);
+      this.logger.error(`Failed to unsubscribe from Redis channel ${topicName}:`, error as Error);
     }
   }
 

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 
 import { BaseIntegrationEvent } from '../events';
 import { ParsedIntegrationMessage } from '../types/integration-event.types';
@@ -7,6 +7,7 @@ import {
   type BaseIntegrationEventListener,
   INTEGRATION_EVENT_LISTENER_TOKEN,
 } from './integration-event-listener.base';
+import { CorrelationLogger } from '../../logger';
 
 // Interface for the handler instance that the decorator expects
 interface IntegrationEventHandlerInstance {
@@ -62,7 +63,7 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
 
     // Create a new class that extends the original and adds all the base functionality
     class IntegrationEventHandlerClass extends constructor implements OnModuleInit {
-      protected readonly logger = new Logger(this.constructor.name);
+      protected readonly logger = new CorrelationLogger(this.constructor.name);
       eventClass = eventClass;
       readonly topicName = topicName;
 

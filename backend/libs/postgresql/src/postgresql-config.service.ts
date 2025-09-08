@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-
+import { Injectable } from '@nestjs/common';
+import { CorrelationLogger } from '@libs/nestjs-common';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 @Injectable()
 export class PostgreSQLConfigService {
-  private readonly logger = new Logger(PostgreSQLConfigService.name);
+  private readonly logger = new CorrelationLogger(PostgreSQLConfigService.name);
 
   getPostgreSQLConfig(): PostgreSQLConfig {
     const config: PostgreSQLConfig = {
