@@ -1,12 +1,11 @@
-import { isDeepStrictEqual } from 'node:util';
+import { isDeepStrictEqual } from "node:util";
 
-import { AggregateRoot, type IEvent} from '@nestjs/cqrs';
+import { AggregateRoot, type IEvent } from "@nestjs/cqrs";
 
 /**
  * Base class for aggregate roots in Domain-Driven Design
  */
 export abstract class SharedAggregateRoot extends AggregateRoot<IEvent> {
-
   /**
    * Convert the aggregate to its primitive representation
    * This is used for persistence and serialization

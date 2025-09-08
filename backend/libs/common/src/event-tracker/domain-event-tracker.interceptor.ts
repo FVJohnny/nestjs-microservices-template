@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { EventBus } from '@nestjs/cqrs';
-import { DomainEvent } from '../general';
-import { EventTrackerService } from './event-tracker.service';
+import { Injectable } from "@nestjs/common";
+import { EventBus } from "@nestjs/cqrs";
+import { DomainEvent } from "../general";
+import { EventTrackerService } from "./event-tracker.service";
 
 /**
  * Universal Domain Event Tracker that intercepts ALL domain events
@@ -22,8 +22,11 @@ export class DomainEventTrackerInterceptor {
    * Initialize stats for discovered domain events
    */
   public initializeDomainEventStats(domainEventNames: Set<string>): void {
-    domainEventNames.forEach(eventName => {
-      this.eventTracker.initializeStats(EventTrackerService.DomainEventTopic, eventName);
+    domainEventNames.forEach((eventName) => {
+      this.eventTracker.initializeStats(
+        EventTrackerService.DomainEventTopic,
+        eventName,
+      );
     });
   }
 
@@ -43,7 +46,7 @@ export class DomainEventTrackerInterceptor {
 
     // Override publishAll method
     this.eventBus.publishAll = async (events: DomainEvent[]) => {
-      events.forEach(event => {
+      events.forEach((event) => {
         this.trackDomainEventSafely(event, true);
       });
       return this.originalPublishAll(events);
@@ -57,7 +60,10 @@ export class DomainEventTrackerInterceptor {
     try {
       this.eventTracker.trackDomainEvent(event, success);
     } catch (error) {
-      console.error(`Failed to track domain event ${event.constructor.name}:`, error);
+      console.error(
+        `Failed to track domain event ${event.constructor.name}:`,
+        error,
+      );
     }
   }
 }

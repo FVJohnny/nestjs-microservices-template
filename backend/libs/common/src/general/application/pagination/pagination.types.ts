@@ -1,4 +1,4 @@
-export type PaginationOrder = 'asc' | 'desc' | 'none';
+export type PaginationOrder = "asc" | "desc" | "none";
 
 export interface PaginationOffsetParams {
   limit?: number;
@@ -17,7 +17,6 @@ export interface PageResultOffset<T> {
     total?: number | null;
   };
 }
-
 
 export interface PaginationCursorParams {
   limit?: number;

@@ -1,1 +1,1 @@
-export * from './event-bus.mock';
+export * from "./event-bus.mock";

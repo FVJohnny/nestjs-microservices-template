@@ -1,7 +1,10 @@
 export abstract class EnumValueObject<T> {
   private readonly value: T;
 
-  constructor(value: T, public readonly validValues: T[]) {
+  constructor(
+    value: T,
+    public readonly validValues: T[],
+  ) {
     this.value = value;
     this.checkValueIsValid(value);
   }
@@ -15,11 +18,14 @@ export abstract class EnumValueObject<T> {
   protected abstract throwErrorForInvalidValue(value: T): void;
 
   equals(other: EnumValueObject<T>): boolean {
-    return other.constructor.name === this.constructor.name && other.value === this.value;
+    return (
+      other.constructor.name === this.constructor.name &&
+      other.value === this.value
+    );
   }
 
   toString(): string {
-    return this.value?.toString() || '';
+    return this.value?.toString() || "";
   }
 
   toValue(): T {

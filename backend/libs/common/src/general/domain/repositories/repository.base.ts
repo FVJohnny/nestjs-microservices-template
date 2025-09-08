@@ -1,4 +1,3 @@
-
 /**
  * Base repository interface for domain entities.
  * Provides common CRUD operations that can be extended by specific repositories.

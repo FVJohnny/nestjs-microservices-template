@@ -1,8 +1,8 @@
-import { Global, Module } from '@nestjs/common';
-import type { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
+import { Global, Module } from "@nestjs/common";
+import type { TypeOrmModuleAsyncOptions } from "@nestjs/typeorm";
 
-import { PostgreSQLController } from './postgresql.controller';
-import { PostgreSQLConfigService } from './postgresql-config.service';
+import { PostgreSQLController } from "./postgresql.controller";
+import { PostgreSQLConfigService } from "./postgresql-config.service";
 
 @Global()
 @Module({
@@ -20,5 +20,4 @@ export class SharedPostgreSQLModule {
       inject: [PostgreSQLConfigService],
     };
   }
-
 }

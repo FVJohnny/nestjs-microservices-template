@@ -1,14 +1,15 @@
-import { BaseIntegrationEventListener, type ParsedIntegrationMessage } from '@libs/nestjs-common';
-import { Injectable } from '@nestjs/common';
-import { type KafkaMessage } from 'kafkajs';
+import {
+  BaseIntegrationEventListener,
+  type ParsedIntegrationMessage,
+} from "@libs/nestjs-common";
+import { Injectable } from "@nestjs/common";
+import { type KafkaMessage } from "kafkajs";
 
-import { KafkaService } from './kafka-service';
+import { KafkaService } from "./kafka-service";
 
 @Injectable()
 export class KafkaIntegrationEventListener extends BaseIntegrationEventListener {
-  constructor(
-    private readonly kafkaService: KafkaService,
-  ) {
+  constructor(private readonly kafkaService: KafkaService) {
     super();
   }
 
@@ -33,9 +34,9 @@ export class KafkaIntegrationEventListener extends BaseIntegrationEventListener 
     try {
       const messageValue = message.value?.toString();
       const messageKey = message.key?.toString();
-      
+
       const messageId = messageKey || `kafka-${Date.now()}`;
-      const parsedMessage = JSON.parse(messageValue || '{}');
+      const parsedMessage = JSON.parse(messageValue || "{}");
 
       return { id: messageId, name: parsedMessage.name, ...parsedMessage };
     } catch (error) {

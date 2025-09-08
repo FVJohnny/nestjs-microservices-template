@@ -1,5 +1,18 @@
-import { Criteria, type Filter, Operator, PaginationCursor, PaginationOffset, parseFromString, Primitives } from '@libs/nestjs-common';
-import { type Collection, type FindCursor, type Document, type WithId } from 'mongodb';
+import {
+  Criteria,
+  type Filter,
+  Operator,
+  PaginationCursor,
+  PaginationOffset,
+  parseFromString,
+  Primitives,
+} from "@libs/nestjs-common";
+import {
+  type Collection,
+  type FindCursor,
+  type Document,
+  type WithId,
+} from "mongodb";
 
 /**
  * MongoDB query options interface
@@ -18,7 +31,6 @@ interface MongoFilterCondition extends Record<string, unknown> {
   $or?: MongoFilterCondition[];
   $and?: MongoFilterCondition[];
 }
-
 
 /**
  * MongoDB criteria conversion result
@@ -45,9 +57,12 @@ export class MongoCriteriaConverter {
   /**
    * Query a MongoDB collection with criteria and return configured cursor
    */
-  static query<T extends Document = Document>(collection: Collection<T>, criteria: Criteria): FindCursor<WithId<T>> {
+  static query<T extends Document = Document>(
+    collection: Collection<T>,
+    criteria: Criteria,
+  ): FindCursor<WithId<T>> {
     const { filters: filter, options } = this.convert(criteria);
-    const mongoFilter = filter.length === 0 ? {} : {$and: filter};
+    const mongoFilter = filter.length === 0 ? {} : { $and: filter };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return collection.find(mongoFilter as any, options);
   }
@@ -56,40 +71,46 @@ export class MongoCriteriaConverter {
    * Execute a full query with metadata including cursor and hasNext
    */
   static async executeQuery<T extends Document = Document>(
-    collection: Collection<T>, 
-    criteria: Criteria
+    collection: Collection<T>,
+    criteria: Criteria,
   ): Promise<MongoQueryResult<WithId<T>>> {
     // Create a modified criteria with limit + 1 for hasNext detection
     let modifiedPagination = criteria.pagination;
     if (criteria.pagination.limit > 0) {
       if (criteria.pagination instanceof PaginationOffset) {
-        modifiedPagination = new PaginationOffset(criteria.pagination.limit + 1, criteria.pagination.offset, criteria.pagination.withTotal);
+        modifiedPagination = new PaginationOffset(
+          criteria.pagination.limit + 1,
+          criteria.pagination.offset,
+          criteria.pagination.withTotal,
+        );
       } else if (criteria.pagination instanceof PaginationCursor) {
-        modifiedPagination = new PaginationCursor({ 
-          cursor: criteria.pagination.cursor, 
-          limit: criteria.pagination.limit + 1 
+        modifiedPagination = new PaginationCursor({
+          cursor: criteria.pagination.cursor,
+          limit: criteria.pagination.limit + 1,
         });
       }
     }
-    
+
     const modifiedCriteria = new Criteria({
       filters: criteria.filters,
       order: criteria.order,
-      pagination: modifiedPagination
+      pagination: modifiedPagination,
     });
-    
+
     const query = this.query(collection, modifiedCriteria);
     const documents = await query.toArray();
 
     // Check if we got more documents than requested
-    const hasNext = documents.length > criteria.pagination.limit && criteria.pagination.limit > 0;
-    
+    const hasNext =
+      documents.length > criteria.pagination.limit &&
+      criteria.pagination.limit > 0;
+
     // Trim to actual limit
-    const resultDocuments = hasNext 
+    const resultDocuments = hasNext
       ? documents.slice(0, criteria.pagination.limit)
       : documents;
 
-    const total = criteria.hasWithTotal() 
+    const total = criteria.hasWithTotal()
       ? await this.count(collection, criteria.withNoPagination())
       : null;
 
@@ -107,7 +128,10 @@ export class MongoCriteriaConverter {
   /**
    * Count documents in a MongoDB collection with criteria
    */
-  static async count<T extends Document = Document>(collection: Collection<T>, criteria: Criteria): Promise<number> {
+  static async count<T extends Document = Document>(
+    collection: Collection<T>,
+    criteria: Criteria,
+  ): Promise<number> {
     const { filters } = this.convert(criteria);
     const mongoFilter = filters.length === 0 ? {} : { $and: filters };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -127,7 +151,7 @@ export class MongoCriteriaConverter {
       options.limit = criteria.pagination.limit;
       options.skip = criteria.pagination.offset;
     }
-    
+
     if (criteria.pagination instanceof PaginationCursor) {
       options.limit = criteria.pagination.limit;
       const cursorFilter = this.buildCursorFilter(criteria);
@@ -135,15 +159,14 @@ export class MongoCriteriaConverter {
         filters.push(cursorFilter);
       }
     }
-    
+
     return { filters, options };
   }
 
   private static generateCursor<T extends Document = Document>(
-    documents: WithId<T>[], 
-    criteria: Criteria
+    documents: WithId<T>[],
+    criteria: Criteria,
   ): string | undefined {
-
     if (documents.length == 0 || !criteria.order.hasOrder()) {
       return undefined;
     }
@@ -157,7 +180,7 @@ export class MongoCriteriaConverter {
 
   private static buildFilters(criteria: Criteria): MongoFilterCondition[] {
     const filters: MongoFilterCondition[] = [];
-    
+
     if (!criteria.filters || criteria.filters.filters.length === 0) {
       return filters;
     }
@@ -176,10 +199,10 @@ export class MongoCriteriaConverter {
           condition[fieldName] = { $ne: parseFromString(value) };
           break;
         case Operator.CONTAINS:
-          condition[fieldName] = { $regex: value, $options: 'i' };
+          condition[fieldName] = { $regex: value, $options: "i" };
           break;
         case Operator.NOT_CONTAINS:
-          condition[fieldName] = { $not: { $regex: value, $options: 'i' } };
+          condition[fieldName] = { $not: { $regex: value, $options: "i" } };
           break;
         case Operator.GT:
           condition[fieldName] = { $gt: parseFromString(value) };
@@ -188,14 +211,16 @@ export class MongoCriteriaConverter {
           condition[fieldName] = { $lt: parseFromString(value) };
           break;
       }
-      
+
       filters.push(condition);
     });
 
     return filters;
   }
 
-  private static buildCursorFilter(criteria: Criteria): MongoFilterCondition | undefined {
+  private static buildCursorFilter(
+    criteria: Criteria,
+  ): MongoFilterCondition | undefined {
     if (!(criteria.pagination instanceof PaginationCursor)) {
       return undefined;
     }
@@ -208,33 +233,36 @@ export class MongoCriteriaConverter {
     const orderByValue = criteria.order.orderBy?.toValue();
     const cursor = criteria.pagination.decodeCursor();
 
-    const comparator = criteria.order.orderType.isAsc() ? '$gt' : '$lt';
-    
+    const comparator = criteria.order.orderType.isAsc() ? "$gt" : "$lt";
+
     return {
       $or: [
         { [orderByValue]: { [comparator]: parseFromString(cursor.after) } },
-        { 
+        {
           [orderByValue]: parseFromString(cursor.after),
-          id: { [comparator]: cursor.tiebreakerId } 
+          id: { [comparator]: cursor.tiebreakerId },
         },
       ],
     };
   }
 
-  private static buildSortOptions(criteria: Criteria): Record<string, 1 | -1> | undefined {
+  private static buildSortOptions(
+    criteria: Criteria,
+  ): Record<string, 1 | -1> | undefined {
     if (!criteria.order.hasOrder()) {
       return undefined;
     }
-    
+
     const sortOrder = criteria.order.orderType.isAsc() ? 1 : -1;
-    const sort: Record<string, 1 | -1> = { [criteria.order.orderBy.toValue()]: sortOrder };
-    
+    const sort: Record<string, 1 | -1> = {
+      [criteria.order.orderBy.toValue()]: sortOrder,
+    };
+
     // Add id as tiebreaker for cursor pagination
     if (criteria.pagination instanceof PaginationCursor) {
       sort.id = sortOrder;
     }
-    
+
     return sort;
   }
-
 }

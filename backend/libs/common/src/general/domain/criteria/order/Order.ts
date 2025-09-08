@@ -1,5 +1,5 @@
-import { OrderBy } from './OrderBy';
-import { OrderType, OrderTypes } from './OrderType';
+import { OrderBy } from "./OrderBy";
+import { OrderType, OrderTypes } from "./OrderType";
 
 export class Order {
   readonly orderBy: OrderBy;
@@ -15,11 +15,14 @@ export class Order {
       return Order.none();
     }
 
-    return new Order(new OrderBy(orderBy), OrderType.fromValue(orderType || OrderTypes.ASC));
+    return new Order(
+      new OrderBy(orderBy),
+      OrderType.fromValue(orderType || OrderTypes.ASC),
+    );
   }
 
   static none(): Order {
-    return new Order(new OrderBy(''), new OrderType(OrderTypes.NONE));
+    return new Order(new OrderBy(""), new OrderType(OrderTypes.NONE));
   }
 
   static desc(orderBy: string): Order {
@@ -31,6 +34,6 @@ export class Order {
   }
 
   public hasOrder() {
-    return this.orderBy.toValue().trim() !== '' && !this.orderType.isNone();
+    return this.orderBy.toValue().trim() !== "" && !this.orderType.isNone();
   }
 }

@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Inject,Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common";
 
-import { BaseIntegrationEvent } from '../events';
-import { ParsedIntegrationMessage } from '../types/integration-event.types';
-import { type BaseIntegrationEventListener, INTEGRATION_EVENT_LISTENER_TOKEN } from './integration-event-listener.base';
+import { BaseIntegrationEvent } from "../events";
+import { ParsedIntegrationMessage } from "../types/integration-event.types";
+import {
+  type BaseIntegrationEventListener,
+  INTEGRATION_EVENT_LISTENER_TOKEN,
+} from "./integration-event-listener.base";
 
 // Interface for the handler instance that the decorator expects
 interface IntegrationEventHandlerInstance {
@@ -21,12 +24,14 @@ interface HandlerForRegistration {
  * Creates a complete integration event handler without needing to extend any base class
  */
 export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
-  eventClass: (new (...args: any[]) => T) & { fromJSON(json: unknown): T }
+  eventClass: (new (...args: any[]) => T) & { fromJSON(json: unknown): T },
 ) {
-  return function <U extends new (...args: any[]) => IntegrationEventHandlerInstance>(constructor: U) {
+  return function <
+    U extends new (...args: any[]) => IntegrationEventHandlerInstance,
+  >(constructor: U) {
     // Apply @Injectable decorator
     Injectable()(constructor);
-    
+
     // Extract topic from event class by creating a temporary instance
     // We need to handle the case where constructor requires specific props
     let topicName: string;
@@ -38,41 +43,47 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
       // If that fails, try with channel-specific props for backward compatibility
       try {
         const tempInstance = new eventClass({
-          channelType: 'temp',
-          name: 'temp', 
-          userId: 'temp',
-          connectionConfig: {}
+          channelType: "temp",
+          name: "temp",
+          userId: "temp",
+          connectionConfig: {},
         });
         topicName = tempInstance.getTopic();
       } catch {
-            // If both fail, try to access the topic property from a prototype instance
+        // If both fail, try to access the topic property from a prototype instance
         try {
           const prototype = eventClass.prototype;
-          topicName = prototype.topic || '';
+          topicName = prototype.topic || "";
         } catch {
-          topicName = '';
+          topicName = "";
         }
       }
     }
-    
+
     // Create a new class that extends the original and adds all the base functionality
-    class IntegrationEventHandlerClass extends constructor implements OnModuleInit {
+    class IntegrationEventHandlerClass
+      extends constructor
+      implements OnModuleInit
+    {
       protected readonly logger = new Logger(this.constructor.name);
       eventClass = eventClass;
       readonly topicName = topicName;
-      
+
       @Inject(INTEGRATION_EVENT_LISTENER_TOKEN)
       private readonly integrationEventListener!: BaseIntegrationEventListener;
-      
+
       constructor(...args: any[]) {
         super(...args);
       }
-      
+
       async onModuleInit() {
         const handler = this as unknown as HandlerForRegistration;
-        await this.integrationEventListener.registerEventHandler(this.topicName, handler);
+        await this.integrationEventListener.registerEventHandler(
+          this.topicName,
+          handler,
+        );
       }
-      
+
       async handle(message: ParsedIntegrationMessage): Promise<void> {
         const event = eventClass.fromJSON(message);
         const instance = this as unknown as IntegrationEventHandlerInstance;
@@ -82,12 +93,12 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
         await instance.handleEvent(event);
       }
     }
-    
+
     // Preserve the original class name
-    Object.defineProperty(IntegrationEventHandlerClass, 'name', {
-      value: constructor.name
+    Object.defineProperty(IntegrationEventHandlerClass, "name", {
+      value: constructor.name,
     });
-    
+
     return IntegrationEventHandlerClass as U;
   };
 }

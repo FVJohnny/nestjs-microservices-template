@@ -1,8 +1,7 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { Consumer, Kafka, Producer } from 'kafkajs';
+import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { Consumer, Kafka, Producer } from "kafkajs";
 
-import { createKafkaConfig } from './kafka-config.helper';
-
+import { createKafkaConfig } from "./kafka-config.helper";
 
 /**
  * Generic Kafka service that provides both consumer and publisher functionality.
@@ -12,31 +11,24 @@ import { createKafkaConfig } from './kafka-config.helper';
 export class KafkaService implements OnModuleInit, OnModuleDestroy {
   private consumer: Consumer;
   private producer: Producer;
-  
-  constructor() {
 
+  constructor() {
     // Use shared configuration helper
     const kafkaConfig = createKafkaConfig();
     const kafka = new Kafka(kafkaConfig);
-    
-    this.consumer = kafka.consumer({ 
-      groupId: kafkaConfig.clientId || 'default-group',
+
+    this.consumer = kafka.consumer({
+      groupId: kafkaConfig.clientId || "default-group",
     });
     this.producer = kafka.producer();
   }
 
   async onModuleInit() {
-    await Promise.all([
-      this.consumer.connect(),
-      this.producer.connect()
-    ]);
+    await Promise.all([this.consumer.connect(), this.producer.connect()]);
   }
 
   async onModuleDestroy() {
-    await Promise.all([
-      this.consumer.disconnect(),
-      this.producer.disconnect()
-    ]);
+    await Promise.all([this.consumer.disconnect(), this.producer.disconnect()]);
   }
 
   getConsumer(): Consumer {
@@ -46,5 +38,4 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
   getProducer(): Producer {
     return this.producer;
   }
-
 }

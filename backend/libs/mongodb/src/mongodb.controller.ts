@@ -1,13 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiOperation, ApiResponse,ApiTags } from '@nestjs/swagger';
+import { Controller, Get } from "@nestjs/common";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 // import { MongoClient } from 'mongodb';
 // import { Inject } from '@nestjs/common';
 // import { MONGO_CLIENT_TOKEN } from './mongodb.module';
-import { MongoDBConfigService } from './mongodb-config.service';
+import { MongoDBConfigService } from "./mongodb-config.service";
 
-@ApiTags('MongoDB')
-@Controller('mongodb')
+@ApiTags("MongoDB")
+@Controller("mongodb")
 export class MongoDBController {
   constructor(
     // @Inject(MONGO_CLIENT_TOKEN)
@@ -15,9 +15,9 @@ export class MongoDBController {
     private readonly configService: MongoDBConfigService,
   ) {}
 
-  @Get('health')
-  @ApiOperation({ summary: 'Check MongoDB connection health' })
-  @ApiResponse({ status: 200, description: 'MongoDB connection is healthy' })
+  @Get("health")
+  @ApiOperation({ summary: "Check MongoDB connection health" })
+  @ApiResponse({ status: 200, description: "MongoDB connection is healthy" })
   async getHealth() {
     // const db = this.mongoClient.db();
     // const pingResult = await db.command({ ping: 1 });
@@ -27,7 +27,7 @@ export class MongoDBController {
       database: this.configService.getDatabaseName(),
     };
     return {
-      status: 'healthy',
+      status: "healthy",
       config: configResult,
       uptime: process.uptime(),
     };

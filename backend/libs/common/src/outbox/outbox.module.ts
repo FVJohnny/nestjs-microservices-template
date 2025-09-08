@@ -1,7 +1,7 @@
-import { Module, DynamicModule, Global, Provider } from '@nestjs/common';
-import { OutboxService, OUTBOX_REPOSITORY_TOKEN } from './outbox.service';
-import { OutboxRepository } from './outbox.repository';
-import { InMemoryOutboxRepository } from './repositories/in-memory-outbox.repository';
+import { Module, DynamicModule, Global, Provider } from "@nestjs/common";
+import { OutboxService, OUTBOX_REPOSITORY_TOKEN } from "./outbox.service";
+import { OutboxRepository } from "./outbox.repository";
+import { InMemoryOutboxRepository } from "./repositories/in-memory-outbox.repository";
 
 export interface OutboxModuleOptions {
   repository?: new (...args: unknown[]) => OutboxRepository;
@@ -19,14 +19,8 @@ export class OutboxModule {
 
     return {
       module: OutboxModule,
-      providers: [
-        OutboxService,
-        repositoryProvider,
-      ],
-      exports: [
-        OutboxService,
-        OUTBOX_REPOSITORY_TOKEN,
-      ],
+      providers: [OutboxService, repositoryProvider],
+      exports: [OutboxService, OUTBOX_REPOSITORY_TOKEN],
     };
   }
 }

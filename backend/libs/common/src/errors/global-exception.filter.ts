@@ -6,12 +6,12 @@ import {
   HttpStatus,
   Injectable,
   Logger,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
+} from "@nestjs/common";
+import { Request, Response } from "express";
 
-import { TracingService } from '../tracing/tracing.service';
-import type { Metadata } from '../utils/metadata';
-import { BaseException } from './base.exception';
+import { TracingService } from "../tracing/tracing.service";
+import type { Metadata } from "../utils/metadata";
+import { BaseException } from "./base.exception";
 /**
  * Standard error response format
  */
@@ -51,15 +51,30 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof BaseException) {
       // Handle custom domain/application exceptions
-      errorResponse = this.handleBaseException(exception, path, correlationId, timestamp);
+      errorResponse = this.handleBaseException(
+        exception,
+        path,
+        correlationId,
+        timestamp,
+      );
       this.logException(exception, correlationId, false);
     } else if (exception instanceof HttpException) {
       // Handle NestJS HTTP exceptions
-      errorResponse = this.handleHttpException(exception, path, correlationId, timestamp);
+      errorResponse = this.handleHttpException(
+        exception,
+        path,
+        correlationId,
+        timestamp,
+      );
       this.logException(exception, correlationId, false);
     } else {
       // Handle unexpected errors
-      errorResponse = this.handleUnexpectedException(exception, path, correlationId, timestamp);
+      errorResponse = this.handleUnexpectedException(
+        exception,
+        path,
+        correlationId,
+        timestamp,
+      );
       this.logException(exception, correlationId, true);
     }
 
@@ -102,17 +117,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   ): ErrorResponse {
     const status = exception.getStatus();
     const response = exception.getResponse() as string | { message: string };
-    
+
     // Extract message from NestJS exception response
-    const message = typeof response === 'string' 
-      ? response 
-      : response?.message || exception.message;
+    const message =
+      typeof response === "string"
+        ? response
+        : response?.message || exception.message;
 
     return {
       success: false,
       error: {
         code: `HTTP_${status}`,
-        message: Array.isArray(message) ? message.join(', ') : message,
+        message: Array.isArray(message) ? message.join(", ") : message,
         timestamp,
         path,
         ...(correlationId && { correlationId }),
@@ -126,14 +142,15 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     correlationId: string | undefined,
     timestamp: string,
   ): ErrorResponse {
-    const error = exception instanceof Error ? exception : new Error('Unknown error');
-    
+    const error =
+      exception instanceof Error ? exception : new Error("Unknown error");
+
     return {
       success: false,
       error: {
-        code: 'INTERNAL_SERVER_ERROR',
-        message: this.isProduction() 
-          ? 'An unexpected error occurred' 
+        code: "INTERNAL_SERVER_ERROR",
+        message: this.isProduction()
+          ? "An unexpected error occurred"
           : error.message,
         timestamp,
         path,
@@ -152,35 +169,43 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     return HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
+  private logException(
+    exception: unknown,
+    correlationId?: string,
+    isUnexpected = false,
+  ): void {
+    const error =
+      exception instanceof Error ? exception : new Error("Unknown error");
+    const logLevel = isUnexpected ? "error" : "warn";
 
-  private logException(exception: unknown, correlationId?: string, isUnexpected = false): void {
-    const error = exception instanceof Error ? exception : new Error('Unknown error');
-    const logLevel = isUnexpected ? 'error' : 'warn';
-    
     // Build a readable log message
     const logParts = [
       `${error.name}: ${error.message}`,
       ...(correlationId ? [`[correlationId: ${correlationId}]`] : []),
-      ...(exception instanceof BaseException ? [`[code: ${exception.code}]`] : []),
-      ...(exception instanceof BaseException && exception.metadata ? [`[metadata: ${JSON.stringify(exception.metadata)}]`] : []),
+      ...(exception instanceof BaseException
+        ? [`[code: ${exception.code}]`]
+        : []),
+      ...(exception instanceof BaseException && exception.metadata
+        ? [`[metadata: ${JSON.stringify(exception.metadata)}]`]
+        : []),
       ...(exception instanceof BaseException && exception.cause
         ? [`[cause: ${exception.cause.name}: ${exception.cause.message}]`]
         : []),
       ...(error.stack ? [`[stack: ${error.stack}]`] : []),
-      ...(exception instanceof BaseException && exception.cause && exception.cause.stack
+      ...(exception instanceof BaseException &&
+      exception.cause &&
+      exception.cause.stack
         ? [`[causeStack: ${exception.cause.stack}]`]
         : []),
     ];
 
-    const logMessage = logParts.join('\n');
-    
+    const logMessage = logParts.join("\n");
+
     // Log with readable format
     this.logger[logLevel](logMessage);
-    
   }
 
   isProduction(): boolean {
-    return process.env.NODE_ENV === 'production';
+    return process.env.NODE_ENV === "production";
   }
-
 }

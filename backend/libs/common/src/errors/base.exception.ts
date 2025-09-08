@@ -1,6 +1,6 @@
-import type { HttpStatus } from '@nestjs/common';
+import type { HttpStatus } from "@nestjs/common";
 
-import type { Metadata } from '../utils/metadata';
+import type { Metadata } from "../utils/metadata";
 
 /**
  * Base exception class for all application errors
@@ -10,7 +10,7 @@ export abstract class BaseException extends Error {
   public readonly timestamp: Date;
   public path?: string;
   public correlationId?: string;
-  
+
   constructor(
     message: string,
     public readonly code: string,
@@ -21,7 +21,7 @@ export abstract class BaseException extends Error {
     super(message);
     this.name = this.constructor.name;
     this.timestamp = new Date();
-    
+
     // Maintain stack trace
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);

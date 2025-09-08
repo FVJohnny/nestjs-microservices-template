@@ -1,6 +1,6 @@
 export enum PaginationType {
-  Cursor = 'cursor',
-  Offset = 'offset',
+  Cursor = "cursor",
+  Offset = "offset",
 }
 
 export class Pagination {

@@ -1,10 +1,11 @@
-import type { EventBus, ICommand } from '@nestjs/cqrs';
+import type { EventBus, ICommand } from "@nestjs/cqrs";
 
-import type { SharedAggregateRoot } from '../../domain/entities/AggregateRoot';
+import type { SharedAggregateRoot } from "../../domain/entities/AggregateRoot";
 
-
-export abstract class BaseCommandHandler<TCommand extends ICommand, TResult extends object | void> {
-  
+export abstract class BaseCommandHandler<
+  TCommand extends ICommand,
+  TResult extends object | void,
+> {
   constructor(protected readonly eventBus: EventBus) {}
 
   /**
@@ -21,10 +22,10 @@ export abstract class BaseCommandHandler<TCommand extends ICommand, TResult exte
 
   /**
    * Handles the command business logic
-   * 
+   *
    * This method must be implemented by all command handlers
    * to define the specific business logic for the command
-   * 
+   *
    * @param command - The command to handle
    * @returns The result of handling the command
    */
@@ -32,7 +33,7 @@ export abstract class BaseCommandHandler<TCommand extends ICommand, TResult exte
 
   /**
    * Authorization check that must be implemented by all command handlers
-   * 
+   *
    * @param command - The command to authorize
    * @throws {Error} Should throw an error if authorization fails
    */
@@ -40,10 +41,10 @@ export abstract class BaseCommandHandler<TCommand extends ICommand, TResult exte
 
   /**
    * Business validation that must be implemented by all command handlers
-   * 
+   *
    * This method is called during command execution to perform business rule validation
    * such as uniqueness checks, business invariants, etc.
-   * 
+   *
    * @param command - The command to validate
    * @throws {Error} Should throw an error if validation fails
    */
@@ -51,20 +52,21 @@ export abstract class BaseCommandHandler<TCommand extends ICommand, TResult exte
 
   /**
    * Publishes all domain events from an aggregate root
-   * 
+   *
    * This method extracts and publishes all uncommitted domain events
    * from the provided aggregate root through the event bus
-   * 
+   *
    * @param entity - The aggregate root containing domain events to publish
    */
-  protected async sendDomainEvents<T extends SharedAggregateRoot>(entity: T): Promise<void> {
+  protected async sendDomainEvents<T extends SharedAggregateRoot>(
+    entity: T,
+  ): Promise<void> {
     const events = entity.getUncommittedEvents();
-    
+
     // Publish each domain event through the event bus
     await this.eventBus.publishAll(events);
 
     // Mark events as committed by clearing uncommitted events
     entity.commit();
   }
-
 }

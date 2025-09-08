@@ -1,13 +1,15 @@
-import type { IQuery } from '@nestjs/cqrs';
+import type { IQuery } from "@nestjs/cqrs";
 
 /**
  * Base class for all query handlers
- * 
+ *
  * Provides common functionality including authorization and validation
  * Implements the template method pattern with: authorize → validate → handle
  */
-export abstract class BaseQueryHandler<TQuery extends IQuery, TResult extends object> {
-
+export abstract class BaseQueryHandler<
+  TQuery extends IQuery,
+  TResult extends object,
+> {
   /**
    * Executes the query following the template method pattern:
    * 1. Authorize the query
@@ -22,10 +24,10 @@ export abstract class BaseQueryHandler<TQuery extends IQuery, TResult extends ob
 
   /**
    * Handles the query business logic
-   * 
+   *
    * This method must be implemented by all query handlers
    * to define the specific logic for retrieving data
-   * 
+   *
    * @param query - The query to handle
    * @returns The result of handling the query
    */
@@ -33,7 +35,7 @@ export abstract class BaseQueryHandler<TQuery extends IQuery, TResult extends ob
 
   /**
    * Authorization check that must be implemented by all query handlers
-   * 
+   *
    * @param query - The query to authorize
    * @throws {Error} Should throw an error if authorization fails
    */
@@ -41,10 +43,10 @@ export abstract class BaseQueryHandler<TQuery extends IQuery, TResult extends ob
 
   /**
    * Query parameter validation that must be implemented by all query handlers
-   * 
+   *
    * This method is called during query execution to perform parameter validation
    * such as range checks, format validation, etc.
-   * 
+   *
    * @param query - The query to validate
    * @throws {Error} Should throw an error if validation fails
    */

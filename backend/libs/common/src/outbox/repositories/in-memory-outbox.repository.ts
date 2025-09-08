@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { OutboxEvent } from '../outbox-event.entity';
-import { OutboxRepository } from '../outbox.repository';
+import { Injectable } from "@nestjs/common";
+import { OutboxEvent } from "../outbox-event.entity";
+import { OutboxRepository } from "../outbox.repository";
 
 @Injectable()
 export class InMemoryOutboxRepository extends OutboxRepository {
@@ -22,20 +22,20 @@ export class InMemoryOutboxRepository extends OutboxRepository {
 
   async findUnprocessed(limit = 10): Promise<OutboxEvent[]> {
     return this.events
-      .filter(e => !e.isProcessed())
+      .filter((e) => !e.isProcessed())
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .slice(0, limit);
   }
 
   async markAsProcessed(eventId: string): Promise<void> {
-    const event = this.events.find(e => e.id === eventId);
+    const event = this.events.find((e) => e.id === eventId);
     if (event) {
       event.markAsProcessed();
     }
   }
 
   async incrementRetryCount(eventId: string): Promise<void> {
-    const event = this.events.find(e => e.id === eventId);
+    const event = this.events.find((e) => e.id === eventId);
     if (event) {
       event.incrementRetry();
     }
@@ -43,7 +43,7 @@ export class InMemoryOutboxRepository extends OutboxRepository {
 
   async deleteProcessed(olderThan: Date): Promise<void> {
     this.events = this.events.filter(
-      e => !e.isProcessed() || e.processedAt! > olderThan,
+      (e) => !e.isProcessed() || e.processedAt! > olderThan,
     );
   }
 }

@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { AsyncLocalStorage } from 'async_hooks';
-import { randomUUID } from 'crypto';
+import { Injectable } from "@nestjs/common";
+import { AsyncLocalStorage } from "async_hooks";
+import { randomUUID } from "crypto";
 
 export interface CorrelationContext {
   correlationId: string;
@@ -10,7 +10,8 @@ export interface CorrelationContext {
 
 @Injectable()
 export class TracingService {
-  private static asyncLocalStorage = new AsyncLocalStorage<CorrelationContext>();
+  private static asyncLocalStorage =
+    new AsyncLocalStorage<CorrelationContext>();
 
   static getCorrelationId(): string | undefined {
     const context = this.asyncLocalStorage.getStore();
