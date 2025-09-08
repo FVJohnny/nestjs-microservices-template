@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ValidationPipe } from '@nestjs/common';
-import { APP_PIPE, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UsersModule } from './bounded-contexts/users/users.module';
 import {
@@ -38,10 +37,6 @@ import { OutboxModule } from '@libs/nestjs-common';
     UsersModule,
   ],
   providers: [
-    {
-      provide: APP_PIPE,
-      useClass: ValidationPipe,
-    },
     {
       provide: APP_INTERCEPTOR,
       useClass: MetricsInterceptor,
