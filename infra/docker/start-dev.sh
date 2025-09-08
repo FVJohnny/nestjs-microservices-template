@@ -9,9 +9,9 @@ echo "🚀 Starting development environment..."
 cd "$(dirname "$0")/../.."
 
 # Check if .env exists, if not copy from .env.example
-if [ ! -f .env ]; then
+if [ ! -f infra/docker/.env ]; then
     echo "📋 Creating .env from .env.example..."
-    cp .env.example .env
+    cp infra/docker/.env.example infra/docker/.env
 fi
 
 echo "📦 Installing dependencies..."
