@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
 import type { Collection, MongoClient } from 'mongodb';
 
 import { OutboxEvent, OutboxRepository, type OutboxEventValue } from '@libs/nestjs-common';
@@ -6,7 +6,7 @@ import { MONGO_CLIENT_TOKEN } from '../mongodb.module';
 import { MongoDBConfigService } from '../mongodb-config.service';
 
 @Injectable()
-export class MongoOutboxRepository extends OutboxRepository {
+export class MongoOutboxRepository extends OutboxRepository implements OnModuleInit {
   private readonly collectionName = 'outbox_events';
 
   constructor(
@@ -14,6 +14,10 @@ export class MongoOutboxRepository extends OutboxRepository {
     private readonly config: MongoDBConfigService,
   ) {
     super();
+  }
+
+  async onModuleInit(): Promise<void> {
+    await this.ensureIndexes();
   }
 
   private getCollection(): Collection<OutboxEventValue> {
@@ -29,7 +33,7 @@ export class MongoOutboxRepository extends OutboxRepository {
   async findUnprocessed(limit = 100): Promise<OutboxEvent[]> {
     const col = this.getCollection();
     const cursor = col
-      .find({ processedAt: { $exists: false } })
+      .find({ processedAt: OutboxEvent.NEVER_PROCESSED })
       .sort({ createdAt: 1 })
       .limit(limit);
 
@@ -39,6 +43,25 @@ export class MongoOutboxRepository extends OutboxRepository {
 
   async deleteProcessed(before: Date): Promise<void> {
     const col = this.getCollection();
-    await col.deleteMany({ processedAt: { $lt: before } });
+    await col.deleteMany({
+      processedAt: {
+        $lt: before,
+        $ne: OutboxEvent.NEVER_PROCESSED,
+      },
+    });
+  }
+
+  private async ensureIndexes(): Promise<void> {
+    const col = this.getCollection();
+    await col.createIndexes([
+      { key: { id: 1 }, unique: true, name: 'ux_outbox_id' },
+      // For cleanup queries
+      { key: { processedAt: 1 }, name: 'idx_outbox_processedAt' },
+      // For fetching unprocessed ordered by createdAt
+      {
+        key: { createdAt: 1 },
+        name: 'idx_outbox_createdAt',
+      },
+    ]);
   }
 }

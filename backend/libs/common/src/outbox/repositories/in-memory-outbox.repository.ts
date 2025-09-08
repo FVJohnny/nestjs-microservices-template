@@ -4,23 +4,59 @@ import { OutboxRepository } from '../outbox.repository';
 
 @Injectable()
 export class InMemoryOutboxRepository extends OutboxRepository {
-  private events: Map<string, OutboxEvent> = new Map();
+  // Indexes
+  private byId: Map<string, OutboxEvent> = new Map();
+  private unprocessedByCreatedAt: string[] = [];
 
   async save(event: OutboxEvent): Promise<void> {
+    const existing = this.byId.get(event.id);
     const entity = new OutboxEvent(event.toValue());
-    this.events.set(entity.id, entity);
+    this.byId.set(entity.id, entity);
+
+    const wasUnprocessed = existing ? !existing.isProcessed() : false;
+    const isUnprocessed = !entity.isProcessed();
+
+    // Maintain unprocessed sorted index
+    if (isUnprocessed && !wasUnprocessed && !this.unprocessedByCreatedAt.includes(entity.id)) {
+      this.insertIntoUnprocessed(entity);
+    } else if (isUnprocessed && wasUnprocessed) {
+      // If createdAt changed, re-position
+      this.removeFromUnprocessed(entity.id);
+      this.insertIntoUnprocessed(entity);
+    } else if (!isUnprocessed && wasUnprocessed) {
+      this.removeFromUnprocessed(entity.id);
+    }
   }
 
   async findUnprocessed(limit = 10): Promise<OutboxEvent[]> {
-    return Array.from(this.events.values())
-      .filter((e) => !e.isProcessed())
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-      .slice(0, limit);
+    const ids = this.unprocessedByCreatedAt.slice(0, limit);
+    return ids.map((id) => this.byId.get(id)!).filter(Boolean);
   }
 
   async deleteProcessed(before: Date): Promise<void> {
-    this.events = new Map(
-      Array.from(this.events.entries()).filter(([_, e]) => !e.isProcessedBefore(before)),
-    );
+    for (const [id, e] of this.byId.entries()) {
+      if (e.isProcessedBefore(before)) {
+        this.byId.delete(id);
+        this.removeFromUnprocessed(id);
+      }
+    }
+  }
+
+  private insertIntoUnprocessed(event: OutboxEvent): void {
+    // Binary insert by createdAt asc
+    let lo = 0;
+    let hi = this.unprocessedByCreatedAt.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1;
+      const midEvent = this.byId.get(this.unprocessedByCreatedAt[mid])!;
+      if (midEvent.createdAt.getTime() <= event.createdAt.getTime()) lo = mid + 1;
+      else hi = mid;
+    }
+    this.unprocessedByCreatedAt.splice(lo, 0, event.id);
+  }
+
+  private removeFromUnprocessed(id: string): void {
+    const idx = this.unprocessedByCreatedAt.indexOf(id);
+    if (idx >= 0) this.unprocessedByCreatedAt.splice(idx, 1);
   }
 }
