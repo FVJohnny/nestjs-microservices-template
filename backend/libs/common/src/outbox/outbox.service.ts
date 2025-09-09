@@ -52,6 +52,7 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
       topic,
       payload,
       createdAt: new Date(),
+      processedAt: OutboxEvent.NEVER_PROCESSED,
       retryCount: 0,
       maxRetries: 3,
     });
