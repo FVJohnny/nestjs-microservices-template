@@ -1,5 +1,5 @@
 import { MongoOutboxRepository } from './mongo-outbox.repository';
-import { testOutboxRepositoryContract } from '@libs/nestjs-common';
+import { testOutboxRepositoryContract } from '@libs/nestjs-common/test-exports';
 import type { Db } from 'mongodb';
 import { MongoClient } from 'mongodb';
 import type { MongoDBConfigService } from '../mongodb-config.service';

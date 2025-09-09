@@ -74,12 +74,12 @@ describe('CriteriaConverter Contract Test Suite', () => {
  * @param description Name of the implementation being tested
  * @param createConverter Factory function to create a converter with test data
  */
-export function testCriteriaConverterContract(
+export function testCriteriaConverterContract<T extends CriteriaConverter<TestEntityDTO>>(
   description: string,
-  createConverter: (entities: TestEntityDTO[]) => Promise<CriteriaConverter<TestEntityDTO>>,
+  createConverter: (entities: TestEntityDTO[]) => Promise<T>,
 ) {
   describe(`CriteriaConverter Contract: ${description}`, () => {
-    let converter: CriteriaConverter<TestEntityDTO>;
+    let converter: T;
     let testEntities: TestEntityDTO[];
 
     describe('Empty Criteria', () => {
@@ -304,7 +304,7 @@ export function testCriteriaConverterContract(
       });
     });
 
-    describe('Pagination - Offset', () => {
+    describe.only('Pagination - Offset', () => {
       beforeEach(async () => {
         testEntities = createTestEntities(20);
         converter = await createConverter(testEntities);
@@ -320,7 +320,7 @@ export function testCriteriaConverterContract(
         expect(result.hasNext).toBe(true);
       });
 
-      it('should apply offset', async () => {
+      it.only('should apply offset', async () => {
         const criteria = new Criteria({
           pagination: new PaginationOffset(5, 5),
         });

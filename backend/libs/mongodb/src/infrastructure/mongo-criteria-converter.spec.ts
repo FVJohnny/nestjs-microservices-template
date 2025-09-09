@@ -1,7 +1,10 @@
 import type { Db, Collection } from 'mongodb';
 import { MongoClient } from 'mongodb';
 import { MongoCriteriaConverter } from './mongo-criteria-converter';
-import { testCriteriaConverterContract, type TestEntityDTO } from '@libs/nestjs-common';
+import {
+  testCriteriaConverterContract,
+  type TestEntityDTO,
+} from '@libs/nestjs-common/test-exports';
 
 describe('MongoCriteriaConverter', () => {
   let mongoClient: MongoClient;
@@ -36,6 +39,6 @@ describe('MongoCriteriaConverter', () => {
     if (entities.length > 0) {
       await collection.insertMany(entities);
     }
-    return new MongoCriteriaConverter(collection);
+    return new MongoCriteriaConverter(collection) as any;
   });
 });

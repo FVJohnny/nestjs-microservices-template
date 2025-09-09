@@ -7,8 +7,10 @@
     "test": "nx run-many --target=test --all --exclude=nestjs-microservices-monorepo-template && nx run-many --target=test:e2e --all",
     "lint": "nx run-many -t lint --fix --exclude=nestjs-microservices-monorepo-template",
     "dev": "./infra/docker/start-dev.sh && npm run dev-logs",
-    "prod": "docker compose -f infra/docker/docker-compose.prod.yml up --build -d",
+    "dev-down": "docker compose -f infra/docker/docker-compose.dev.yml down",
     "dev-logs": "docker compose -f infra/docker/docker-compose.dev.yml logs -f service-1",
+    "prod": "docker compose -f infra/docker/docker-compose.prod.yml up --build -d",
+    "prod-down": "docker compose -f infra/docker/docker-compose.prod.yml down",
     "prod-logs": "docker compose -f infra/docker/docker-compose.prod.yml logs -f service-1",
     "nx": "nx",
     "prepare": "command -v husky >/dev/null 2>&1 && husky || true"

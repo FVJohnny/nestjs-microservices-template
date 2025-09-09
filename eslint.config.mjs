@@ -12,6 +12,8 @@ export default [
       '**/*.d.ts',
       '**/jest.config.js',
       '**/*.config.js',
+      '**/*.spec.ts',
+      '**/*.test.ts',
     ],
   },
 

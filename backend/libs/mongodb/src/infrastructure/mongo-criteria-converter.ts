@@ -1,11 +1,11 @@
-import type { Criteria, CriteriaQueryResult, SharedAggregateRootDTO } from '@libs/nestjs-common';
-import {
-  Data,
-  type Filter,
-  Operator,
+import type {
+  Criteria,
+  CriteriaQueryResult,
   PaginationCursor,
   PaginationOffset,
+  SharedAggregateRootDTO,
 } from '@libs/nestjs-common';
+import { Data, type Filter, Operator } from '@libs/nestjs-common';
 import { CriteriaConverter } from '@libs/nestjs-common';
 import { type Collection } from 'mongodb';
 
@@ -99,12 +99,12 @@ export class MongoCriteriaConverter<D extends SharedAggregateRootDTO> extends Cr
       options.limit = criteria.pagination.limit;
     }
 
-    if (criteria.pagination instanceof PaginationOffset) {
-      options.skip = criteria.pagination.offset;
+    if (criteria.pagination.type === 'offset') {
+      options.skip = (criteria.pagination as PaginationOffset).offset;
     }
 
-    if (criteria.pagination instanceof PaginationCursor) {
-      options.limit = criteria.pagination.limit;
+    if (criteria.pagination.type === 'cursor') {
+      options.limit = (criteria.pagination as PaginationCursor).limit;
       const cursorFilter = this.buildCursorFilter(criteria);
       if (cursorFilter) {
         filters.push(cursorFilter);
@@ -156,26 +156,28 @@ export class MongoCriteriaConverter<D extends SharedAggregateRootDTO> extends Cr
   }
 
   private buildCursorFilter(criteria: Criteria): MongoFilterCondition | undefined {
-    if (!(criteria.pagination instanceof PaginationCursor)) {
+    if (criteria.pagination.type !== 'cursor') {
       return undefined;
     }
 
+    const paginationCursor = criteria.pagination as PaginationCursor;
+
     // Check if cursor exists
-    if (!criteria.pagination.cursor) {
+    if (!paginationCursor.cursor) {
       return undefined;
     }
 
     const orderByValue = criteria.order.orderBy?.toValue();
-    const cursor = criteria.pagination.decodeCursor();
+    const decodedCursor = paginationCursor.decodeCursor();
 
     const comparator = criteria.order.orderType.isAsc() ? '$gt' : '$lt';
 
     return {
       $or: [
-        { [orderByValue]: { [comparator]: Data.parseFromString(cursor.after) } },
+        { [orderByValue]: { [comparator]: Data.parseFromString(decodedCursor.after) } },
         {
-          [orderByValue]: Data.parseFromString(cursor.after),
-          id: { [comparator]: cursor.tiebreakerId },
+          [orderByValue]: Data.parseFromString(decodedCursor.after),
+          id: { [comparator]: decodedCursor.tiebreakerId },
         },
       ],
     };
@@ -192,7 +194,7 @@ export class MongoCriteriaConverter<D extends SharedAggregateRootDTO> extends Cr
     };
 
     // Add id as tiebreaker for cursor pagination
-    if (criteria.pagination instanceof PaginationCursor) {
+    if (criteria.pagination.type === 'cursor') {
       sort.id = sortOrder;
     }
 

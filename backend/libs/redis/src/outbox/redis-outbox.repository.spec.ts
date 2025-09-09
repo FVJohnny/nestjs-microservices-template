@@ -1,5 +1,5 @@
 import { RedisOutboxRepository } from './redis-outbox.repository';
-import { testOutboxRepositoryContract } from '@libs/nestjs-common';
+import { testOutboxRepositoryContract } from '@libs/nestjs-common/test-exports';
 import { RedisService } from '../redis.service';
 
 describe('RedisOutboxRepository', () => {
