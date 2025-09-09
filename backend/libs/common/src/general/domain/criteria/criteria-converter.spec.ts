@@ -598,17 +598,17 @@ export function testCriteriaConverterContract<T extends CriteriaConverter<TestEn
             ...createTestEntities(1)[0],
             id: 'entity-1',
             metadata: { tags: ['important', 'urgent'], priority: 1 },
-          } as any,
+          },
           {
             ...createTestEntities(1)[0],
             id: 'entity-2',
             metadata: { tags: ['normal'], priority: 2 },
-          } as any,
+          },
           {
             ...createTestEntities(1)[0],
             id: 'entity-3',
             metadata: { tags: ['important'], priority: 3 },
-          } as any,
+          },
         ];
         converter = await createConverter(testEntities);
       });
