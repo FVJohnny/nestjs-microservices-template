@@ -304,7 +304,7 @@ export function testCriteriaConverterContract<T extends CriteriaConverter<TestEn
       });
     });
 
-    describe.only('Pagination - Offset', () => {
+    describe('Pagination - Offset', () => {
       beforeEach(async () => {
         testEntities = createTestEntities(20);
         converter = await createConverter(testEntities);
@@ -320,7 +320,7 @@ export function testCriteriaConverterContract<T extends CriteriaConverter<TestEn
         expect(result.hasNext).toBe(true);
       });
 
-      it.only('should apply offset', async () => {
+      it('should apply offset', async () => {
         const criteria = new Criteria({
           pagination: new PaginationOffset(5, 5),
         });
