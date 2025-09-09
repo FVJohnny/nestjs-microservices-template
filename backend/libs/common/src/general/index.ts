@@ -31,7 +31,7 @@ export * from './domain/criteria/pagination/PaginationCursor';
 export * from './domain/criteria/pagination/PaginationOffset';
 
 // Test contracts for implementations
-export { testCriteriaConverterContract, type TestEntityDTO } from './domain/criteria/criteria-converter.spec';
+export * from './domain/criteria/criteria-converter.spec';
 
 // Infrastructure
 export * from './infrastructure/in-memory-criteria-converter';
