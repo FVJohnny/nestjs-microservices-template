@@ -10,12 +10,17 @@ export class FileSystemDomainEventDiscoveryService {
   async discoverDomainEvents(): Promise<Set<string>> {
     const eventNames = new Set<string>();
     const serviceRoot = this.findServiceRoot();
-    const boundedContextsPath = path.join(serviceRoot, 'src', 'bounded-contexts');
+    const boundedContextsPathSrc = path.join(serviceRoot, 'src', 'bounded-contexts');
+    const srcExists = fs.existsSync(boundedContextsPathSrc);
+    const boundedContextsPathDist = path.join(serviceRoot, 'dist', 'bounded-contexts');
+    const distExists = fs.existsSync(boundedContextsPathDist);
 
-    if (!fs.existsSync(boundedContextsPath)) {
-      this.logger.warn(`Bounded contexts directory not found: ${boundedContextsPath}`);
+    if (!srcExists && !distExists) {
+      this.logger.warn(`Bounded contexts directory not found: ${boundedContextsPathSrc}`);
       return eventNames;
     }
+
+    const boundedContextsPath = srcExists ? boundedContextsPathSrc : boundedContextsPathDist;
 
     for (const contextName of fs.readdirSync(boundedContextsPath)) {
       const eventsPath = path.join(boundedContextsPath, contextName, 'domain', 'events');
@@ -43,8 +48,10 @@ export class FileSystemDomainEventDiscoveryService {
     try {
       const files = fs
         .readdirSync(eventsPath)
-        .filter((file) => file.endsWith('.domain-event.ts'))
-        .map((file) => this.toPascalCase(file.replace('.domain-event.ts', '')))
+        .filter((file) => file.endsWith('.domain-event.ts') || file.endsWith('.domain-event.js'))
+        .map((file) =>
+          this.toPascalCase(file.replace('.domain-event.ts', '').replace('.domain-event.js', '')),
+        )
         .filter(Boolean)
         .map((name) => `${name}DomainEvent`);
 
