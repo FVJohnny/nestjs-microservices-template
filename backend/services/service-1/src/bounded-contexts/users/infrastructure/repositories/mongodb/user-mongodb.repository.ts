@@ -119,7 +119,8 @@ export class UserMongodbRepository implements UserRepository {
 
   async findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
     try {
-      const queryResult = await MongoCriteriaConverter.executeQuery(this.collection, criteria);
+      const converter = new MongoCriteriaConverter<UserDTO>(this.collection);
+      const queryResult = await converter.executeQuery(criteria);
 
       return {
         data: queryResult.data.map((doc) => User.fromValue(doc)),
@@ -138,22 +139,19 @@ export class UserMongodbRepository implements UserRepository {
 
   async countByCriteria(criteria: Criteria): Promise<number> {
     try {
-      return await MongoCriteriaConverter.count(this.collection, criteria);
+      const converter = new MongoCriteriaConverter<UserDTO>(this.collection);
+      return await converter.count(criteria);
     } catch (error: unknown) {
       this.handleDatabaseError('countByCriteria', 'criteria', error);
     }
   }
 
-  async delete(id: string): Promise<void> {
+  async remove(id: string): Promise<void> {
     try {
       await this.collection.deleteOne({ id });
     } catch (error: unknown) {
-      this.handleDatabaseError('delete', id, error);
+      this.handleDatabaseError('remove', id, error);
     }
-  }
-
-  async remove(id: string): Promise<void> {
-    await this.delete(id);
   }
 
   async exists(id: string): Promise<boolean> {

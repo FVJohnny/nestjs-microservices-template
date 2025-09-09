@@ -2,7 +2,7 @@ import { RedisOutboxRepository } from './redis-outbox.repository';
 import { testOutboxRepositoryContract } from '@libs/nestjs-common';
 import { RedisService } from '../redis.service';
 
-describe.only('RedisOutboxRepository', () => {
+describe('RedisOutboxRepository', () => {
   let redisService: RedisService;
 
   const cleanupKeys = async () => {

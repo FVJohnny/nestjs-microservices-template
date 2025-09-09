@@ -234,7 +234,7 @@ describe('UserInMemoryRepository', () => {
       });
     });
 
-    describe('remove/delete', () => {
+    describe('remove', () => {
       it('should remove an existing user', async () => {
         // Arrange
         const user = User.random();
@@ -252,19 +252,6 @@ describe('UserInMemoryRepository', () => {
       it('should handle removal of non-existent user gracefully', async () => {
         // Act & Assert - Should not throw
         await expect(repository.remove('non-existent-id')).resolves.not.toThrow();
-        await expect(repository.delete('non-existent-id')).resolves.not.toThrow();
-      });
-
-      it('delete method should work the same as remove', async () => {
-        // Arrange
-        const user = User.random();
-        await repository.save(user);
-
-        // Act
-        await repository.delete(user.id);
-
-        // Assert
-        expect(await repository.exists(user.id)).toBe(false);
       });
     });
 
@@ -1104,7 +1091,7 @@ describe('UserInMemoryRepository', () => {
       expect(loadedUser!.lastLoginAt).toBeUndefined();
     });
 
-    it('should maintain object references after operations', async () => {
+    it('two findById should return the same user', async () => {
       // Arrange
       const user = User.random();
       await repository.save(user);
@@ -1114,7 +1101,6 @@ describe('UserInMemoryRepository', () => {
       const found2 = await repository.findById(user.id);
 
       // Assert
-      expect(found1).toBe(found2); // Should be the same reference from Map
       expect(found1?.equals(user)).toBe(true);
       expect(found2?.equals(user)).toBe(true);
     });

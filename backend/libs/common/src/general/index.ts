@@ -18,6 +18,7 @@ export * from './domain/repositories/repository.base';
 
 // Criteria Pattern
 export * from './domain/criteria/Criteria';
+export * from './domain/criteria/CriteriaConverter';
 export * from './domain/criteria/filters/Filter';
 export * from './domain/criteria/filters/FilterField';
 export * from './domain/criteria/filters/FilterOperator';
@@ -28,6 +29,9 @@ export * from './domain/criteria/order/OrderBy';
 export * from './domain/criteria/order/OrderType';
 export * from './domain/criteria/pagination/PaginationCursor';
 export * from './domain/criteria/pagination/PaginationOffset';
+
+// Test contracts for implementations
+export { testCriteriaConverterContract, type TestEntityDTO } from './domain/criteria/criteria-converter.spec';
 
 // Infrastructure
 export * from './infrastructure/in-memory-criteria-converter';

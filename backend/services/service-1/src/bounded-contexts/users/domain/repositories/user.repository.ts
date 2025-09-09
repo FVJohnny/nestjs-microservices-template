@@ -13,5 +13,4 @@ export interface UserRepository extends Repository<User, string> {
   findAll(): Promise<User[]>;
   findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>>;
   countByCriteria(criteria: Criteria): Promise<number>;
-  delete(id: string): Promise<void>;
 }

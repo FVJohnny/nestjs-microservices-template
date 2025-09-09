@@ -12,7 +12,6 @@ import type { CreateUserProps, UserAttributes, UserDTO } from './user.types';
 import { SharedAggregateRoot } from '@libs/nestjs-common';
 
 export class User extends SharedAggregateRoot implements UserAttributes {
-  id: string;
   email: Email;
   username: Username;
   profile: UserProfile;
@@ -22,7 +21,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   createdAt: Date;
   updatedAt: Date;
   constructor(props: UserAttributes) {
-    super();
+    super(props.id);
     Object.assign(this, props);
   }
 

@@ -42,7 +42,7 @@ describe('GET /users (E2E)', () => {
 
   const clearRepo = async () => {
     const all = await repository.findAll();
-    await Promise.all(all.map((u) => repository.delete(u.id)));
+    await Promise.all(all.map((u) => repository.remove(u.id)));
   };
 
   afterAll(async () => {

@@ -35,6 +35,18 @@ export class Criteria implements CriteriaProps {
     });
   }
 
+  public withExtraLimit(): Criteria {
+    return new Criteria({
+      filters: this.filters,
+      order: this.order,
+      pagination: this.pagination.withExtraLimit(),
+    });
+  }
+
+  public hasLimit(): boolean {
+    return this.pagination.limit > 0;
+  }
+
   private validate(): void {
     if (this.pagination instanceof PaginationCursor) {
       if (!this.order.hasOrder()) {

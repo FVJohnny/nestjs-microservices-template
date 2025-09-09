@@ -4,91 +4,77 @@ import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Criteria, InMemoryCriteriaConverter, PaginatedRepoResult } from '@libs/nestjs-common';
+import { UserDTO } from '../../../domain/entities/user.types';
 
 @Injectable()
 export class UserInMemoryRepository implements UserRepository {
-  private users: Map<string, User> = new Map();
+  private users: Map<string, UserDTO> = new Map();
 
-  save(user: User): Promise<void> {
-    this.users.set(user.id, user);
-    return Promise.resolve();
+  async save(user: User): Promise<void> {
+    this.users.set(user.id, user.toValue());
   }
 
-  findById(id: string): Promise<User | null> {
-    return Promise.resolve(this.users.get(id) || null);
+  async findById(id: string): Promise<User | null> {
+    const userDTO = this.users.get(id);
+    return userDTO ? User.fromValue(userDTO) : null;
   }
 
-  findByEmail(email: Email): Promise<User | null> {
-    for (const user of this.users.values()) {
-      if (user.email.equals(email)) {
-        return Promise.resolve(user);
+  async findByEmail(email: Email): Promise<User | null> {
+    for (const userDTO of this.users.values()) {
+      if (userDTO.email === email.toValue()) {
+        return User.fromValue(userDTO);
       }
     }
     return Promise.resolve(null);
   }
 
-  findByUsername(username: Username): Promise<User | null> {
-    for (const user of this.users.values()) {
-      if (user.username.equals(username)) {
-        return Promise.resolve(user);
+  async findByUsername(username: Username): Promise<User | null> {
+    for (const userDTO of this.users.values()) {
+      if (userDTO.username === username.toValue()) {
+        return User.fromValue(userDTO);
       }
     }
-    return Promise.resolve(null);
+    return null;
   }
 
-  existsByEmail(email: Email): Promise<boolean> {
-    for (const user of this.users.values()) {
-      if (user.email.equals(email)) {
-        return Promise.resolve(true);
-      }
-    }
-    return Promise.resolve(false);
+  async existsByEmail(email: Email): Promise<boolean> {
+    const userDTO = await this.findByEmail(email);
+    return userDTO !== null;
   }
 
-  existsByUsername(username: Username): Promise<boolean> {
-    for (const user of this.users.values()) {
-      if (user.username.equals(username)) {
-        return Promise.resolve(true);
-      }
-    }
-    return Promise.resolve(false);
+  async existsByUsername(username: Username): Promise<boolean> {
+    const userDTO = await this.findByUsername(username);
+    return userDTO !== null;
   }
 
-  findAll(): Promise<User[]> {
-    return Promise.resolve(Array.from(this.users.values()));
+  async findAll(): Promise<User[]> {
+    return Array.from(this.users.values()).map((u) => User.fromValue(u));
   }
 
-  findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
-    const users = Array.from(this.users.values());
-    const queryResult = InMemoryCriteriaConverter.query<User>(users, criteria);
+  async findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
+    const userDTOs = Array.from(this.users.values());
+    const converter = new InMemoryCriteriaConverter(userDTOs);
+    const queryResult = await converter.executeQuery(criteria);
 
     return Promise.resolve({
-      data: queryResult.data,
+      data: queryResult.data.map((u) => User.fromValue(u)),
       total: criteria.hasWithTotal() ? queryResult.total : null,
       cursor: queryResult.cursor,
       hasNext: queryResult.hasNext,
     });
   }
 
-  countByCriteria(criteria: Criteria): Promise<number> {
-    const users = Array.from(this.users.values());
-    const { filterFn } = InMemoryCriteriaConverter.convert<User>(criteria);
-
-    // Apply only filters, ignore pagination for count
-    const filteredUsers = filterFn(users);
-    return Promise.resolve(filteredUsers.length);
+  async countByCriteria(criteria: Criteria): Promise<number> {
+    const converter = new InMemoryCriteriaConverter(Array.from(this.users.values()));
+    const count = await converter.count(criteria);
+    return count;
   }
 
-  delete(id: string): Promise<void> {
+  async remove(id: string): Promise<void> {
     this.users.delete(id);
-    return Promise.resolve();
   }
 
-  remove(id: string): Promise<void> {
-    return this.delete(id);
-  }
-
-  exists(id: string): Promise<boolean> {
-    return Promise.resolve(this.users.has(id));
+  async exists(id: string): Promise<boolean> {
+    return this.users.has(id);
   }
 }

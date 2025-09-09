@@ -6,6 +6,13 @@ import { AggregateRoot, type IEvent } from '@nestjs/cqrs';
  * Base class for aggregate roots in Domain-Driven Design
  */
 export abstract class SharedAggregateRoot extends AggregateRoot<IEvent> {
+  id: string;
+
+  constructor(id: string) {
+    super();
+    this.id = id;
+  }
+
   /**
    * Convert the aggregate to its primitive representation
    * This is used for persistence and serialization

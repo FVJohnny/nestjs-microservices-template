@@ -15,6 +15,13 @@ export class PaginationCursor extends Pagination {
     this.cursor = props.cursor;
   }
 
+  public withExtraLimit(): PaginationCursor {
+    return new PaginationCursor({
+      limit: this.limit > 0 ? this.limit + 1 : this.limit,
+      cursor: this.cursor,
+    });
+  }
+
   decodeCursor() {
     return JSON.parse(Buffer.from(this.cursor!, 'base64url').toString('utf-8')) as {
       after: string;

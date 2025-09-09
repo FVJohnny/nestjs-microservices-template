@@ -36,4 +36,12 @@ export class FilterOperator extends EnumValueObject<Operator> {
   static equal() {
     return this.fromValue(Operator.EQUAL);
   }
+
+  public is(operator: Operator): boolean {
+    return this.toValue() === operator;
+  }
+
+  public isStringOperator(): boolean {
+    return this.is(Operator.CONTAINS) || this.is(Operator.NOT_CONTAINS);
+  }
 }

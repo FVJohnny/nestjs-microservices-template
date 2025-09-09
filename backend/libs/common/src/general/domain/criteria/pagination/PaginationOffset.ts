@@ -12,4 +12,9 @@ export class PaginationOffset extends Pagination {
     this.offset = offset;
     this.withTotal = withTotal;
   }
+
+  public withExtraLimit(): PaginationOffset {
+    const newLimit = this.limit > 0 ? this.limit + 1 : this.limit;
+    return new PaginationOffset(newLimit, this.offset, this.withTotal);
+  }
 }

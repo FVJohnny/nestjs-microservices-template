@@ -215,7 +215,7 @@ describe('UserMongodbRepository (Integration)', () => {
     });
   });
 
-  describe('remove/delete', () => {
+  describe('remove', () => {
     it('should remove an existing user', async () => {
       // Arrange
       const user = User.random();
@@ -233,18 +233,6 @@ describe('UserMongodbRepository (Integration)', () => {
     it('should not throw error when trying to remove non-existent user', async () => {
       // Act & Assert - Should not throw
       await expect(repository.remove('non-existent-id')).resolves.not.toThrow();
-    });
-
-    it('delete method should work the same as remove', async () => {
-      // Arrange
-      const user = User.random();
-      await repository.save(user);
-
-      // Act
-      await repository.delete(user.id);
-
-      // Assert
-      expect(await repository.exists(user.id)).toBe(false);
     });
   });
 
