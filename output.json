@@ -593,8 +593,7 @@
                 "{workspaceRoot}/coverage/{projectRoot}"
               ],
               "options": {
-                "jestConfig": "backend/libs/common/jest.config.js",
-                "passWithNoTests": true
+                "jestConfig": "backend/libs/common/jest.config.js"
               },
               "configurations": {},
               "parallelism": true,
@@ -705,8 +704,7 @@
                 "{workspaceRoot}/coverage/{projectRoot}"
               ],
               "options": {
-                "jestConfig": "backend/libs/kafka/jest.config.js",
-                "passWithNoTests": true
+                "jestConfig": "backend/libs/kafka/jest.config.js"
               },
               "configurations": {},
               "parallelism": true,

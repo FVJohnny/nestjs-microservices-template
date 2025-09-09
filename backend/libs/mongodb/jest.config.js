@@ -12,5 +12,4 @@ module.exports = {
   ],
   coverageDirectory: '../coverage',
   moduleFileExtensions: ['js', 'json', 'ts'],
-  passWithNoTests: true
 };

@@ -30,8 +30,7 @@
         "{workspaceRoot}/coverage/{projectRoot}"
       ],
       "options": {
-        "jestConfig": "backend/libs/common/jest.config.js",
-        "passWithNoTests": true
+        "jestConfig": "backend/libs/common/jest.config.js"
       }
     }
   },

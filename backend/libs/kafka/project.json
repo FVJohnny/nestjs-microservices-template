@@ -31,8 +31,7 @@
         "{workspaceRoot}/coverage/{projectRoot}"
       ],
       "options": {
-        "jestConfig": "backend/libs/kafka/jest.config.js",
-        "passWithNoTests": true
+        "jestConfig": "backend/libs/kafka/jest.config.js"
       }
     }
   },
