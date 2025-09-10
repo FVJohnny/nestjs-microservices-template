@@ -4,13 +4,13 @@ import {
   CreateEmailVerificationCommand,
   CreateEmailVerificationCommandResponse,
 } from './create-email-verification.command';
-import { BaseCommandHandler } from '@libs/nestjs-common';
-import { EmailVerification } from 'src/bounded-contexts/auth/domain/entities/email-verification/email-verification.entity';
-import { Email } from 'src/bounded-contexts/auth/domain/value-objects/email.vo';
+import { BaseCommandHandler, AlreadyExistsException } from '@libs/nestjs-common';
+import { EmailVerification } from '../../../domain/entities/email-verification/email-verification.entity';
+import { Email } from '../../../domain/value-objects/email.vo';
 import {
   EMAIL_VERIFICATION_REPOSITORY,
   type EmailVerificationRepository,
-} from 'src/bounded-contexts/auth/domain/repositories/email-verification/email-verification.repository';
+} from '../../../domain/repositories/email-verification/email-verification.repository';
 
 @CommandHandler(CreateEmailVerificationCommand)
 export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
@@ -48,7 +48,13 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
     return Promise.resolve(true);
   }
 
-  protected async validate(_command: CreateEmailVerificationCommand): Promise<void> {
-    // TODO: Add validation logic if needed
+  protected async validate(command: CreateEmailVerificationCommand): Promise<void> {
+    // Check if user already has an email verification
+    const existingVerification = await this.emailVerificationRepository.findByUserId(
+      command.userId,
+    );
+    if (existingVerification) {
+      throw new AlreadyExistsException('userId', command.userId);
+    }
   }
 }

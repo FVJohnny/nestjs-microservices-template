@@ -4,6 +4,7 @@ import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { UserRole } from '../../../domain/value-objects/user-role.vo';
 import { Topics, createOutboxServiceMock, type MockOutboxService, createCommandBusMock, type MockCommandBus } from '@libs/nestjs-common';
+import { CreateEmailVerificationCommand } from '../../commands/create-email-verification/create-email-verification.command';
 
 describe('UserRegisteredDomainEventHandler (Unit)', () => {
   let eventHandler: UserRegisteredDomainEventHandler;
@@ -42,6 +43,13 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       expect(publishedData.data.email).toBe('test@example.com');
       expect(publishedData.data.username).toBe('testuser');
       expect(publishedData.data.role).toEqual('user');
+
+      // Verify command bus was called to create email verification
+      expect(mockCommandBus.commands).toHaveLength(1);
+      const executedCommand = mockCommandBus.commands[0] as CreateEmailVerificationCommand;
+      expect(executedCommand).toBeInstanceOf(CreateEmailVerificationCommand);
+      expect(executedCommand.userId).toBe('test-user-id');
+      expect(executedCommand.email).toBe('test@example.com');
     });
 
     it('should handle special characters in email and username', async () => {
@@ -60,8 +68,16 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       const storedEvent = mockOutboxService.storedEvents[0];
       const publishedData = JSON.parse(storedEvent.payload);
 
+
+      expect(publishedData.data.userId).toBe('special-chars-user');
       expect(publishedData.data.email).toBe('test.user+tag@example-domain.com');
       expect(publishedData.data.username).toBe('user_name-123');
+
+      // Verify command bus was called with special characters
+      expect(mockCommandBus.commands).toHaveLength(1);
+      const executedCommand = mockCommandBus.commands[0] as CreateEmailVerificationCommand;
+      expect(executedCommand.userId).toBe('special-chars-user');
+      expect(executedCommand.email).toBe('test.user+tag@example-domain.com');
     });
 
     it('should publish UserCreatedIntegrationEvent', async () => {
@@ -124,6 +140,68 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
       // Assert
       expect(mockOutboxService.storedEvents).toHaveLength(2);
+
+      // Verify both commands were executed
+      expect(mockCommandBus.commands).toHaveLength(2);
+    });
+  });
+
+  describe('Email Verification Command Execution', () => {
+    it('should execute CreateEmailVerificationCommand with correct user data', async () => {
+      // Arrange
+      const event = new UserRegisteredDomainEvent({
+        userId: 'command-test-user',
+        email: new Email('command.test@example.com'),
+        username: new Username('commandtester'),
+        role: UserRole.admin(),
+      });
+
+      // Act
+      await eventHandler.handle(event);
+
+      // Assert
+      expect(mockCommandBus.commands).toHaveLength(1);
+      const command = mockCommandBus.commands[0] as CreateEmailVerificationCommand;
+      
+      expect(command).toBeInstanceOf(CreateEmailVerificationCommand);
+      expect(command.userId).toBe('command-test-user');
+      expect(command.email).toBe('command.test@example.com');
+    });
+
+    it('should execute CreateEmailVerificationCommand for admin users', async () => {
+      // Arrange
+      const event = new UserRegisteredDomainEvent({
+        userId: 'admin-user-123',
+        email: new Email('admin@company.com'),
+        username: new Username('admin'),
+        role: UserRole.admin(),
+      });
+
+      // Act
+      await eventHandler.handle(event);
+
+      // Assert
+      expect(mockCommandBus.commands).toHaveLength(1);
+      const command = mockCommandBus.commands[0] as CreateEmailVerificationCommand;
+      
+      expect(command.userId).toBe('admin-user-123');
+      expect(command.email).toBe('admin@company.com');
+    });
+
+    it('should handle command bus execution failure gracefully', async () => {
+      // Arrange
+      const failingCommandBus = createCommandBusMock({ shouldFail: true });
+      const failingHandler = new UserRegisteredDomainEventHandler(mockOutboxService as any, failingCommandBus as any);
+      
+      const event = new UserRegisteredDomainEvent({
+        userId: 'failing-user',
+        email: new Email('failing@example.com'),
+        username: new Username('failing'),
+        role: UserRole.user(),
+      });
+
+      // Act & Assert
+      await expect(failingHandler.handle(event)).rejects.toThrow('CommandBus execute failed');
     });
   });
 

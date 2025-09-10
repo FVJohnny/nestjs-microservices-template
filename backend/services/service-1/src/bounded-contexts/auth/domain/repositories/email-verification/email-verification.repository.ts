@@ -6,8 +6,8 @@ export const EMAIL_VERIFICATION_REPOSITORY = Symbol('EmailVerificationRepository
 export interface EmailVerificationRepository {
   save(emailVerification: EmailVerification): Promise<void>;
   findByToken(token: string): Promise<EmailVerification | null>;
-  findByUserId(userId: string): Promise<EmailVerification[]>;
-  findByEmail(email: Email): Promise<EmailVerification[]>;
+  findByUserId(userId: string): Promise<EmailVerification | null>;
+  findByEmail(email: Email): Promise<EmailVerification | null>;
   findPendingByUserId(userId: string): Promise<EmailVerification | null>;
   findPendingByToken(token: string): Promise<EmailVerification | null>;
   remove(id: string): Promise<void>;
