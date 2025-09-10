@@ -18,12 +18,11 @@ export class GetUsersController {
   })
   async getUsers(@Query() params: GetUsersControllerParams): Promise<GetUsersQueryResponse> {
     const query = new GetUsersQuery({
+      userId: params.userId,
       status: params.status,
       role: params.role,
       email: params.email,
       username: params.username,
-      firstName: params.firstName,
-      lastName: params.lastName,
       pagination: {
         limit: params.limit,
         offset: params.offset,

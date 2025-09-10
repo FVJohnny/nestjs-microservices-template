@@ -3,6 +3,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ControllerPaginationParams } from '@libs/nestjs-common';
 
 export class GetUsersControllerParams extends ControllerPaginationParams {
+  @ApiProperty({ required: false, description: 'Filter by user ID' })
+  @IsOptional()
+  @IsString()
+  userId?: string;
+
   @ApiProperty({ required: false, description: 'Filter by user status' })
   @IsOptional()
   @IsString()
@@ -28,20 +33,4 @@ export class GetUsersControllerParams extends ControllerPaginationParams {
   @IsOptional()
   @IsString()
   username?: string;
-
-  @ApiProperty({
-    required: false,
-    description: 'Filter by first name (partial match)',
-  })
-  @IsOptional()
-  @IsString()
-  firstName?: string;
-
-  @ApiProperty({
-    required: false,
-    description: 'Filter by last name (partial match)',
-  })
-  @IsOptional()
-  @IsString()
-  lastName?: string;
 }

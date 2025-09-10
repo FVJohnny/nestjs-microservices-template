@@ -13,8 +13,6 @@ import { UserInMemoryRepository } from '../../src/bounded-contexts/auth/infrastr
 import { User } from '../../src/bounded-contexts/auth/domain/entities/user.entity';
 import { Email } from '../../src/bounded-contexts/auth/domain/value-objects/email.vo';
 import { Username } from '../../src/bounded-contexts/auth/domain/value-objects/username.vo';
-import { UserProfile } from '../../src/bounded-contexts/auth/domain/value-objects/user-profile.vo';
-import { Name } from '../../src/bounded-contexts/auth/domain/value-objects/name.vo';
 import { UserRole } from '../../src/bounded-contexts/auth/domain/value-objects/user-role.vo';
 import { UserStatus } from '../../src/bounded-contexts/auth/domain/value-objects/user-status.vo';
 
@@ -59,19 +57,16 @@ describe('GET /users (E2E)', () => {
       User.random({
         email: new Email('admin@example.com'),
         username: new Username('admin'),
-        profile: new UserProfile(new Name('Admin'), new Name('User')),
         role: UserRole.admin(),
       }),
       User.random({
         email: new Email('user1@example.com'),
         username: new Username('user1'),
-        profile: new UserProfile(new Name('John'), new Name('Doe')),
         role: UserRole.user(),
       }),
       User.random({
         email: new Email('user2@example.com'),
         username: new Username('user2'),
-        profile: new UserProfile(new Name('Jane'), new Name('Smith')),
         role: UserRole.user(),
       }),
     ];
@@ -101,23 +96,24 @@ describe('GET /users (E2E)', () => {
     expect(res.body.data[0].username).toBe('inactive');
   });
 
-  it('supports contains filters: email, username, firstName, lastName', async () => {
+  it('supports contains filters: id, email, username', async () => {
     const admin = User.random({
       email: new Email('admin@example.com'),
       username: new Username('admin'),
-      profile: new UserProfile(new Name('Admin'), new Name('User')),
     });
     const u1 = User.random({
       email: new Email('user1@example.com'),
       username: new Username('user1'),
-      profile: new UserProfile(new Name('John'), new Name('Doe')),
     });
     const u2 = User.random({
       email: new Email('user2@example.com'),
       username: new Username('user2'),
-      profile: new UserProfile(new Name('Jane'), new Name('Smith')),
     });
     await Promise.all([admin, u1, u2].map((u) => repository.save(u)));
+
+    const byId = await request(server).get('/users').query({ userId: admin.id }).expect(200);
+    expect(byId.body.data).toHaveLength(1);
+    expect(byId.body.data[0].username).toBe('admin');
 
     const byEmail = await request(server).get('/users').query({ email: 'admin@' }).expect(200);
     expect(byEmail.body.data).toHaveLength(1);
@@ -126,14 +122,6 @@ describe('GET /users (E2E)', () => {
     const byUsername = await request(server).get('/users').query({ username: 'user1' }).expect(200);
     expect(byUsername.body.data).toHaveLength(1);
     expect(byUsername.body.data[0].username).toBe('user1');
-
-    const byFirst = await request(server).get('/users').query({ firstName: 'Jane' }).expect(200);
-    expect(byFirst.body.data).toHaveLength(1);
-    expect(byFirst.body.data[0].username).toBe('user2');
-
-    const byLast = await request(server).get('/users').query({ lastName: 'Doe' }).expect(200);
-    expect(byLast.body.data).toHaveLength(1);
-    expect(byLast.body.data[0].username).toBe('user1');
   });
 
   it('filters by role equality', async () => {

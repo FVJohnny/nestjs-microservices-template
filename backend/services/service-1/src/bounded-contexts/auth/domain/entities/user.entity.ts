@@ -1,20 +1,18 @@
 import { v4 as uuidv4 } from 'uuid';
 import { UserRegisteredDomainEvent } from '../events/user-registered.domain-event';
-import { UserProfileUpdatedDomainEvent } from '../events/user-profile-updated.domain-event';
 import { UserStatus, UserStatusEnum } from '../value-objects/user-status.vo';
 import type { UserRoleEnum } from '../value-objects/user-role.vo';
 import { UserRole } from '../value-objects/user-role.vo';
 import { Email } from '../value-objects/email.vo';
 import { Username } from '../value-objects/username.vo';
-import { Name } from '../value-objects/name.vo';
-import { UserProfile } from '../value-objects/user-profile.vo';
 import type { CreateUserProps, UserAttributes, UserDTO } from './user.types';
-import { SharedAggregateRoot } from '@libs/nestjs-common';
+import { InvalidOperationException, SharedAggregateRoot } from '@libs/nestjs-common';
+import { Password } from '../value-objects/password.vo';
 
 export class User extends SharedAggregateRoot implements UserAttributes {
   email: Email;
   username: Username;
-  profile: UserProfile;
+  password: Password;
   status: UserStatus;
   role: UserRole;
   lastLoginAt: Date | undefined;
@@ -33,8 +31,8 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       id,
       email: props.email,
       username: props.username,
-      profile: new UserProfile(props.firstName, props.lastName),
-      status: new UserStatus(UserStatusEnum.ACTIVE),
+      password: props.password,
+      status: new UserStatus(UserStatusEnum.EMAIL_VERIFICATION_PENDING),
       role: props.role,
       lastLoginAt: undefined,
       createdAt: now,
@@ -61,32 +59,13 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       id,
       email: props?.email || new Email('user@example.com'),
       username: props?.username || new Username('user' + Math.floor(Math.random() * 10000)),
-      profile: props?.profile ?? new UserProfile(new Name('John'), new Name('Doe')),
+      password: props?.password || Password.createFromPlainText('password'),
       status: props?.status ?? new UserStatus(UserStatusEnum.ACTIVE),
       role: props?.role ?? UserRole.random(),
       lastLoginAt: props?.lastLoginAt,
       createdAt: props?.createdAt || now,
       updatedAt: props?.updatedAt || now,
     });
-  }
-
-  updateProfile(props: { firstName: Name; lastName: Name }): void {
-    const previousProfile = this.profile.toValue();
-
-    this.profile = new UserProfile(props.firstName, props.lastName);
-    this.updatedAt = new Date();
-
-    const newProfile = this.profile.toValue();
-
-    this.apply(
-      new UserProfileUpdatedDomainEvent({
-        userId: this.id,
-        previousFirstName: previousProfile.firstName,
-        previousLastName: previousProfile.lastName,
-        firstName: newProfile.firstName,
-        lastName: newProfile.lastName,
-      }),
-    );
   }
 
   activate(): void {
@@ -105,6 +84,14 @@ export class User extends SharedAggregateRoot implements UserAttributes {
     this.updatedAt = new Date();
   }
 
+  verifyEmail(): void {
+    if (!this.isEmailVerificationPending()) {
+      throw new InvalidOperationException('verifyEmail', this.status.toValue());
+    }
+    this.status = UserStatus.active();
+    this.updatedAt = new Date();
+  }
+
   hasRole(role: UserRole): boolean {
     return this.role.equals(role);
   }
@@ -120,12 +107,21 @@ export class User extends SharedAggregateRoot implements UserAttributes {
     return this.status.equals(UserStatus.active());
   }
 
+  isEmailVerificationPending(): boolean {
+    return this.status.equals(UserStatus.emailVerificationPending());
+  }
+
+  recordLogin(): void {
+    this.lastLoginAt = new Date();
+    this.updatedAt = new Date();
+  }
+
   static fromValue(value: UserDTO): User {
     return new User({
       id: value.id,
       email: new Email(value.email),
       username: new Username(value.username),
-      profile: new UserProfile(new Name(value.profile.firstName), new Name(value.profile.lastName)),
+      password: Password.createFromHash(value.password),
       status: new UserStatus(value.status as UserStatusEnum),
       role: new UserRole(value.role as UserRoleEnum),
       lastLoginAt: value.lastLoginAt ? new Date(value.lastLoginAt) : undefined,
@@ -139,7 +135,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       id: this.id,
       email: this.email.toValue(),
       username: this.username.toValue(),
-      profile: this.profile.toValue(),
+      password: this.password.toValue(),
       status: this.status.toValue(),
       role: this.role.toValue(),
       lastLoginAt: this.lastLoginAt,

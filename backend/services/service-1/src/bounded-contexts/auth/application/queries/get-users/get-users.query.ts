@@ -3,12 +3,11 @@ import type { PaginationOffsetParams, TracingMetadata } from '@libs/nestjs-commo
 import { BaseQuery } from '@libs/nestjs-common';
 
 export class GetUsersQuery extends BaseQuery implements IQuery {
+  public readonly userId?: string;
   public readonly status?: string;
   public readonly role?: string;
   public readonly email?: string;
   public readonly username?: string;
-  public readonly firstName?: string;
-  public readonly lastName?: string;
 
   // pagination
   public readonly pagination?: PaginationOffsetParams;

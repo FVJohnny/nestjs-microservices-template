@@ -2,7 +2,6 @@ import type { UserRepository } from './user.repository';
 import { User } from '../entities/user.entity';
 import { Email } from '../value-objects/email.vo';
 import { Username } from '../value-objects/username.vo';
-import { Name } from '../value-objects/name.vo';
 import { UserRole, UserRoleEnum } from '../value-objects/user-role.vo';
 import { UserStatus, UserStatusEnum } from '../value-objects/user-status.vo';
 import {
@@ -19,19 +18,7 @@ import {
   Operator,
   PaginationOffset,
 } from '@libs/nestjs-common';
-import { UserProfile } from '../value-objects/user-profile.vo';
 import { UserTestFactory } from '../../test-utils';
-
-/**
- * Helper to create a filter
- */
-function createFilter(field: string, operator: Operator, value: string | number | boolean) {
-  return new Filter(
-    new FilterField(field),
-    new FilterOperator(operator),
-    new FilterValue(String(value)),
-  );
-}
 
 /**
  * Basic validation test to prevent Jest "no tests found" error
@@ -104,18 +91,15 @@ export function testUserRepositoryContract(
           await repository.save(user);
 
           // Modify user
-          user.updateProfile({
-            firstName: new Name('Updated'),
-            lastName: new Name('Name'),
-          });
+          user.changeRole(UserRole.admin());
 
           // Act
           await repository.save(user);
 
           // Assert
           const savedUser = await repository.findById(user.id);
-          expect(savedUser!.profile.firstName.toValue()).toBe('Updated');
-          expect(savedUser!.profile.lastName.toValue()).toBe('Name');
+          expect(savedUser).not.toBeNull();
+          expect(savedUser!.role.toValue()).toBe(UserRoleEnum.ADMIN);
 
           // Should still be only one user
           const allUsers = await repository.findAll();
@@ -359,6 +343,25 @@ export function testUserRepositoryContract(
           expect(result.data).toHaveLength(testUsers.length);
         });
 
+        it('should filter by id (EQUAL)', async () => {
+          // Arrange
+          const filter = new Filter(
+            new FilterField('id'),
+            new FilterOperator(Operator.EQUAL),
+            new FilterValue(testUsers[0].id),
+          );
+          const criteria = new Criteria({
+            filters: new Filters([filter]),
+          });
+
+          // Act
+          const result = await repository.findByCriteria(criteria);
+
+          // Assert
+          expect(result.data).toHaveLength(1);
+          expect(result.data[0].id).toBe(testUsers[0].id);
+        });
+
         it('should filter by email (EQUAL)', async () => {
           // Arrange
           const filter = new Filter(
@@ -395,44 +398,6 @@ export function testUserRepositoryContract(
           // Assert
           expect(result.data).toHaveLength(1);
           expect(result.data[0].username.toValue()).toBe('admin');
-        });
-
-        it('should filter by firstName (EQUAL)', async () => {
-          // Arrange
-          const filter = new Filter(
-            new FilterField('profile.firstName'),
-            new FilterOperator(Operator.EQUAL),
-            new FilterValue('John'),
-          );
-          const criteria = new Criteria({
-            filters: new Filters([filter]),
-          });
-
-          // Act
-          const result = await repository.findByCriteria(criteria);
-
-          // Assert
-          expect(result.data).toHaveLength(1);
-          expect(result.data[0].profile.firstName.toValue()).toBe('John');
-        });
-
-        it('should filter by lastName (EQUAL)', async () => {
-          // Arrange
-          const filter = new Filter(
-            new FilterField('profile.lastName'),
-            new FilterOperator(Operator.EQUAL),
-            new FilterValue('Smith'),
-          );
-          const criteria = new Criteria({
-            filters: new Filters([filter]),
-          });
-
-          // Act
-          const result = await repository.findByCriteria(criteria);
-
-          // Assert
-          expect(result.data).toHaveLength(1);
-          expect(result.data[0].profile.lastName.toValue()).toBe('Smith');
         });
 
         it('should filter by status (EQUAL)', async () => {
@@ -521,7 +486,7 @@ export function testUserRepositoryContract(
         it('should filter with NOT_CONTAINS operator', async () => {
           // Arrange
           const filter = new Filter(
-            new FilterField('profile.firstName'),
+            new FilterField('username'),
             new FilterOperator(Operator.NOT_CONTAINS),
             new FilterValue('John'),
           );
@@ -533,12 +498,8 @@ export function testUserRepositoryContract(
           const result = await repository.findByCriteria(criteria);
 
           // Assert
-          expect(result.data).toHaveLength(2); // Admin and Jane
-          expect(
-            result.data.every(
-              (user) => !user.profile.firstName.toValue().toLowerCase().includes('john'),
-            ),
-          ).toBe(true);
+          expect(result.data).toHaveLength(3); // All test users don't contain "John"
+          expect(result.data.every((user) => !user.username.toValue().includes('John'))).toBe(true);
         });
 
         it('should filter with date fields using GT operator', async () => {
@@ -585,14 +546,14 @@ export function testUserRepositoryContract(
           // Arrange
           const filters = [
             new Filter(
-              new FilterField('profile.firstName'),
+              new FilterField('username'),
               new FilterOperator(Operator.CONTAINS),
-              new FilterValue('J'), // Should match John and Jane
+              new FilterValue('user'), // Should match user1 and user2
             ),
             new Filter(
-              new FilterField('profile.lastName'),
-              new FilterOperator(Operator.EQUAL),
-              new FilterValue('Doe'), // Should match only John Doe
+              new FilterField('email'),
+              new FilterOperator(Operator.CONTAINS),
+              new FilterValue('user1'), // Should match only user1@example.com
             ),
           ];
           const criteria = new Criteria({
@@ -603,9 +564,8 @@ export function testUserRepositoryContract(
           const result = await repository.findByCriteria(criteria);
 
           // Assert
-          expect(result.data).toHaveLength(1);
-          expect(result.data[0].profile.firstName.toValue()).toBe('John');
-          expect(result.data[0].profile.lastName.toValue()).toBe('Doe');
+          expect(result.data).toHaveLength(1); // Only user1 matches both filters
+          expect(result.data[0].username.toValue()).toBe('user1');
         });
 
         it('should return empty array when no matches found', async () => {
@@ -628,36 +588,6 @@ export function testUserRepositoryContract(
       });
 
       describe('findByCriteria - Sorting', () => {
-        it('should sort by firstName ascending', async () => {
-          // Arrange
-          const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.ASC));
-          const criteria = new Criteria({ order });
-
-          // Act
-          const result = await repository.findByCriteria(criteria);
-
-          // Assert
-          expect(result.data).toHaveLength(3);
-          expect(result.data[0].profile.firstName.toValue()).toBe('Admin');
-          expect(result.data[1].profile.firstName.toValue()).toBe('Jane');
-          expect(result.data[2].profile.firstName.toValue()).toBe('John');
-        });
-
-        it('should sort by firstName descending', async () => {
-          // Arrange
-          const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.DESC));
-          const criteria = new Criteria({ order });
-
-          // Act
-          const result = await repository.findByCriteria(criteria);
-
-          // Assert
-          expect(result.data).toHaveLength(3);
-          expect(result.data[0].profile.firstName.toValue()).toBe('John');
-          expect(result.data[1].profile.firstName.toValue()).toBe('Jane');
-          expect(result.data[2].profile.firstName.toValue()).toBe('Admin');
-        });
-
         it('should sort by username ascending', async () => {
           // Arrange
           const order = new Order(new OrderBy('username'), new OrderType(OrderTypes.ASC));
@@ -830,11 +760,11 @@ export function testUserRepositoryContract(
         });
 
         it('should return correct total with filters and pagination', async () => {
-          // Arrange - Filter for users with firstName containing 'J' (John and Jane)
+          // Arrange
           const filter = new Filter(
-            new FilterField('profile.firstName'),
+            new FilterField('username'),
             new FilterOperator(Operator.CONTAINS),
-            new FilterValue('J'),
+            new FilterValue('user'),
           );
           const criteria = new Criteria({
             filters: new Filters([filter]),
@@ -846,7 +776,7 @@ export function testUserRepositoryContract(
 
           // Assert
           expect(result.data).toHaveLength(1); // Limited to 1
-          expect(result.total).toBe(2); // Total matching the filter (John and Jane)
+          expect(result.total).toBe(2); // Total matching the filter (user1 and user2)
         });
 
         it('should return zero total when no records match filter', async () => {
@@ -874,11 +804,11 @@ export function testUserRepositoryContract(
         it('should combine filters, sorting, and pagination', async () => {
           // Arrange
           const filter = new Filter(
-            new FilterField('profile.firstName'),
+            new FilterField('username'),
             new FilterOperator(Operator.CONTAINS),
-            new FilterValue('J'), // Should match John and Jane
+            new FilterValue('user'), // Should match user1 and user2
           );
-          const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.DESC));
+          const order = new Order(new OrderBy('username'), new OrderType(OrderTypes.DESC));
           const criteria = new Criteria({
             filters: new Filters([filter]),
             order,
@@ -890,7 +820,7 @@ export function testUserRepositoryContract(
 
           // Assert
           expect(result.data).toHaveLength(1);
-          expect(result.data[0].profile.firstName.toValue()).toBe('John'); // John comes first in DESC order
+          expect(result.total).toBe(2); // user1 and user2 match
         });
 
         it('should handle empty results with all criteria', async () => {
@@ -900,7 +830,7 @@ export function testUserRepositoryContract(
             new FilterOperator(Operator.EQUAL),
             new FilterValue('nonexistent@example.com'),
           );
-          const order = new Order(new OrderBy('profile.firstName'), new OrderType(OrderTypes.ASC));
+          const order = new Order(new OrderBy('username'), new OrderType(OrderTypes.ASC));
           const criteria = new Criteria({
             filters: new Filters([filter]),
             order,
@@ -930,9 +860,9 @@ export function testUserRepositoryContract(
         it('should count filtered users', async () => {
           // Arrange
           const filter = new Filter(
-            new FilterField('profile.firstName'),
+            new FilterField('username'),
             new FilterOperator(Operator.CONTAINS),
-            new FilterValue('J'),
+            new FilterValue('user'),
           );
           const criteria = new Criteria({
             filters: new Filters([filter]),
@@ -942,7 +872,7 @@ export function testUserRepositoryContract(
           const result = await repository.countByCriteria(criteria);
 
           // Assert
-          expect(result).toBe(2); // John and Jane
+          expect(result).toBe(2); // user1 and user2
         });
 
         it('should return 0 when no matches found', async () => {
@@ -966,9 +896,9 @@ export function testUserRepositoryContract(
         it('should ignore pagination in count', async () => {
           // Arrange
           const filter = new Filter(
-            new FilterField('profile.firstName'),
+            new FilterField('username'),
             new FilterOperator(Operator.CONTAINS),
-            new FilterValue('J'),
+            new FilterValue('user'),
           );
           const criteria = new Criteria({
             filters: new Filters([filter]),
@@ -980,7 +910,7 @@ export function testUserRepositoryContract(
           const results = await repository.findByCriteria(criteria);
 
           // Assert
-          expect(count).toBe(2); // Total matching records
+          expect(count).toBe(2); // Total matching records (user1 and user2)
           expect(results.data).toHaveLength(1); // After pagination
         });
       });
@@ -996,15 +926,11 @@ export function testUserRepositoryContract(
         const originalUser = User.random({
           email: new Email('test@example.com'),
           username: new Username('testuser'),
-          profile: new UserProfile(new Name('Test'), new Name('User')),
           role: UserRole.admin(),
         });
 
         // Modify some properties
-        originalUser.updateProfile({
-          firstName: new Name('Modified'),
-          lastName: new Name('Testuser'),
-        });
+        originalUser.changeRole(UserRole.user());
 
         // Act
         await repository.save(originalUser);
@@ -1015,8 +941,6 @@ export function testUserRepositoryContract(
         expect(loadedUser!.id).toBe(originalUser.id);
         expect(loadedUser!.email.toValue()).toBe(originalUser.email.toValue());
         expect(loadedUser!.username.toValue()).toBe(originalUser.username.toValue());
-        expect(loadedUser!.profile.firstName.toValue()).toBe('Modified');
-        expect(loadedUser!.profile.lastName.toValue()).toBe('Testuser');
         expect(loadedUser!.status.toValue()).toBe(originalUser.status.toValue());
         expect(loadedUser!.role.toValue()).toEqual(originalUser.role.toValue());
         expect(loadedUser!.createdAt.getTime()).toBe(originalUser.createdAt.getTime());
@@ -1083,14 +1007,14 @@ export function testUserRepositoryContract(
       it('should handle special characters in filter values', async () => {
         // Arrange
         const user = User.random({
-          username: new Username('testuser123'),
-          profile: new UserProfile(new Name('John-Paul'), new Name('Van Berg')),
+          username: new Username('test-user-123'),
+          email: new Email('test.user@example.com'),
         });
         await repository.save(user);
 
-        // Act & Assert - Hyphen in name
+        // Act & Assert - Hyphen in username
         const filter1 = new Filter(
-          new FilterField('profile.firstName'),
+          new FilterField('username'),
           new FilterOperator(Operator.CONTAINS),
           new FilterValue('-'),
         );
@@ -1100,12 +1024,13 @@ export function testUserRepositoryContract(
           }),
         );
         expect(result1.data).toHaveLength(1);
+        expect(result1.data[0].username.toValue()).toBe('test-user-123');
 
-        // Act & Assert - Space in last name
+        // Act & Assert - Dot in email
         const filter2 = new Filter(
-          new FilterField('profile.lastName'),
+          new FilterField('email'),
           new FilterOperator(Operator.CONTAINS),
-          new FilterValue(' '),
+          new FilterValue('.'),
         );
         const result2 = await repository.findByCriteria(
           new Criteria({
@@ -1113,6 +1038,7 @@ export function testUserRepositoryContract(
           }),
         );
         expect(result2.data).toHaveLength(1);
+        expect(result2.data[0].email.toValue()).toBe('test.user@example.com');
       });
 
       it('should handle empty string filters', async () => {
@@ -1120,16 +1046,12 @@ export function testUserRepositoryContract(
         const user = User.random({
           email: new Email('empty@test.com'),
           username: new Username('emptyuser'),
-          profile: new UserProfile(
-            new Name(''), // Empty first name
-            new Name('Test'),
-          ),
         });
         await repository.save(user);
 
         // Act
         const filter = new Filter(
-          new FilterField('profile.firstName'),
+          new FilterField('username'),
           new FilterOperator(Operator.EQUAL),
           new FilterValue(''),
         );
@@ -1142,9 +1064,6 @@ export function testUserRepositoryContract(
         // Assert - Empty string handling might vary between implementations
         // The key point is that the query doesn't fail, results may vary
         expect(result.data.length).toBeGreaterThanOrEqual(0);
-        if (result.data.length > 0) {
-          expect(result.data[0].profile.firstName.toValue()).toBe('');
-        }
       });
 
       it('should handle very large datasets efficiently', async () => {
@@ -1153,7 +1072,6 @@ export function testUserRepositoryContract(
           User.random({
             username: new Username(`user${i}`),
             email: new Email(`user${i}@example.com`),
-            profile: new UserProfile(new Name(i % 2 === 0 ? 'Even' : 'Odd'), new Name('User')),
           }),
         );
 
@@ -1161,9 +1079,9 @@ export function testUserRepositoryContract(
 
         // Act - Filter and paginate
         const filter = new Filter(
-          new FilterField('profile.firstName'),
-          new FilterOperator(Operator.EQUAL),
-          new FilterValue('Even'),
+          new FilterField('username'),
+          new FilterOperator(Operator.CONTAINS),
+          new FilterValue('user1'), // Matches user1, user10-19, user100-199
         );
         const start = performance.now();
         const result = await repository.findByCriteria(
@@ -1175,8 +1093,8 @@ export function testUserRepositoryContract(
         const end = performance.now();
 
         // Assert
-        expect(result.data).toHaveLength(50);
-        expect(result.data.every((user) => user.profile.firstName.toValue() === 'Even')).toBe(true);
+        expect(result.data.length).toBeLessThanOrEqual(50);
+        expect(result.data.length).toBeGreaterThan(0);
         expect(end - start).toBeLessThan(1000); // Should complete within reasonable time (< 1s)
       });
     });

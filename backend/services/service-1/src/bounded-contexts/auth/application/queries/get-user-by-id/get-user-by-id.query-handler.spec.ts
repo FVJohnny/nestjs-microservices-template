@@ -4,8 +4,6 @@ import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { Name } from '../../../domain/value-objects/name.vo';
-import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
 import { NotFoundException } from '@libs/nestjs-common';
 
 describe('GetUserByIdQueryHandler', () => {
@@ -22,7 +20,6 @@ describe('GetUserByIdQueryHandler', () => {
     const user = User.random({
       email: new Email('john.doe@example.com'),
       username: new Username('johndoe'),
-      profile: new UserProfile(new Name('John'), new Name('Doe')),
     });
     await repository.save(user);
 

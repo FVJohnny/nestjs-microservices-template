@@ -1,6 +1,7 @@
 import { EnumValueObject, DomainValidationException } from '@libs/nestjs-common';
 
 export enum UserStatusEnum {
+  EMAIL_VERIFICATION_PENDING = 'email-verification-pending',
   ACTIVE = 'active',
   INACTIVE = 'inactive',
   SUSPENDED = 'suspended',
@@ -30,5 +31,9 @@ export class UserStatus extends EnumValueObject<UserStatusEnum> {
 
   static deleted(): UserStatus {
     return new UserStatus(UserStatusEnum.DELETED);
+  }
+
+  static emailVerificationPending(): UserStatus {
+    return new UserStatus(UserStatusEnum.EMAIL_VERIFICATION_PENDING);
   }
 }

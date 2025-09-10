@@ -4,8 +4,6 @@ import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { Name } from '../../../domain/value-objects/name.vo';
-import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
 import { UserStatus, UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
 import { UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { UserTestFactory } from '../../../test-utils';
@@ -45,7 +43,6 @@ describe('GetUsersQueryHandler', () => {
       const inactive = User.random({
         email: new Email('inactive2@example.com'),
         username: new Username('inactive2'),
-        profile: new UserProfile(new Name('Idle'), new Name('Two')),
         status: UserStatus.inactive(),
       });
       await repository.save(inactive);
@@ -59,35 +56,29 @@ describe('GetUsersQueryHandler', () => {
       expect(result.data[0].username).toBe(inactive.username.toValue());
     });
 
-    it('should filter by email, username, firstName and lastName (contains)', async () => {
+    it('should filter by id, email, username (contains)', async () => {
       // Arrange
       await seedUsers();
-
+      const userFound = await repository.findAll();
       // Act
+      const queryById = new GetUsersQuery({ userId: userFound[0].id });
+      const resultsById = await handler.execute(queryById);
+
       const queryByEmail = new GetUsersQuery({ email: 'admin@' });
       const resultsByEmail = await handler.execute(queryByEmail);
 
       const queryByUsername = new GetUsersQuery({ username: 'user1' });
       const resultsByUsername = await handler.execute(queryByUsername);
 
-      const queryByFirstName = new GetUsersQuery({ firstName: 'Jane' });
-      const resultsByFirstName = await handler.execute(queryByFirstName);
-
-      const queryByLastName = new GetUsersQuery({ lastName: 'Doe' });
-      const resultsByLastName = await handler.execute(queryByLastName);
-
       // Assert
+      expect(resultsById.data).toHaveLength(1);
+      expect(resultsById.data[0].username).toBe(userFound[0].username.toValue());
+      
       expect(resultsByEmail.data).toHaveLength(1);
       expect(resultsByEmail.data[0].username).toBe('admin');
 
       expect(resultsByUsername.data).toHaveLength(1);
       expect(resultsByUsername.data[0].username).toBe('user1');
-
-      expect(resultsByFirstName.data).toHaveLength(1);
-      expect(resultsByFirstName.data[0].username).toBe('user2');
-
-      expect(resultsByLastName.data).toHaveLength(1);
-      expect(resultsByLastName.data[0].username).toBe('user1');
     });
   });
 

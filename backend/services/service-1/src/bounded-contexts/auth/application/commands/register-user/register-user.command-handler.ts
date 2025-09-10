@@ -5,9 +5,9 @@ import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositori
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { Name } from '../../../domain/value-objects/name.vo';
 import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { AlreadyExistsException, BaseCommandHandler } from '@libs/nestjs-common';
+import { Password } from '../../../domain/value-objects/password.vo';
 
 @CommandHandler(RegisterUserCommand)
 export class RegisterUserCommandHandler extends BaseCommandHandler<
@@ -26,8 +26,7 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<
     const user = User.create({
       email: new Email(command.email),
       username: new Username(command.username),
-      firstName: new Name(command.firstName),
-      lastName: new Name(command.lastName),
+      password: Password.createFromPlainText(command.password),
       role: new UserRole(command.role as UserRoleEnum),
     });
 

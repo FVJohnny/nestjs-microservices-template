@@ -1,8 +1,6 @@
 import { User } from '../domain/entities/user.entity';
 import { Email } from '../domain/value-objects/email.vo';
 import { Username } from '../domain/value-objects/username.vo';
-import { Name } from '../domain/value-objects/name.vo';
-import { UserProfile } from '../domain/value-objects/user-profile.vo';
 import { UserRole } from '../domain/value-objects/user-role.vo';
 import { UserStatus } from '../domain/value-objects/user-status.vo';
 
@@ -23,19 +21,16 @@ export class UserTestFactory {
       User.random({
         email: new Email('admin@example.com'),
         username: new Username('admin'),
-        profile: new UserProfile(new Name('Admin'), new Name('User')),
         role: UserRole.admin(),
       }),
       User.random({
         email: new Email('user1@example.com'),
         username: new Username('user1'),
-        profile: new UserProfile(new Name('John'), new Name('Doe')),
         role: UserRole.user(),
       }),
       User.random({
         email: new Email('user2@example.com'),
         username: new Username('user2'),
-        profile: new UserProfile(new Name('Jane'), new Name('Smith')),
         role: UserRole.user(),
       }),
     ];
@@ -61,7 +56,6 @@ export class UserTestFactory {
       const user = User.random({
         email: new Email(`user${i}@${domain}`),
         username: new Username(`user${i}`),
-        profile: new UserProfile(new Name(`FirstName${i}`), new Name(`LastName${i}`)),
         role: baseProps?.role,
         status: baseProps?.status,
       });
@@ -93,7 +87,6 @@ export class UserTestFactory {
         User.random({
           email: new Email(`${prefix}${i}@${domain}`),
           username: new Username(`${prefix}${i}`),
-          profile: new UserProfile(new Name(`First${i}`), new Name(`Last${i}`)),
           role: options?.role ?? (i === 0 ? UserRole.admin() : UserRole.user()),
           status: UserStatus.active(),
         }),
@@ -111,31 +104,26 @@ export class UserTestFactory {
       User.random({
         email: new Email('alice@example.com'),
         username: new Username('alice'),
-        profile: new UserProfile(new Name('Alice'), new Name('Anderson')),
         role: UserRole.admin(),
       }),
       User.random({
         email: new Email('bob@example.com'),
         username: new Username('bob'),
-        profile: new UserProfile(new Name('Bob'), new Name('Brown')),
         role: UserRole.user(),
       }),
       User.random({
         email: new Email('charlie@example.com'),
         username: new Username('charlie'),
-        profile: new UserProfile(new Name('Charlie'), new Name('Chen')),
         role: UserRole.user(),
       }),
       User.random({
         email: new Email('diana@example.com'),
         username: new Username('diana'),
-        profile: new UserProfile(new Name('Diana'), new Name('Davis')),
         role: UserRole.user(),
       }),
       User.random({
         email: new Email('edward@example.com'),
         username: new Username('edward'),
-        profile: new UserProfile(new Name('Edward'), new Name('Evans')),
         role: UserRole.user(),
       }),
     ];

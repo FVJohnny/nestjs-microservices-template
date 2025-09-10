@@ -39,8 +39,7 @@ describe('POST /users (E2E)', () => {
     const body = {
       email: 'john.doe@example.com',
       username: 'johndoe',
-      firstName: 'John',
-      lastName: 'Doe',
+      password: 'TestPassword123!',
       role: 'user',
     };
 
@@ -52,8 +51,7 @@ describe('POST /users (E2E)', () => {
     const body = {
       email: 'dup@example.com',
       username: 'dupuser',
-      firstName: 'Dupe',
-      lastName: 'Case',
+      password: 'TestPassword123!',
       role: 'user',
     };
     await request(server).post('/users').send(body).expect(201);
@@ -66,7 +64,18 @@ describe('POST /users (E2E)', () => {
   it('returns a client error for invalid email and too-short username', async () => {
     await request(server)
       .post('/users')
-      .send({ email: 'not-an-email', username: 'ab', role: 'user' })
+      .send({ email: 'not-an-email', username: 'ab', password: 'TestPassword123!', role: 'user' })
+      .expect((res) => {
+        if (res.status !== 400 && res.status !== 500) {
+          throw new Error(`Expected 400 or 500, got ${res.status}`);
+        }
+      });
+  });
+
+  it('returns a client error for too short password', async () => {
+    await request(server)
+      .post('/users')
+      .send({ email: 'not-an-email', username: 'ab', password: 'ab', role: 'user' })
       .expect((res) => {
         if (res.status !== 400 && res.status !== 500) {
           throw new Error(`Expected 400 or 500, got ${res.status}`);

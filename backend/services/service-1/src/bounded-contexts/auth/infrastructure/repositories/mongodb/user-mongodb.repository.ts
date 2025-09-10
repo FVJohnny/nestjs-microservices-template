@@ -219,41 +219,6 @@ export class UserMongodbRepository implements UserRepository {
         await this.collection.createIndex({ role: 1 }, { name: 'idx_user_role' });
       }
 
-      if (!indexNames.includes('idx_user_status_role')) {
-        await this.collection.createIndex({ status: 1, role: 1 }, { name: 'idx_user_status_role' });
-      }
-
-      // Name search indexes
-      if (!indexNames.includes('idx_user_profile_names')) {
-        await this.collection.createIndex(
-          {
-            'profile.firstName': 1,
-            'profile.lastName': 1,
-          },
-          { name: 'idx_user_profile_names' },
-        );
-      }
-
-      // Sorting indexes
-      if (!indexNames.includes('idx_user_created_desc')) {
-        await this.collection.createIndex({ createdAt: -1 }, { name: 'idx_user_created_desc' });
-      }
-
-      if (!indexNames.includes('idx_user_updated_desc')) {
-        await this.collection.createIndex({ updatedAt: -1 }, { name: 'idx_user_updated_desc' });
-      }
-
-      // Compound indexes for common query patterns
-      if (!indexNames.includes('idx_user_status_created')) {
-        await this.collection.createIndex(
-          {
-            status: 1,
-            createdAt: -1,
-          },
-          { name: 'idx_user_status_created' },
-        );
-      }
-
       this.logger.log('User collection indexes initialized successfully');
     } catch (error) {
       this.logger.error('Error initializing user collection indexes:', error);

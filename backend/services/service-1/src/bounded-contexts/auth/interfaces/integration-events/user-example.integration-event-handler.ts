@@ -19,14 +19,13 @@ export class UserExampleIntegrationEventHandler {
       const command = new RegisterUserCommand({
         email: `example-user-${randomId}@demo.com`,
         username: `example_user_${randomId}`,
-        firstName: this.getRandomFirstName(),
-        lastName: this.getRandomLastName(),
+        password: 'password',
         role: UserRoleEnum.USER,
       });
       await this.commandBus.execute(command);
 
       this.logger.log(
-        `✅ Created example user: ${command.email} (${command.firstName} ${command.lastName}) via UserExample integration event`,
+        `✅ Created example user: ${command.email} (${command.username}) via UserExample integration event`,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -35,53 +34,5 @@ export class UserExampleIntegrationEventHandler {
       );
       throw error;
     }
-  }
-
-  private getRandomFirstName(): string {
-    const firstNames = [
-      'Alice',
-      'Bob',
-      'Charlie',
-      'Diana',
-      'Edward',
-      'Fiona',
-      'George',
-      'Hannah',
-      'Ian',
-      'Julia',
-      'Kevin',
-      'Laura',
-      'Michael',
-      'Nancy',
-      'Oliver',
-      'Patricia',
-      'Quinn',
-      'Rachel',
-    ];
-    return firstNames[Math.floor(Math.random() * firstNames.length)];
-  }
-
-  private getRandomLastName(): string {
-    const lastNames = [
-      'Smith',
-      'Johnson',
-      'Williams',
-      'Brown',
-      'Jones',
-      'Garcia',
-      'Miller',
-      'Davis',
-      'Rodriguez',
-      'Martinez',
-      'Hernandez',
-      'Lopez',
-      'Gonzalez',
-      'Wilson',
-      'Anderson',
-      'Thomas',
-      'Taylor',
-      'Moore',
-    ];
-    return lastNames[Math.floor(Math.random() * lastNames.length)];
   }
 }

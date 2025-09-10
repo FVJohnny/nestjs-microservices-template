@@ -29,6 +29,15 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
   protected async handle(query: GetUsersQuery): Promise<GetUsersQueryResponse> {
     const filterList: Filter[] = [];
 
+    // Handle specific id filter
+    if (query.userId) {
+      const idFilter = new Filter(
+        new FilterField('id'),
+        FilterOperator.fromValue(Operator.EQUAL),
+        new FilterValue(query.userId),
+      );
+      filterList.push(idFilter);
+    }
     // Handle specific status filter
     if (query.status) {
       const statusFilter = new Filter(
@@ -67,26 +76,6 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
         new FilterValue(query.username),
       );
       filterList.push(usernameFilter);
-    }
-
-    // Handle firstName filter (partial match)
-    if (query.firstName) {
-      const firstNameFilter = new Filter(
-        new FilterField('profile.firstName'),
-        FilterOperator.fromValue(Operator.CONTAINS),
-        new FilterValue(query.firstName),
-      );
-      filterList.push(firstNameFilter);
-    }
-
-    // Handle lastName filter (partial match)
-    if (query.lastName) {
-      const lastNameFilter = new Filter(
-        new FilterField('profile.lastName'),
-        FilterOperator.fromValue(Operator.CONTAINS),
-        new FilterValue(query.lastName),
-      );
-      filterList.push(lastNameFilter);
     }
 
     const filters = new Filters(filterList);

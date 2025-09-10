@@ -1,23 +1,21 @@
 import type { Email } from '../value-objects/email.vo';
 import type { Username } from '../value-objects/username.vo';
-import type { Name } from '../value-objects/name.vo';
 import type { UserRole } from '../value-objects/user-role.vo';
 import type { UserStatus } from '../value-objects/user-status.vo';
-import type { UserProfile, UserProfileDTO } from '../value-objects/user-profile.vo';
+import type { Password } from '../value-objects/password.vo';
 import { SharedAggregateRootDTO } from '@libs/nestjs-common';
 
 export interface CreateUserProps {
   email: Email;
   username: Username;
-  firstName: Name;
-  lastName: Name;
+  password: Password;
   role: UserRole;
 }
 export interface UserAttributes {
   id: string;
   email: Email;
   username: Username;
-  profile: UserProfile;
+  password: Password;
   status: UserStatus;
   role: UserRole;
   lastLoginAt: Date | undefined;
@@ -29,7 +27,7 @@ export class UserDTO extends SharedAggregateRootDTO {
   id: string;
   email: string;
   username: string;
-  profile: UserProfileDTO;
+  password: string;
   status: string;
   role: string;
   lastLoginAt: Date | undefined;

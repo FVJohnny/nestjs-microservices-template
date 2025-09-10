@@ -4,8 +4,6 @@ import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { Name } from '../../../domain/value-objects/name.vo';
-import { UserProfile } from '../../../domain/value-objects/user-profile.vo';
 import { UserStatus, UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
 import { UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { UserTestFactory } from '../../../test-utils';
@@ -47,7 +45,6 @@ describe('GetUsersCursorQueryHandler', () => {
       const inactive = User.random({
         email: new Email('inactive2@example.com'),
         username: new Username('inactive2'),
-        profile: new UserProfile(new Name('Idle'), new Name('Two')),
         status: UserStatus.inactive(),
       });
       await repository.save(inactive);
@@ -64,35 +61,30 @@ describe('GetUsersCursorQueryHandler', () => {
       expect(result.pagination.hasNext).toBe(false);
     });
 
-    it('should filter by email, username, firstName and lastName (contains)', async () => {
+    it('should filter by id (exact), email and username, (contains)', async () => {
       // Arrange
       await seedUsers();
+      const userFound = await repository.findAll();
 
       // Act
+      const queryById = new GetUsersCursorQuery({ userId: userFound[0].id });
+      const resultsById = await handler.execute(queryById);
+
       const queryByEmail = new GetUsersCursorQuery({ email: 'admin@' });
       const resultsByEmail = await handler.execute(queryByEmail);
 
       const queryByUsername = new GetUsersCursorQuery({ username: 'user1' });
       const resultsByUsername = await handler.execute(queryByUsername);
 
-      const queryByFirstName = new GetUsersCursorQuery({ firstName: 'Jane' });
-      const resultsByFirstName = await handler.execute(queryByFirstName);
-
-      const queryByLastName = new GetUsersCursorQuery({ lastName: 'Doe' });
-      const resultsByLastName = await handler.execute(queryByLastName);
-
       // Assert
+      expect(resultsById.data).toHaveLength(1);
+      expect(resultsById.data[0].username).toBe(userFound[0].username.toValue());
+
       expect(resultsByEmail.data).toHaveLength(1);
       expect(resultsByEmail.data[0].username).toBe('admin');
 
       expect(resultsByUsername.data).toHaveLength(1);
       expect(resultsByUsername.data[0].username).toBe('user1');
-
-      expect(resultsByFirstName.data).toHaveLength(1);
-      expect(resultsByFirstName.data[0].username).toBe('user2');
-
-      expect(resultsByLastName.data).toHaveLength(1);
-      expect(resultsByLastName.data[0].username).toBe('user1');
     });
   });
 
@@ -427,17 +419,14 @@ describe('GetUsersCursorQueryHandler', () => {
         User.random({
           email: new Email('user3@example.com'),
           username: new Username('aaa_first'),
-          profile: new UserProfile(new Name('AAA'), new Name('First')),
         }),
         User.random({
           email: new Email('user4@example.com'),
           username: new Username('zzz_last'),
-          profile: new UserProfile(new Name('ZZZ'), new Name('Last')),
         }),
         User.random({
           email: new Email('user5@example.com'),
           username: new Username('mmm_middle'),
-          profile: new UserProfile(new Name('MMM'), new Name('Middle')),
         }),
       ];
 
@@ -485,7 +474,6 @@ describe('GetUsersCursorQueryHandler', () => {
       const userWithEmptyField = User.random({
         email: new Email('empty@example.com'),
         username: new Username('empty_user'),
-        profile: new UserProfile(new Name('Empty'), new Name('User')),
       });
       await repository.save(userWithEmptyField);
 
