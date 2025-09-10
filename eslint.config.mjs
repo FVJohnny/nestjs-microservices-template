@@ -29,7 +29,9 @@ export default [
         ...globals.jest,
       },
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: ['*.mjs', '*.js', '*.cjs'],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -37,7 +39,7 @@ export default [
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       'prefer-const': 'error',
-      'eqeqeq': 'error',
+      eqeqeq: 'error',
     },
   },
 
