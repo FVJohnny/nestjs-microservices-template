@@ -1,7 +1,6 @@
 import { User } from './user.entity';
 import { Email } from '../../value-objects/email.vo';
 import { Username } from '../../value-objects/username.vo';
-import { Name } from '../../value-objects/name.vo';
 import { UserRole, UserRoleEnum } from '../../value-objects/user-role.vo';
 import { UserStatus, UserStatusEnum } from '../../value-objects/user-status.vo';
 import { UserRegisteredDomainEvent } from '../../events/user-registered.domain-event';

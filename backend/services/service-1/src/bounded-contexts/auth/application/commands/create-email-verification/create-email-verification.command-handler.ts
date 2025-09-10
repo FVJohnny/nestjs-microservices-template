@@ -4,7 +4,7 @@ import {
   CreateEmailVerificationCommand,
   CreateEmailVerificationCommandResponse,
 } from './create-email-verification.command';
-import { BaseCommandHandler, AlreadyExistsException } from '@libs/nestjs-common';
+import { BaseCommandHandler } from '@libs/nestjs-common';
 import { EmailVerification } from '../../../domain/entities/email-verification/email-verification.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import {
@@ -28,6 +28,9 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
   protected async handle(
     command: CreateEmailVerificationCommand,
   ): Promise<CreateEmailVerificationCommandResponse> {
+    // Delete any existing verifications before creating new one
+    await this.removeExistingVerifications(command.userId, command.email);
+
     const emailVerification = EmailVerification.create({
       userId: command.userId,
       email: new Email(command.email),
@@ -48,21 +51,27 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
     return Promise.resolve(true);
   }
 
-  protected async validate(command: CreateEmailVerificationCommand): Promise<void> {
-    // Check if user already has an email verification
-    const existingVerificationByUserId = await this.emailVerificationRepository.findByUserId(
-      command.userId,
-    );
+  protected async validate(_command: CreateEmailVerificationCommand): Promise<void> {
+    // No validation needed - we'll remove existing verifications if they exist
+  }
+
+  /**
+   * Remove any existing email verifications for the same user or email
+   */
+  private async removeExistingVerifications(userId: string, email: string): Promise<void> {
+    // Remove existing verification for this user
+    const existingVerificationByUserId =
+      await this.emailVerificationRepository.findByUserId(userId);
     if (existingVerificationByUserId) {
-      throw new AlreadyExistsException('userId', command.userId);
+      await this.emailVerificationRepository.remove(existingVerificationByUserId.id);
     }
 
-    // Check if email is already used by another verification
+    // Remove existing verification for this email (if different from user's verification)
     const existingVerificationByEmail = await this.emailVerificationRepository.findByEmail(
-      new Email(command.email),
+      new Email(email),
     );
     if (existingVerificationByEmail) {
-      throw new AlreadyExistsException('email', command.email);
+      await this.emailVerificationRepository.remove(existingVerificationByEmail.id);
     }
   }
 }

@@ -3,7 +3,7 @@ import { CreateEmailVerificationCommand } from './create-email-verification.comm
 import { EmailVerificationInMemoryRepository } from '../../../infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import type { EventBus } from '@nestjs/cqrs';
 import type { MockEventBus } from '@libs/nestjs-common';
-import { createEventBusMock, AlreadyExistsException } from '@libs/nestjs-common';
+import { createEventBusMock } from '@libs/nestjs-common';
 
 describe('CreateEmailVerificationCommandHandler (Unit)', () => {
   let commandHandler: CreateEmailVerificationCommandHandler;
@@ -91,7 +91,7 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
       expect(verification1!.token).not.toBe(verification2!.token);
     });
 
-    it('should not allow multiple email verifications for same user', async () => {
+    it('should replace existing email verification for same user', async () => {
       // Arrange
       const command1 = new CreateEmailVerificationCommand({
         userId: 'user-123',
@@ -103,15 +103,23 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
       });
 
       // Act
-      await commandHandler.execute(command1);
+      const result1 = await commandHandler.execute(command1);
+      const result2 = await commandHandler.execute(command2);
 
-      // Assert - Second command should fail
-      await expect(commandHandler.execute(command2)).rejects.toThrow(AlreadyExistsException);
+      // Assert - Both commands should succeed
+      expect(result1).toBeDefined();
+      expect(result2).toBeDefined();
+      expect(result1.id).not.toBe(result2.id);
 
-      // Verify only one was saved for the user
+      // Verify only the second one exists for the user
       const verification = await repository.findByUserId('user-123');
       expect(verification).not.toBeNull();
-      expect(verification!.email.toValue()).toBe('test1@example.com');
+      expect(verification!.id).toBe(result2.id);
+      expect(verification!.email.toValue()).toBe('test2@example.com');
+
+      // Verify the first one was removed
+      const firstVerificationExists = await repository.exists(result1.id);
+      expect(firstVerificationExists).toBe(false);
     });
 
     it('should set expiration date 24 hours from creation', async () => {
@@ -219,7 +227,7 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
       expect(result).toBeDefined();
     });
 
-    it('should throw AlreadyExistsException when user already has email verification', async () => {
+    it('should replace verification when user already has email verification', async () => {
       // Arrange
       const firstCommand = new CreateEmailVerificationCommand({
         userId: 'duplicate-user',
@@ -231,13 +239,22 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
       });
 
       // Act - Create first verification
-      await commandHandler.execute(firstCommand);
+      const result1 = await commandHandler.execute(firstCommand);
+      const result2 = await commandHandler.execute(secondCommand);
 
-      // Assert - Second should fail
-      await expect(commandHandler.execute(secondCommand)).rejects.toThrow(AlreadyExistsException);
+      // Assert - Both should succeed with different IDs
+      expect(result1).toBeDefined();
+      expect(result2).toBeDefined();
+      expect(result1.id).not.toBe(result2.id);
+
+      // Verify only the second verification exists
+      const verification = await repository.findByUserId('duplicate-user');
+      expect(verification).not.toBeNull();
+      expect(verification!.id).toBe(result2.id);
+      expect(verification!.email.toValue()).toBe('second@example.com');
     });
 
-    it('should throw AlreadyExistsException when email is already used by another user', async () => {
+    it('should replace verification when email is already used by another user', async () => {
       // Arrange
       const firstCommand = new CreateEmailVerificationCommand({
         userId: 'user-1',
@@ -249,13 +266,25 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
       });
 
       // Act - Create first verification
-      await commandHandler.execute(firstCommand);
+      const result1 = await commandHandler.execute(firstCommand);
+      const result2 = await commandHandler.execute(secondCommand);
 
-      // Assert - Second should fail with same email but different user
-      await expect(commandHandler.execute(secondCommand)).rejects.toThrow(AlreadyExistsException);
+      // Assert - Both should succeed with different IDs
+      expect(result1).toBeDefined();
+      expect(result2).toBeDefined();
+      expect(result1.id).not.toBe(result2.id);
+
+      // Verify only the second verification exists (first one removed)
+      const verification1 = await repository.findByUserId('user-1');
+      const verification2 = await repository.findByUserId('user-2');
+      
+      expect(verification1).toBeNull();
+      expect(verification2).not.toBeNull();
+      expect(verification2!.id).toBe(result2.id);
+      expect(verification2!.email.toValue()).toBe('duplicate@example.com');
     });
 
-    it('should allow same user to create verification with different email after removing previous one', async () => {
+    it('should automatically replace verification when creating new one for same user with different email', async () => {
       // Arrange
       const firstCommand = new CreateEmailVerificationCommand({
         userId: 'test-user',
@@ -269,19 +298,22 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
       // Act - Create first verification
       const firstResult = await commandHandler.execute(firstCommand);
       
-      // Remove the first verification
-      await repository.remove(firstResult.id);
-      
-      // Create second verification (should succeed)
+      // Create second verification (should automatically replace the first)
       const secondResult = await commandHandler.execute(secondCommand);
 
       // Assert
       expect(secondResult).toBeDefined();
       expect(secondResult.id).not.toBe(firstResult.id);
       
+      // Verify only the second verification exists
       const verification = await repository.findByUserId('test-user');
       expect(verification).not.toBeNull();
+      expect(verification!.id).toBe(secondResult.id);
       expect(verification!.email.toValue()).toBe('second@example.com');
+      
+      // Verify the first verification was removed
+      const firstVerificationExists = await repository.exists(firstResult.id);
+      expect(firstVerificationExists).toBe(false);
     });
   });
 });
