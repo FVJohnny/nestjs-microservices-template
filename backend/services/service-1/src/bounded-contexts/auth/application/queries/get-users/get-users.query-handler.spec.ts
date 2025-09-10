@@ -1,7 +1,7 @@
 import { GetUsersQueryHandler } from './get-users.query-handler';
 import { GetUsersQuery } from './get-users.query';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
-import { User } from '../../../domain/entities/user.entity';
+import { User } from '../../../domain/entities/user/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { UserStatus, UserStatusEnum } from '../../../domain/value-objects/user-status.vo';

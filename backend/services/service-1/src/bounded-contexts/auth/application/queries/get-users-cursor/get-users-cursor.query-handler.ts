@@ -2,7 +2,10 @@ import { QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { GetUsersCursorQuery } from './get-users-cursor.query';
 import { GetUsersCursorQueryResponse } from './get-users-cursor.response';
-import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '../../../domain/repositories/user/user.repository';
 import {
   Criteria,
   Filters,

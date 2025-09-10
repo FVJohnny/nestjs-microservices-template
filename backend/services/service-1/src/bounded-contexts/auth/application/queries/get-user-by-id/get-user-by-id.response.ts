@@ -1,3 +1,3 @@
-import { UserDTO } from '../../../domain/entities/user.types';
+import { UserDTO } from '../../../domain/entities/user/user.types';
 
 export class GetUserByIdQueryResponse extends UserDTO {}

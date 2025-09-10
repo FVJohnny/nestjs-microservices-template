@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb';
 import { UserMongodbRepository } from './user-mongodb.repository';
-import { testUserRepositoryContract } from '../../../domain/repositories/user.repository.spec';
+import { testUserRepositoryContract } from '../../../domain/repositories/user/user.repository.spec';
 
 describe('UserMongodbRepository (Integration)', () => {
   let mongoClient: MongoClient;

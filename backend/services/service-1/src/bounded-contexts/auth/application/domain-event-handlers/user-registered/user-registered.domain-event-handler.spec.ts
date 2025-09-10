@@ -3,25 +3,17 @@ import { UserRegisteredDomainEvent } from '../../../domain/events/user-registere
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { UserRole } from '../../../domain/value-objects/user-role.vo';
-import type { OutboxService } from '@libs/nestjs-common';
-import { Topics } from '@libs/nestjs-common';
+import { Topics, createOutboxServiceMock, type MockOutboxService, createCommandBusMock, type MockCommandBus } from '@libs/nestjs-common';
 
 describe('UserRegisteredDomainEventHandler (Unit)', () => {
   let eventHandler: UserRegisteredDomainEventHandler;
-  let mockOutboxService: jest.Mocked<OutboxService>;
-  let storeEventSpy: jest.MockedFunction<OutboxService['storeEvent']>;
+  let mockOutboxService: MockOutboxService;
+  let mockCommandBus: MockCommandBus;
 
   beforeEach(() => {
-    const storeEventMock = jest.fn();
-
-    mockOutboxService = {
-      storeEvent: storeEventMock,
-      processOutboxEvents: jest.fn(),
-      cleanupProcessedEvents: jest.fn(),
-    } as unknown as jest.Mocked<OutboxService>;
-
-    storeEventSpy = storeEventMock;
-    eventHandler = new UserRegisteredDomainEventHandler(mockOutboxService);
+    mockOutboxService = createOutboxServiceMock({ shouldFail: false });
+    mockCommandBus = createCommandBusMock({ shouldFail: false });
+    eventHandler = new UserRegisteredDomainEventHandler(mockOutboxService as any, mockCommandBus as any);
   });
 
   describe('Happy Path', () => {
@@ -38,19 +30,14 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       await eventHandler.handle(event);
 
       // Assert
-      expect(storeEventSpy).toHaveBeenCalledTimes(1);
-      expect(storeEventSpy).toHaveBeenCalledWith(
-        Topics.USERS.events.USER_CREATED,
-        Topics.USERS.topic,
-        expect.stringContaining('"userId":"test-user-id"'),
-      );
+      expect(mockOutboxService.storedEvents).toHaveLength(1);
+      
+      const storedEvent = mockOutboxService.storedEvents[0];
+      expect(storedEvent.eventType).toBe(Topics.USERS.events.USER_CREATED);
+      expect(storedEvent.topic).toBe('users');
+      expect(storedEvent.payload).toContain('"userId":"test-user-id"');
 
-      const storedCall = storeEventSpy.mock.calls[0];
-      const [eventType, topic, payload] = storedCall;
-      expect(eventType).toBe(Topics.USERS.events.USER_CREATED);
-      expect(topic).toBe('users');
-
-      const publishedData = JSON.parse(payload);
+      const publishedData = JSON.parse(storedEvent.payload);
       expect(publishedData.data.userId).toBe('test-user-id');
       expect(publishedData.data.email).toBe('test@example.com');
       expect(publishedData.data.username).toBe('testuser');
@@ -70,9 +57,8 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       await eventHandler.handle(event);
 
       // Assert
-      const storedCall = storeEventSpy.mock.calls[0];
-      const [, , payload] = storedCall;
-      const publishedData = JSON.parse(payload);
+      const storedEvent = mockOutboxService.storedEvents[0];
+      const publishedData = JSON.parse(storedEvent.payload);
 
       expect(publishedData.data.email).toBe('test.user+tag@example-domain.com');
       expect(publishedData.data.username).toBe('user_name-123');
@@ -91,12 +77,11 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       await eventHandler.handle(event);
 
       // Assert
-      const storedCall = storeEventSpy.mock.calls[0];
-      const [eventType, topic, payload] = storedCall;
-      const publishedEvent = JSON.parse(payload);
+      const storedEvent = mockOutboxService.storedEvents[0];
+      const publishedEvent = JSON.parse(storedEvent.payload);
 
-      expect(eventType).toBe(Topics.USERS.events.USER_CREATED);
-      expect(topic).toBe(Topics.USERS.topic);
+      expect(storedEvent.eventType).toBe(Topics.USERS.events.USER_CREATED);
+      expect(storedEvent.topic).toBe(Topics.USERS.topic);
       expect(publishedEvent.topic).toBe(Topics.USERS.topic);
       expect(publishedEvent.name).toEqual(Topics.USERS.events.USER_CREATED);
       expect(publishedEvent.version).toBeDefined();
@@ -138,20 +123,16 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       }
 
       // Assert
-      expect(storeEventSpy).toHaveBeenCalledTimes(2);
+      expect(mockOutboxService.storedEvents).toHaveLength(2);
     });
   });
 
   describe('Error Cases', () => {
     it('should handle outbox service failures and rethrow error', async () => {
       // Arrange
-      const failingOutboxService = {
-        storeEvent: jest.fn().mockRejectedValue(new Error('Outbox service failed')),
-        processOutboxEvents: jest.fn(),
-        cleanupProcessedEvents: jest.fn(),
-      } as unknown as jest.Mocked<OutboxService>;
-
-      const failingEventHandler = new UserRegisteredDomainEventHandler(failingOutboxService);
+      const failingOutboxService = createOutboxServiceMock({ shouldFail: true });
+      const failingMockCommandBus = createCommandBusMock({ shouldFail: false });
+      const failingEventHandler = new UserRegisteredDomainEventHandler(failingOutboxService as any, failingMockCommandBus as any);
 
       const event = new UserRegisteredDomainEvent({
         userId: 'failing-user-id',
@@ -161,18 +142,14 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       });
 
       // Act & Assert
-      await expect(failingEventHandler.handle(event)).rejects.toThrow('Outbox service failed');
+      await expect(failingEventHandler.handle(event)).rejects.toThrow('OutboxService storeEvent failed');
     });
 
     it('should propagate database errors from outbox service', async () => {
       // Arrange
-      const failingOutboxService = {
-        storeEvent: jest.fn().mockRejectedValue(new Error('Database connection failed')),
-        processOutboxEvents: jest.fn(),
-        cleanupProcessedEvents: jest.fn(),
-      } as unknown as jest.Mocked<OutboxService>;
-
-      const failingEventHandler = new UserRegisteredDomainEventHandler(failingOutboxService);
+      const failingOutboxService = createOutboxServiceMock({ shouldFail: true });
+      const failingMockCommandBus = createCommandBusMock({ shouldFail: false });
+      const failingEventHandler = new UserRegisteredDomainEventHandler(failingOutboxService as any, failingMockCommandBus as any);
 
       const event = new UserRegisteredDomainEvent({
         userId: 'network-error-user',
@@ -182,7 +159,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       });
 
       // Act & Assert
-      await expect(failingEventHandler.handle(event)).rejects.toThrow('Database connection failed');
+      await expect(failingEventHandler.handle(event)).rejects.toThrow('OutboxService storeEvent failed');
     });
   });
 });

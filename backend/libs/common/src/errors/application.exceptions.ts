@@ -4,8 +4,8 @@ import type { Metadata } from '../utils/metadata';
 import { BaseException } from './base.exception';
 
 export class NotFoundException extends BaseException {
-  constructor(metadata?: Metadata) {
-    super(`Entity not found`, 'ENTITY_NOT_FOUND', HttpStatus.NOT_FOUND, {
+  constructor(entityName?: string, metadata?: Metadata) {
+    super(`Entity ${entityName} not found`, 'ENTITY_NOT_FOUND', HttpStatus.NOT_FOUND, {
       ...metadata,
     });
   }

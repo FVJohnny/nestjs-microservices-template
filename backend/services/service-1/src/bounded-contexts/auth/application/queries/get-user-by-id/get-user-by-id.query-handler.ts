@@ -1,7 +1,10 @@
 import { QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { GetUserByIdQuery } from './get-user-by-id.query';
-import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '../../../domain/repositories/user/user.repository';
 import { BaseQueryHandler, NotFoundException } from '@libs/nestjs-common';
 import { GetUserByIdQueryResponse } from './get-user-by-id.response';
 

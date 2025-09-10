@@ -1,10 +1,10 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { MongoClient, Collection } from 'mongodb';
-import { User } from '../../../domain/entities/user.entity';
-import { UserRepository } from '../../../domain/repositories/user.repository';
+import { User } from '../../../domain/entities/user/user.entity';
+import { UserRepository } from '../../../domain/repositories/user/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { UserDTO } from '../../../domain/entities/user.types';
+import { UserDTO } from '../../../domain/entities/user/user.types';
 import { Criteria, InfrastructureException, PaginatedRepoResult } from '@libs/nestjs-common';
 import { MongoCriteriaConverter } from '@libs/nestjs-mongodb';
 import { MONGO_CLIENT_TOKEN } from '@libs/nestjs-mongodb';

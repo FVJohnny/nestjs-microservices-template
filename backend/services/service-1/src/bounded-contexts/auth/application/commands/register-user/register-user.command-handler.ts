@@ -1,8 +1,11 @@
 import { CommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { RegisterUserCommand, RegisterUserCommandResponse } from './register-user.command';
-import { USER_REPOSITORY, type UserRepository } from '../../../domain/repositories/user.repository';
-import { User } from '../../../domain/entities/user.entity';
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '../../../domain/repositories/user/user.repository';
+import { User } from '../../../domain/entities/user/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';

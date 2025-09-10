@@ -1,7 +1,7 @@
 import { GetUserByIdQueryHandler } from './get-user-by-id.query-handler';
 import { GetUserByIdQuery } from './get-user-by-id.query';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
-import { User } from '../../../domain/entities/user.entity';
+import { User } from '../../../domain/entities/user/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { NotFoundException } from '@libs/nestjs-common';

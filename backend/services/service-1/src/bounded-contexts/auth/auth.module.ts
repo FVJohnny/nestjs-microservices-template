@@ -4,7 +4,7 @@ import { RuntimeAutoDiscovery } from '@libs/nestjs-common';
 
 // Infrastructure - Repositories
 import { UserMongodbRepository } from './infrastructure/repositories/mongodb/user-mongodb.repository';
-import { USER_REPOSITORY } from './domain/repositories/user.repository';
+import { USER_REPOSITORY } from './domain/repositories/user/user.repository';
 
 // 🚀 RUNTIME AUTO-DISCOVERY
 const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__dirname);

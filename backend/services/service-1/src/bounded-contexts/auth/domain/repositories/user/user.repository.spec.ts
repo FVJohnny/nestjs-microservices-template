@@ -1,9 +1,9 @@
 import type { UserRepository } from './user.repository';
-import { User } from '../entities/user.entity';
-import { Email } from '../value-objects/email.vo';
-import { Username } from '../value-objects/username.vo';
-import { UserRole, UserRoleEnum } from '../value-objects/user-role.vo';
-import { UserStatus, UserStatusEnum } from '../value-objects/user-status.vo';
+import { User } from '../../entities/user/user.entity';
+import { Email } from '../../value-objects/email.vo';
+import { Username } from '../../value-objects/username.vo';
+import { UserRole, UserRoleEnum } from '../../value-objects/user-role.vo';
+import { UserStatus, UserStatusEnum } from '../../value-objects/user-status.vo';
 import {
   Criteria,
   Filters,
@@ -18,7 +18,7 @@ import {
   Operator,
   PaginationOffset,
 } from '@libs/nestjs-common';
-import { UserTestFactory } from '../../test-utils';
+import { UserTestFactory } from '../../../test-utils';
 
 /**
  * Basic validation test to prevent Jest "no tests found" error
@@ -982,11 +982,11 @@ export function testUserRepositoryContract(
 
       it('should handle concurrent operations', async () => {
         // Arrange - Create users with unique emails to avoid conflicts
-        const users = Array.from({ length: 100 }, (_, i) => 
+        const users = Array.from({ length: 100 }, (_, i) =>
           User.random({
             email: new Email(`concurrent${i}@example.com`),
             username: new Username(`concurrent${i}`),
-          })
+          }),
         );
 
         // Act - Save all users concurrently

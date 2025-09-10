@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '../../../domain/entities/user.entity';
-import { UserRepository } from '../../../domain/repositories/user.repository';
+import { User } from '../../../domain/entities/user/user.entity';
+import { UserRepository } from '../../../domain/repositories/user/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Criteria, InMemoryCriteriaConverter, PaginatedRepoResult } from '@libs/nestjs-common';
-import { UserDTO } from '../../../domain/entities/user.types';
+import { UserDTO } from '../../../domain/entities/user/user.types';
 
 @Injectable()
 export class UserInMemoryRepository implements UserRepository {
