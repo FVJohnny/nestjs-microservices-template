@@ -6,12 +6,12 @@ import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ErrorHandlingModule } from '@libs/nestjs-common';
-import { GetUserController } from '../../src/bounded-contexts/users/interfaces/http/controllers/users/get-user-by-id/get-user-by-id.controller';
-import { GetUserByIdQueryHandler } from '../../src/bounded-contexts/users/application/queries/get-user-by-id/get-user-by-id.query-handler';
-import type { UserRepository } from '../../src/bounded-contexts/users/domain/repositories/user.repository';
-import { USER_REPOSITORY } from '../../src/bounded-contexts/users/domain/repositories/user.repository';
-import { UserInMemoryRepository } from '../../src/bounded-contexts/users/infrastructure/repositories/in-memory/user-in-memory.repository';
-import { User } from '../../src/bounded-contexts/users/domain/entities/user.entity';
+import { GetUserController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/users/get-user-by-id/get-user-by-id.controller';
+import { GetUserByIdQueryHandler } from '../../src/bounded-contexts/auth/application/queries/get-user-by-id/get-user-by-id.query-handler';
+import type { UserRepository } from '../../src/bounded-contexts/auth/domain/repositories/user.repository';
+import { USER_REPOSITORY } from '../../src/bounded-contexts/auth/domain/repositories/user.repository';
+import { UserInMemoryRepository } from '../../src/bounded-contexts/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { User } from '../../src/bounded-contexts/auth/domain/entities/user.entity';
 
 describe('GET /users/:id (E2E)', () => {
   let app: INestApplication;

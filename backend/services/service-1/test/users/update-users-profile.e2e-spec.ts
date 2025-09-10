@@ -5,14 +5,14 @@ import request from 'supertest';
 import type { Server } from 'http';
 import { ValidationPipe } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { UpdateUserProfileController } from '../../src/bounded-contexts/users/interfaces/http/controllers/users/update-user-profile/update-user-profile.controller';
-import { UpdateUserProfileCommandHandler } from '../../src/bounded-contexts/users/application/commands/update-user-profile/update-user-profile.command-handler';
-import type { UserRepository } from '../../src/bounded-contexts/users/domain/repositories/user.repository';
-import { USER_REPOSITORY } from '../../src/bounded-contexts/users/domain/repositories/user.repository';
-import { UserInMemoryRepository } from '../../src/bounded-contexts/users/infrastructure/repositories/in-memory/user-in-memory.repository';
-import { User } from '../../src/bounded-contexts/users/domain/entities/user.entity';
-import { Name } from '../../src/bounded-contexts/users/domain/value-objects/name.vo';
-import { UserProfile } from '../../src/bounded-contexts/users/domain/value-objects/user-profile.vo';
+import { UpdateUserProfileController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/users/update-user-profile/update-user-profile.controller';
+import { UpdateUserProfileCommandHandler } from '../../src/bounded-contexts/auth/application/commands/update-user-profile/update-user-profile.command-handler';
+import type { UserRepository } from '../../src/bounded-contexts/auth/domain/repositories/user.repository';
+import { USER_REPOSITORY } from '../../src/bounded-contexts/auth/domain/repositories/user.repository';
+import { UserInMemoryRepository } from '../../src/bounded-contexts/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { User } from '../../src/bounded-contexts/auth/domain/entities/user.entity';
+import { Name } from '../../src/bounded-contexts/auth/domain/value-objects/name.vo';
+import { UserProfile } from '../../src/bounded-contexts/auth/domain/value-objects/user-profile.vo';
 import { ErrorHandlingModule } from '@libs/nestjs-common';
 
 describe('Users E2E (update profile)', () => {

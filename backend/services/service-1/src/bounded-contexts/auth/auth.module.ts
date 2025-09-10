@@ -20,4 +20,4 @@ const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__d
     },
   ],
 })
-export class UsersModule {}
+export class AuthModule {}
