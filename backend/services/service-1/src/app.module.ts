@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CqrsModule } from '@nestjs/cqrs';
-import { UsersModule } from './bounded-contexts/users/users.module';
+import { AuthModule } from './bounded-contexts/auth/auth.module';
 import {
   HeartbeatModule,
   TracingModule,
@@ -35,7 +35,7 @@ import { MongoOutboxRepository } from '@libs/nestjs-mongodb';
     MetricsModule,
 
     // DDD Bounded Contexts
-    UsersModule,
+    AuthModule,
   ],
   providers: [
     {

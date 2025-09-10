@@ -2,7 +2,7 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GetUserByIdQuery } from '../../../../../application/queries';
-import { GetUserByIdQueryResponse } from 'src/bounded-contexts/users/application/queries/get-user-by-id/get-user-by-id.response';
+import { GetUserByIdQueryResponse } from 'src/bounded-contexts/auth/application/queries/get-user-by-id/get-user-by-id.response';
 
 @ApiTags('users')
 @Controller('users')
