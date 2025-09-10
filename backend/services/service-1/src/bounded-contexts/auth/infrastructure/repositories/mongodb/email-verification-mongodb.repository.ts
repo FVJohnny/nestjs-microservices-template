@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { MongoClient, Collection } from 'mongodb';
+import { MongoClient, Collection, MongoServerError } from 'mongodb';
 import {
   EmailVerification,
   EmailVerificationDTO,
@@ -28,18 +28,6 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
 
   async save(emailVerification: EmailVerification): Promise<void> {
     try {
-      // Check if user already has an email verification
-      const existingVerificationByUserId = await this.findByUserId(emailVerification.userId);
-      if (existingVerificationByUserId && existingVerificationByUserId.id !== emailVerification.id) {
-        throw new AlreadyExistsException('userId', emailVerification.userId);
-      }
-
-      // Check if email is already used by another verification
-      const existingVerificationByEmail = await this.findByEmail(emailVerification.email);
-      if (existingVerificationByEmail && existingVerificationByEmail.id !== emailVerification.id) {
-        throw new AlreadyExistsException('email', emailVerification.email.toValue());
-      }
-
       const primitives = emailVerification.toValue();
 
       await this.collection.updateOne(
@@ -48,9 +36,6 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
         { upsert: true },
       );
     } catch (error: unknown) {
-      if (error instanceof AlreadyExistsException) {
-        throw error;
-      }
       this.handleDatabaseError('save', emailVerification.id, error);
     }
   }
@@ -226,7 +211,10 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
       }
 
       if (!indexNames.includes('idx_email_verification_expires_at')) {
-        await this.collection.createIndex({ expiresAt: 1 }, { name: 'idx_email_verification_expires_at' });
+        await this.collection.createIndex(
+          { expiresAt: 1 },
+          { name: 'idx_email_verification_expires_at' },
+        );
       }
 
       this.logger.log('Email verification collection indexes initialized successfully');
@@ -242,6 +230,24 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
    */
   private handleDatabaseError(operation: string, id: string, error: unknown): never {
     const err = error instanceof Error ? error : new Error(String(error));
+
+    // Handle MongoDB duplicate key errors
+    if (error instanceof MongoServerError && error.code === 11000) {
+      const keyPattern = error.keyPattern;
+
+      if (keyPattern?.userId) {
+        throw new AlreadyExistsException('userId', id);
+      }
+      if (keyPattern?.email) {
+        // Extract email value from the error details
+        const emailValue = error.keyValue?.email || 'unknown email';
+        throw new AlreadyExistsException('email', emailValue);
+      }
+      if (keyPattern?.token) {
+        throw new AlreadyExistsException('token', id);
+      }
+    }
+
     throw new InfrastructureException(operation, id, err);
   }
 }
