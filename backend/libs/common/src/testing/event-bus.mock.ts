@@ -60,5 +60,3 @@ export function createEventBusMock(options: CreateEventBusMockOptions = {}): Moc
 
   return mockEventBus;
 }
-
-
