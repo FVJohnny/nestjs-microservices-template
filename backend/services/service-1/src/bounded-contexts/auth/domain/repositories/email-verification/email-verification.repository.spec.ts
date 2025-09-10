@@ -18,19 +18,41 @@ describe('EmailVerificationRepository Contract Test Suite', () => {
  *
  * @param description Name of the implementation being tested
  * @param createRepository Factory function to create a repository with optional test data
+ * @param setupTeardown Optional setup and teardown functions for the repository
  */
 export function testEmailVerificationRepositoryContract(
   description: string,
   createRepository: (
     verifications?: EmailVerification[],
   ) => Promise<EmailVerificationRepository>,
+  setupTeardown?: {
+    beforeAll?: () => Promise<void>;
+    afterAll?: () => Promise<void>;
+    beforeEach?: () => Promise<void>;
+    afterEach?: () => Promise<void>;
+  },
 ) {
   describe(`EmailVerificationRepository Contract: ${description}`, () => {
     let repository: EmailVerificationRepository;
 
+    if (setupTeardown?.beforeAll) {
+      beforeAll(setupTeardown.beforeAll);
+    }
+
+    if (setupTeardown?.afterAll) {
+      afterAll(setupTeardown.afterAll);
+    }
+
     beforeEach(async () => {
+      if (setupTeardown?.beforeEach) {
+        await setupTeardown.beforeEach();
+      }
       repository = await createRepository();
     });
+
+    if (setupTeardown?.afterEach) {
+      afterEach(setupTeardown.afterEach);
+    }
 
     describe('Basic CRUD Operations', () => {
       describe('save', () => {
