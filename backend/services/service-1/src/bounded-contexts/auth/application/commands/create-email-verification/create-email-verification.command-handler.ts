@@ -50,11 +50,19 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
 
   protected async validate(command: CreateEmailVerificationCommand): Promise<void> {
     // Check if user already has an email verification
-    const existingVerification = await this.emailVerificationRepository.findByUserId(
+    const existingVerificationByUserId = await this.emailVerificationRepository.findByUserId(
       command.userId,
     );
-    if (existingVerification) {
+    if (existingVerificationByUserId) {
       throw new AlreadyExistsException('userId', command.userId);
+    }
+
+    // Check if email is already used by another verification
+    const existingVerificationByEmail = await this.emailVerificationRepository.findByEmail(
+      new Email(command.email),
+    );
+    if (existingVerificationByEmail) {
+      throw new AlreadyExistsException('email', command.email);
     }
   }
 }

@@ -13,10 +13,17 @@ export class EmailVerificationInMemoryRepository implements EmailVerificationRep
 
   async save(emailVerification: EmailVerification): Promise<void> {
     // Check if user already has an email verification
-    const existingVerification = await this.findByUserId(emailVerification.userId);
-    if (existingVerification && existingVerification.id !== emailVerification.id) {
+    const existingVerificationByUserId = await this.findByUserId(emailVerification.userId);
+    if (existingVerificationByUserId && existingVerificationByUserId.id !== emailVerification.id) {
       throw new AlreadyExistsException('userId', emailVerification.userId);
     }
+
+    // Check if email is already used by another verification
+    const existingVerificationByEmail = await this.findByEmail(emailVerification.email);
+    if (existingVerificationByEmail && existingVerificationByEmail.id !== emailVerification.id) {
+      throw new AlreadyExistsException('email', emailVerification.email.toValue());
+    }
+
     this.emailVerifications.set(emailVerification.id, emailVerification.toValue());
   }
 
