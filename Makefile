@@ -78,4 +78,4 @@ prod-restart-service1:
 	@echo "✅ Service-1 restarted!"
 	
 zip:
-	@zip -r project.zip . -x "*/node_modules/*" "*/dist/*" "node_modules/*" "dist/*"
+	@zip -r project.zip . -x "*/node_modules/*" "*/dist/*" "node_modules/*" "dist/*" ".nx/*" ".git/*"
