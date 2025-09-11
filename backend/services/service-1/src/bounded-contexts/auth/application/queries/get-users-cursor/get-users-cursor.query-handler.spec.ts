@@ -2,10 +2,7 @@ import { GetUsersCursorQueryHandler } from './get-users-cursor.query-handler';
 import { GetUsersCursorQuery } from './get-users-cursor.query';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '../../../domain/entities/user/user.entity';
-import { Email } from '../../../domain/value-objects/email.vo';
-import { Username } from '../../../domain/value-objects/username.vo';
-import { UserStatus, UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
-import { UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
+import { Email, Username, UserStatus, UserStatusEnum, UserRoleEnum } from '../../../domain/value-objects';
 import { UserTestFactory } from '../../../test-utils';
 import { PaginationCursor, InfrastructureException } from '@libs/nestjs-common';
 

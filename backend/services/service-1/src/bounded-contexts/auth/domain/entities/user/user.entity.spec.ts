@@ -1,10 +1,7 @@
 import { User } from './user.entity';
-import { Email } from '../../value-objects/email.vo';
-import { Username } from '../../value-objects/username.vo';
-import { UserRole, UserRoleEnum } from '../../value-objects/user-role.vo';
-import { UserStatus, UserStatusEnum } from '../../value-objects/user-status.vo';
+import { Email, Username, UserRole, UserRoleEnum, UserStatus, UserStatusEnum } from '../../value-objects';
 import { UserRegisteredDomainEvent } from '../../events/user-registered.domain-event';
-import { Password } from '../../value-objects/password.vo';
+import { Password } from '../../value-objects';
 import { InvalidOperationException } from '@libs/nestjs-common';
 
 describe('User Entity', () => {

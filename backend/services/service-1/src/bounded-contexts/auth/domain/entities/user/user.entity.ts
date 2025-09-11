@@ -1,13 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { UserRegisteredDomainEvent } from '../../events/user-registered.domain-event';
-import { UserStatus, UserStatusEnum } from '../../value-objects/user-status.vo';
-import type { UserRoleEnum } from '../../value-objects/user-role.vo';
-import { UserRole } from '../../value-objects/user-role.vo';
-import { Email } from '../../value-objects/email.vo';
-import { Username } from '../../value-objects/username.vo';
+import { UserStatus, UserStatusEnum, UserRole, UserRoleEnum, Email, Username, Password } from '../../value-objects';
 import type { CreateUserProps, UserAttributes, UserDTO } from './user.types';
 import { InvalidOperationException, SharedAggregateRoot } from '@libs/nestjs-common';
-import { Password } from '../../value-objects/password.vo';
 
 export class User extends SharedAggregateRoot implements UserAttributes {
   email: Email;

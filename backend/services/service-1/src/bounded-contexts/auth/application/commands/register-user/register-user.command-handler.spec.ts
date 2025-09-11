@@ -2,12 +2,11 @@ import { RegisterUserCommandHandler } from './register-user.command-handler';
 import { RegisterUserCommand } from './register-user.command';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
-import { UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
+import { UserRoleEnum } from '../../../domain/value-objects';
 import {
   AlreadyExistsException,
   createEventBusMock,
   InfrastructureException,
-  MockEventBus,
 } from '@libs/nestjs-common';
 import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 

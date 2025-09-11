@@ -1,5 +1,5 @@
 import type { EmailVerification } from '../../entities/email-verification/email-verification.entity';
-import type { Email } from '../../value-objects/email.vo';
+import type { Email } from '../../value-objects';
 
 export const EMAIL_VERIFICATION_REPOSITORY = Symbol('EmailVerificationRepository');
 

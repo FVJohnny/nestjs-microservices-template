@@ -6,7 +6,7 @@ import {
 } from './create-email-verification.command';
 import { BaseCommandHandler } from '@libs/nestjs-common';
 import { EmailVerification } from '../../../domain/entities/email-verification/email-verification.entity';
-import { Email } from '../../../domain/value-objects/email.vo';
+import { Email } from '../../../domain/value-objects';
 import {
   EMAIL_VERIFICATION_REPOSITORY,
   type EmailVerificationRepository,

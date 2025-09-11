@@ -1,5 +1,5 @@
 import { EmailVerification } from './email-verification.entity';
-import { Email } from '../../value-objects/email.vo';
+import { Email } from '../../value-objects';
 import { EmailVerifiedDomainEvent } from '../../events/email-verified.domain-event';
 import { InvalidOperationException } from '@libs/nestjs-common';
 

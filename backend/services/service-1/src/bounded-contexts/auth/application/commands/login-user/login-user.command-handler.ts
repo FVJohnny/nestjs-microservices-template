@@ -7,7 +7,7 @@ import {
   type UserRepository,
 } from '../../../domain/repositories/user/user.repository';
 import { User } from '../../../domain/entities/user/user.entity';
-import { Email } from '../../../domain/value-objects/email.vo';
+import { Email } from '../../../domain/value-objects';
 import { BaseCommandHandler, UnauthorizedException } from '@libs/nestjs-common';
 
 @CommandHandler(LoginUserCommand)

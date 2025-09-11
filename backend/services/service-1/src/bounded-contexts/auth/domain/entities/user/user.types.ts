@@ -1,8 +1,4 @@
-import type { Email } from '../../value-objects/email.vo';
-import type { Username } from '../../value-objects/username.vo';
-import type { UserRole } from '../../value-objects/user-role.vo';
-import type { UserStatus } from '../../value-objects/user-status.vo';
-import type { Password } from '../../value-objects/password.vo';
+import type { Email, Username, UserRole, UserStatus, Password } from '../../value-objects';
 import { SharedAggregateRootDTO } from '@libs/nestjs-common';
 
 export interface CreateUserProps {

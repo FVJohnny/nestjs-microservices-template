@@ -3,9 +3,7 @@ import {
   UserRegisteredDomainEvent,
   UserRegisteredDomainEventParams,
 } from '../../../domain/events/user-registered.domain-event';
-import { Email } from '../../../domain/value-objects/email.vo';
-import { Username } from '../../../domain/value-objects/username.vo';
-import { UserRole } from '../../../domain/value-objects/user-role.vo';
+import { Email, Username, UserRole } from '../../../domain/value-objects';
 import { Topics, createOutboxServiceMock, createCommandBusMock } from '@libs/nestjs-common';
 import { CreateEmailVerificationCommand } from '../../commands/create-email-verification/create-email-verification.command';
 

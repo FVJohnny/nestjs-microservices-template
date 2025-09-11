@@ -1,8 +1,5 @@
 import { User } from '../domain/entities/user/user.entity';
-import { Email } from '../domain/value-objects/email.vo';
-import { Username } from '../domain/value-objects/username.vo';
-import { UserRole } from '../domain/value-objects/user-role.vo';
-import { UserStatus } from '../domain/value-objects/user-status.vo';
+import { Email, Username, UserRole, UserStatus } from '../domain/value-objects';
 
 /**
  * Test user factory for creating consistent lists of test users

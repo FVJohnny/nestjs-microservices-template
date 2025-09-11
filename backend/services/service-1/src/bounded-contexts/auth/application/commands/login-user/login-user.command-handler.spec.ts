@@ -2,19 +2,12 @@ import { LoginUserCommandHandler } from './login-user.command-handler';
 import { LoginUserCommand } from './login-user.command';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
-import { JwtService } from '@nestjs/jwt';
 import { User } from '../../../domain/entities/user/user.entity';
-import { Email } from '../../../domain/value-objects/email.vo';
-import { Username } from '../../../domain/value-objects/username.vo';
-import { Password } from '../../../domain/value-objects/password.vo';
-import { UserRole } from '../../../domain/value-objects/user-role.vo';
-import { UserStatus } from '../../../domain/value-objects/user-status.vo';
+import { Email, Username, Password, UserStatus } from '../../../domain/value-objects';
 import {
-  NotFoundException,
   UnauthorizedException,
   createEventBusMock,
   InfrastructureException,
-  MockEventBus,
   DomainValidationException,
 } from '@libs/nestjs-common';
 

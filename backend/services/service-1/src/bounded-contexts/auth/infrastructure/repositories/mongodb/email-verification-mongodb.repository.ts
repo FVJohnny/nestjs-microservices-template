@@ -5,7 +5,7 @@ import {
   EmailVerificationDTO,
 } from '../../../domain/entities/email-verification/email-verification.entity';
 import { EmailVerificationRepository } from '../../../domain/repositories/email-verification/email-verification.repository';
-import { Email } from '../../../domain/value-objects/email.vo';
+import { Email } from '../../../domain/value-objects';
 import { InfrastructureException, AlreadyExistsException } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from '@libs/nestjs-mongodb';
 import { CorrelationLogger } from '@libs/nestjs-common';

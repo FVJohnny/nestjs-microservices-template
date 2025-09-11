@@ -1,9 +1,6 @@
 import type { UserRepository } from './user.repository';
 import { User } from '../../entities/user/user.entity';
-import { Email } from '../../value-objects/email.vo';
-import { Username } from '../../value-objects/username.vo';
-import { UserRole, UserRoleEnum } from '../../value-objects/user-role.vo';
-import { UserStatus, UserStatusEnum } from '../../value-objects/user-status.vo';
+import { Email, Username, UserRole, UserRoleEnum, UserStatus, UserStatusEnum } from '../../value-objects';
 import {
   Criteria,
   Filters,

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { SharedAggregateRootDTO } from '@libs/nestjs-common';
 import { SharedAggregateRoot, InvalidOperationException } from '@libs/nestjs-common';
-import { Email } from '../../value-objects/email.vo';
+import { Email } from '../../value-objects';
 import { EmailVerifiedDomainEvent } from '../../events/email-verified.domain-event';
 
 export interface EmailVerificationAttributes {

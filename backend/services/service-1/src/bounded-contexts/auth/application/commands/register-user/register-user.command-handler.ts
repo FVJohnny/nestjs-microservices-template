@@ -6,11 +6,8 @@ import {
   type UserRepository,
 } from '../../../domain/repositories/user/user.repository';
 import { User } from '../../../domain/entities/user/user.entity';
-import { Email } from '../../../domain/value-objects/email.vo';
-import { Username } from '../../../domain/value-objects/username.vo';
-import { UserRole, UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
+import { Email, Username, Password, UserRole, UserRoleEnum } from '../../../domain/value-objects';
 import { AlreadyExistsException, BaseCommandHandler } from '@libs/nestjs-common';
-import { Password } from '../../../domain/value-objects/password.vo';
 
 @CommandHandler(RegisterUserCommand)
 export class RegisterUserCommandHandler extends BaseCommandHandler<
