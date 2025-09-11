@@ -37,7 +37,13 @@ import { createOutboxServiceMock, OutboxService } from '@libs/nestjs-common';
 
 // Add User-related imports
 import { User } from '../../src/bounded-contexts/auth/domain/entities/user/user.entity';
-import { Email, Username, Password, UserRole, UserStatus } from '../../src/bounded-contexts/auth/domain/value-objects';
+import {
+  Email,
+  Username,
+  Password,
+  UserRole,
+  UserStatus,
+} from '../../src/bounded-contexts/auth/domain/value-objects';
 import { AuthTestHelper } from '../utils/auth-test.helper';
 
 describe('Email Verification (E2E)', () => {

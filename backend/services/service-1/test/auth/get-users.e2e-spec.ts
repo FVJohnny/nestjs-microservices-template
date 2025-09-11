@@ -12,7 +12,12 @@ import type { UserRepository } from '../../src/bounded-contexts/auth/domain/repo
 import { USER_REPOSITORY } from '../../src/bounded-contexts/auth/domain/repositories/user/user.repository';
 import { UserInMemoryRepository } from '../../src/bounded-contexts/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '../../src/bounded-contexts/auth/domain/entities/user/user.entity';
-import { Email, Username, UserRole, UserStatus } from '../../src/bounded-contexts/auth/domain/value-objects';
+import {
+  Email,
+  Username,
+  UserRole,
+  UserStatus,
+} from '../../src/bounded-contexts/auth/domain/value-objects';
 import { JwtAuthModule } from '@libs/nestjs-common';
 import { ErrorHandlingModule } from '@libs/nestjs-common';
 import { AuthTestHelper } from '../utils/auth-test.helper';
