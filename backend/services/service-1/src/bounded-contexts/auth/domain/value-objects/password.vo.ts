@@ -2,26 +2,32 @@ import { StringValueObject, DomainValidationException } from '@libs/nestjs-commo
 import * as bcrypt from 'bcrypt';
 
 export class Password extends StringValueObject {
-  private static readonly SALT_ROUNDS = process.env.NODE_ENV === 'test' ? 1 : 10;
+  private static readonly SALT_ROUNDS = process.env.NODE_ENV === 'test' ? 1 : 12;
   private static readonly MIN_LENGTH = 8;
 
   private constructor(value: string) {
     super(value);
   }
 
-  static createFromPlainText(plainText: string): Password {
+  static async createFromPlainText(plainText: string) {
+    Password.validatePlainText(plainText);
+    const hashedPassword = await bcrypt.hash(plainText, Password.SALT_ROUNDS);
+    return new Password(hashedPassword);
+  }
+
+  static createFromPlainTextSync(plainText: string) {
     Password.validatePlainText(plainText);
     const hashedPassword = bcrypt.hashSync(plainText, Password.SALT_ROUNDS);
     return new Password(hashedPassword);
   }
 
-  static createFromHash(hash: string): Password {
+  static createFromHash(hash: string) {
     Password.validateHash(hash);
     return new Password(hash);
   }
 
-  verify(plainText: string): boolean {
-    return bcrypt.compareSync(plainText, this.toValue());
+  async verify(plainText: string) {
+    return await bcrypt.compare(plainText, this.toValue());
   }
 
   private static validatePlainText(password: string): void {

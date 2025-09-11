@@ -1,21 +1,29 @@
 import { EmailVerifiedDomainEventHandler } from './email-verified.domain-event-handler';
-import { EmailVerifiedDomainEvent, EmailVerifiedDomainEventProps } from '../../../domain/events/email-verified.domain-event';
+import {
+  EmailVerifiedDomainEvent,
+  EmailVerifiedDomainEventProps,
+} from '../../../domain/events/email-verified.domain-event';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { UserRole } from '../../../domain/value-objects/user-role.vo';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '../../../domain/entities/user/user.entity';
 import { Password } from '../../../domain/value-objects/password.vo';
-import { NotFoundException, InvalidOperationException, InfrastructureException } from '@libs/nestjs-common';
+import {
+  NotFoundException,
+  InvalidOperationException,
+  InfrastructureException,
+} from '@libs/nestjs-common';
 
-describe('EmailVerifiedDomainEventHandler (Unit)', () => {
+describe('EmailVerifiedDomainEventHandler', () => {
   // Test data factory
-  const createEvent = (overrides: Partial<EmailVerifiedDomainEventProps> = {}) => new EmailVerifiedDomainEvent({
-    emailVerificationId: 'verification-123',
-    userId: 'test-user-123',
-    email: 'test@example.com',
-    ...overrides,
-  });
+  const createEvent = (overrides: Partial<EmailVerifiedDomainEventProps> = {}) =>
+    new EmailVerifiedDomainEvent({
+      emailVerificationId: 'verification-123',
+      userId: 'test-user-123',
+      email: 'test@example.com',
+      ...overrides,
+    });
 
   // Setup factory
   const setup = (params: { shouldFailRepository?: boolean } = {}) => {
@@ -23,7 +31,7 @@ describe('EmailVerifiedDomainEventHandler (Unit)', () => {
 
     const userRepository = new UserInMemoryRepository(shouldFailRepository);
     const eventHandler = new EmailVerifiedDomainEventHandler(userRepository);
-    
+
     return { userRepository, eventHandler };
   };
 
@@ -34,7 +42,7 @@ describe('EmailVerifiedDomainEventHandler (Unit)', () => {
       const user = User.create({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        password: Password.createFromPlainText('TestPassword123!'),
+        password: await Password.createFromPlainText('TestPassword123!'),
         role: UserRole.user(),
       });
       await userRepository.save(user);
@@ -58,13 +66,13 @@ describe('EmailVerifiedDomainEventHandler (Unit)', () => {
       const user1 = User.create({
         email: new Email('user1@example.com'),
         username: new Username('user1'),
-        password: Password.createFromPlainText('TestPassword123!'),
+        password: await Password.createFromPlainText('TestPassword123!'),
         role: UserRole.user(),
       });
       const user2 = User.create({
         email: new Email('user2@example.com'),
         username: new Username('user2'),
-        password: Password.createFromPlainText('TestPassword123!'),
+        password: await Password.createFromPlainText('TestPassword123!'),
         role: UserRole.user(),
       });
       await userRepository.save(user1);
@@ -88,7 +96,7 @@ describe('EmailVerifiedDomainEventHandler (Unit)', () => {
       // Assert
       const updatedUser1 = await userRepository.findById(user1.id);
       const updatedUser2 = await userRepository.findById(user2.id);
-      
+
       expect(updatedUser1!.isActive()).toBe(true);
       expect(updatedUser2!.isActive()).toBe(true);
     });
@@ -100,7 +108,7 @@ describe('EmailVerifiedDomainEventHandler (Unit)', () => {
       const user = User.create({
         email: new Email(specialEmail),
         username: new Username('specialuser'),
-        password: Password.createFromPlainText('TestPassword123!'),
+        password: await Password.createFromPlainText('TestPassword123!'),
         role: UserRole.user(),
       });
       await userRepository.save(user);
@@ -145,7 +153,7 @@ describe('EmailVerifiedDomainEventHandler (Unit)', () => {
       const user = User.create({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        password: Password.createFromPlainText('TestPassword123!'),
+        password: await Password.createFromPlainText('TestPassword123!'),
         role: UserRole.user(),
       });
 
@@ -180,10 +188,10 @@ describe('EmailVerifiedDomainEventHandler (Unit)', () => {
       const user = User.create({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        password: Password.createFromPlainText('TestPassword123!'),
+        password: await Password.createFromPlainText('TestPassword123!'),
         role: UserRole.user(),
       });
-      
+
       // Manually verify email first
       user.verifyEmail();
       await userRepository.save(user);
@@ -202,7 +210,7 @@ describe('EmailVerifiedDomainEventHandler (Unit)', () => {
       const user = User.create({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        password: Password.createFromPlainText('TestPassword123!'),
+        password: await Password.createFromPlainText('TestPassword123!'),
         role: UserRole.user(),
       });
       await userRepository.save(user);
@@ -217,10 +225,7 @@ describe('EmailVerifiedDomainEventHandler (Unit)', () => {
       });
 
       // Act - Process events concurrently
-      await Promise.all([
-        eventHandler.handle(event1),
-        eventHandler.handle(event2),
-      ]);
+      await Promise.all([eventHandler.handle(event1), eventHandler.handle(event2)]);
 
       // Assert
       const updatedUser = await userRepository.findById(user.id);

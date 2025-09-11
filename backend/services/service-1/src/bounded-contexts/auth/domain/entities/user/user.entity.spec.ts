@@ -9,12 +9,12 @@ import { InvalidOperationException } from '@libs/nestjs-common';
 
 describe('User Entity', () => {
   describe('create', () => {
-    it('should create a new user with required properties', () => {
+    it('should create a new user with required properties', async () => {
       // Act
       const user = User.create({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        password: Password.createFromPlainText('user_password'),
+        password: await Password.createFromPlainText('user_password'),
         role: UserRole.user(),
       });
 
@@ -28,15 +28,15 @@ describe('User Entity', () => {
       expect(user.lastLoginAt).toBeUndefined();
       expect(user.createdAt).toBeInstanceOf(Date);
       expect(user.updatedAt).toBeInstanceOf(Date);
-      expect(user.password.verify('user_password')).toBe(true);
+      expect(await user.password.verify('user_password')).toBe(true);
     });
 
-    it('should emit UserRegisteredEvent when created', () => {
+    it('should emit UserRegisteredEvent when created', async () => {
       // Arrange
       const props = {
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        password: Password.createFromPlainText('user_password'),
+        password: await Password.createFromPlainText('user_password'),
         role: UserRole.random(),
       };
 
@@ -72,7 +72,7 @@ describe('User Entity', () => {
       expect(user.lastLoginAt).toBeUndefined();
     });
 
-    it('should create user with provided properties', () => {
+    it('should create user with provided properties', async () => {
       // Arrange
       const customEmail = new Email('custom@test.com');
       const customUsername = new Username('customuser');
@@ -86,7 +86,7 @@ describe('User Entity', () => {
       const user = User.random({
         email: customEmail,
         username: customUsername,
-        password: Password.createFromPlainText('user_password'),
+        password: await Password.createFromPlainText('user_password'),
         role: customRole,
         status: UserStatus.inactive(),
         lastLoginAt: customLastLogin,
@@ -97,7 +97,7 @@ describe('User Entity', () => {
       // Assert
       expect(user.email).toBe(customEmail);
       expect(user.username).toBe(customUsername);
-      expect(user.password.verify('user_password')).toBe(true);
+      expect(await user.password.verify('user_password')).toBe(true);
       expect(user.role).toBe(customRole);
       expect(user.status.toValue()).toBe(customStatus);
       expect(user.lastLoginAt).toBe(customLastLogin);
@@ -287,12 +287,12 @@ describe('User Entity', () => {
       expect(user.isEmailVerificationPending()).toBe(false);
     });
 
-    it('should return true for newly created user', () => {
+    it('should return true for newly created user', async () => {
       // Arrange
       const user = User.create({
         email: new Email('newuser@example.com'),
         username: new Username('newuser'),
-        password: Password.createFromPlainText('password123'),
+        password: await Password.createFromPlainText('password123'),
         role: UserRole.user(),
       });
 
@@ -302,12 +302,12 @@ describe('User Entity', () => {
   });
 
   describe('serialization', () => {
-    it('should convert to primitives correctly', () => {
+    it('should convert to primitives correctly', async () => {
       // Arrange
       const user = User.random({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        password: Password.createFromPlainText('testpassword'),
+        password: await Password.createFromPlainText('testpassword'),
         role: UserRole.admin(),
         status: UserStatus.active(),
         lastLoginAt: new Date('2024-01-01T12:00:00Z'),
@@ -330,7 +330,7 @@ describe('User Entity', () => {
 
     it('should recreate user from primitives correctly', async () => {
       // Arrange
-      const passwordHash = Password.createFromPlainText('testpassword').toValue();
+      const passwordHash = (await Password.createFromPlainText('testpassword')).toValue();
       const primitives = {
         id: '123e4567-e89b-12d3-a456-426614174000',
         email: 'test@example.com',
@@ -352,7 +352,7 @@ describe('User Entity', () => {
       expect(user.username.toValue()).toBe('testuser');
       expect(user.password.toValue()).toBe(passwordHash);
       // Verify password can verify against original plain text
-      const canVerify = user.password.verify('testpassword');
+      const canVerify = await user.password.verify('testpassword');
       expect(canVerify).toBe(true);
       expect(user.status.toValue()).toBe(UserStatusEnum.INACTIVE);
       expect(user.role.toValue()).toBe(UserRoleEnum.ADMIN);

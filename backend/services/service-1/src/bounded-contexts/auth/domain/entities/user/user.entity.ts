@@ -59,7 +59,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       id,
       email: props?.email || new Email('user@example.com'),
       username: props?.username || new Username('user' + Math.floor(Math.random() * 10000)),
-      password: props?.password || Password.createFromPlainText('password'),
+      password: props?.password || Password.createFromPlainTextSync('password'),
       status: props?.status ?? new UserStatus(UserStatusEnum.ACTIVE),
       role: props?.role ?? UserRole.random(),
       lastLoginAt: props?.lastLoginAt,

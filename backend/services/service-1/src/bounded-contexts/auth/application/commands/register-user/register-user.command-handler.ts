@@ -29,7 +29,7 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<
     const user = User.create({
       email: new Email(command.email),
       username: new Username(command.username),
-      password: Password.createFromPlainText(command.password),
+      password: await Password.createFromPlainText(command.password),
       role: new UserRole(command.role as UserRoleEnum),
     });
 

@@ -5,7 +5,9 @@ import {
   VerifyEmailCommandResponse,
 } from '../../../../application/commands/verify-email/verify-email.command';
 import { VerifyEmailRequestDto, VerifyEmailResponseDto } from './verify-email.params';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class VerifyEmailController {
   constructor(private readonly commandBus: CommandBus) {}

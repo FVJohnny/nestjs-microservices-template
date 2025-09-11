@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { JwtModule } from '@nestjs/jwt';
 import { RuntimeAutoDiscovery } from '@libs/nestjs-common';
 
 // Infrastructure - Repositories
@@ -12,7 +13,13 @@ import { EMAIL_VERIFICATION_REPOSITORY } from './domain/repositories/email-verif
 const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__dirname);
 
 @Module({
-  imports: [CqrsModule],
+  imports: [
+    CqrsModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'your-secret-key',
+      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '1d' },
+    }),
+  ],
   controllers: [...controllers],
   providers: [
     ...handlers,

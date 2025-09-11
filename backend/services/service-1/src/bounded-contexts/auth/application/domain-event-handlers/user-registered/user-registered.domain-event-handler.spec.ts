@@ -1,29 +1,36 @@
 import { UserRegisteredDomainEventHandler } from './user-registered.domain-event-handler';
-import { UserRegisteredDomainEvent, UserRegisteredDomainEventParams } from '../../../domain/events/user-registered.domain-event';
+import {
+  UserRegisteredDomainEvent,
+  UserRegisteredDomainEventParams,
+} from '../../../domain/events/user-registered.domain-event';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { UserRole } from '../../../domain/value-objects/user-role.vo';
 import { Topics, createOutboxServiceMock, createCommandBusMock } from '@libs/nestjs-common';
 import { CreateEmailVerificationCommand } from '../../commands/create-email-verification/create-email-verification.command';
 
-describe('UserRegisteredDomainEventHandler (Unit)', () => {
+describe('UserRegisteredDomainEventHandler', () => {
   // Test data factory
-  const createEvent = (overrides: Partial<UserRegisteredDomainEventParams> = {}) => new UserRegisteredDomainEvent({
-    userId: 'test-user-123',
-    email: new Email('test@example.com'),
-    username: new Username('testuser'),
-    role: UserRole.user(),
-    ...overrides,
-  });
+  const createEvent = (overrides: Partial<UserRegisteredDomainEventParams> = {}) =>
+    new UserRegisteredDomainEvent({
+      userId: 'test-user-123',
+      email: new Email('test@example.com'),
+      username: new Username('testuser'),
+      role: UserRole.user(),
+      ...overrides,
+    });
 
   // Setup factory
-  const setup = (params: { shouldFailOutbox?: boolean, shouldFailCommandBus?: boolean } = {}) => {
+  const setup = (params: { shouldFailOutbox?: boolean; shouldFailCommandBus?: boolean } = {}) => {
     const { shouldFailOutbox = false, shouldFailCommandBus = false } = params;
 
     const mockOutboxService = createOutboxServiceMock({ shouldFail: shouldFailOutbox });
     const mockCommandBus = createCommandBusMock({ shouldFail: shouldFailCommandBus });
-    const eventHandler = new UserRegisteredDomainEventHandler(mockOutboxService as any, mockCommandBus as any);
-    
+    const eventHandler = new UserRegisteredDomainEventHandler(
+      mockOutboxService as any,
+      mockCommandBus as any,
+    );
+
     return { mockOutboxService, mockCommandBus, eventHandler };
   };
 
@@ -32,7 +39,6 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       // Arrange
       const { eventHandler, mockOutboxService, mockCommandBus } = setup();
       const event = createEvent({
-
         userId: 'test-user-id',
       });
 
@@ -41,7 +47,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
       // Assert
       expect(mockOutboxService.storedEvents).toHaveLength(1);
-      
+
       const storedEvent = mockOutboxService.storedEvents[0];
       expect(storedEvent.eventType).toBe(Topics.USERS.events.USER_CREATED);
       expect(storedEvent.topic).toBe('users');
@@ -76,7 +82,6 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       // Assert
       const storedEvent = mockOutboxService.storedEvents[0];
       const publishedData = JSON.parse(storedEvent.payload);
-
 
       expect(publishedData.data.userId).toBe('special-chars-user');
       expect(publishedData.data.email).toBe('test.user+tag@example-domain.com');
@@ -172,7 +177,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       // Assert
       expect(mockCommandBus.commands).toHaveLength(1);
       const command = mockCommandBus.commands[0] as CreateEmailVerificationCommand;
-      
+
       expect(command).toBeInstanceOf(CreateEmailVerificationCommand);
       expect(command.userId).toBe('command-test-user');
       expect(command.email).toBe('command.test@example.com');
@@ -194,7 +199,7 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
       // Assert
       expect(mockCommandBus.commands).toHaveLength(1);
       const command = mockCommandBus.commands[0] as CreateEmailVerificationCommand;
-      
+
       expect(command.userId).toBe('admin-user-123');
       expect(command.email).toBe('admin@company.com');
     });

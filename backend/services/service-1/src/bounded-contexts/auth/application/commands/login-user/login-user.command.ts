@@ -10,4 +10,5 @@ export interface LoginUserCommandResponse {
   email: string;
   username: string;
   role: string;
+  accessToken: string;
 }

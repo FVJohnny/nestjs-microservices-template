@@ -3,6 +3,12 @@ import { HttpStatus } from '@nestjs/common';
 import type { Metadata } from '../utils/metadata';
 import { BaseException } from './base.exception';
 
+export class UnauthorizedException extends BaseException {
+  constructor(metadata?: Metadata) {
+    super('Unauthorized', 'UNAUTHORIZED', HttpStatus.UNAUTHORIZED, { ...metadata });
+  }
+}
+
 export class NotFoundException extends BaseException {
   constructor(entityName?: string, metadata?: Metadata) {
     super(`Entity ${entityName} not found`, 'ENTITY_NOT_FOUND', HttpStatus.NOT_FOUND, {

@@ -4,9 +4,14 @@ import { EmailVerificationInMemoryRepository } from '../../../infrastructure/rep
 import { EmailVerification } from '../../../domain/entities/email-verification/email-verification.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { EventBus } from '@nestjs/cqrs';
-import { createEventBusMock, NotFoundException, MockEventBus, InfrastructureException } from '@libs/nestjs-common';
+import {
+  createEventBusMock,
+  NotFoundException,
+  MockEventBus,
+  InfrastructureException,
+} from '@libs/nestjs-common';
 
-describe('VerifyEmailCommandHandler (Unit)', () => {
+describe('VerifyEmailCommandHandler', () => {
   // Test data factory
   const createCommand = (overrides: Partial<VerifyEmailCommand> = {}) => {
     // Default token will be set in tests that need it
@@ -17,13 +22,16 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
   };
 
   // Setup factory
-  const setup = (params: { shouldFailRepository?: boolean, shouldFailEventBus?: boolean } = {}) => {
+  const setup = (params: { shouldFailRepository?: boolean; shouldFailEventBus?: boolean } = {}) => {
     const { shouldFailRepository = false, shouldFailEventBus = false } = params;
 
     const repository = new EmailVerificationInMemoryRepository(shouldFailRepository);
     const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
-    const commandHandler = new VerifyEmailCommandHandler(repository, eventBus as unknown as EventBus);
-    
+    const commandHandler = new VerifyEmailCommandHandler(
+      repository,
+      eventBus as unknown as EventBus,
+    );
+
     return { repository, eventBus, commandHandler };
   };
 
@@ -36,7 +44,7 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
         email: new Email('test@example.com'),
       });
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
@@ -64,7 +72,7 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
         email: new Email('complex.email+tag@sub.domain.com'),
       });
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
@@ -97,7 +105,7 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
       });
       await repository.save(emailVerification1);
       await repository.save(emailVerification2);
-      
+
       const command1 = createCommand({
         token: emailVerification1.token,
       });
@@ -130,7 +138,7 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
         email: new Email('test+special_chars.123@example-domain.co.uk'),
       });
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
@@ -160,7 +168,7 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
         email: new Email('test@example.com'),
       });
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
@@ -182,7 +190,7 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
         email: new Email('event.test@example.com'),
       });
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
@@ -220,11 +228,11 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
         userId: 'user-123',
         email: new Email('test@example.com'),
       });
-      
+
       // Manually expire the verification
       (emailVerification as any).expiresAt = new Date(Date.now() - 1000);
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
@@ -242,7 +250,7 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
       });
       emailVerification.verify();
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
@@ -268,7 +276,7 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
         email: new Email('test@example.com'),
       });
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
@@ -285,14 +293,14 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
         email: new Email('test@example.com'),
       });
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
 
       // Act - First verification
       const result1 = await commandHandler.execute(command);
-      
+
       // Assert - First verification succeeds
       expect(result1.success).toBe(true);
 
@@ -310,7 +318,7 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
         email: new Email('test@example.com'),
       });
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
@@ -329,7 +337,7 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
         email: new Email('test@example.com'),
       });
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
@@ -370,7 +378,7 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
         email: new Email('test@example.com'),
       });
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
@@ -391,21 +399,21 @@ describe('VerifyEmailCommandHandler (Unit)', () => {
         email: new Email('sequential@example.com'),
       });
       await repository.save(emailVerification);
-      
+
       const command = createCommand({
         token: emailVerification.token,
       });
 
       // Act - First verification should succeed
       const firstResult = await commandHandler.execute(command);
-      
+
       // Assert - First succeeds
       expect(firstResult.success).toBe(true);
       expect(firstResult.userId).toBe('user-sequential');
 
       // Act & Assert - Second verification should fail
       await expect(commandHandler.execute(command)).rejects.toThrow(NotFoundException);
-      
+
       // Act & Assert - Third verification should also fail
       await expect(commandHandler.execute(command)).rejects.toThrow(NotFoundException);
     });

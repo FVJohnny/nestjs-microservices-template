@@ -4,22 +4,26 @@ import { EmailVerificationInMemoryRepository } from '../../../infrastructure/rep
 import { EventBus } from '@nestjs/cqrs';
 import { createEventBusMock, InfrastructureException, MockEventBus } from '@libs/nestjs-common';
 
-describe('CreateEmailVerificationCommandHandler (Unit)', () => {
+describe('CreateEmailVerificationCommandHandler', () => {
   // Test data factory
-  const createCommand = (overrides: Partial<CreateEmailVerificationCommand> = {}) => new CreateEmailVerificationCommand({
-    userId: 'test-user-123',
-    email: 'test@example.com',
-    ...overrides,
-  });
+  const createCommand = (overrides: Partial<CreateEmailVerificationCommand> = {}) =>
+    new CreateEmailVerificationCommand({
+      userId: 'test-user-123',
+      email: 'test@example.com',
+      ...overrides,
+    });
 
   // Setup factory
-  const setup = (params: { shouldFailRepository?: boolean, shouldFailEventBus?: boolean } = {}) => {
+  const setup = (params: { shouldFailRepository?: boolean; shouldFailEventBus?: boolean } = {}) => {
     const { shouldFailRepository = false, shouldFailEventBus = false } = params;
 
     const repository = new EmailVerificationInMemoryRepository(shouldFailRepository);
     const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
-    const commandHandler = new CreateEmailVerificationCommandHandler(repository, eventBus as unknown as EventBus);
-    
+    const commandHandler = new CreateEmailVerificationCommandHandler(
+      repository,
+      eventBus as unknown as EventBus,
+    );
+
     return { repository, eventBus, commandHandler };
   };
 
@@ -138,10 +142,10 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
       // Assert
       const verification = await repository.findByUserId('user-123');
       expect(verification).not.toBeNull();
-      
+
       const expectedExpiration = new Date(beforeCreation.getTime() + 24 * 60 * 60 * 1000);
       const actualExpiration = verification!.expiresAt;
-      
+
       // Allow for small time differences in test execution
       const timeDiff = Math.abs(actualExpiration.getTime() - expectedExpiration.getTime());
       expect(timeDiff).toBeLessThan(5000); // 5 seconds tolerance
@@ -257,7 +261,7 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
       // Verify only the second verification exists (first one removed)
       const verification1 = await repository.findByUserId('user-1');
       const verification2 = await repository.findByUserId('user-2');
-      
+
       expect(verification1).toBeNull();
       expect(verification2).not.toBeNull();
       expect(verification2!.id).toBe(result2.id);
@@ -278,20 +282,20 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
 
       // Act - Create first verification
       const firstResult = await commandHandler.execute(firstCommand);
-      
+
       // Create second verification (should automatically replace the first)
       const secondResult = await commandHandler.execute(secondCommand);
 
       // Assert
       expect(secondResult).toBeDefined();
       expect(secondResult.id).not.toBe(firstResult.id);
-      
+
       // Verify only the second verification exists
       const verification = await repository.findByUserId('test-user');
       expect(verification).not.toBeNull();
       expect(verification!.id).toBe(secondResult.id);
       expect(verification!.email.toValue()).toBe('second@example.com');
-      
+
       // Verify the first verification was removed
       const firstVerificationExists = await repository.exists(firstResult.id);
       expect(firstVerificationExists).toBe(false);

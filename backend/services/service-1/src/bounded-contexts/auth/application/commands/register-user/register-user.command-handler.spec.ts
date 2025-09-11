@@ -3,27 +3,36 @@ import { RegisterUserCommand } from './register-user.command';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
 import { UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
-import { AlreadyExistsException, createEventBusMock, InfrastructureException, MockEventBus } from '@libs/nestjs-common';
+import {
+  AlreadyExistsException,
+  createEventBusMock,
+  InfrastructureException,
+  MockEventBus,
+} from '@libs/nestjs-common';
 import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 
-describe('RegisterUserCommandHandler (Unit)', () => {
+describe('RegisterUserCommandHandler', () => {
   // Test data factory
-  const createCommand = (overrides: Partial<RegisterUserCommand> = {}) => new RegisterUserCommand({
-    email: 'test@example.com',
-    username: 'testuser',
-    password: 'TestPassword123!',
-    role: UserRoleEnum.USER,
-    ...overrides,
-  });
+  const createCommand = (overrides: Partial<RegisterUserCommand> = {}) =>
+    new RegisterUserCommand({
+      email: 'test@example.com',
+      username: 'testuser',
+      password: 'TestPassword123!',
+      role: UserRoleEnum.USER,
+      ...overrides,
+    });
 
   // Setup factory
-  const setup = (params: { shouldFailRepository?: boolean, shouldFailEventBus?: boolean } = {}) => {
+  const setup = (params: { shouldFailRepository?: boolean; shouldFailEventBus?: boolean } = {}) => {
     const { shouldFailRepository = false, shouldFailEventBus = false } = params;
 
     const repository = new UserInMemoryRepository(shouldFailRepository);
     const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
-    const commandHandler = new RegisterUserCommandHandler(repository, eventBus as unknown as EventBus);
-    
+    const commandHandler = new RegisterUserCommandHandler(
+      repository,
+      eventBus as unknown as EventBus,
+    );
+
     return { repository, eventBus, commandHandler };
   };
   describe('Happy Path', () => {
@@ -80,7 +89,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       const result = await commandHandler.execute(command);
       expect(eventBus.events).toBeDefined();
       expect(eventBus.events).toHaveLength(1);
-  
+
       const publishedEvent = eventBus.events[0] as UserRegisteredDomainEvent;
       expect(publishedEvent).toBeInstanceOf(UserRegisteredDomainEvent);
       expect(publishedEvent.aggregateId).toBe(result.id);
@@ -110,7 +119,7 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       // Act
       const result = await commandHandler.execute(command);
       const afterCreation = new Date();
-  
+
       // Assert
       const savedUser = await repository.findById(result.id);
       expect(savedUser!.createdAt).toBeInstanceOf(Date);
@@ -161,7 +170,10 @@ describe('RegisterUserCommandHandler (Unit)', () => {
       await commandHandler.execute(existingCommand);
 
       // Arrange 2
-      const duplicateEmailCommand = createCommand({ email: 'existing@example.com', username: 'user2' });
+      const duplicateEmailCommand = createCommand({
+        email: 'existing@example.com',
+        username: 'user2',
+      });
 
       // Act 2 & Assert
       await expect(commandHandler.execute(duplicateEmailCommand)).rejects.toThrow(
@@ -171,9 +183,15 @@ describe('RegisterUserCommandHandler (Unit)', () => {
     it('should throw AlreadyExistsException when username already exists', async () => {
       // Arrange
       const { commandHandler } = setup();
-      const existingCommand = createCommand({ email: 'user1@example.com', username: 'existinguser' });
+      const existingCommand = createCommand({
+        email: 'user1@example.com',
+        username: 'existinguser',
+      });
       await commandHandler.execute(existingCommand);
-      const duplicateUsernameCommand = createCommand({ email: 'user2@example.com', username: 'existinguser' });
+      const duplicateUsernameCommand = createCommand({
+        email: 'user2@example.com',
+        username: 'existinguser',
+      });
       // Act & Assert
       await expect(commandHandler.execute(duplicateUsernameCommand)).rejects.toThrow(
         AlreadyExistsException,
