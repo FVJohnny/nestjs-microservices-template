@@ -7,6 +7,9 @@ export * from './swagger';
 // Error handling exports
 export * from './errors';
 
+// Auth exports
+export * from './auth';
+
 // Metrics exports
 export * from './metrics';
 

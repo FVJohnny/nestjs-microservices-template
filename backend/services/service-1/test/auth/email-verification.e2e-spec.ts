@@ -5,7 +5,8 @@ import { ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ErrorHandlingModule } from '@libs/nestjs-common';
+import { JwtService } from '@nestjs/jwt';
+import { ErrorHandlingModule, JwtAuthModule } from '@libs/nestjs-common';
 
 // Controllers
 import { RegisterUserController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/users/register-user/register-user.controller';
@@ -34,17 +35,28 @@ import { UserInMemoryRepository } from '../../src/bounded-contexts/auth/infrastr
 import type { MockOutboxService } from '@libs/nestjs-common';
 import { createOutboxServiceMock, OutboxService } from '@libs/nestjs-common';
 
+// Add User-related imports
+import { User } from '../../src/bounded-contexts/auth/domain/entities/user/user.entity';
+import { Email } from '../../src/bounded-contexts/auth/domain/value-objects/email.vo';
+import { Username } from '../../src/bounded-contexts/auth/domain/value-objects/username.vo';
+import { Password } from '../../src/bounded-contexts/auth/domain/value-objects/password.vo';
+import { UserRole } from '../../src/bounded-contexts/auth/domain/value-objects/user-role.vo';
+import { UserStatus } from '../../src/bounded-contexts/auth/domain/value-objects/user-status.vo';
+import { AuthTestHelper } from '../utils/auth-test.helper';
+
 describe('Email Verification (E2E)', () => {
   let app: INestApplication;
   let server: Server;
   let emailVerificationRepository: EmailVerificationInMemoryRepository;
   let userRepository: UserInMemoryRepository;
+  let authHelper: AuthTestHelper;
+  let adminUser: User;
 
   beforeAll(async () => {
     const mockOutboxService: MockOutboxService = createOutboxServiceMock({ shouldFail: false });
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [CqrsModule, ErrorHandlingModule],
+      imports: [CqrsModule, ErrorHandlingModule, JwtAuthModule],
       controllers: [RegisterUserController, GetUserController, VerifyEmailController],
       providers: [
         // Command Handlers
@@ -86,6 +98,20 @@ describe('Email Verification (E2E)', () => {
       EMAIL_VERIFICATION_REPOSITORY,
     );
     userRepository = moduleFixture.get<UserInMemoryRepository>(USER_REPOSITORY);
+
+    // Initialize auth helper and create admin user
+    const jwtService = moduleFixture.get<JwtService>(JwtService);
+    authHelper = new AuthTestHelper(jwtService);
+
+    // Create an admin user for authentication in tests
+    adminUser = User.random({
+      email: new Email('admin@test.com'),
+      username: new Username('testadmin'),
+      password: Password.createFromPlainTextSync('AdminPassword123!'),
+      role: UserRole.admin(),
+      status: UserStatus.active(),
+    });
+    await userRepository.save(adminUser);
   });
 
   afterAll(async () => {
@@ -110,8 +136,12 @@ describe('Email Verification (E2E)', () => {
     const userId = registerRes.body.id;
     expect(userId).toBeDefined();
 
-    // Check user status via API
-    const userRes = await request(server).get(`/users/${userId}`).expect(200);
+    // Check user status via API (using admin auth)
+    const authToken = authHelper.createAuthToken(adminUser);
+    const userRes = await request(server)
+      .get(`/users/${userId}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .expect(200);
     expect(userRes.body.status).toBe('email-verification-pending');
     expect(userRes.body.email).toBe(body.email);
   });
@@ -141,7 +171,11 @@ describe('Email Verification (E2E)', () => {
     expect(res.body.userId).toBe(userId);
 
     // Verify the user is now active via API
-    const updatedUserRes = await request(server).get(`/users/${userId}`).expect(200);
+    const authToken = authHelper.createAuthToken(adminUser);
+    const updatedUserRes = await request(server)
+      .get(`/users/${userId}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .expect(200);
     expect(updatedUserRes.body.status).toBe('active');
   });
 

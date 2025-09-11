@@ -19,6 +19,7 @@
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/cqrs": "^11.0.3",
+    "@nestjs/jwt": "^11.0.0",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/testing": "^11.0.1",
     "@types/express": "^5.0.3",

@@ -5,8 +5,8 @@ import { ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import { ErrorHandlingModule } from '@libs/nestjs-common';
+import { JwtService } from '@nestjs/jwt';
+import { ErrorHandlingModule, JwtAuthModule } from '@libs/nestjs-common';
 
 // Controllers
 import { RegisterUserController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/users/register-user/register-user.controller';
@@ -30,7 +30,7 @@ import { USER_REPOSITORY } from '../../src/bounded-contexts/auth/domain/reposito
 import { UserInMemoryRepository } from '../../src/bounded-contexts/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 
 // Mocks
-import type { MockOutboxService } from '@libs/nestjs-common';
+import type { JwtPayload, MockOutboxService } from '@libs/nestjs-common';
 import { createOutboxServiceMock, OutboxService } from '@libs/nestjs-common';
 
 describe('Complete User Authentication Flow (E2E)', () => {
@@ -40,20 +40,10 @@ describe('Complete User Authentication Flow (E2E)', () => {
   let userRepository: UserInMemoryRepository;
   let jwtService: JwtService;
 
-  const JWT_SECRET = 'test-secret-key';
-  const JWT_EXPIRES_IN = '1d';
-
   beforeAll(async () => {
     const mockOutboxService: MockOutboxService = createOutboxServiceMock({ shouldFail: false });
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        CqrsModule,
-        ErrorHandlingModule,
-        JwtModule.register({
-          secret: JWT_SECRET,
-          signOptions: { expiresIn: JWT_EXPIRES_IN },
-        }),
-      ],
+      imports: [CqrsModule, ErrorHandlingModule, JwtAuthModule],
       controllers: [RegisterUserController, VerifyEmailController, LoginUserController],
       providers: [
         // Command Handlers
@@ -156,13 +146,13 @@ describe('Complete User Authentication Flow (E2E)', () => {
       const token = loginRes.body.accessToken;
 
       // Verify token can be decoded
-      const decodedToken = jwtService.verify(token) as any;
-      expect(decodedToken).toHaveProperty('userId', userId);
-      expect(decodedToken).toHaveProperty('email', userData.email);
-      expect(decodedToken).toHaveProperty('username', userData.username);
-      expect(decodedToken).toHaveProperty('role', userData.role);
-      expect(decodedToken).toHaveProperty('iat');
-      expect(decodedToken).toHaveProperty('exp');
+      const decodedToken = jwtService.verify<JwtPayload>(token);
+      expect(decodedToken.userId).toBe(userId);
+      expect(decodedToken.email).toBe(userData.email);
+      expect(decodedToken.username).toBe(userData.username);
+      expect(decodedToken.role).toBe(userData.role);
+      expect(decodedToken.iat).toBeDefined();
+      expect(decodedToken.exp).toBeDefined();
 
       // Verify token expiration is in the future
       const currentTimestamp = Math.floor(Date.now() / 1000);
@@ -255,7 +245,7 @@ describe('Complete User Authentication Flow (E2E)', () => {
       const token = loginRes.body.accessToken;
 
       // Verify token structure and claims
-      const decoded = jwtService.verify(token) as any;
+      const decoded = jwtService.verify<JwtPayload>(token);
 
       // Standard JWT claims
       expect(decoded).toHaveProperty('iat');

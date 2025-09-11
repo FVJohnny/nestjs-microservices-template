@@ -5,21 +5,24 @@ import { ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ErrorHandlingModule } from '@libs/nestjs-common';
+import { JwtService } from '@nestjs/jwt';
+import { ErrorHandlingModule, JwtAuthModule } from '@libs/nestjs-common';
 import { GetUserController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/users/get-user-by-id/get-user-by-id.controller';
 import { GetUserByIdQueryHandler } from '../../src/bounded-contexts/auth/application/queries/get-user-by-id/get-user-by-id.query-handler';
 import type { UserRepository } from '../../src/bounded-contexts/auth/domain/repositories/user/user.repository';
 import { USER_REPOSITORY } from '../../src/bounded-contexts/auth/domain/repositories/user/user.repository';
 import { UserInMemoryRepository } from '../../src/bounded-contexts/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '../../src/bounded-contexts/auth/domain/entities/user/user.entity';
+import { AuthTestHelper } from '../utils/auth-test.helper';
 
 describe('GET /users/:id (E2E)', () => {
   let app: INestApplication;
   let repository: UserRepository;
+  let authHelper: AuthTestHelper;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [CqrsModule, ErrorHandlingModule],
+      imports: [CqrsModule, ErrorHandlingModule, JwtAuthModule],
       controllers: [GetUserController],
       providers: [
         GetUserByIdQueryHandler,
@@ -31,6 +34,10 @@ describe('GET /users/:id (E2E)', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
     repository = app.get<UserRepository>(USER_REPOSITORY);
+
+    // Initialize auth helper
+    const jwtService = app.get<JwtService>(JwtService);
+    authHelper = new AuthTestHelper(jwtService);
   });
 
   afterAll(async () => {
@@ -41,15 +48,27 @@ describe('GET /users/:id (E2E)', () => {
     const user = User.random();
     await repository.save(user);
 
+    const token = authHelper.createAuthToken(user);
     const server: Server = app.getHttpServer();
-    const res = await request(server).get(`/users/${user.id}`).expect(200);
+    const res = await request(server)
+      .get(`/users/${user.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
     expect(res.body.id).toBe(user.id);
     expect(res.body.username).toBe(user.username.toValue());
     expect(res.body.email).toBe(user.email.toValue());
   });
 
   it('returns 404 when not found', async () => {
+    // Create any user to get a valid token for auth
+    const user = User.random();
+    await repository.save(user);
+    const token = authHelper.createAuthToken(user);
+
     const server: Server = app.getHttpServer();
-    await request(server).get(`/users/non-existent-id`).expect(404);
+    await request(server)
+      .get(`/users/non-existent-id`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404);
   });
 });
