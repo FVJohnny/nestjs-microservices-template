@@ -13,7 +13,8 @@
     "prod-down": "docker compose -f infra/docker/docker-compose.prod.yml down",
     "prod-logs": "docker compose -f infra/docker/docker-compose.prod.yml logs -f service-1",
     "nx": "nx",
-    "prepare": "command -v husky >/dev/null 2>&1 && husky || true"
+    "prepare": "command -v husky >/dev/null 2>&1 && husky || true",
+    "zip": "zip -r project.zip . -x \"*/node_modules/*\" \"*/dist/*\" \"node_modules/*\" \"dist/*\" \".nx/*\" \".git/*\""
   },
   "workspaces": [
     "backend/libs/*",
