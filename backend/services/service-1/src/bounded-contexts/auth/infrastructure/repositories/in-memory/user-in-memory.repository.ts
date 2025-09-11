@@ -5,21 +5,33 @@ import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { Criteria, InMemoryCriteriaConverter, PaginatedRepoResult } from '@libs/nestjs-common';
 import { UserDTO } from '../../../domain/entities/user/user.types';
+import { InfrastructureException } from '@libs/nestjs-common';
 
 @Injectable()
 export class UserInMemoryRepository implements UserRepository {
   private users: Map<string, UserDTO> = new Map();
 
+  constructor(private shouldFail: boolean = false) {}
+
   async save(user: User): Promise<void> {
+    if (this.shouldFail) {
+      throw new InfrastructureException('save', 'Repository operation failed', new Error());
+    }
     this.users.set(user.id, user.toValue());
   }
 
   async findById(id: string): Promise<User | null> {
+    if (this.shouldFail) {
+      throw new InfrastructureException('findById', 'Repository operation failed', new Error());
+    }
     const userDTO = this.users.get(id);
     return userDTO ? User.fromValue(userDTO) : null;
   }
 
   async findByEmail(email: Email): Promise<User | null> {
+    if (this.shouldFail) {
+      throw new InfrastructureException('findByEmail', 'Repository operation failed', new Error());
+    }
     for (const userDTO of this.users.values()) {
       if (userDTO.email === email.toValue()) {
         return User.fromValue(userDTO);
@@ -29,6 +41,13 @@ export class UserInMemoryRepository implements UserRepository {
   }
 
   async findByUsername(username: Username): Promise<User | null> {
+    if (this.shouldFail) {
+      throw new InfrastructureException(
+        'findByUsername',
+        'Repository operation failed',
+        new Error(),
+      );
+    }
     for (const userDTO of this.users.values()) {
       if (userDTO.username === username.toValue()) {
         return User.fromValue(userDTO);
@@ -38,20 +57,44 @@ export class UserInMemoryRepository implements UserRepository {
   }
 
   async existsByEmail(email: Email): Promise<boolean> {
+    if (this.shouldFail) {
+      throw new InfrastructureException(
+        'existsByEmail',
+        'Repository operation failed',
+        new Error(),
+      );
+    }
     const userDTO = await this.findByEmail(email);
     return userDTO !== null;
   }
 
   async existsByUsername(username: Username): Promise<boolean> {
+    if (this.shouldFail) {
+      throw new InfrastructureException(
+        'existsByUsername',
+        'Repository operation failed',
+        new Error(),
+      );
+    }
     const userDTO = await this.findByUsername(username);
     return userDTO !== null;
   }
 
   async findAll(): Promise<User[]> {
+    if (this.shouldFail) {
+      throw new InfrastructureException('findAll', 'Repository operation failed', new Error());
+    }
     return Array.from(this.users.values()).map((u) => User.fromValue(u));
   }
 
   async findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
+    if (this.shouldFail) {
+      throw new InfrastructureException(
+        'findByCriteria',
+        'Repository operation failed',
+        new Error(),
+      );
+    }
     const userDTOs = Array.from(this.users.values());
     const converter = new InMemoryCriteriaConverter(userDTOs);
     const queryResult = await converter.executeQuery(criteria);
@@ -65,16 +108,29 @@ export class UserInMemoryRepository implements UserRepository {
   }
 
   async countByCriteria(criteria: Criteria): Promise<number> {
+    if (this.shouldFail) {
+      throw new InfrastructureException(
+        'countByCriteria',
+        'Repository operation failed',
+        new Error(),
+      );
+    }
     const converter = new InMemoryCriteriaConverter(Array.from(this.users.values()));
     const count = await converter.count(criteria);
     return count;
   }
 
   async remove(id: string): Promise<void> {
+    if (this.shouldFail) {
+      throw new InfrastructureException('remove', 'Repository operation failed', new Error());
+    }
     this.users.delete(id);
   }
 
   async exists(id: string): Promise<boolean> {
+    if (this.shouldFail) {
+      throw new InfrastructureException('exists', 'Repository operation failed', new Error());
+    }
     return this.users.has(id);
   }
 }

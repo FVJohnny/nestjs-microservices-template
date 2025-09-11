@@ -27,7 +27,7 @@ describe('GET /users (E2E)', () => {
       controllers: [GetUsersController],
       providers: [
         GetUsersQueryHandler,
-        { provide: USER_REPOSITORY, useClass: UserInMemoryRepository },
+        { provide: USER_REPOSITORY, useFactory: () => new UserInMemoryRepository(false) },
       ],
     }).compile();
 

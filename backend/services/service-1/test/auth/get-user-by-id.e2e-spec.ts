@@ -23,7 +23,7 @@ describe('GET /users/:id (E2E)', () => {
       controllers: [GetUserController],
       providers: [
         GetUserByIdQueryHandler,
-        { provide: USER_REPOSITORY, useClass: UserInMemoryRepository },
+        { provide: USER_REPOSITORY, useFactory: () => new UserInMemoryRepository(false) },
       ],
     }).compile();
 

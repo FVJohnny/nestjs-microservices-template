@@ -35,12 +35,12 @@ describe('UserMongodbRepository (Integration)', () => {
 
   const cleanupDatabase = async (): Promise<void> => {
     try {
-      await mongoClient?.db(TEST_DB_NAME).dropDatabase();
+      await mongoClient.db(TEST_DB_NAME).dropDatabase();
       console.log('Cleaned up test database');
     } catch (error) {
       console.error('Error cleaning up test database:', error);
     }
-    await mongoClient?.close();
+    await mongoClient.close();
   };
 
   const clearTestData = async (): Promise<void> => {
@@ -52,12 +52,7 @@ describe('UserMongodbRepository (Integration)', () => {
   testUserRepositoryContract(
     'MongoDB Implementation',
     async () => {
-      // Create repository instance that uses the test database
-      const testMongoClient = {
-        ...mongoClient,
-        db: (_dbName?: string) => mongoClient.db(TEST_DB_NAME),
-      };
-      return new UserMongodbRepository(testMongoClient as unknown as MongoClient);
+      return new UserMongodbRepository(mongoClient);
     },
     {
       beforeAll: setupDatabase,

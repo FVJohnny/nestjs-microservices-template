@@ -24,7 +24,7 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    this.logger.log('Starting outbox processorrrr...');
+    this.logger.log('Starting outbox processor...');
     await this.processOutboxEvents();
 
     this.processingInterval = setInterval(

@@ -4,26 +4,35 @@ import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-
 import { User } from '../../../domain/entities/user/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
-import { NotFoundException } from '@libs/nestjs-common';
+import { NotFoundException, InfrastructureException } from '@libs/nestjs-common';
 
 describe('GetUserByIdQueryHandler', () => {
-  let handler: GetUserByIdQueryHandler;
-  let repository: UserInMemoryRepository;
-
-  beforeEach(() => {
-    repository = new UserInMemoryRepository();
-    handler = new GetUserByIdQueryHandler(repository);
+  // Test data factory
+  const createQuery = (overrides: Partial<GetUserByIdQuery> = {}) => new GetUserByIdQuery({
+    userId: 'test-user-123',
+    ...overrides,
   });
+
+  // Setup factory
+  const setup = (params: { shouldFailRepository?: boolean } = {}) => {
+    const { shouldFailRepository = false } = params;
+
+    const repository = new UserInMemoryRepository(shouldFailRepository);
+    const handler = new GetUserByIdQueryHandler(repository);
+    
+    return { repository, handler };
+  };
 
   it('should return the user DTO when user exists', async () => {
     // Arrange
+    const { handler, repository } = setup();
     const user = User.random({
       email: new Email('john.doe@example.com'),
       username: new Username('johndoe'),
     });
     await repository.save(user);
 
-    const query = new GetUserByIdQuery({ userId: user.id });
+    const query = createQuery({ userId: user.id });
 
     // Act
     const result = await handler.execute(query);
@@ -35,9 +44,19 @@ describe('GetUserByIdQueryHandler', () => {
 
   it('should throw NotFoundException when user does not exist', async () => {
     // Arrange
-    const query = new GetUserByIdQuery({ userId: 'non-existent-id' });
+    const { handler } = setup();
+    const query = createQuery({ userId: 'non-existent-id' });
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(NotFoundException);
+  });
+
+  it('should handle repository failures gracefully', async () => {
+    // Arrange
+    const { handler } = setup({ shouldFailRepository: true });
+    const query = createQuery();
+
+    // Act & Assert
+    await expect(handler.execute(query)).rejects.toThrow(InfrastructureException);
   });
 });

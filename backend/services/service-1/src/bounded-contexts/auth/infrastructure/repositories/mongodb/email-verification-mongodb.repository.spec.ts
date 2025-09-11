@@ -53,11 +53,7 @@ describe('EmailVerificationMongodbRepository (Integration)', () => {
     'MongoDB Implementation',
     async () => {
       // Create repository instance that uses the test database
-      const testMongoClient = {
-        ...mongoClient,
-        db: (_dbName?: string) => mongoClient.db(TEST_DB_NAME),
-      };
-      return new EmailVerificationMongodbRepository(testMongoClient as unknown as MongoClient);
+      return new EmailVerificationMongodbRepository(mongoClient);
     },
     {
       beforeAll: setupDatabase,

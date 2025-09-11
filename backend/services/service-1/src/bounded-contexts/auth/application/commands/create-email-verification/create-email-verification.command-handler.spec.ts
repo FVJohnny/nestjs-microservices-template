@@ -1,28 +1,33 @@
 import { CreateEmailVerificationCommandHandler } from './create-email-verification.command-handler';
 import { CreateEmailVerificationCommand } from './create-email-verification.command';
 import { EmailVerificationInMemoryRepository } from '../../../infrastructure/repositories/in-memory/email-verification-in-memory.repository';
-import type { EventBus } from '@nestjs/cqrs';
-import type { MockEventBus } from '@libs/nestjs-common';
-import { createEventBusMock } from '@libs/nestjs-common';
+import { EventBus } from '@nestjs/cqrs';
+import { createEventBusMock, InfrastructureException, MockEventBus } from '@libs/nestjs-common';
 
 describe('CreateEmailVerificationCommandHandler (Unit)', () => {
-  let commandHandler: CreateEmailVerificationCommandHandler;
-  let repository: EmailVerificationInMemoryRepository;
-  let eventBus: MockEventBus;
-
-  beforeEach(() => {
-    repository = new EmailVerificationInMemoryRepository();
-    eventBus = createEventBusMock({ shouldFail: false });
-    commandHandler = new CreateEmailVerificationCommandHandler(repository, eventBus as unknown as EventBus);
+  // Test data factory
+  const createCommand = (overrides: Partial<CreateEmailVerificationCommand> = {}) => new CreateEmailVerificationCommand({
+    userId: 'test-user-123',
+    email: 'test@example.com',
+    ...overrides,
   });
+
+  // Setup factory
+  const setup = (params: { shouldFailRepository?: boolean, shouldFailEventBus?: boolean } = {}) => {
+    const { shouldFailRepository = false, shouldFailEventBus = false } = params;
+
+    const repository = new EmailVerificationInMemoryRepository(shouldFailRepository);
+    const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
+    const commandHandler = new CreateEmailVerificationCommandHandler(repository, eventBus as unknown as EventBus);
+    
+    return { repository, eventBus, commandHandler };
+  };
 
   describe('Happy Path', () => {
     it('should successfully create email verification with valid data', async () => {
       // Arrange
-      const command = new CreateEmailVerificationCommand({
-        userId: 'user-123',
-        email: 'test@example.com',
-      });
+      const { commandHandler, repository } = setup();
+      const command = createCommand();
 
       // Act
       const result = await commandHandler.execute(command);
@@ -35,9 +40,9 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
       expect(typeof result.token).toBe('string');
 
       // Verify email verification was saved
-      const savedVerification = await repository.findByUserId('user-123');
+      const savedVerification = await repository.findByUserId('test-user-123');
       expect(savedVerification).not.toBeNull();
-      expect(savedVerification!.userId).toBe('user-123');
+      expect(savedVerification!.userId).toBe('test-user-123');
       expect(savedVerification!.email.toValue()).toBe('test@example.com');
       expect(savedVerification!.isVerified).toBe(false);
       expect(savedVerification!.isPending()).toBe(true);
@@ -45,7 +50,8 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
 
     it('should create email verification with different email formats', async () => {
       // Arrange
-      const command = new CreateEmailVerificationCommand({
+      const { commandHandler, repository } = setup();
+      const command = createCommand({
         userId: 'user-456',
         email: 'complex.email+tag@sub.domain.com',
       });
@@ -66,14 +72,9 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
 
     it('should generate unique tokens for different email verifications', async () => {
       // Arrange
-      const command1 = new CreateEmailVerificationCommand({
-        userId: 'user-1',
-        email: 'user1@example.com',
-      });
-      const command2 = new CreateEmailVerificationCommand({
-        userId: 'user-2',
-        email: 'user2@example.com',
-      });
+      const { commandHandler, repository } = setup();
+      const command1 = createCommand({ userId: 'user-1', email: 'user1@example.com' });
+      const command2 = createCommand({ userId: 'user-2', email: 'user2@example.com' });
 
       // Act
       const result1 = await commandHandler.execute(command1);
@@ -93,11 +94,12 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
 
     it('should replace existing email verification for same user', async () => {
       // Arrange
-      const command1 = new CreateEmailVerificationCommand({
+      const { commandHandler, repository } = setup();
+      const command1 = createCommand({
         userId: 'user-123',
         email: 'test1@example.com',
       });
-      const command2 = new CreateEmailVerificationCommand({
+      const command2 = createCommand({
         userId: 'user-123',
         email: 'test2@example.com',
       });
@@ -124,10 +126,10 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
 
     it('should set expiration date 24 hours from creation', async () => {
       // Arrange
+      const { commandHandler, repository } = setup();
       const beforeCreation = new Date();
-      const command = new CreateEmailVerificationCommand({
+      const command = createCommand({
         userId: 'user-123',
-        email: 'test@example.com',
       });
 
       // Act
@@ -149,10 +151,8 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
   describe('Domain Events', () => {
     it('should publish domain events when email verification is created', async () => {
       // Arrange
-      const command = new CreateEmailVerificationCommand({
-        userId: 'user-123',
-        email: 'test@example.com',
-      });
+      const { commandHandler, eventBus } = setup();
+      const command = createCommand();
 
       // Act
       await commandHandler.execute(command);
@@ -166,49 +166,29 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
   describe('Error Cases', () => {
     it('should handle repository failures gracefully', async () => {
       // Arrange
-      const failingRepository = {
-        save: jest.fn().mockRejectedValue(new Error('Repository save failed')),
-        findByToken: jest.fn(),
-        findByUserId: jest.fn(),
-        findByEmail: jest.fn(),
-        findPendingByUserId: jest.fn(),
-        findPendingByToken: jest.fn(),
-        remove: jest.fn(),
-        exists: jest.fn(),
-      } as any;
-
-      const failingHandler = new CreateEmailVerificationCommandHandler(failingRepository, eventBus as unknown as EventBus);
-      const command = new CreateEmailVerificationCommand({
-        userId: 'user-123',
-        email: 'test@example.com',
-      });
+      const { commandHandler } = setup({ shouldFailRepository: true });
+      const command = createCommand();
 
       // Act & Assert
-      await expect(failingHandler.execute(command)).rejects.toThrow('Repository save failed');
+      await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
     });
 
     it('should handle event bus failures gracefully', async () => {
       // Arrange
-      const failingEventBus = createEventBusMock({ shouldFail: true });
-      const failingHandler = new CreateEmailVerificationCommandHandler(repository, failingEventBus as unknown as EventBus);
-      const command = new CreateEmailVerificationCommand({
-        userId: 'user-123',
-        email: 'test@example.com',
-      });
+      const { commandHandler } = setup({ shouldFailEventBus: true });
+      const command = createCommand();
 
       // Act & Assert
       // Since domain events are sent during command execution, this should fail
-      await expect(failingHandler.execute(command)).rejects.toThrow('EventBus publishAll failed');
+      await expect(commandHandler.execute(command)).rejects.toThrow('EventBus publishAll failed');
     });
   });
 
   describe('Authorization and Validation', () => {
     it('should authorize all commands by default', async () => {
       // Arrange
-      const command = new CreateEmailVerificationCommand({
-        userId: 'user-123',
-        email: 'test@example.com',
-      });
+      const { commandHandler } = setup();
+      const command = createCommand();
 
       // Act & Assert - Should not throw authorization error
       const result = await commandHandler.execute(command);
@@ -217,10 +197,8 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
 
     it('should pass validation for valid commands', async () => {
       // Arrange
-      const command = new CreateEmailVerificationCommand({
-        userId: 'user-123',
-        email: 'test@example.com',
-      });
+      const { commandHandler } = setup();
+      const command = createCommand();
 
       // Act & Assert - Should not throw validation error
       const result = await commandHandler.execute(command);
@@ -229,11 +207,12 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
 
     it('should replace verification when user already has email verification', async () => {
       // Arrange
-      const firstCommand = new CreateEmailVerificationCommand({
+      const { commandHandler, repository } = setup();
+      const firstCommand = createCommand({
         userId: 'duplicate-user',
         email: 'first@example.com',
       });
-      const secondCommand = new CreateEmailVerificationCommand({
+      const secondCommand = createCommand({
         userId: 'duplicate-user',
         email: 'second@example.com',
       });
@@ -256,11 +235,12 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
 
     it('should replace verification when email is already used by another user', async () => {
       // Arrange
-      const firstCommand = new CreateEmailVerificationCommand({
+      const { commandHandler, repository } = setup();
+      const firstCommand = createCommand({
         userId: 'user-1',
         email: 'duplicate@example.com',
       });
-      const secondCommand = new CreateEmailVerificationCommand({
+      const secondCommand = createCommand({
         userId: 'user-2',
         email: 'duplicate@example.com',
       });
@@ -286,11 +266,12 @@ describe('CreateEmailVerificationCommandHandler (Unit)', () => {
 
     it('should automatically replace verification when creating new one for same user with different email', async () => {
       // Arrange
-      const firstCommand = new CreateEmailVerificationCommand({
+      const { commandHandler, repository } = setup();
+      const firstCommand = createCommand({
         userId: 'test-user',
         email: 'first@example.com',
       });
-      const secondCommand = new CreateEmailVerificationCommand({
+      const secondCommand = createCommand({
         userId: 'test-user',
         email: 'second@example.com',
       });

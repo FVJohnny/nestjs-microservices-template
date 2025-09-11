@@ -62,11 +62,11 @@ describe('Email Verification (E2E)', () => {
         // Repositories
         {
           provide: EMAIL_VERIFICATION_REPOSITORY,
-          useClass: EmailVerificationInMemoryRepository,
+          useFactory: () => new EmailVerificationInMemoryRepository(false),
         },
         {
           provide: USER_REPOSITORY,
-          useClass: UserInMemoryRepository,
+          useFactory: () => new UserInMemoryRepository(false),
         },
 
         // Mock services for domain event handlers

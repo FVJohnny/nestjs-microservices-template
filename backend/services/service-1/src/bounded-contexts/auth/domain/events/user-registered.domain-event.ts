@@ -3,7 +3,7 @@ import type { UserRole } from '../value-objects/user-role.vo';
 import type { Email } from '../value-objects/email.vo';
 import type { Username } from '../value-objects/username.vo';
 
-interface UserRegisteredDomainEventParams {
+export interface UserRegisteredDomainEventParams {
   userId: string;
   email: Email;
   username: Username;

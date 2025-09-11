@@ -7,29 +7,38 @@ import { Username } from '../../../domain/value-objects/username.vo';
 import { UserStatus, UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
 import { UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { UserTestFactory } from '../../../test-utils';
+import { InfrastructureException } from '@libs/nestjs-common';
 
 describe('GetUsersQueryHandler', () => {
-  let handler: GetUsersQueryHandler;
-  let repository: UserInMemoryRepository;
-
-  beforeEach(() => {
-    repository = new UserInMemoryRepository();
-    handler = new GetUsersQueryHandler(repository);
+  // Test data factory
+  const createQuery = (overrides: Partial<GetUsersQuery> = {}) => new GetUsersQuery({
+    ...overrides,
   });
 
-  const seedUsers = async () => {
-    const users = UserTestFactory.createStandardTestUsers();
-    await UserTestFactory.saveUsersToRepository(repository, users);
-    return users;
+  // Setup factory
+  const setup = (params: { shouldFailRepository?: boolean } = {}) => {
+    const { shouldFailRepository = false } = params;
+
+    const repository = new UserInMemoryRepository(shouldFailRepository);
+    const handler = new GetUsersQueryHandler(repository);
+    
+    const seedUsers = async () => {
+      const users = UserTestFactory.createStandardTestUsers();
+      await UserTestFactory.saveUsersToRepository(repository, users);
+      return users;
+    };
+    
+    return { repository, handler, seedUsers };
   };
 
   describe('Listing and filters', () => {
     it('should return all users when no filters provided', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       const users = await seedUsers();
 
       // Act
-      const query = new GetUsersQuery({});
+      const query = createQuery();
       const result = await handler.execute(query);
 
       // Assert
@@ -39,6 +48,7 @@ describe('GetUsersQueryHandler', () => {
 
     it('should filter by status when provided', async () => {
       // Arrange
+      const { handler, repository, seedUsers } = setup();
       await seedUsers();
       const inactive = User.random({
         email: new Email('inactive2@example.com'),
@@ -48,7 +58,7 @@ describe('GetUsersQueryHandler', () => {
       await repository.save(inactive);
 
       // Act
-      const query = new GetUsersQuery({ status: UserStatusEnum.INACTIVE });
+      const query = createQuery({ status: UserStatusEnum.INACTIVE });
       const result = await handler.execute(query);
 
       // Assert
@@ -58,16 +68,17 @@ describe('GetUsersQueryHandler', () => {
 
     it('should filter by id, email, username (contains)', async () => {
       // Arrange
+      const { handler, repository, seedUsers } = setup();
       await seedUsers();
       const userFound = await repository.findAll();
       // Act
-      const queryById = new GetUsersQuery({ userId: userFound[0].id });
+      const queryById = createQuery({ userId: userFound[0].id });
       const resultsById = await handler.execute(queryById);
 
-      const queryByEmail = new GetUsersQuery({ email: 'admin@' });
+      const queryByEmail = createQuery({ email: 'admin@' });
       const resultsByEmail = await handler.execute(queryByEmail);
 
-      const queryByUsername = new GetUsersQuery({ username: 'user1' });
+      const queryByUsername = createQuery({ username: 'user1' });
       const resultsByUsername = await handler.execute(queryByUsername);
 
       // Assert
@@ -85,10 +96,11 @@ describe('GetUsersQueryHandler', () => {
   describe('Ordering and pagination', () => {
     it('should order by username ASC when orderBy is provided', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
-      const query = new GetUsersQuery({
+      const query = createQuery({
         pagination: { sort: { field: 'username', order: 'asc' } },
       });
       const result = await handler.execute(query);
@@ -99,11 +111,12 @@ describe('GetUsersQueryHandler', () => {
 
     it('should apply limit and offset', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
       const page1 = await handler.execute(
-        new GetUsersQuery({
+        createQuery({
           pagination: {
             sort: { field: 'username', order: 'asc' },
             limit: 2,
@@ -112,7 +125,7 @@ describe('GetUsersQueryHandler', () => {
         }),
       );
       const page2 = await handler.execute(
-        new GetUsersQuery({
+        createQuery({
           pagination: {
             sort: { field: 'username', order: 'asc' },
             limit: 2,
@@ -130,10 +143,11 @@ describe('GetUsersQueryHandler', () => {
   describe('Role filtering', () => {
     it('should return only admins when role=ADMIN', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
-      const query = new GetUsersQuery({ role: UserRoleEnum.ADMIN });
+      const query = createQuery({ role: UserRoleEnum.ADMIN });
       const onlyAdmins = await handler.execute(query);
 
       // Assert
@@ -143,15 +157,27 @@ describe('GetUsersQueryHandler', () => {
 
     it('should return only users when role=USER', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
-      const query = new GetUsersQuery({ role: UserRoleEnum.USER });
+      const query = createQuery({ role: UserRoleEnum.USER });
       const onlyUsers = await handler.execute(query);
 
       // Assert
       expect(onlyUsers.data).toHaveLength(2);
       expect(new Set(onlyUsers.data.map((u) => u.role))).toEqual(new Set([UserRoleEnum.USER]));
+    });
+  });
+
+  describe('Error Cases', () => {
+    it('should handle repository failures gracefully', async () => {
+      // Arrange
+      const { handler } = setup({ shouldFailRepository: true });
+      const query = createQuery();
+
+      // Act & Assert
+      await expect(handler.execute(query)).rejects.toThrow(InfrastructureException);
     });
   });
 });

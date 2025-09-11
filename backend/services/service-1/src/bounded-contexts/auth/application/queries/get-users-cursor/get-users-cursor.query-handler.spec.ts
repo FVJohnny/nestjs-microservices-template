@@ -7,30 +7,38 @@ import { Username } from '../../../domain/value-objects/username.vo';
 import { UserStatus, UserStatusEnum } from '../../../domain/value-objects/user-status.vo';
 import { UserRoleEnum } from '../../../domain/value-objects/user-role.vo';
 import { UserTestFactory } from '../../../test-utils';
-import { PaginationCursor } from '@libs/nestjs-common';
+import { PaginationCursor, InfrastructureException } from '@libs/nestjs-common';
 
 describe('GetUsersCursorQueryHandler', () => {
-  let handler: GetUsersCursorQueryHandler;
-  let repository: UserInMemoryRepository;
-
-  beforeEach(() => {
-    repository = new UserInMemoryRepository();
-    handler = new GetUsersCursorQueryHandler(repository);
+  // Test data factory
+  const createQuery = (overrides: Partial<GetUsersCursorQuery> = {}) => new GetUsersCursorQuery({
+    ...overrides,
   });
 
-  const seedUsers = async () => {
-    const users = UserTestFactory.createStandardTestUsers();
-    await UserTestFactory.saveUsersToRepository(repository, users);
-    return users;
+  // Setup factory
+  const setup = (params: { shouldFailRepository?: boolean } = {}) => {
+    const { shouldFailRepository = false } = params;
+
+    const repository = new UserInMemoryRepository(shouldFailRepository);
+    const handler = new GetUsersCursorQueryHandler(repository);
+    
+    const seedUsers = async () => {
+      const users = UserTestFactory.createStandardTestUsers();
+      await UserTestFactory.saveUsersToRepository(repository, users);
+      return users;
+    };
+    
+    return { repository, handler, seedUsers };
   };
 
   describe('Listing and filters', () => {
     it('should return all users when no filters provided', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       const users = await seedUsers();
 
       // Act
-      const query = new GetUsersCursorQuery({});
+      const query = createQuery();
       const result = await handler.execute(query);
 
       // Assert
@@ -41,6 +49,7 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should filter by status when provided', async () => {
       // Arrange
+      const { handler, repository, seedUsers } = setup();
       await seedUsers();
       const inactive = User.random({
         email: new Email('inactive2@example.com'),
@@ -50,7 +59,7 @@ describe('GetUsersCursorQueryHandler', () => {
       await repository.save(inactive);
 
       // Act
-      const query = new GetUsersCursorQuery({
+      const query = createQuery({
         status: UserStatusEnum.INACTIVE,
       });
       const result = await handler.execute(query);
@@ -63,17 +72,18 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should filter by id (exact), email and username, (contains)', async () => {
       // Arrange
+      const { handler, repository, seedUsers } = setup();
       await seedUsers();
       const userFound = await repository.findAll();
 
       // Act
-      const queryById = new GetUsersCursorQuery({ userId: userFound[0].id });
+      const queryById = createQuery({ userId: userFound[0].id });
       const resultsById = await handler.execute(queryById);
 
-      const queryByEmail = new GetUsersCursorQuery({ email: 'admin@' });
+      const queryByEmail = createQuery({ email: 'admin@' });
       const resultsByEmail = await handler.execute(queryByEmail);
 
-      const queryByUsername = new GetUsersCursorQuery({ username: 'user1' });
+      const queryByUsername = createQuery({ username: 'user1' });
       const resultsByUsername = await handler.execute(queryByUsername);
 
       // Assert
@@ -91,10 +101,11 @@ describe('GetUsersCursorQueryHandler', () => {
   describe('Role filtering', () => {
     it('should return only admins when role=ADMIN', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
-      const query = new GetUsersCursorQuery({ role: UserRoleEnum.ADMIN });
+      const query = createQuery({ role: UserRoleEnum.ADMIN });
       const onlyAdmins = await handler.execute(query);
 
       // Assert
@@ -105,10 +116,11 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should return only users when role=USER', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
-      const query = new GetUsersCursorQuery({ role: UserRoleEnum.USER });
+      const query = createQuery({ role: UserRoleEnum.USER });
       const onlyUsers = await handler.execute(query);
 
       // Assert
@@ -121,10 +133,11 @@ describe('GetUsersCursorQueryHandler', () => {
   describe('Cursor pagination', () => {
     it('should order by username ASC when orderBy is provided', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
-      const query = new GetUsersCursorQuery({
+      const query = createQuery({
         pagination: { sort: { field: 'username', order: 'asc' } },
       });
       const result = await handler.execute(query);
@@ -136,11 +149,12 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should apply limit and return cursor for pagination', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
       const page1 = await handler.execute(
-        new GetUsersCursorQuery({
+        createQuery({
           pagination: {
             sort: { field: 'username', order: 'asc' },
             limit: 2,
@@ -157,11 +171,12 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should use cursor to get next page', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act - Get first page
       const page1 = await handler.execute(
-        new GetUsersCursorQuery({
+        createQuery({
           pagination: {
             sort: { field: 'username', order: 'asc' },
             limit: 2,
@@ -171,7 +186,7 @@ describe('GetUsersCursorQueryHandler', () => {
 
       // Act - Get second page using cursor
       const page2 = await handler.execute(
-        new GetUsersCursorQuery({
+        createQuery({
           pagination: {
             sort: { field: 'username', order: 'asc' },
             limit: 2,
@@ -192,11 +207,12 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should handle cursor with different sort orders', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act - Sort by username DESC
       const page1Desc = await handler.execute(
-        new GetUsersCursorQuery({
+        createQuery({
           pagination: {
             sort: { field: 'username', order: 'desc' },
             limit: 1,
@@ -205,7 +221,7 @@ describe('GetUsersCursorQueryHandler', () => {
       );
 
       const page2Desc = await handler.execute(
-        new GetUsersCursorQuery({
+        createQuery({
           pagination: {
             sort: { field: 'username', order: 'desc' },
             limit: 1,
@@ -224,12 +240,13 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should return empty results when cursor is beyond available data', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
       const beyondCursor = PaginationCursor.encodeCursor('zzz', 'some-id'); // cursor beyond any existing username
       const result = await handler.execute(
-        new GetUsersCursorQuery({
+        createQuery({
           pagination: {
             sort: { field: 'username', order: 'asc' },
             limit: 10,
@@ -246,11 +263,12 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should handle cursor pagination with filters', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act - Get users with role USER, paginated
       const page1 = await handler.execute(
-        new GetUsersCursorQuery({
+        createQuery({
           role: UserRoleEnum.USER,
           pagination: {
             sort: { field: 'username', order: 'asc' },
@@ -260,7 +278,7 @@ describe('GetUsersCursorQueryHandler', () => {
       );
 
       const page2 = await handler.execute(
-        new GetUsersCursorQuery({
+        createQuery({
           role: UserRoleEnum.USER,
           pagination: {
             sort: { field: 'username', order: 'asc' },
@@ -284,10 +302,11 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should handle default pagination limit', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
-      const query = new GetUsersCursorQuery({
+      const query = createQuery({
         pagination: { sort: { field: 'username', order: 'asc' } },
       });
       const result = await handler.execute(query);
@@ -299,10 +318,11 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should use tiebreaker when provided', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
-      const query = new GetUsersCursorQuery({
+      const query = createQuery({
         pagination: {
           sort: { field: 'username', order: 'asc' },
           limit: 2,
@@ -319,8 +339,11 @@ describe('GetUsersCursorQueryHandler', () => {
 
   describe('Edge cases', () => {
     it('should handle empty repository', async () => {
+      // Arrange
+      const { handler } = setup();
+      
       // Act
-      const query = new GetUsersCursorQuery({});
+      const query = createQuery();
       const result = await handler.execute(query);
 
       // Assert
@@ -331,10 +354,11 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should handle limit of 0', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
-      const query = new GetUsersCursorQuery({
+      const query = createQuery({
         pagination: { limit: 0 },
       });
       const result = await handler.execute(query);
@@ -346,10 +370,11 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should handle very large limit', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act
-      const query = new GetUsersCursorQuery({
+      const query = createQuery({
         pagination: { limit: 1000 },
       });
       const result = await handler.execute(query);
@@ -361,10 +386,11 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should maintain consistent cursors across identical queries', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act - Run same query twice
-      const query = new GetUsersCursorQuery({
+      const query = createQuery({
         pagination: {
           sort: { field: 'username', order: 'asc' },
           limit: 2,
@@ -380,11 +406,12 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should handle sorting by different fields correctly', async () => {
       // Arrange
+      const { handler, seedUsers } = setup();
       await seedUsers();
 
       // Act - Sort by different fields
       const sortByEmail = await handler.execute(
-        new GetUsersCursorQuery({
+        createQuery({
           pagination: {
             sort: { field: 'email', order: 'asc' },
             limit: 2,
@@ -393,7 +420,7 @@ describe('GetUsersCursorQueryHandler', () => {
       );
 
       const sortByUsername = await handler.execute(
-        new GetUsersCursorQuery({
+        createQuery({
           pagination: {
             sort: { field: 'username', order: 'desc' },
             limit: 2,
@@ -414,6 +441,7 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should handle multiple pages traversal consistently', async () => {
       // Arrange - Create more users for better pagination testing
+      const { handler, repository, seedUsers } = setup();
       await seedUsers();
       const extraUsers = [
         User.random({
@@ -441,7 +469,7 @@ describe('GetUsersCursorQueryHandler', () => {
 
       while (hasNext) {
         const page = await handler.execute(
-          new GetUsersCursorQuery({
+          createQuery({
             pagination: {
               sort: { field: 'username', order: 'asc' },
               limit: 2,
@@ -468,6 +496,7 @@ describe('GetUsersCursorQueryHandler', () => {
 
     it('should handle cursor with null/undefined orderBy field values', async () => {
       // Arrange
+      const { handler, repository, seedUsers } = setup();
       await seedUsers();
 
       // Create user with potentially null sortable field
@@ -479,7 +508,7 @@ describe('GetUsersCursorQueryHandler', () => {
 
       // Act - Sort by a field that might have null values
       const result = await handler.execute(
-        new GetUsersCursorQuery({
+        createQuery({
           pagination: {
             sort: { field: 'username', order: 'asc' },
             limit: 10,
@@ -490,6 +519,15 @@ describe('GetUsersCursorQueryHandler', () => {
       // Assert - Should handle the user with the additional field gracefully
       expect(result.data.length).toBeGreaterThan(3);
       expect(result.data.some((u) => u.username === 'empty_user')).toBe(true);
+    });
+
+    it('should handle repository failures gracefully', async () => {
+      // Arrange
+      const { handler } = setup({ shouldFailRepository: true });
+      const query = createQuery();
+
+      // Act & Assert
+      await expect(handler.execute(query)).rejects.toThrow(InfrastructureException);
     });
   });
 });

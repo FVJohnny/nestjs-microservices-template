@@ -1,30 +1,39 @@
 import { UserRegisteredDomainEventHandler } from './user-registered.domain-event-handler';
-import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
+import { UserRegisteredDomainEvent, UserRegisteredDomainEventParams } from '../../../domain/events/user-registered.domain-event';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Username } from '../../../domain/value-objects/username.vo';
 import { UserRole } from '../../../domain/value-objects/user-role.vo';
-import { Topics, createOutboxServiceMock, type MockOutboxService, createCommandBusMock, type MockCommandBus } from '@libs/nestjs-common';
+import { Topics, createOutboxServiceMock, createCommandBusMock } from '@libs/nestjs-common';
 import { CreateEmailVerificationCommand } from '../../commands/create-email-verification/create-email-verification.command';
 
 describe('UserRegisteredDomainEventHandler (Unit)', () => {
-  let eventHandler: UserRegisteredDomainEventHandler;
-  let mockOutboxService: MockOutboxService;
-  let mockCommandBus: MockCommandBus;
-
-  beforeEach(() => {
-    mockOutboxService = createOutboxServiceMock({ shouldFail: false });
-    mockCommandBus = createCommandBusMock({ shouldFail: false });
-    eventHandler = new UserRegisteredDomainEventHandler(mockOutboxService as any, mockCommandBus as any);
+  // Test data factory
+  const createEvent = (overrides: Partial<UserRegisteredDomainEventParams> = {}) => new UserRegisteredDomainEvent({
+    userId: 'test-user-123',
+    email: new Email('test@example.com'),
+    username: new Username('testuser'),
+    role: UserRole.user(),
+    ...overrides,
   });
+
+  // Setup factory
+  const setup = (params: { shouldFailOutbox?: boolean, shouldFailCommandBus?: boolean } = {}) => {
+    const { shouldFailOutbox = false, shouldFailCommandBus = false } = params;
+
+    const mockOutboxService = createOutboxServiceMock({ shouldFail: shouldFailOutbox });
+    const mockCommandBus = createCommandBusMock({ shouldFail: shouldFailCommandBus });
+    const eventHandler = new UserRegisteredDomainEventHandler(mockOutboxService as any, mockCommandBus as any);
+    
+    return { mockOutboxService, mockCommandBus, eventHandler };
+  };
 
   describe('Happy Path', () => {
     it('should handle UserRegisteredEvent and publish integration event successfully', async () => {
       // Arrange
-      const event = new UserRegisteredDomainEvent({
+      const { eventHandler, mockOutboxService, mockCommandBus } = setup();
+      const event = createEvent({
+
         userId: 'test-user-id',
-        email: new Email('test@example.com'),
-        username: new Username('testuser'),
-        role: UserRole.user(),
       });
 
       // Act
@@ -54,11 +63,11 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
     it('should handle special characters in email and username', async () => {
       // Arrange
-      const event = new UserRegisteredDomainEvent({
+      const { eventHandler, mockOutboxService, mockCommandBus } = setup();
+      const event = createEvent({
         userId: 'special-chars-user',
         email: new Email('test.user+tag@example-domain.com'),
         username: new Username('user_name-123'),
-        role: UserRole.user(),
       });
 
       // Act
@@ -82,11 +91,11 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
     it('should publish UserCreatedIntegrationEvent', async () => {
       // Arrange
-      const event = new UserRegisteredDomainEvent({
+      const { eventHandler, mockOutboxService } = setup();
+      const event = createEvent({
         userId: 'integration-event-test',
         email: new Email('integration@example.com'),
         username: new Username('integration'),
-        role: UserRole.user(),
       });
 
       // Act
@@ -118,14 +127,14 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
     it('should handle multiple events sequentially', async () => {
       // Arrange
+      const { eventHandler, mockOutboxService, mockCommandBus } = setup();
       const events = [
-        new UserRegisteredDomainEvent({
+        createEvent({
           userId: 'user-1',
           email: new Email('user1@example.com'),
           username: new Username('user1'),
-          role: UserRole.user(),
         }),
-        new UserRegisteredDomainEvent({
+        createEvent({
           userId: 'user-2',
           email: new Email('user2@example.com'),
           username: new Username('user2'),
@@ -149,7 +158,8 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
   describe('Email Verification Command Execution', () => {
     it('should execute CreateEmailVerificationCommand with correct user data', async () => {
       // Arrange
-      const event = new UserRegisteredDomainEvent({
+      const { eventHandler, mockCommandBus } = setup();
+      const event = createEvent({
         userId: 'command-test-user',
         email: new Email('command.test@example.com'),
         username: new Username('commandtester'),
@@ -170,7 +180,8 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
     it('should execute CreateEmailVerificationCommand for admin users', async () => {
       // Arrange
-      const event = new UserRegisteredDomainEvent({
+      const { eventHandler, mockCommandBus } = setup();
+      const event = createEvent({
         userId: 'admin-user-123',
         email: new Email('admin@company.com'),
         username: new Username('admin'),
@@ -190,54 +201,43 @@ describe('UserRegisteredDomainEventHandler (Unit)', () => {
 
     it('should handle command bus execution failure gracefully', async () => {
       // Arrange
-      const failingCommandBus = createCommandBusMock({ shouldFail: true });
-      const failingHandler = new UserRegisteredDomainEventHandler(mockOutboxService as any, failingCommandBus as any);
-      
-      const event = new UserRegisteredDomainEvent({
+      const { eventHandler } = setup({ shouldFailCommandBus: true });
+      const event = createEvent({
         userId: 'failing-user',
         email: new Email('failing@example.com'),
         username: new Username('failing'),
-        role: UserRole.user(),
       });
 
       // Act & Assert
-      await expect(failingHandler.handle(event)).rejects.toThrow('CommandBus execute failed');
+      await expect(eventHandler.handle(event)).rejects.toThrow('CommandBus execute failed');
     });
   });
 
   describe('Error Cases', () => {
     it('should handle outbox service failures and rethrow error', async () => {
       // Arrange
-      const failingOutboxService = createOutboxServiceMock({ shouldFail: true });
-      const failingMockCommandBus = createCommandBusMock({ shouldFail: false });
-      const failingEventHandler = new UserRegisteredDomainEventHandler(failingOutboxService as any, failingMockCommandBus as any);
-
-      const event = new UserRegisteredDomainEvent({
+      const { eventHandler } = setup({ shouldFailOutbox: true });
+      const event = createEvent({
         userId: 'failing-user-id',
         email: new Email('failing@example.com'),
         username: new Username('failing'),
-        role: UserRole.user(),
       });
 
       // Act & Assert
-      await expect(failingEventHandler.handle(event)).rejects.toThrow('OutboxService storeEvent failed');
+      await expect(eventHandler.handle(event)).rejects.toThrow('OutboxService storeEvent failed');
     });
 
     it('should propagate database errors from outbox service', async () => {
       // Arrange
-      const failingOutboxService = createOutboxServiceMock({ shouldFail: true });
-      const failingMockCommandBus = createCommandBusMock({ shouldFail: false });
-      const failingEventHandler = new UserRegisteredDomainEventHandler(failingOutboxService as any, failingMockCommandBus as any);
-
-      const event = new UserRegisteredDomainEvent({
+      const { eventHandler } = setup({ shouldFailOutbox: true });
+      const event = createEvent({
         userId: 'network-error-user',
         email: new Email('network@example.com'),
         username: new Username('network'),
-        role: UserRole.user(),
       });
 
       // Act & Assert
-      await expect(failingEventHandler.handle(event)).rejects.toThrow('OutboxService storeEvent failed');
+      await expect(eventHandler.handle(event)).rejects.toThrow('OutboxService storeEvent failed');
     });
   });
 });

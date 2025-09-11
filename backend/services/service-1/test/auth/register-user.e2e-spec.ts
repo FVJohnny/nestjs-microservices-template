@@ -21,7 +21,7 @@ describe('POST /users (E2E)', () => {
       controllers: [RegisterUserController],
       providers: [
         RegisterUserCommandHandler,
-        { provide: USER_REPOSITORY, useClass: UserInMemoryRepository },
+        { provide: USER_REPOSITORY, useFactory: () => new UserInMemoryRepository(false) },
       ],
     }).compile();
 
