@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Logger as NestLogger, type LoggerService } from '@nestjs/common';
 
 import { TracingService } from '../tracing/tracing.service';
@@ -24,27 +25,31 @@ export class CorrelationLogger extends NestLogger implements LoggerService {
     }
   }
 
-  log(message: LogMessage, ...optionalParams: []) {
+  log(message: LogMessage, ...optionalParams: any[]) {
     super.log(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
   }
 
-  error(message: LogMessage, traceOrError?: string | Error) {
+  error(message: LogMessage, traceOrError?: string | Error, ...optionalParams: any[]) {
     if (traceOrError instanceof Error) {
-      super.error(`${this.prefix()} ${this.toString(message)}`, traceOrError.stack);
+      super.error(
+        `${this.prefix()} ${this.toString(message)}`,
+        traceOrError.stack,
+        ...optionalParams,
+      );
     } else {
-      super.error(`${this.prefix()} ${this.toString(message)}`, traceOrError);
+      super.error(`${this.prefix()} ${this.toString(message)}`, traceOrError, ...optionalParams);
     }
   }
 
-  warn(message: LogMessage, ...optionalParams: []) {
+  warn(message: LogMessage, ...optionalParams: any[]) {
     super.warn(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
   }
 
-  debug(message: LogMessage, ...optionalParams: []) {
+  debug(message: LogMessage, ...optionalParams: any[]) {
     super.debug(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
   }
 
-  verbose(message: LogMessage, ...optionalParams: []) {
+  verbose(message: LogMessage, ...optionalParams: any[]) {
     super.verbose(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
   }
 }

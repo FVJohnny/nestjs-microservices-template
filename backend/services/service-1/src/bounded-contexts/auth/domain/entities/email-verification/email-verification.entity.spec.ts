@@ -1,6 +1,7 @@
 import { EmailVerification } from './email-verification.entity';
 import { Email } from '../../value-objects';
 import { EmailVerifiedDomainEvent } from '../../events/email-verified.domain-event';
+import { EmailVerificationCreatedDomainEvent } from '../../events/email-verification-created.domain-event';
 import { InvalidOperationException } from '@libs/nestjs-common';
 
 describe('EmailVerification Entity', () => {
@@ -96,6 +97,29 @@ describe('EmailVerification Entity', () => {
       const timeDiff = Math.abs(emailVerification.expiresAt.getTime() - expectedExpiration.getTime());
       expect(timeDiff).toBeLessThan(5000); // 5 seconds tolerance
     });
+
+    it('should emit EmailVerificationCreatedDomainEvent when created', () => {
+      // Arrange
+      const email = new Email('test@example.com');
+      const userId = 'user-123';
+
+      // Act
+      const emailVerification = EmailVerification.create({
+        userId,
+        email,
+      });
+
+      // Assert
+      const events = emailVerification.getUncommittedEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0]).toBeInstanceOf(EmailVerificationCreatedDomainEvent);
+      
+      const domainEvent = events[0] as EmailVerificationCreatedDomainEvent;
+      expect(domainEvent.userId).toBe(userId);
+      expect(domainEvent.email).toBe('test@example.com');
+      expect(domainEvent.token).toBe(emailVerification.token);
+      expect(domainEvent.expiresAt).toBe(emailVerification.expiresAt);
+    });
   });
 
   describe('Verification Process', () => {
@@ -130,13 +154,21 @@ describe('EmailVerification Entity', () => {
 
       // Assert
       const events = emailVerification.getUncommittedEvents();
-      expect(events).toHaveLength(1);
-      expect(events[0]).toBeInstanceOf(EmailVerifiedDomainEvent);
+      expect(events).toHaveLength(2);
       
-      const domainEvent = events[0] as EmailVerifiedDomainEvent;
-      expect(domainEvent.aggregateId).toBe(emailVerification.id);
-      expect(domainEvent.userId).toBe(userId);
-      expect(domainEvent.email).toBe('test@example.com');
+      const domainEvent1 = events[0] as EmailVerificationCreatedDomainEvent;
+      expect(domainEvent1).toBeInstanceOf(EmailVerificationCreatedDomainEvent);
+      expect(domainEvent1.aggregateId).toBe(emailVerification.id);
+      expect(domainEvent1.userId).toBe(userId);
+      expect(domainEvent1.email).toBe(email.toValue());
+      expect(domainEvent1.token).toBe(emailVerification.token);
+      expect(domainEvent1.expiresAt).toBe(emailVerification.expiresAt);
+
+      const domainEvent2 = events[1] as EmailVerifiedDomainEvent;
+      expect(domainEvent2).toBeInstanceOf(EmailVerifiedDomainEvent);
+      expect(domainEvent2.aggregateId).toBe(emailVerification.id);
+      expect(domainEvent2.userId).toBe(userId);
+      expect(domainEvent2.email).toBe(email.toValue());
     });
 
     it('should throw error when trying to verify already verified email', () => {

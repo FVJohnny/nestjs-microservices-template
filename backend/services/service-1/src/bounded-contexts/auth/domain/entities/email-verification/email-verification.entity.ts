@@ -3,6 +3,7 @@ import type { SharedAggregateRootDTO } from '@libs/nestjs-common';
 import { SharedAggregateRoot, InvalidOperationException } from '@libs/nestjs-common';
 import { Email } from '../../value-objects';
 import { EmailVerifiedDomainEvent } from '../../events/email-verified.domain-event';
+import { EmailVerificationCreatedDomainEvent } from '../../events/email-verification-created.domain-event';
 
 export interface EmailVerificationAttributes {
   id: string;
@@ -67,6 +68,16 @@ export class EmailVerification extends SharedAggregateRoot implements EmailVerif
       createdAt: now,
       updatedAt: now,
     });
+
+    emailVerification.apply(
+      new EmailVerificationCreatedDomainEvent(
+        id,
+        props.userId,
+        props.email.toValue(),
+        token,
+        expiresAt,
+      ),
+    );
 
     return emailVerification;
   }

@@ -3,6 +3,7 @@ import { CreateEmailVerificationCommand } from './create-email-verification.comm
 import { EmailVerificationInMemoryRepository } from '../../../infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
 import { createEventBusMock, InfrastructureException, MockEventBus } from '@libs/nestjs-common';
+import { EmailVerificationCreatedDomainEvent } from '../../../domain/events/email-verification-created.domain-event';
 
 describe('CreateEmailVerificationCommandHandler', () => {
   // Test data factory
@@ -163,7 +164,15 @@ describe('CreateEmailVerificationCommandHandler', () => {
 
       // Assert - No domain events are emitted on creation, only on verification
       // This is expected behavior as creation doesn't emit events
-      expect(eventBus.events).toHaveLength(0);
+      expect(eventBus.events).toHaveLength(1);
+      const event = eventBus.events[0] as EmailVerificationCreatedDomainEvent;
+      expect(event).toBeInstanceOf(EmailVerificationCreatedDomainEvent);
+      expect(event.aggregateId).toBeDefined();
+      expect(event.userId).toBe(command.userId);
+      expect(event.email).toBe(command.email);
+      expect(event.occurredOn).toBeInstanceOf(Date);
+      expect(event.token).toBeDefined();
+      expect(event.expiresAt).toBeInstanceOf(Date);
     });
   });
 
