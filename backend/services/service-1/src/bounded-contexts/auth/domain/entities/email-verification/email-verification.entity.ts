@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { SharedAggregateRootDTO } from '@libs/nestjs-common';
 import { SharedAggregateRoot, InvalidOperationException } from '@libs/nestjs-common';
 import { Email } from '../../value-objects';
-import { EmailVerifiedDomainEvent } from '../../events/email-verified.domain-event';
+import { EmailVerificationVerifiedDomainEvent } from '../../events/email-verified.domain-event';
 import { EmailVerificationCreatedDomainEvent } from '../../events/email-verification-created.domain-event';
 
 export interface EmailVerificationAttributes {
@@ -96,7 +96,7 @@ export class EmailVerification extends SharedAggregateRoot implements EmailVerif
     this.updatedAt = new Date();
 
     this.apply(
-      new EmailVerifiedDomainEvent({
+      new EmailVerificationVerifiedDomainEvent({
         emailVerificationId: this.id,
         userId: this.userId,
         email: this.email.toValue(),

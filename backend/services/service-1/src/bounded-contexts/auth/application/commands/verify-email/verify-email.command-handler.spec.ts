@@ -176,9 +176,9 @@ describe('VerifyEmailCommandHandler', () => {
       // Act
       await commandHandler.execute(command);
 
-      // Assert - EmailVerifiedDomainEvent should be published
+      // Assert - EmailVerificationVerifiedDomainEvent should be published
       expect(eventBus.events).toHaveLength(1);
-      expect(eventBus.events[0].constructor.name).toBe('EmailVerifiedDomainEvent');
+      expect(eventBus.events[0].constructor.name).toBe('EmailVerificationVerifiedDomainEvent');
       expect(eventBus.events[0].aggregateId).toBe(emailVerification.id);
     });
 

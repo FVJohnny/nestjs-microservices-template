@@ -1,23 +1,25 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { EmailVerifiedDomainEvent } from '../../../domain/events/email-verified.domain-event';
+import { EmailVerificationVerifiedDomainEvent } from '../../../domain/events/email-verified.domain-event';
 import {
   USER_REPOSITORY,
   type UserRepository,
 } from '../../../domain/repositories/user/user.repository';
 import { TracingLogger, NotFoundException } from '@libs/nestjs-common';
 
-@EventsHandler(EmailVerifiedDomainEvent)
-export class EmailVerifiedDomainEventHandler implements IEventHandler<EmailVerifiedDomainEvent> {
-  private readonly logger = new TracingLogger(EmailVerifiedDomainEventHandler.name);
+@EventsHandler(EmailVerificationVerifiedDomainEvent)
+export class EmailVerificationVerifiedDomainEventHandler
+  implements IEventHandler<EmailVerificationVerifiedDomainEvent>
+{
+  private readonly logger = new TracingLogger(EmailVerificationVerifiedDomainEventHandler.name);
 
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
   ) {}
 
-  async handle(event: EmailVerifiedDomainEvent): Promise<void> {
-    this.logger.log('Handling EmailVerifiedDomainEvent...');
+  async handle(event: EmailVerificationVerifiedDomainEvent): Promise<void> {
+    this.logger.log('Handling EmailVerificationVerifiedDomainEvent...');
 
     const user = await this.userRepository.findById(event.userId);
     if (!user) {

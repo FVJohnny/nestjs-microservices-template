@@ -1,9 +1,9 @@
-import { EmailVerifiedDomainEventHandler } from './email-verified.domain-event-handler';
+import { EmailVerificationVerifiedDomainEventHandler } from './email-verification-verified.domain-event-handler';
 import {
-  EmailVerifiedDomainEvent,
-  EmailVerifiedDomainEventProps,
+  EmailVerificationVerifiedDomainEvent,
+  EmailVerificationVerifiedDomainEventProps,
 } from '../../../domain/events/email-verified.domain-event';
-import { Email, Username, Password, UserRole, UserStatus } from '../../../domain/value-objects';
+import { Email, UserStatus } from '../../../domain/value-objects';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '../../../domain/entities/user/user.entity';
 import {
@@ -12,10 +12,10 @@ import {
   InfrastructureException,
 } from '@libs/nestjs-common';
 
-describe('EmailVerifiedDomainEventHandler', () => {
+describe('EmailVerificationVerifiedDomainEventHandler', () => {
   // Test data factory
-  const createEvent = (overrides: Partial<EmailVerifiedDomainEventProps> = {}) =>
-    new EmailVerifiedDomainEvent({
+  const createEvent = (overrides: Partial<EmailVerificationVerifiedDomainEventProps> = {}) =>
+    new EmailVerificationVerifiedDomainEvent({
       emailVerificationId: 'verification-123',
       userId: 'test-user-123',
       email: 'test@example.com',
@@ -23,7 +23,7 @@ describe('EmailVerifiedDomainEventHandler', () => {
     });
 
   const createEventFromUser = (user: User) =>
-    new EmailVerifiedDomainEvent({
+    new EmailVerificationVerifiedDomainEvent({
       emailVerificationId: 'verification-123',
       userId: user.id,
       email: user.email.toValue(),
@@ -34,16 +34,16 @@ describe('EmailVerifiedDomainEventHandler', () => {
     const { shouldFailRepository = false } = params;
 
     const userRepository = new UserInMemoryRepository(shouldFailRepository);
-    const eventHandler = new EmailVerifiedDomainEventHandler(userRepository);
+    const eventHandler = new EmailVerificationVerifiedDomainEventHandler(userRepository);
 
     return { userRepository, eventHandler };
   };
 
   describe('Happy Path', () => {
-    it('should handle EmailVerifiedDomainEvent and set user status as active', async () => {
+    it('should handle EmailVerificationVerifiedDomainEvent and set user status as active', async () => {
       // Arrange
       const { eventHandler, userRepository } = setup();
-      const user = User.random({status: UserStatus.emailVerificationPending()})
+      const user = User.random({ status: UserStatus.emailVerificationPending() });
       await userRepository.save(user);
 
       const event = createEventFromUser(user);

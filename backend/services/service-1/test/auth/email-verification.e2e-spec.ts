@@ -23,7 +23,7 @@ import { GetUserByIdQueryHandler } from '../../src/bounded-contexts/auth/applica
 
 // Domain Event Handlers
 import { UserRegisteredDomainEventHandler } from '../../src/bounded-contexts/auth/application/domain-event-handlers/user-registered/user-registered.domain-event-handler';
-import { EmailVerifiedDomainEventHandler } from '../../src/bounded-contexts/auth/application/domain-event-handlers/email-verified/email-verified.domain-event-handler';
+import { EmailVerificationVerifiedDomainEventHandler } from '../../src/bounded-contexts/auth/application/domain-event-handlers/email-verification-verified/email-verification-verified.domain-event-handler';
 
 // Repositories
 import { EMAIL_VERIFICATION_REPOSITORY } from '../../src/bounded-contexts/auth/domain/repositories/email-verification/email-verification.repository';
@@ -71,7 +71,7 @@ describe('Email Verification (E2E)', () => {
 
         // Domain Event Handlers
         UserRegisteredDomainEventHandler,
-        EmailVerifiedDomainEventHandler,
+        EmailVerificationVerifiedDomainEventHandler,
 
         // Repositories
         {

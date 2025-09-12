@@ -12,6 +12,7 @@ describe('EmailVerificationCreatedDomainEventHandler', () => {
     it('should handle EmailVerificationCreatedDomainEvent', async () => {
       // Arrange
       const event = new EmailVerificationCreatedDomainEvent(
+        'verification-123',
         'user-123',
         'test@example.com',
         'token123',
