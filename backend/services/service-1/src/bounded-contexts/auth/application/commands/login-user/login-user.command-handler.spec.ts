@@ -9,6 +9,8 @@ import {
   createEventBusMock,
   InfrastructureException,
   DomainValidationException,
+  JwtTokenService,
+  createJwtTokenServiceMock,
 } from '@libs/nestjs-common';
 
 describe('LoginUserCommandHandler', () => {
@@ -25,16 +27,14 @@ describe('LoginUserCommandHandler', () => {
 
     const repository = new UserInMemoryRepository(shouldFailRepository);
     const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
-    const jwtService = {
-      sign: jest.fn().mockReturnValue('mock-jwt-token'),
-    } as any;
+    const jwtTokenService = createJwtTokenServiceMock({});
     const commandHandler = new LoginUserCommandHandler(
       repository,
-      jwtService,
+      jwtTokenService as unknown as JwtTokenService,
       eventBus as unknown as EventBus,
     );
 
-    return { repository, eventBus, jwtService, commandHandler };
+    return { repository, eventBus, jwtTokenService, commandHandler };
   };
 
   describe('Happy Path', () => {
@@ -42,7 +42,6 @@ describe('LoginUserCommandHandler', () => {
       // Arrange
       const { commandHandler, repository } = setup();
       const password = 'TestPassword123!';
-      const dateBeforeLogin = new Date();
       const user = User.random({
         email: new Email('john.doe@example.com'),
         username: new Username('johndoe'),
@@ -66,7 +65,8 @@ describe('LoginUserCommandHandler', () => {
       expect(result.email).toBe(user.email.toValue());
       expect(result.username).toBe(user.username.toValue());
       expect(result.role).toBe(user.role.toValue());
-      expect(result.accessToken).toBe('mock-jwt-token');
+      expect(result.accessToken).toBe('mock-access-token');
+      expect(result.refreshToken).toBe('mock-refresh-token');
     });
 
     it('should update lastLoginAt timestamp on successful login', async () => {

@@ -1,6 +1,6 @@
 import type { Request } from 'express';
 
-export interface JwtPayload {
+export interface JwtAccessTokenPayload {
   userId: string;
   email: string;
   username: string;
@@ -9,6 +9,12 @@ export interface JwtPayload {
   exp?: number;
 }
 
+export interface JwtRefreshTokenPayload {
+  userId: string;
+  iat?: number;
+  exp?: number;
+}
+
 export interface AuthenticatedRequest extends Request {
-  user: JwtPayload;
+  user: JwtAccessTokenPayload;
 }

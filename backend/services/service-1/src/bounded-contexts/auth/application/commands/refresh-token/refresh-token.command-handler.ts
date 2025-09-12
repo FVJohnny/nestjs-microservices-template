@@ -1,18 +1,16 @@
 import { CommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { LoginUserCommand, LoginUserCommandResponse } from './login-user.command';
+import { RefreshTokenCommand, RefreshTokenCommandResponse } from './refresh-token.command';
 import {
   USER_REPOSITORY,
   type UserRepository,
 } from '../../../domain/repositories/user/user.repository';
-import { User } from '../../../domain/entities/user/user.entity';
-import { Email } from '../../../domain/value-objects';
 import { BaseCommandHandler, UnauthorizedException, JwtTokenService } from '@libs/nestjs-common';
 
-@CommandHandler(LoginUserCommand)
-export class LoginUserCommandHandler extends BaseCommandHandler<
-  LoginUserCommand,
-  LoginUserCommandResponse
+@CommandHandler(RefreshTokenCommand)
+export class RefreshTokenCommandHandler extends BaseCommandHandler<
+  RefreshTokenCommand,
+  RefreshTokenCommandResponse
 > {
   constructor(
     @Inject(USER_REPOSITORY)
@@ -23,17 +21,19 @@ export class LoginUserCommandHandler extends BaseCommandHandler<
     super(eventBus);
   }
 
-  protected async handle(command: LoginUserCommand): Promise<LoginUserCommandResponse> {
-    const email = new Email(command.email);
-    const user = await this.userRepository.findByEmail(email);
+  protected async handle(command: RefreshTokenCommand): Promise<RefreshTokenCommandResponse> {
+    let userId: string;
 
-    if (!user) {
+    try {
+      const decoded = this.jwtTokenService.verifyRefreshToken(command.refreshToken);
+      userId = decoded.userId;
+    } catch {
       throw new UnauthorizedException();
     }
 
-    // Verify password
-    const isPasswordValid = await user.password.verify(command.password);
-    if (!isPasswordValid) {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
       throw new UnauthorizedException();
     }
 
@@ -42,14 +42,7 @@ export class LoginUserCommandHandler extends BaseCommandHandler<
       throw new UnauthorizedException();
     }
 
-    // Record login
-    user.recordLogin();
-    await this.userRepository.save(user);
-
-    // Send domain events if any
-    await this.sendDomainEvents<User>(user);
-
-    // Generate JWT tokens
+    // Generate new JWT tokens
     const payload = {
       userId: user.id,
       email: user.email.toValue(),
@@ -70,17 +63,13 @@ export class LoginUserCommandHandler extends BaseCommandHandler<
     };
   }
 
-  protected authorize(_command: LoginUserCommand): Promise<boolean> {
-    // Login doesn't require additional authorization - authentication is done in handle()
+  protected authorize(_command: RefreshTokenCommand): Promise<boolean> {
+    // Refresh token doesn't require additional authorization - token validation is done in handle()
     return Promise.resolve(true);
   }
 
-  protected async validate(command: LoginUserCommand): Promise<void> {
-    // Validate email format
-    new Email(command.email);
-
-    // Basic password validation
-    if (!command.password || command.password.trim().length === 0) {
+  protected async validate(command: RefreshTokenCommand): Promise<void> {
+    if (!command.refreshToken || command.refreshToken.trim().length === 0) {
       throw new UnauthorizedException();
     }
   }

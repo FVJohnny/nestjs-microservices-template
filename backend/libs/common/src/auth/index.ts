@@ -1,3 +1,5 @@
 export * from './jwt-auth.guard';
 export * from './jwt-auth.module';
-export * from './auth.types';
+export * from './jwt-auth.types';
+export * from './jwt-token.service';
+export * from './jwt-token-service.mock';

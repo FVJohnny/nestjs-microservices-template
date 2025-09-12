@@ -162,8 +162,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
       // Act
       await commandHandler.execute(command);
 
-      // Assert - No domain events are emitted on creation, only on verification
-      // This is expected behavior as creation doesn't emit events
+      // Assert
       expect(eventBus.events).toHaveLength(1);
       const event = eventBus.events[0] as EmailVerificationCreatedDomainEvent;
       expect(event).toBeInstanceOf(EmailVerificationCreatedDomainEvent);

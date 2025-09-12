@@ -5,12 +5,11 @@ import { ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
-import { JwtService } from '@nestjs/jwt';
-import { ErrorHandlingModule, JwtAuthModule } from '@libs/nestjs-common';
+import { ErrorHandlingModule, JwtAuthModule, JwtTokenService } from '@libs/nestjs-common';
 
 // Controllers
 import { RegisterUserController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/users/register-user/register-user.controller';
-import { VerifyEmailController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/email-verification/verify-email.controller';
+import { VerifyEmailController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/auth/email-verification/verify-email.controller';
 import { LoginUserController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/users/login-user/login-user.controller';
 
 // Command Handlers
@@ -30,7 +29,7 @@ import { USER_REPOSITORY } from '../../src/bounded-contexts/auth/domain/reposito
 import { UserInMemoryRepository } from '../../src/bounded-contexts/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 
 // Mocks
-import type { JwtPayload, MockOutboxService } from '@libs/nestjs-common';
+import type { MockOutboxService } from '@libs/nestjs-common';
 import { createOutboxServiceMock, OutboxService } from '@libs/nestjs-common';
 
 describe('Complete User Authentication Flow (E2E)', () => {
@@ -38,7 +37,7 @@ describe('Complete User Authentication Flow (E2E)', () => {
   let server: Server;
   let emailVerificationRepository: EmailVerificationInMemoryRepository;
   let userRepository: UserInMemoryRepository;
-  let jwtService: JwtService;
+  let jwtTokenService: JwtTokenService;
 
   beforeAll(async () => {
     const mockOutboxService: MockOutboxService = createOutboxServiceMock({ shouldFail: false });
@@ -83,7 +82,7 @@ describe('Complete User Authentication Flow (E2E)', () => {
       EMAIL_VERIFICATION_REPOSITORY,
     );
     userRepository = moduleFixture.get<UserInMemoryRepository>(USER_REPOSITORY);
-    jwtService = moduleFixture.get<JwtService>(JwtService);
+    jwtTokenService = moduleFixture.get<JwtTokenService>(JwtTokenService);
   });
 
   afterAll(async () => {
@@ -141,12 +140,13 @@ describe('Complete User Authentication Flow (E2E)', () => {
       expect(loginRes.body.username).toBe(userData.username);
       expect(loginRes.body.role).toBe(userData.role);
       expect(typeof loginRes.body.accessToken).toBe('string');
+      expect(typeof loginRes.body.refreshToken).toBe('string');
 
       // Step 5: Validate JWT token
       const token = loginRes.body.accessToken;
 
       // Verify token can be decoded
-      const decodedToken = jwtService.verify<JwtPayload>(token);
+      const decodedToken = jwtTokenService.verifyAccessToken(token);
       expect(decodedToken.userId).toBe(userId);
       expect(decodedToken.email).toBe(userData.email);
       expect(decodedToken.username).toBe(userData.username);
@@ -245,7 +245,7 @@ describe('Complete User Authentication Flow (E2E)', () => {
       const token = loginRes.body.accessToken;
 
       // Verify token structure and claims
-      const decoded = jwtService.verify<JwtPayload>(token);
+      const decoded = jwtTokenService.verifyAccessToken(token);
 
       // Standard JWT claims
       expect(decoded).toHaveProperty('iat');

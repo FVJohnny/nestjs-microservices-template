@@ -3,7 +3,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import {
   VerifyEmailCommand,
   VerifyEmailCommandResponse,
-} from '../../../../application/commands/verify-email/verify-email.command';
+} from '../../../../../application/commands/verify-email/verify-email.command';
 import { VerifyEmailRequestDto, VerifyEmailResponseDto } from './verify-email.params';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 
