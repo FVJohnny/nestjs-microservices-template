@@ -4,11 +4,12 @@ import { KafkaIntegrationEventPublisher, KafkaIntegrationEventListener } from '.
 import {
   INTEGRATION_EVENT_PUBLISHER_TOKEN,
   INTEGRATION_EVENT_LISTENER_TOKEN,
+  IntegrationEventsController,
 } from '@libs/nestjs-common';
 
 @Global()
 @Module({
-  controllers: [],
+  controllers: [IntegrationEventsController],
   providers: [
     KafkaService,
     {

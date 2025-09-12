@@ -4,13 +4,14 @@ import { RedisService } from './redis.service';
 import {
   INTEGRATION_EVENT_PUBLISHER_TOKEN,
   INTEGRATION_EVENT_LISTENER_TOKEN,
+  IntegrationEventsController,
 } from '@libs/nestjs-common';
 import { RedisIntegrationEventListener } from './redis.integration-event-listener';
 import { RedisIntegrationEventPublisher } from './redis.integration-event-publisher';
 
 @Global()
 @Module({
-  controllers: [],
+  controllers: [IntegrationEventsController],
   providers: [
     RedisService,
     {

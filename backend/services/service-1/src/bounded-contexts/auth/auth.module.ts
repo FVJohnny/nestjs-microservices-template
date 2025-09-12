@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { RuntimeAutoDiscovery, JwtAuthModule } from '@libs/nestjs-common';
+import { RuntimeAutoDiscovery } from '@libs/nestjs-common';
 
 // Infrastructure - Repositories
 import { UserMongodbRepository } from './infrastructure/repositories/mongodb/user-mongodb.repository';
@@ -12,7 +12,7 @@ import { EMAIL_VERIFICATION_REPOSITORY } from './domain/repositories/email-verif
 const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__dirname);
 
 @Module({
-  imports: [CqrsModule, JwtAuthModule],
+  imports: [CqrsModule],
   controllers: [...controllers],
   providers: [
     ...handlers,
@@ -26,4 +26,4 @@ const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__d
     },
   ],
 })
-export class AuthModule {}
+export class AuthBoundedContextModule {}
