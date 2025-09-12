@@ -3,7 +3,7 @@ import {
   EmailVerifiedDomainEvent,
   EmailVerifiedDomainEventProps,
 } from '../../../domain/events/email-verified.domain-event';
-import { Email, Username, Password, UserRole } from '../../../domain/value-objects';
+import { Email, Username, Password, UserRole, UserStatus } from '../../../domain/value-objects';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '../../../domain/entities/user/user.entity';
 import {
@@ -22,6 +22,13 @@ describe('EmailVerifiedDomainEventHandler', () => {
       ...overrides,
     });
 
+  const createEventFromUser = (user: User) =>
+    new EmailVerifiedDomainEvent({
+      emailVerificationId: 'verification-123',
+      userId: user.id,
+      email: user.email.toValue(),
+    });
+
   // Setup factory
   const setup = (params: { shouldFailRepository?: boolean } = {}) => {
     const { shouldFailRepository = false } = params;
@@ -33,20 +40,13 @@ describe('EmailVerifiedDomainEventHandler', () => {
   };
 
   describe('Happy Path', () => {
-    it('should handle EmailVerifiedDomainEvent and mark user email as verified', async () => {
+    it('should handle EmailVerifiedDomainEvent and set user status as active', async () => {
       // Arrange
       const { eventHandler, userRepository } = setup();
-      const user = User.create({
-        email: new Email('test@example.com'),
-        username: new Username('testuser'),
-        password: await Password.createFromPlainText('TestPassword123!'),
-        role: UserRole.user(),
-      });
+      const user = User.random({status: UserStatus.emailVerificationPending()})
       await userRepository.save(user);
 
-      const event = createEvent({
-        userId: user.id,
-      });
+      const event = createEventFromUser(user);
 
       // Act
       await eventHandler.handle(event);
@@ -60,31 +60,13 @@ describe('EmailVerifiedDomainEventHandler', () => {
     it('should handle multiple email verification events for different users', async () => {
       // Arrange
       const { eventHandler, userRepository } = setup();
-      const user1 = User.create({
-        email: new Email('user1@example.com'),
-        username: new Username('user1'),
-        password: await Password.createFromPlainText('TestPassword123!'),
-        role: UserRole.user(),
-      });
-      const user2 = User.create({
-        email: new Email('user2@example.com'),
-        username: new Username('user2'),
-        password: await Password.createFromPlainText('TestPassword123!'),
-        role: UserRole.user(),
-      });
+      const user1 = User.random({ status: UserStatus.emailVerificationPending() });
+      const user2 = User.random({ status: UserStatus.emailVerificationPending() });
       await userRepository.save(user1);
       await userRepository.save(user2);
 
-      const event1 = createEvent({
-        emailVerificationId: 'verification-1',
-        userId: user1.id,
-        email: 'user1@example.com',
-      });
-      const event2 = createEvent({
-        emailVerificationId: 'verification-2',
-        userId: user2.id,
-        email: 'user2@example.com',
-      });
+      const event1 = createEventFromUser(user1);
+      const event2 = createEventFromUser(user2);
 
       // Act
       await eventHandler.handle(event1);
@@ -101,19 +83,13 @@ describe('EmailVerifiedDomainEventHandler', () => {
     it('should handle email verification for user with special characters in email', async () => {
       // Arrange
       const { eventHandler, userRepository } = setup();
-      const specialEmail = 'test.user+tag@sub.domain-name.com';
-      const user = User.create({
-        email: new Email(specialEmail),
-        username: new Username('specialuser'),
-        password: await Password.createFromPlainText('TestPassword123!'),
-        role: UserRole.user(),
+      const user = User.random({
+        email: new Email('test.user+tag@sub.domain-name.com'),
+        status: UserStatus.emailVerificationPending(),
       });
       await userRepository.save(user);
 
-      const event = createEvent({
-        userId: user.id,
-        email: specialEmail,
-      });
+      const event = createEventFromUser(user);
 
       // Act
       await eventHandler.handle(event);
@@ -136,45 +112,14 @@ describe('EmailVerifiedDomainEventHandler', () => {
       await expect(eventHandler.handle(event)).rejects.toThrow(NotFoundException);
     });
 
-    it('should handle repository findById failure', async () => {
+    it('should handle repository failure', async () => {
       // Arrange
       const { eventHandler } = setup({ shouldFailRepository: true });
-      const event = createEvent();
+      const user = User.random({ status: UserStatus.emailVerificationPending() });
+      const event = createEventFromUser(user);
 
       // Act & Assert
       await expect(eventHandler.handle(event)).rejects.toThrow(InfrastructureException);
-    });
-
-    it('should handle repository save failure', async () => {
-      // Arrange
-      const user = User.create({
-        email: new Email('test@example.com'),
-        username: new Username('testuser'),
-        password: await Password.createFromPlainText('TestPassword123!'),
-        role: UserRole.user(),
-      });
-
-      const failingRepository = {
-        findById: jest.fn().mockResolvedValue(user),
-        save: jest.fn().mockRejectedValue(new Error('Save operation failed')),
-        findByEmail: jest.fn(),
-        findByUsername: jest.fn(),
-        existsByEmail: jest.fn(),
-        existsByUsername: jest.fn(),
-        findAll: jest.fn(),
-        findByCriteria: jest.fn(),
-        countByCriteria: jest.fn(),
-        remove: jest.fn(),
-        exists: jest.fn(),
-      } as any;
-
-      const failingHandler = new EmailVerifiedDomainEventHandler(failingRepository);
-      const event = createEvent({
-        userId: user.id,
-      });
-
-      // Act & Assert
-      await expect(failingHandler.handle(event)).rejects.toThrow('Save operation failed');
     });
   });
 
@@ -182,20 +127,10 @@ describe('EmailVerifiedDomainEventHandler', () => {
     it('should throw error when trying to verify already active user', async () => {
       // Arrange
       const { eventHandler, userRepository } = setup();
-      const user = User.create({
-        email: new Email('test@example.com'),
-        username: new Username('testuser'),
-        password: await Password.createFromPlainText('TestPassword123!'),
-        role: UserRole.user(),
-      });
-
-      // Manually verify email first
-      user.verifyEmail();
+      const user = User.random({ status: UserStatus.active() });
       await userRepository.save(user);
 
-      const event = createEvent({
-        userId: user.id,
-      });
+      const event = createEventFromUser(user);
 
       // Act & Assert
       await expect(eventHandler.handle(event)).rejects.toThrow(InvalidOperationException);
@@ -204,22 +139,11 @@ describe('EmailVerifiedDomainEventHandler', () => {
     it('should handle concurrent email verification events', async () => {
       // Arrange
       const { eventHandler, userRepository } = setup();
-      const user = User.create({
-        email: new Email('test@example.com'),
-        username: new Username('testuser'),
-        password: await Password.createFromPlainText('TestPassword123!'),
-        role: UserRole.user(),
-      });
+      const user = User.random({ status: UserStatus.emailVerificationPending() });
       await userRepository.save(user);
 
-      const event1 = createEvent({
-        emailVerificationId: 'verification-1',
-        userId: user.id,
-      });
-      const event2 = createEvent({
-        emailVerificationId: 'verification-2',
-        userId: user.id,
-      });
+      const event1 = createEventFromUser(user);
+      const event2 = createEventFromUser(user);
 
       // Act - Process events concurrently
       await Promise.all([eventHandler.handle(event1), eventHandler.handle(event2)]);

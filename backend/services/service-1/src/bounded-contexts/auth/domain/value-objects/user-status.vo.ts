@@ -36,4 +36,10 @@ export class UserStatus extends EnumValueObject<UserStatusEnum> {
   static emailVerificationPending(): UserStatus {
     return new UserStatus(UserStatusEnum.EMAIL_VERIFICATION_PENDING);
   }
+
+  static random(): UserStatus {
+    const values = Object.values(UserStatusEnum);
+    const randomValue = values[Math.floor(Math.random() * values.length)];
+    return new UserStatus(randomValue);
+  }
 }

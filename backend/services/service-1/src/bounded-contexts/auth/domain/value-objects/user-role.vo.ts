@@ -18,7 +18,8 @@ export class UserRole extends EnumValueObject<UserRoleEnum> {
   // random user role
   static random(): UserRole {
     const roles = Object.values(UserRoleEnum);
-    return new UserRole(roles[Math.floor(Math.random() * roles.length)]);
+    const randomValue = roles[Math.floor(Math.random() * roles.length)];
+    return new UserRole(randomValue);
   }
 
   static admin(): UserRole {

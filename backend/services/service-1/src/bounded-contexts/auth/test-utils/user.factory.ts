@@ -19,16 +19,19 @@ export class UserTestFactory {
         email: new Email('admin@example.com'),
         username: new Username('admin'),
         role: UserRole.admin(),
+        status: UserStatus.active(),
       }),
       User.random({
         email: new Email('user1@example.com'),
         username: new Username('user1'),
         role: UserRole.user(),
+        status: UserStatus.active(),
       }),
       User.random({
         email: new Email('user2@example.com'),
         username: new Username('user2'),
         role: UserRole.user(),
+        status: UserStatus.active(),
       }),
     ];
   }

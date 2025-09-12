@@ -12,6 +12,8 @@ import {
 import type { CreateUserProps, UserAttributes, UserDTO } from './user.types';
 import { InvalidOperationException, SharedAggregateRoot } from '@libs/nestjs-common';
 
+let _seq = 1;
+
 export class User extends SharedAggregateRoot implements UserAttributes {
   email: Email;
   username: Username;
@@ -55,19 +57,17 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   }
 
   static random(props?: Partial<UserAttributes>): User {
-    const id = props?.id || uuidv4();
-    const now = new Date();
-
+    _seq++;
     return new User({
-      id,
-      email: props?.email || new Email('user@example.com'),
-      username: props?.username || new Username('user' + Math.floor(Math.random() * 10000)),
-      password: props?.password || Password.createFromPlainTextSync('password'),
-      status: props?.status ?? new UserStatus(UserStatusEnum.ACTIVE),
+      id: props?.id || `${uuidv4()}-${_seq}`,
+      email: props?.email || new Email('user' + _seq + '@example.com'),
+      username: props?.username || new Username('user' + _seq),
+      password: props?.password || Password.createFromPlainTextSync('password' + _seq),
+      status: props?.status ?? UserStatus.random(),
       role: props?.role ?? UserRole.random(),
       lastLoginAt: props?.lastLoginAt,
-      createdAt: props?.createdAt || now,
-      updatedAt: props?.updatedAt || now,
+      createdAt: props?.createdAt || new Date(),
+      updatedAt: props?.updatedAt || new Date(),
     });
   }
 
