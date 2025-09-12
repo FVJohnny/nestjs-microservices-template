@@ -1,5 +1,5 @@
 import { EnumValueObject } from '../../value-object/EnumValueObject';
-import { InvalidArgumentError } from '../../value-object/InvalidArgumentError';
+import { DomainValidationException } from '../../../../errors';
 
 export enum Operator {
   EQUAL = '=',
@@ -16,13 +16,7 @@ export class FilterOperator extends EnumValueObject<Operator> {
   }
 
   static fromValue(value: string): FilterOperator {
-    for (const operatorValue of Object.values(Operator)) {
-      if (value === operatorValue.toString()) {
-        return new FilterOperator(operatorValue);
-      }
-    }
-
-    throw new InvalidArgumentError(`The filter operator ${value} is invalid`);
+    return new FilterOperator(value as Operator);
   }
 
   public isPositive(): boolean {
@@ -30,7 +24,7 @@ export class FilterOperator extends EnumValueObject<Operator> {
   }
 
   protected throwErrorForInvalidValue(value: Operator): void {
-    throw new InvalidArgumentError(`The filter operator ${value} is invalid`);
+    throw new DomainValidationException(`FilterOperator`, value, 'Invalid filter operator');
   }
 
   static equal() {

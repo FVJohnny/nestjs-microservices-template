@@ -61,25 +61,51 @@ describe('POST /users (E2E)', () => {
       .expect(409);
   });
 
-  it('returns a client error for invalid email and too-short username', async () => {
+  it('returns 422 error for invalid email', async () => {
     await request(server)
       .post('/users')
-      .send({ email: 'not-an-email', username: 'ab', password: 'TestPassword123!', role: 'user' })
-      .expect((res) => {
-        if (res.status !== 400 && res.status !== 500) {
-          throw new Error(`Expected 400 or 500, got ${res.status}`);
-        }
-      });
+      .send({
+        email: 'not-an-email',
+        username: 'normal-username',
+        password: 'TestPassword123!',
+        role: 'user',
+      })
+      .expect(422);
   });
 
-  it('returns a client error for too short password', async () => {
+  it('returns 422 error for too short username', async () => {
     await request(server)
       .post('/users')
-      .send({ email: 'not-an-email', username: 'ab', password: 'ab', role: 'user' })
-      .expect((res) => {
-        if (res.status !== 400 && res.status !== 500) {
-          throw new Error(`Expected 400 or 500, got ${res.status}`);
-        }
-      });
+      .send({
+        email: 'normal-user@example.com',
+        username: 'ab',
+        password: 'TestPassword123!',
+        role: 'invalid',
+      })
+      .expect(422);
+  });
+
+  it('returns 422 error for too short password', async () => {
+    await request(server)
+      .post('/users')
+      .send({
+        email: 'normal-user@example.com',
+        username: 'normal-user',
+        password: 'ab',
+        role: 'user',
+      })
+      .expect(422);
+  });
+
+  it('returns 422 error for invalid role', async () => {
+    await request(server)
+      .post('/users')
+      .send({
+        email: 'normal-user@example.com',
+        username: 'normal-username',
+        password: 'TestPassword123!',
+        role: 'invalid',
+      })
+      .expect(422);
   });
 });

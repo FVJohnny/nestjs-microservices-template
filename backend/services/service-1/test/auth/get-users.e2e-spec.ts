@@ -111,11 +111,8 @@ describe('GET /users (E2E)', () => {
   });
 
   it('filters by status=inactive', async () => {
-    const inactive = User.random({
-      username: new Username('inactive'),
-      status: UserStatus.inactive(),
-    });
-    const active = User.random({ username: new Username('active') });
+    const inactive = User.random({ status: UserStatus.inactive() });
+    const active = User.random({ status: UserStatus.active() });
     await repository.save(inactive);
     await repository.save(active);
 
@@ -126,7 +123,7 @@ describe('GET /users (E2E)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
     expect(res.body.data).toHaveLength(1);
-    expect(res.body.data[0].username).toBe('inactive');
+    expect(res.body.data[0].username).toBe(inactive.username.toValue());
   });
 
   it('supports contains filters: id, email, username', async () => {
@@ -151,7 +148,7 @@ describe('GET /users (E2E)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
     expect(byId.body.data).toHaveLength(1);
-    expect(byId.body.data[0].username).toBe('admin');
+    expect(byId.body.data[0].username).toBe(admin.username.toValue());
 
     const byEmail = await request(server)
       .get('/users')
@@ -159,7 +156,7 @@ describe('GET /users (E2E)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
     expect(byEmail.body.data).toHaveLength(1);
-    expect(byEmail.body.data[0].username).toBe('admin');
+    expect(byEmail.body.data[0].username).toBe(admin.username.toValue());
 
     const byUsername = await request(server)
       .get('/users')
@@ -167,18 +164,12 @@ describe('GET /users (E2E)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
     expect(byUsername.body.data).toHaveLength(1);
-    expect(byUsername.body.data[0].username).toBe('user1');
+    expect(byUsername.body.data[0].username).toBe(u1.username.toValue());
   });
 
   it('filters by role equality', async () => {
-    const admin = User.random({
-      username: new Username('admin'),
-      role: UserRole.admin(),
-    });
-    const user = User.random({
-      username: new Username('user'),
-      role: UserRole.user(),
-    });
+    const admin = User.random({ role: UserRole.admin() });
+    const user = User.random({ role: UserRole.user() });
     await repository.save(admin);
     await repository.save(user);
 
@@ -189,7 +180,7 @@ describe('GET /users (E2E)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
     expect(onlyAdmins.body.data).toHaveLength(1);
-    expect(onlyAdmins.body.data[0].username).toBe('admin');
+    expect(onlyAdmins.body.data[0].username).toBe(admin.username.toValue());
 
     const onlyUsers = await request(server)
       .get('/users')
@@ -197,7 +188,7 @@ describe('GET /users (E2E)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
     expect(onlyUsers.body.data).toHaveLength(1);
-    expect(onlyUsers.body.data[0].username).toBe('user');
+    expect(onlyUsers.body.data[0].username).toBe(user.username.toValue());
   });
 
   it('orders by username asc and paginates with limit/offset', async () => {
@@ -222,7 +213,7 @@ describe('GET /users (E2E)', () => {
     expect(page.body.data.map((u: any) => u.username)).toEqual(['user1', 'user2']);
   });
 
-  it('rejects invalid orderType with 400 (validation)', async () => {
+  it('rejects invalid orderType with 422 (validation)', async () => {
     const u = User.random({ username: new Username('alpha') });
     await repository.save(u);
     const token = authHelper.createAuthToken(adminUser);
@@ -230,6 +221,6 @@ describe('GET /users (E2E)', () => {
       .get('/users')
       .query({ orderBy: 'username', orderType: 'ASC' })
       .set('Authorization', `Bearer ${token}`)
-      .expect(400);
+      .expect(422);
   });
 });

@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid';
 import validate from 'uuid-validate';
 
-import { InvalidArgumentError } from './InvalidArgumentError';
 import { ValueObject } from './ValueObject';
+import { DomainValidationException } from '../../../errors';
 
 export class Uuid extends ValueObject<string> {
   constructor(value: string) {
@@ -16,7 +16,11 @@ export class Uuid extends ValueObject<string> {
 
   private ensureIsValidUuid(id: string): void {
     if (!validate(id)) {
-      throw new InvalidArgumentError(`<${this.constructor.name}> does not allow the value <${id}>`);
+      throw new DomainValidationException(
+        `${this.constructor.name}`,
+        id,
+        `${this.constructor.name} does not allow the value <${id}>`,
+      );
     }
   }
 }

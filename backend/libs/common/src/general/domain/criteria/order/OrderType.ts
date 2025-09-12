@@ -1,5 +1,5 @@
 import { EnumValueObject } from '../../value-object/EnumValueObject';
-import { InvalidArgumentError } from '../../value-object/InvalidArgumentError';
+import { DomainValidationException } from '../../../../errors';
 
 export enum OrderTypes {
   ASC = 'asc',
@@ -13,13 +13,7 @@ export class OrderType extends EnumValueObject<OrderTypes> {
   }
 
   static fromValue(value: string): OrderType {
-    for (const orderTypeValue of Object.values(OrderTypes)) {
-      if (value === orderTypeValue.toString()) {
-        return new OrderType(orderTypeValue);
-      }
-    }
-
-    throw new InvalidArgumentError(`The order type ${value} is invalid`);
+    return new OrderType(value as OrderTypes);
   }
 
   public isNone(): boolean {
@@ -35,6 +29,6 @@ export class OrderType extends EnumValueObject<OrderTypes> {
   }
 
   protected throwErrorForInvalidValue(value: OrderTypes): void {
-    throw new InvalidArgumentError(`The order type ${value} is invalid`);
+    throw new DomainValidationException(`OrderType`, value, 'Invalid order type');
   }
 }

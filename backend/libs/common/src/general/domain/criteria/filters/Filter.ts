@@ -1,4 +1,4 @@
-import { InvalidArgumentError } from '../../value-object/InvalidArgumentError';
+import { DomainValidationException } from '../../../../errors';
 import { FilterField } from './FilterField';
 import { FilterOperator } from './FilterOperator';
 import { FilterValue } from './FilterValue';
@@ -19,8 +19,16 @@ export class Filter {
     const operator = values.get('operator');
     const value = values.get('value');
 
-    if (!field || !operator || !value) {
-      throw new InvalidArgumentError(`The filter is invalid`);
+    if (!field) {
+      throw new DomainValidationException('Filter field', '', 'The filter is invalid');
+    }
+
+    if (!operator) {
+      throw new DomainValidationException('Filter operator', '', 'The filter is invalid');
+    }
+
+    if (!value) {
+      throw new DomainValidationException('Filter value', '', 'The filter is invalid');
     }
 
     return new Filter(
