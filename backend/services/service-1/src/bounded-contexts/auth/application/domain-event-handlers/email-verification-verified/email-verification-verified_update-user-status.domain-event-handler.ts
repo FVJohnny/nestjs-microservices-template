@@ -8,10 +8,12 @@ import {
 import { TracingLogger, NotFoundException } from '@libs/nestjs-common';
 
 @EventsHandler(EmailVerificationVerifiedDomainEvent)
-export class EmailVerificationVerifiedDomainEventHandler
+export class EmailVerificationVerified_UpdateUserStatus_DomainEventHandler
   implements IEventHandler<EmailVerificationVerifiedDomainEvent>
 {
-  private readonly logger = new TracingLogger(EmailVerificationVerifiedDomainEventHandler.name);
+  private readonly logger = new TracingLogger(
+    EmailVerificationVerified_UpdateUserStatus_DomainEventHandler.name,
+  );
 
   constructor(
     @Inject(USER_REPOSITORY)

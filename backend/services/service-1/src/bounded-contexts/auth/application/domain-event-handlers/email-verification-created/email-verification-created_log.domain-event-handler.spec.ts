@@ -1,11 +1,11 @@
-import { EmailVerificationCreatedDomainEventHandler } from './email-verification-created.domain-event-handler';
+import { EmailVerificationCreated_Log_DomainEventHandler } from './email-verification-created_log.domain-event-handler';
 import { EmailVerificationCreatedDomainEvent } from '../../../domain/events/email-verification-created.domain-event';
 
-describe('EmailVerificationCreatedDomainEventHandler', () => {
-  let handler: EmailVerificationCreatedDomainEventHandler;
+describe('EmailVerificationCreated_Log_DomainEventHandler', () => {
+  let handler: EmailVerificationCreated_Log_DomainEventHandler;
 
   beforeEach(() => {
-    handler = new EmailVerificationCreatedDomainEventHandler();
+    handler = new EmailVerificationCreated_Log_DomainEventHandler();
   });
 
   describe('handle', () => {

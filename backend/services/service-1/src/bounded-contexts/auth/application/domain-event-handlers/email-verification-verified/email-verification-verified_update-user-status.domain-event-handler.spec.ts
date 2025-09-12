@@ -1,4 +1,4 @@
-import { EmailVerificationVerifiedDomainEventHandler } from './email-verification-verified.domain-event-handler';
+import { EmailVerificationVerified_UpdateUserStatus_DomainEventHandler } from './email-verification-verified_update-user-status.domain-event-handler';
 import {
   EmailVerificationVerifiedDomainEvent,
   EmailVerificationVerifiedDomainEventProps,
@@ -12,7 +12,7 @@ import {
   InfrastructureException,
 } from '@libs/nestjs-common';
 
-describe('EmailVerificationVerifiedDomainEventHandler', () => {
+describe('EmailVerificationVerified_UpdateUserStatus_DomainEventHandler', () => {
   // Test data factory
   const createEvent = (overrides: Partial<EmailVerificationVerifiedDomainEventProps> = {}) =>
     new EmailVerificationVerifiedDomainEvent({
@@ -34,7 +34,7 @@ describe('EmailVerificationVerifiedDomainEventHandler', () => {
     const { shouldFailRepository = false } = params;
 
     const userRepository = new UserInMemoryRepository(shouldFailRepository);
-    const eventHandler = new EmailVerificationVerifiedDomainEventHandler(userRepository);
+    const eventHandler = new EmailVerificationVerified_UpdateUserStatus_DomainEventHandler(userRepository);
 
     return { userRepository, eventHandler };
   };
