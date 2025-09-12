@@ -9,22 +9,25 @@ import {
   SharedIntegrationEventsModule,
   EventTrackerModule,
 } from '@libs/nestjs-common';
-import { DatabaseModule } from './database.module';
-import { IntegrationEventsModule } from './integration-events.module';
 import { MetricsModule, MetricsInterceptor } from '@libs/nestjs-common';
 import { OutboxModule } from '@libs/nestjs-common';
 import { MongoOutboxRepository } from '@libs/nestjs-mongodb';
+import { RedisDBModule, RedisIntegrationEventsModule } from '@libs/nestjs-redis';
+import { MongoDBModule } from '@libs/nestjs-mongodb';
+import { PostgresDBModule } from '@libs/nestjs-postgresql';
 
 @Module({
   imports: [
-    EventTrackerModule,
-
     // Database Modules
-    DatabaseModule,
+    RedisDBModule,
+    MongoDBModule,
+    PostgresDBModule,
 
-    // Event Modules
-    IntegrationEventsModule,
+    // Integration Event Modules
+    RedisIntegrationEventsModule,
+    // KafkaIntegrationEventsModule,
     OutboxModule.forRoot({ repository: MongoOutboxRepository }),
+    EventTrackerModule,
 
     // Common Modules
     CqrsModule.forRoot(),

@@ -10,7 +10,7 @@ import { PostgreSQLConfigService } from './postgresql-config.service';
   providers: [PostgreSQLConfigService],
   exports: [PostgreSQLConfigService],
 })
-export class SharedPostgreSQLModule {
+export class PostgresDBModule {
   static getTypeOrmConfig(entities = []): TypeOrmModuleAsyncOptions {
     return {
       useFactory: (configService: PostgreSQLConfigService) => ({
