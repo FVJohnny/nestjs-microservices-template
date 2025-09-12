@@ -22,7 +22,8 @@ import { VerifyEmailCommandHandler } from '../../src/bounded-contexts/auth/appli
 import { GetUserByIdQueryHandler } from '../../src/bounded-contexts/auth/application/queries/get-user-by-id/get-user-by-id.query-handler';
 
 // Domain Event Handlers
-import { UserRegisteredDomainEventHandler } from '../../src/bounded-contexts/auth/application/domain-event-handlers/user-registered/user-registered.domain-event-handler';
+import { UserRegistered_SendIntegrationEvent_DomainEventHandler } from '../../src/bounded-contexts/auth/application/domain-event-handlers/user-registered/user-registered_send-integration-event.domain-event-handler';
+import { UserRegistered_CreateEmailVerification_DomainEventHandler } from '../../src/bounded-contexts/auth/application/domain-event-handlers/user-registered/user-registered_create-email-verification.domain-event-handler';
 import { EmailVerificationVerifiedDomainEventHandler } from '../../src/bounded-contexts/auth/application/domain-event-handlers/email-verification-verified/email-verification-verified.domain-event-handler';
 
 // Repositories
@@ -70,7 +71,8 @@ describe('Email Verification (E2E)', () => {
         GetUserByIdQueryHandler,
 
         // Domain Event Handlers
-        UserRegisteredDomainEventHandler,
+        UserRegistered_SendIntegrationEvent_DomainEventHandler,
+        UserRegistered_CreateEmailVerification_DomainEventHandler,
         EmailVerificationVerifiedDomainEventHandler,
 
         // Repositories

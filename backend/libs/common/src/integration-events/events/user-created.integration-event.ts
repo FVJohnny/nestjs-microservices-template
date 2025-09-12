@@ -26,6 +26,8 @@ export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
     this.email = props.email;
     this.username = props.username;
     this.role = props.role;
+
+    this.validate();
   }
 
   protected toEventJSON(): Record<string, unknown> {
@@ -48,7 +50,7 @@ export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
       },
       json.metadata as TracingMetadataParams,
     );
-    event.validate();
+
     return event;
   }
 }
