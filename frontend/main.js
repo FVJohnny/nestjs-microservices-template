@@ -68,34 +68,74 @@ async function refreshService(svc) {
 
     const events = Array.isArray(stats.eventsByType) ? stats.eventsByType : [];
 
-    listEl.innerHTML = events.length
-      ? events
-        .map((e) => {
-          const s = e.successCount || 0;
-          const f = e.failureCount || 0;
-          const t = s + f || 1;
-          const pct = Math.round((s / t) * 100);
-          return `
-            <div class="evt">
-              <div class="evt-main">
-                <div>
-                  <span class="topic">${e.topic}</span>
-                  <span class="name">${e.eventName}</span>
-                </div>
-                <div class="evt-actions">
-                  <div class="evt-stats">
-                    <span class="ok">${s}</span>
-                    <span class="sep">/</span>
-                    <span class="err">${f}</span>
-                  </div>
-                  <button class="evt-trigger-btn" onclick="triggerEvent(event, '${svc.id}', '${e.topic}', '${e.eventName}')" title="Trigger ${e.eventName}">⚡</button>
-                </div>
+    if (!events.length) {
+      listEl.innerHTML = '<div class="evt empty">No events processed yet</div>';
+      return;
+    }
+
+    // Group events by topic
+    const eventsByTopic = {};
+    events.forEach(e => {
+      if (!eventsByTopic[e.topic]) {
+        eventsByTopic[e.topic] = [];
+      }
+      eventsByTopic[e.topic].push(e);
+    });
+
+    // Generate HTML for grouped events
+    listEl.innerHTML = Object.entries(eventsByTopic)
+      .map(([topic, topicEvents]) => {
+        const totalSuccess = topicEvents.reduce((sum, e) => sum + (e.successCount || 0), 0);
+        const totalFailure = topicEvents.reduce((sum, e) => sum + (e.failureCount || 0), 0);
+        const totalCount = totalSuccess + totalFailure || 1;
+        const topicPct = Math.round((totalSuccess / totalCount) * 100);
+        
+        return `
+          <div class="topic-group">
+            <div class="topic-header">
+              <div class="topic-info">
+                <span class="topic-badge">${topic}</span>
+                <span class="topic-count">${topicEvents.length} event${topicEvents.length !== 1 ? 's' : ''}</span>
               </div>
-              <div class="bar"><span class="bar-fill" style="width:${pct}%"></span></div>
-            </div>`;
-        })
-        .join('')
-      : '<div class="evt empty">No events processed yet</div>';
+              <div class="topic-stats">
+                <span class="ok">${totalSuccess}</span>
+                <span class="sep">/</span>
+                <span class="err">${totalFailure}</span>
+              </div>
+            </div>
+            <div class="topic-progress">
+              <div class="bar"><span class="bar-fill" style="width:${topicPct}%"></span></div>
+            </div>
+            <div class="topic-events">
+              ${topicEvents.map(e => {
+                const s = e.successCount || 0;
+                const f = e.failureCount || 0;
+                const t = s + f || 1;
+                const pct = Math.round((s / t) * 100);
+                // Only show trigger button for non-domain events
+                const showTrigger = topic.toLowerCase() !== 'domain events';
+                return `
+                  <div class="evt">
+                    <div class="evt-main">
+                      <div class="evt-name-wrapper">
+                        <span class="name">${e.eventName}</span>
+                      </div>
+                      <div class="evt-actions">
+                        <div class="evt-stats">
+                          <span class="ok">${s}</span>
+                          <span class="sep">/</span>
+                          <span class="err">${f}</span>
+                        </div>
+                        ${showTrigger ? `<button class="evt-trigger-btn" onclick="triggerEvent(event, '${svc.id}', '${e.topic}', '${e.eventName}')" title="Trigger ${e.eventName}">⚡</button>` : ''}
+                      </div>
+                    </div>
+                    <div class="bar"><span class="bar-fill" style="width:${pct}%"></span></div>
+                  </div>`;
+              }).join('')}
+            </div>
+          </div>`;
+      })
+      .join('');
   } catch (e) {
     healthEl.textContent = 'offline';
     healthEl.classList.remove('ok');
