@@ -7,10 +7,11 @@ import { NotFoundException, InfrastructureException } from '@libs/nestjs-common'
 
 describe('GetUserByIdQueryHandler', () => {
   // Test data factory
-  const createQuery = (overrides: Partial<GetUserByIdQuery> = {}) => new GetUserByIdQuery({
-    userId: 'test-user-123',
-    ...overrides,
-  });
+  const createQuery = (overrides: Partial<GetUserByIdQuery> = {}) =>
+    new GetUserByIdQuery({
+      userId: 'test-user-123',
+      ...overrides,
+    });
 
   // Setup factory
   const setup = (params: { shouldFailRepository?: boolean } = {}) => {
@@ -18,17 +19,14 @@ describe('GetUserByIdQueryHandler', () => {
 
     const repository = new UserInMemoryRepository(shouldFailRepository);
     const handler = new GetUserByIdQueryHandler(repository);
-    
+
     return { repository, handler };
   };
 
   it('should return the user DTO when user exists', async () => {
     // Arrange
     const { handler, repository } = setup();
-    const user = User.random({
-      email: new Email('john.doe@example.com'),
-      username: new Username('johndoe'),
-    });
+    const user = User.random();
     await repository.save(user);
 
     const query = createQuery({ userId: user.id });
@@ -50,7 +48,7 @@ describe('GetUserByIdQueryHandler', () => {
     await expect(handler.execute(query)).rejects.toThrow(NotFoundException);
   });
 
-  it('should handle repository failures gracefully', async () => {
+  it('should throw InfrastructureException if repository fails', async () => {
     // Arrange
     const { handler } = setup({ shouldFailRepository: true });
     const query = createQuery();

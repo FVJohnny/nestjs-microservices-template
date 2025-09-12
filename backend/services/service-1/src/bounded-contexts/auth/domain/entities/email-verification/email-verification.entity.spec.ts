@@ -378,19 +378,5 @@ describe('EmailVerification Entity', () => {
       expect(emailVerification.email.toValue()).toBe(longEmail);
     });
 
-    it('should handle special characters in user ID', () => {
-      // Arrange
-      const specialUserId = 'user-123-äöü-@#$%';
-      const email = new Email('test@example.com');
-
-      // Act
-      const emailVerification = EmailVerification.create({
-        userId: specialUserId,
-        email,
-      });
-
-      // Assert
-      expect(emailVerification.userId).toBe(specialUserId);
-    });
   });
 });

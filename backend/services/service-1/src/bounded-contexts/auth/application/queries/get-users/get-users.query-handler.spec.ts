@@ -168,7 +168,7 @@ describe('GetUsersQueryHandler', () => {
   });
 
   describe('Error Cases', () => {
-    it('should handle repository failures gracefully', async () => {
+    it('should throw InfrastructureException if repository fails', async () => {
       // Arrange
       const { handler } = setup({ shouldFailRepository: true });
       const query = createQuery();

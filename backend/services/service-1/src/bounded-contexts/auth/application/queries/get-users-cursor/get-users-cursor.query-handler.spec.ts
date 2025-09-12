@@ -518,7 +518,7 @@ describe('GetUsersCursorQueryHandler', () => {
       expect(result.data.some((u) => u.username === 'empty_user')).toBe(true);
     });
 
-    it('should handle repository failures gracefully', async () => {
+    it('should throw InfrastructureException if repository fails', async () => {
       // Arrange
       const { handler } = setup({ shouldFailRepository: true });
       const query = createQuery();
