@@ -168,7 +168,10 @@ describe('Email Verification (E2E)', () => {
     expect(emailVerificationId).toBeDefined();
 
     // Act
-    const res = await request(server).post('/auth/verify-email').send({ emailVerificationId }).expect(200);
+    const res = await request(server)
+      .post('/auth/verify-email')
+      .send({ emailVerificationId })
+      .expect(200);
 
     // Assert
     expect(res.body.success).toBe(true);
