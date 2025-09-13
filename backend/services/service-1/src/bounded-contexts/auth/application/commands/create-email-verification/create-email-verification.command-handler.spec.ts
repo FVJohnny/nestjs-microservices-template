@@ -120,7 +120,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
       const verification = await repository.findByUserId(new Id(command.userId));
       expect(verification).not.toBeNull();
 
-      const expectedExpiration = Expiration.hoursFromNow(24);
+      const expectedExpiration = Expiration.atHoursFromNow(24);
       const actualExpiration = verification!.expiration;
 
       // Allow for small time differences in test execution

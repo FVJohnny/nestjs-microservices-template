@@ -209,7 +209,7 @@ describe('VerifyEmailCommandHandler', () => {
       // Arrange
       const { commandHandler, repository } = setup();
       const emailVerification = EmailVerification.random({
-        expiration: Expiration.hoursFromNow(-1),
+        expiration: Expiration.atHoursFromNow(-1),
       });
       await repository.save(emailVerification);
 

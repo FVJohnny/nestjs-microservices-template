@@ -5,7 +5,7 @@ export class Expiration extends ValueObject<Date> {
     super(value);
   }
 
-  static hoursFromNow(hours: number): Expiration {
+  static atHoursFromNow(hours: number): Expiration {
     return new Expiration(new Date(new Date().getTime() + hours * 60 * 60 * 1000));
   }
 

@@ -18,7 +18,7 @@ describe('EmailVerificationCreated_Log_DomainEventHandler', () => {
         Id.random(),
         Email.random(),
         Id.random(),
-        Expiration.hoursFromNow(24),
+        Expiration.atHoursFromNow(24),
       );
 
       // Act

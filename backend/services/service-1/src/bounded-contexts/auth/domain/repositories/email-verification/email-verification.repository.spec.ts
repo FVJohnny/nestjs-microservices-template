@@ -223,7 +223,7 @@ export function testEmailVerificationRepositoryContract(
         it('should find pending verification by user id', async () => {
           // Arrange
           const verification = EmailVerification.random({
-            expiration: Expiration.hoursFromNow(1),
+            expiration: Expiration.atHoursFromNow(1),
           });
           await repository.save(verification);
 
@@ -252,7 +252,7 @@ export function testEmailVerificationRepositoryContract(
         it('should return null for expired verifications', async () => {
           // Arrange
           const verification = EmailVerification.random({
-            expiration: Expiration.hoursFromNow(-1),
+            expiration: Expiration.atHoursFromNow(-1),
           });
           await repository.save(verification);
 
@@ -268,7 +268,7 @@ export function testEmailVerificationRepositoryContract(
         it('should find pending verification by token', async () => {
           // Arrange
           const verification = EmailVerification.random({
-            expiration: Expiration.hoursFromNow(1),
+            expiration: Expiration.atHoursFromNow(1),
           });
           await repository.save(verification);
 
@@ -297,7 +297,7 @@ export function testEmailVerificationRepositoryContract(
         it('should return null for expired verifications', async () => {
           // Arrange
           const verification = EmailVerification.random({
-            expiration: Expiration.hoursFromNow(-1),
+            expiration: Expiration.atHoursFromNow(-1),
           });
           await repository.save(verification);
 

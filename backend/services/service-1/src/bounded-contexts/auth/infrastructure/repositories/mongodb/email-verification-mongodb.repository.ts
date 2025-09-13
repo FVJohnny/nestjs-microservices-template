@@ -100,7 +100,7 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
     try {
       const document = await this.collection.findOne({
         userId: userId.toValue(),
-        expiration: { $gt: Expiration.hoursFromNow(0).toValue() },
+        expiration: { $gt: Expiration.atHoursFromNow(0).toValue() },
         verification: { $eq: Verification.notVerified().toValue() },
       });
 
