@@ -2,7 +2,7 @@ import { EmailVerification } from './email-verification.entity';
 import { Email, Verification, Expiration } from '../../value-objects';
 import { EmailVerificationVerifiedDomainEvent } from '../../events/email-verified.domain-event';
 import { EmailVerificationCreatedDomainEvent } from '../../events/email-verification-created.domain-event';
-import { InvalidOperationException, Id, TimestampsVO } from '@libs/nestjs-common';
+import { InvalidOperationException, Id, Timestamps } from '@libs/nestjs-common';
 
 describe('EmailVerification Entity', () => {
   const newTestVerification = ({
@@ -19,7 +19,7 @@ describe('EmailVerification Entity', () => {
       token: Id.random(),
       expiration: Expiration.atHoursFromNow(expired ? -1 : 24),
       verification: verified ? Verification.verified() : Verification.notVerified(),
-      timestamps: TimestampsVO.create(),
+      timestamps: Timestamps.create(),
     });
 
   describe('Creation', () => {
@@ -35,7 +35,7 @@ describe('EmailVerification Entity', () => {
       expect(verification.token).toBeInstanceOf(Id);
       expect(verification.verification.isVerified()).toBe(false);
       expect(verification.expiration.toValue()).toBeInstanceOf(Date);
-      expect(verification.timestamps).toBeInstanceOf(TimestampsVO);
+      expect(verification.timestamps).toBeInstanceOf(Timestamps);
       expect(verification.timestamps.createdAt.toValue()).toBeInstanceOf(Date);
       expect(verification.timestamps.updatedAt.toValue()).toBeInstanceOf(Date);
     });

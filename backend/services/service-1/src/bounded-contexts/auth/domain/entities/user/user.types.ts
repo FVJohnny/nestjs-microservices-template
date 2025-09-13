@@ -1,4 +1,4 @@
-import type { Id, TimestampsVO } from '@libs/nestjs-common';
+import type { Id, Timestamps } from '@libs/nestjs-common';
 import type { Email, Username, UserRole, UserStatus, Password } from '../../value-objects';
 import { SharedAggregateRootDTO } from '@libs/nestjs-common';
 
@@ -16,7 +16,7 @@ export interface UserAttributes {
   status: UserStatus;
   role: UserRole;
   lastLoginAt: Date | undefined;
-  timestamps: TimestampsVO;
+  timestamps: Timestamps;
 }
 
 export class UserDTO extends SharedAggregateRootDTO {

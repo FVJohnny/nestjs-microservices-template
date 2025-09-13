@@ -5,7 +5,7 @@ export interface TimestampsData {
   updatedAt: Date;
 }
 
-export class TimestampsVO {
+export class Timestamps {
   readonly createdAt: DateVO;
   updatedAt: DateVO;
 
@@ -14,9 +14,9 @@ export class TimestampsVO {
     this.updatedAt = new DateVO(data.updatedAt);
   }
 
-  static create(): TimestampsVO {
+  static create(): Timestamps {
     const now = new Date();
-    return new TimestampsVO({
+    return new Timestamps({
       createdAt: now,
       updatedAt: now,
     });
@@ -33,7 +33,7 @@ export class TimestampsVO {
     };
   }
 
-  equals(other: TimestampsVO): boolean {
+  equals(other: Timestamps): boolean {
     return this.createdAt.equals(other.createdAt) && this.updatedAt.equals(other.updatedAt);
   }
 }

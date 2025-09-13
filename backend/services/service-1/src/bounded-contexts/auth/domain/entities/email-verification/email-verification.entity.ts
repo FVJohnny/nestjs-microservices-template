@@ -1,4 +1,4 @@
-import { type SharedAggregateRootDTO, Id, TimestampsVO } from '@libs/nestjs-common';
+import { type SharedAggregateRootDTO, Id, Timestamps } from '@libs/nestjs-common';
 import { SharedAggregateRoot, InvalidOperationException } from '@libs/nestjs-common';
 import { Email, Verification, Expiration } from '../../value-objects';
 import { EmailVerificationVerifiedDomainEvent } from '../../events/email-verified.domain-event';
@@ -11,7 +11,7 @@ export interface EmailVerificationAttributes {
   token: Id;
   expiration: Expiration;
   verification: Verification;
-  timestamps: TimestampsVO;
+  timestamps: Timestamps;
 }
 
 export interface CreateEmailVerificationProps {
@@ -36,7 +36,7 @@ export class EmailVerification extends SharedAggregateRoot {
   token: Id;
   expiration: Expiration;
   verification: Verification;
-  timestamps: TimestampsVO;
+  timestamps: Timestamps;
 
   constructor(props: EmailVerificationAttributes) {
     super(props.id);
@@ -51,7 +51,7 @@ export class EmailVerification extends SharedAggregateRoot {
       token: Id.random(),
       expiration: Expiration.atHoursFromNow(24),
       verification: Verification.notVerified(),
-      timestamps: TimestampsVO.create(),
+      timestamps: Timestamps.create(),
     });
 
     emailVerification.apply(
@@ -75,7 +75,7 @@ export class EmailVerification extends SharedAggregateRoot {
       token: props?.token || Id.random(),
       expiration: props?.expiration || Expiration.atHoursFromNow(24),
       verification: props?.verification || Verification.notVerified(),
-      timestamps: props?.timestamps || TimestampsVO.create(),
+      timestamps: props?.timestamps || Timestamps.create(),
     });
   }
 
@@ -119,7 +119,7 @@ export class EmailVerification extends SharedAggregateRoot {
       token: new Id(value.token),
       expiration: new Expiration(value.expiration),
       verification: new Verification(value.verification),
-      timestamps: new TimestampsVO({
+      timestamps: new Timestamps({
         createdAt: value.createdAt,
         updatedAt: value.updatedAt,
       }),

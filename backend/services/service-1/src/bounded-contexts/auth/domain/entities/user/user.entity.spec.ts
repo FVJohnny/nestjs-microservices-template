@@ -1,7 +1,7 @@
 import { User } from './user.entity';
 import { Email, Username, UserRole, UserRoleEnum, UserStatus, UserStatusEnum, Password } from '../../value-objects';
 import { UserRegisteredDomainEvent } from '../../events/user-registered.domain-event';
-import { InvalidOperationException, TimestampsVO } from '@libs/nestjs-common';
+import { InvalidOperationException, Timestamps } from '@libs/nestjs-common';
 
 describe('User Entity', () => {
   // Test data factories
@@ -27,7 +27,7 @@ describe('User Entity', () => {
       expect(user.status.toValue()).toBe(UserStatusEnum.EMAIL_VERIFICATION_PENDING);
       expect(user.role.toValue()).toBe(UserRoleEnum.USER);
       expect(user.lastLoginAt).toBeUndefined();
-      expect(user.timestamps).toBeInstanceOf(TimestampsVO);
+      expect(user.timestamps).toBeInstanceOf(Timestamps);
       expect(user.timestamps.createdAt.toValue()).toBeInstanceOf(Date);
       expect(user.timestamps.updatedAt.toValue()).toBeInstanceOf(Date);
       expect(await user.password.verify('password123')).toBe(true);

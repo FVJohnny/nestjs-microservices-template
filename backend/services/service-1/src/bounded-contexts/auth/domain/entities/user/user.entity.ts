@@ -14,7 +14,7 @@ import {
   InvalidOperationException,
   SharedAggregateRoot,
   Id,
-  TimestampsVO,
+  Timestamps,
 } from '@libs/nestjs-common';
 
 let _seq = 1;
@@ -26,7 +26,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   status: UserStatus;
   role: UserRole;
   lastLoginAt: Date | undefined;
-  timestamps: TimestampsVO;
+  timestamps: Timestamps;
   constructor(props: UserAttributes) {
     super(props.id);
     Object.assign(this, props);
@@ -43,7 +43,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       status: new UserStatus(UserStatusEnum.EMAIL_VERIFICATION_PENDING),
       role: props.role,
       lastLoginAt: undefined,
-      timestamps: TimestampsVO.create(),
+      timestamps: Timestamps.create(),
     });
 
     user.apply(
@@ -68,7 +68,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       status: props?.status ?? UserStatus.random(),
       role: props?.role ?? UserRole.random(),
       lastLoginAt: props?.lastLoginAt,
-      timestamps: props?.timestamps || TimestampsVO.create(),
+      timestamps: props?.timestamps || Timestamps.create(),
     });
   }
 
@@ -129,7 +129,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       status: new UserStatus(value.status as UserStatusEnum),
       role: new UserRole(value.role as UserRoleEnum),
       lastLoginAt: value.lastLoginAt ? new Date(value.lastLoginAt) : undefined,
-      timestamps: new TimestampsVO({
+      timestamps: new Timestamps({
         createdAt: value.createdAt,
         updatedAt: value.updatedAt,
       }),

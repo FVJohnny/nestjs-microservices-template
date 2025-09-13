@@ -8,7 +8,7 @@ import {
   createEventBusMock,
   InfrastructureException,
   Id,
-  TimestampsVO,
+  Timestamps,
 } from '@libs/nestjs-common';
 import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 
@@ -123,7 +123,7 @@ describe('RegisterUserCommandHandler', () => {
 
       // Assert
       const savedUser = await repository.findById(new Id(result.id));
-      expect(savedUser!.timestamps).toBeInstanceOf(TimestampsVO);
+      expect(savedUser!.timestamps).toBeInstanceOf(Timestamps);
       expect(savedUser!.timestamps.createdAt.toValue()).toBeInstanceOf(Date);
       expect(savedUser!.timestamps.createdAt.toValue().getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
       expect(savedUser!.timestamps.createdAt.toValue().getTime()).toBeLessThanOrEqual(afterCreation.getTime());
