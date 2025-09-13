@@ -3,13 +3,13 @@ import { GetUserByIdQuery } from './get-user-by-id.query';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '../../../domain/entities/user/user.entity';
 import { Email, Username } from '../../../domain/value-objects';
-import { NotFoundException, InfrastructureException } from '@libs/nestjs-common';
+import { NotFoundException, InfrastructureException, Id } from '@libs/nestjs-common';
 
 describe('GetUserByIdQueryHandler', () => {
   // Test data factory
   const createQuery = (overrides: Partial<GetUserByIdQuery> = {}) =>
     new GetUserByIdQuery({
-      userId: 'test-user-123',
+      userId: Id.random().toValue(),
       ...overrides,
     });
 
@@ -29,7 +29,7 @@ describe('GetUserByIdQueryHandler', () => {
     const user = User.random();
     await repository.save(user);
 
-    const query = createQuery({ userId: user.id });
+    const query = createQuery({ userId: user.id.toValue() });
 
     // Act
     const result = await handler.execute(query);
@@ -42,7 +42,7 @@ describe('GetUserByIdQueryHandler', () => {
   it('should throw NotFoundException when user does not exist', async () => {
     // Arrange
     const { handler } = setup();
-    const query = createQuery({ userId: 'non-existent-id' });
+    const query = createQuery({ userId: Id.random().toValue() });
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(NotFoundException);

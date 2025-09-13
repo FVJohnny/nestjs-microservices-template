@@ -10,7 +10,7 @@ import {
   Password,
 } from '../../value-objects';
 import type { CreateUserProps, UserAttributes, UserDTO } from './user.types';
-import { InvalidOperationException, SharedAggregateRoot } from '@libs/nestjs-common';
+import { InvalidOperationException, SharedAggregateRoot, Id } from '@libs/nestjs-common';
 
 let _seq = 1;
 
@@ -33,7 +33,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
     const now = new Date();
 
     const user = new User({
-      id,
+      id: new Id(id),
       email: props.email,
       username: props.username,
       password: props.password,
@@ -46,7 +46,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
 
     user.apply(
       new UserRegisteredDomainEvent({
-        userId: id,
+        userId: user.id,
         email: props.email,
         username: props.username,
         role: user.role,
@@ -59,7 +59,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   static random(props?: Partial<UserAttributes>): User {
     _seq++;
     return new User({
-      id: props?.id || `${uuidv4()}-${_seq}`,
+      id: props?.id || new Id(uuidv4()),
       email: props?.email || new Email('user' + _seq + '@example.com'),
       username: props?.username || new Username('user' + _seq),
       password: props?.password || Password.createFromPlainTextSync('password' + _seq),
@@ -121,7 +121,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
 
   static fromValue(value: UserDTO): User {
     return new User({
-      id: value.id,
+      id: new Id(value.id),
       email: new Email(value.email),
       username: new Username(value.username),
       password: Password.createFromHash(value.password),
@@ -135,7 +135,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
 
   toValue(): UserDTO {
     return {
-      id: this.id,
+      id: this.id.toValue(),
       email: this.email.toValue(),
       username: this.username.toValue(),
       password: this.password.toValue(),

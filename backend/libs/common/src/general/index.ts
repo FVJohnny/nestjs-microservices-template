@@ -11,6 +11,7 @@ export { EnumValueObject } from './domain/value-object/EnumValueObject';
 export { StringValueObject } from './domain/value-object/StringValueObject';
 export { ValueObject } from './domain/value-object/ValueObject';
 export { Primitives } from './domain/value-object/ValueObject';
+export { Id } from './domain/value-object/Id';
 
 // Repositories
 export * from './domain/repositories/repository.base';

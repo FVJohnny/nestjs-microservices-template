@@ -10,7 +10,7 @@ export class UserRegistered_CreateEmailVerification_DomainEventHandler
 
   async handle(event: UserRegisteredDomainEvent): Promise<void> {
     const createEmailVerificationCommand = new CreateEmailVerificationCommand({
-      userId: event.aggregateId,
+      userId: event.aggregateId.toValue(),
       email: event.email.toValue(),
     });
 

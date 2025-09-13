@@ -61,7 +61,7 @@ describe('LoginUserCommandHandler', () => {
 
       // Assert
       expect(result).toBeDefined();
-      expect(result.userId).toBe(user.id);
+      expect(result.userId).toBe(user.id.toValue());
       expect(result.email).toBe(user.email.toValue());
       expect(result.username).toBe(user.username.toValue());
       expect(result.role).toBe(user.role.toValue());

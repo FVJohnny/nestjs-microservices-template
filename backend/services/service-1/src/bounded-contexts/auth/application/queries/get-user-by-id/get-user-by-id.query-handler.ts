@@ -5,7 +5,7 @@ import {
   USER_REPOSITORY,
   type UserRepository,
 } from '../../../domain/repositories/user/user.repository';
-import { BaseQueryHandler, NotFoundException } from '@libs/nestjs-common';
+import { BaseQueryHandler, NotFoundException, Id } from '@libs/nestjs-common';
 import { GetUserByIdQueryResponse } from './get-user-by-id.response';
 
 @QueryHandler(GetUserByIdQuery)
@@ -21,7 +21,7 @@ export class GetUserByIdQueryHandler extends BaseQueryHandler<
   }
 
   protected async handle(query: GetUserByIdQuery): Promise<GetUserByIdQueryResponse> {
-    const user = await this.userRepository.findById(query.userId);
+    const user = await this.userRepository.findById(new Id(query.userId));
 
     if (!user) {
       throw new NotFoundException();

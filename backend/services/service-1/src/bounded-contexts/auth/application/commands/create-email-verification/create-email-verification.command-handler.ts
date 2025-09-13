@@ -4,7 +4,7 @@ import {
   CreateEmailVerificationCommand,
   CreateEmailVerificationCommandResponse,
 } from './create-email-verification.command';
-import { BaseCommandHandler } from '@libs/nestjs-common';
+import { BaseCommandHandler, Id } from '@libs/nestjs-common';
 import { EmailVerification } from '../../../domain/entities/email-verification/email-verification.entity';
 import { Email } from '../../../domain/value-objects';
 import {
@@ -28,12 +28,14 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
   protected async handle(
     command: CreateEmailVerificationCommand,
   ): Promise<CreateEmailVerificationCommandResponse> {
+    const userId = new Id(command.userId);
+    const email = new Email(command.email);
     // Delete any existing verifications before creating new one
-    await this.removeExistingVerifications(command.userId, command.email);
+    await this.removeExistingVerifications(userId, email);
 
     const emailVerification = EmailVerification.create({
-      userId: command.userId,
-      email: new Email(command.email),
+      userId,
+      email,
     });
 
     await this.emailVerificationRepository.save(emailVerification);
@@ -41,8 +43,8 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
     await this.sendDomainEvents<EmailVerification>(emailVerification);
 
     return {
-      id: emailVerification.id,
-      token: emailVerification.token,
+      id: emailVerification.id.toValue(),
+      token: emailVerification.token.toValue(),
     };
   }
 
@@ -58,8 +60,7 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
   /**
    * Remove any existing email verifications for the same user or email
    */
-  private async removeExistingVerifications(userId: string, email: string): Promise<void> {
-    // Remove existing verification for this user
+  private async removeExistingVerifications(userId: Id, email: Email): Promise<void> {
     const existingVerificationByUserId =
       await this.emailVerificationRepository.findByUserId(userId);
     if (existingVerificationByUserId) {
@@ -67,9 +68,7 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
     }
 
     // Remove existing verification for this email (if different from user's verification)
-    const existingVerificationByEmail = await this.emailVerificationRepository.findByEmail(
-      new Email(email),
-    );
+    const existingVerificationByEmail = await this.emailVerificationRepository.findByEmail(email);
     if (existingVerificationByEmail) {
       await this.emailVerificationRepository.remove(existingVerificationByEmail.id);
     }

@@ -4,6 +4,7 @@ import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-
 import { User } from '../../../domain/entities/user/user.entity';
 import { UserStatus } from '../../../domain/value-objects';
 import { 
+  Id,
   JwtTokenService,
   JwtTokenServiceMockOptions,
   UnauthorizedException, 
@@ -36,7 +37,7 @@ describe('RefreshTokenCommandHandler', () => {
       const { handler, repository } = setup({
         jwtMockOptions: {
           mockVerifyRefreshToken: {
-            userId: user.id,
+            userId: user.id.toValue(),
           },
         }
       });
@@ -49,7 +50,7 @@ describe('RefreshTokenCommandHandler', () => {
 
       // Assert
       expect(result).toEqual({
-        userId: user.id,
+        userId: user.id.toValue(),
         email: user.email.toValue(),
         username: user.username.toValue(),
         role: user.role.toValue(),
@@ -70,7 +71,7 @@ describe('RefreshTokenCommandHandler', () => {
     it('should throw UnauthorizedException if user not found', async () => {
       // Arrange
       const { handler } = setup();
-      const command = new RefreshTokenCommand('valid-refresh-token');
+      const command = new RefreshTokenCommand(Id.random().toValue());
 
       // Act & Assert
       await expect(handler.execute(command)).rejects.toThrow(UnauthorizedException);
@@ -82,7 +83,7 @@ describe('RefreshTokenCommandHandler', () => {
       const { handler, repository } = setup({
         jwtMockOptions: {
           mockVerifyRefreshToken: {
-            userId: user.id,
+            userId: user.id.toValue(),
           },
         }
       });

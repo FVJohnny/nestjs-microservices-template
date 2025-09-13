@@ -6,6 +6,7 @@ import {
   type EmailVerificationRepository,
 } from '../../../domain/repositories/email-verification/email-verification.repository';
 import { BaseCommandHandler, NotFoundException } from '@libs/nestjs-common';
+import { Id } from '@libs/nestjs-common';
 
 @CommandHandler(VerifyEmailCommand)
 export class VerifyEmailCommandHandler extends BaseCommandHandler<
@@ -23,7 +24,7 @@ export class VerifyEmailCommandHandler extends BaseCommandHandler<
   protected async handle(command: VerifyEmailCommand): Promise<VerifyEmailCommandResponse> {
     // Find pending email verification by token
     const emailVerification = await this.emailVerificationRepository.findPendingByToken(
-      command.token,
+      new Id(command.token),
     );
 
     if (!emailVerification) {
@@ -38,7 +39,7 @@ export class VerifyEmailCommandHandler extends BaseCommandHandler<
 
     return {
       success: true,
-      userId: emailVerification.userId,
+      userId: emailVerification.userId.toValue(),
     };
   }
 

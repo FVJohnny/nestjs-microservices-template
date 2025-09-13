@@ -5,7 +5,12 @@ import {
   USER_REPOSITORY,
   type UserRepository,
 } from '../../../domain/repositories/user/user.repository';
-import { BaseCommandHandler, UnauthorizedException, JwtTokenService } from '@libs/nestjs-common';
+import {
+  BaseCommandHandler,
+  UnauthorizedException,
+  JwtTokenService,
+  Id,
+} from '@libs/nestjs-common';
 
 @CommandHandler(RefreshTokenCommand)
 export class RefreshTokenCommandHandler extends BaseCommandHandler<
@@ -31,7 +36,7 @@ export class RefreshTokenCommandHandler extends BaseCommandHandler<
       throw new UnauthorizedException();
     }
 
-    const user = await this.userRepository.findById(userId);
+    const user = await this.userRepository.findById(new Id(userId));
 
     if (!user) {
       throw new UnauthorizedException();
@@ -44,7 +49,7 @@ export class RefreshTokenCommandHandler extends BaseCommandHandler<
 
     // Generate new JWT tokens
     const payload = {
-      userId: user.id,
+      userId: user.id.toValue(),
       email: user.email.toValue(),
       username: user.username.toValue(),
       role: user.role.toValue(),
@@ -54,7 +59,7 @@ export class RefreshTokenCommandHandler extends BaseCommandHandler<
     const refreshToken = this.jwtTokenService.generateRefreshToken(payload);
 
     return {
-      userId: user.id,
+      userId: user.id.toValue(),
       email: user.email.toValue(),
       username: user.username.toValue(),
       role: user.role.toValue(),

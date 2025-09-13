@@ -44,7 +44,7 @@ describe('UserRegistered_CreateEmailVerification_DomainEventHandler', () => {
       const command = mockCommandBus.commands[0] as CreateEmailVerificationCommand;
 
       expect(command).toBeInstanceOf(CreateEmailVerificationCommand);
-      expect(command.userId).toBe(user.id);
+      expect(command.userId).toBe(user.id.toValue());
       expect(command.email).toBe(user.email.toValue());
     });
 
@@ -61,7 +61,7 @@ describe('UserRegistered_CreateEmailVerification_DomainEventHandler', () => {
       expect(mockCommandBus.commands).toHaveLength(1);
       const command = mockCommandBus.commands[0] as CreateEmailVerificationCommand;
 
-      expect(command.userId).toBe(user.id);
+      expect(command.userId).toBe(user.id.toValue());
       expect(command.email).toBe(user.email.toValue());
     });
 
@@ -84,15 +84,15 @@ describe('UserRegistered_CreateEmailVerification_DomainEventHandler', () => {
       expect(mockCommandBus.commands).toHaveLength(3);
 
       const command1 = mockCommandBus.commands[0] as CreateEmailVerificationCommand;
-      expect(command1.userId).toBe(users[0].id);
+      expect(command1.userId).toBe(users[0].id.toValue());
       expect(command1.email).toBe(users[0].email.toValue());
 
       const command2 = mockCommandBus.commands[1] as CreateEmailVerificationCommand;
-      expect(command2.userId).toBe(users[1].id);
+      expect(command2.userId).toBe(users[1].id.toValue());
       expect(command2.email).toBe(users[1].email.toValue());
 
       const command3 = mockCommandBus.commands[2] as CreateEmailVerificationCommand;
-      expect(command3.userId).toBe(users[2].id);
+      expect(command3.userId).toBe(users[2].id.toValue());
       expect(command3.email).toBe(users[2].email.toValue());
     });
   });

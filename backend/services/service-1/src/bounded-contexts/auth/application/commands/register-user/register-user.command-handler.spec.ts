@@ -7,6 +7,7 @@ import {
   AlreadyExistsException,
   createEventBusMock,
   InfrastructureException,
+  Id,
 } from '@libs/nestjs-common';
 import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 
@@ -51,7 +52,7 @@ describe('RegisterUserCommandHandler', () => {
       expect(result.id).toBeDefined();
       expect(typeof result.id).toBe('string');
       // Verify user was saved
-      const savedUser = await repository.findById(result.id);
+      const savedUser = await repository.findById(new Id(result.id));
       expect(savedUser).not.toBeNull();
       expect(savedUser!.email.toValue()).toBe('john.doe@example.com');
       expect(savedUser!.username.toValue()).toBe('johndoe');
@@ -70,7 +71,7 @@ describe('RegisterUserCommandHandler', () => {
 
       // Assert
       expect(result.id).toBeDefined();
-      const savedUser = await repository.findById(result.id);
+      const savedUser = await repository.findById(new Id(result.id));
       expect(savedUser!.email.toValue()).toBe('minimal@example.com');
       expect(savedUser!.username.toValue()).toBe('minimaluser');
       expect(savedUser!.role.toValue()).toBe(UserRoleEnum.USER);
@@ -91,7 +92,7 @@ describe('RegisterUserCommandHandler', () => {
 
       const publishedEvent = eventBus.events[0] as UserRegisteredDomainEvent;
       expect(publishedEvent).toBeInstanceOf(UserRegisteredDomainEvent);
-      expect(publishedEvent.aggregateId).toBe(result.id);
+      expect(publishedEvent.aggregateId.toValue()).toBe(result.id);
       expect(publishedEvent.email.toValue()).toBe('events@example.com');
       expect(publishedEvent.username.toValue()).toBe('eventsuser');
       expect(publishedEvent.occurredOn).toBeInstanceOf(Date);
@@ -106,7 +107,7 @@ describe('RegisterUserCommandHandler', () => {
       const result = await commandHandler.execute(command);
 
       // Assert
-      const savedUser = await repository.findById(result.id);
+      const savedUser = await repository.findById(new Id(result.id));
       expect(savedUser!.isEmailVerificationPending()).toBe(true);
     });
     it('should set proper timestamps on user creation', async () => {
@@ -120,7 +121,7 @@ describe('RegisterUserCommandHandler', () => {
       const afterCreation = new Date();
 
       // Assert
-      const savedUser = await repository.findById(result.id);
+      const savedUser = await repository.findById(new Id(result.id));
       expect(savedUser!.createdAt).toBeInstanceOf(Date);
       expect(savedUser!.updatedAt).toBeInstanceOf(Date);
       expect(savedUser!.createdAt.getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());

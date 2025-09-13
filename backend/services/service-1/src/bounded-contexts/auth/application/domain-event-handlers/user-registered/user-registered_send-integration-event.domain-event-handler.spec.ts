@@ -46,7 +46,7 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
       expect(storedIntegrationEvent.topic).toBe(Topics.USERS.topic);
 
       const payload = JSON.parse(storedIntegrationEvent.payload);
-      expect(payload.data.userId).toBe(user.id);
+      expect(payload.data.userId).toBe(user.id.toValue());
       expect(payload.data.email).toBe(user.email.toValue());
       expect(payload.data.username).toBe(user.username.toValue());
       expect(payload.data.role).toEqual(user.role.toValue());
@@ -67,7 +67,7 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
       const storedIntegrationEvent = mockOutboxService.storedEvents[0];
       const payload = JSON.parse(storedIntegrationEvent.payload);
 
-      expect(payload.data.userId).toBe(user.id);
+      expect(payload.data.userId).toBe(user.id.toValue());
       expect(payload.data.email).toBe(user.email.toValue());
       expect(payload.data.username).toBe(user.username.toValue());
       expect(payload.data.role).toEqual(user.role.toValue());
@@ -88,11 +88,11 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
       expect(mockOutboxService.storedEvents).toHaveLength(2);
 
       const firstPayload = JSON.parse(mockOutboxService.storedEvents[0].payload);
-      expect(firstPayload.data.userId).toBe(users[0].id);
+      expect(firstPayload.data.userId).toBe(users[0].id.toValue());
       expect(firstPayload.data.role).toBe(users[0].role.toValue());
 
       const secondPayload = JSON.parse(mockOutboxService.storedEvents[1].payload);
-      expect(secondPayload.data.userId).toBe(users[1].id);
+      expect(secondPayload.data.userId).toBe(users[1].id.toValue());
       expect(secondPayload.data.role).toBe(users[1].role.toValue());
     });
   });

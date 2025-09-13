@@ -1,3 +1,4 @@
+import type { Id } from '@libs/nestjs-common';
 import type { Email, Username, UserRole, UserStatus, Password } from '../../value-objects';
 import { SharedAggregateRootDTO } from '@libs/nestjs-common';
 
@@ -8,7 +9,7 @@ export interface CreateUserProps {
   role: UserRole;
 }
 export interface UserAttributes {
-  id: string;
+  id: Id;
   email: Email;
   username: Username;
   password: Password;

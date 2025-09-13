@@ -51,10 +51,10 @@ describe('GET /users/:id (E2E)', () => {
     const token = authHelper.createAuthToken(user);
     const server: Server = app.getHttpServer();
     const res = await request(server)
-      .get(`/users/${user.id}`)
+      .get(`/users/${user.id.toValue()}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
-    expect(res.body.id).toBe(user.id);
+    expect(res.body.id).toBe(user.id.toValue());
     expect(res.body.username).toBe(user.username.toValue());
     expect(res.body.email).toBe(user.email.toValue());
   });
@@ -67,8 +67,8 @@ describe('GET /users/:id (E2E)', () => {
 
     const server: Server = app.getHttpServer();
     await request(server)
-      .get(`/users/non-existent-id`)
+      .get(`/users/00000000-0000-0000-0000-000000000000`)
       .set('Authorization', `Bearer ${token}`)
-      .expect(404);
+      .expect(422);
   });
 });

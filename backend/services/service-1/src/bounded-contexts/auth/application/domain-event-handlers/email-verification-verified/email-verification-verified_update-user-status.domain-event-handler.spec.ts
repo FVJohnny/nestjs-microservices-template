@@ -10,23 +10,24 @@ import {
   NotFoundException,
   InvalidOperationException,
   InfrastructureException,
+  Id,
 } from '@libs/nestjs-common';
 
 describe('EmailVerificationVerified_UpdateUserStatus_DomainEventHandler', () => {
   // Test data factory
   const createEvent = (overrides: Partial<EmailVerificationVerifiedDomainEventProps> = {}) =>
     new EmailVerificationVerifiedDomainEvent({
-      emailVerificationId: 'verification-123',
-      userId: 'test-user-123',
-      email: 'test@example.com',
+      emailVerificationId: Id.random(),
+      userId: Id.random(),
+      email: Email.random(),
       ...overrides,
     });
 
   const createEventFromUser = (user: User) =>
     new EmailVerificationVerifiedDomainEvent({
-      emailVerificationId: 'verification-123',
+      emailVerificationId: Id.random(),
       userId: user.id,
-      email: user.email.toValue(),
+      email: user.email,
     });
 
   // Setup factory
@@ -40,7 +41,7 @@ describe('EmailVerificationVerified_UpdateUserStatus_DomainEventHandler', () => 
   };
 
   describe('Happy Path', () => {
-    it('should handle EmailVerificationVerifiedDomainEvent and set user status as active', async () => {
+    it('should set user status to active', async () => {
       // Arrange
       const { eventHandler, userRepository } = setup();
       const user = User.random({ status: UserStatus.emailVerificationPending() });
@@ -104,9 +105,7 @@ describe('EmailVerificationVerified_UpdateUserStatus_DomainEventHandler', () => 
     it('should throw NotFoundException when user does not exist', async () => {
       // Arrange
       const { eventHandler } = setup();
-      const event = createEvent({
-        userId: 'non-existent-user',
-      });
+      const event = createEvent();
 
       // Act & Assert
       await expect(eventHandler.handle(event)).rejects.toThrow(NotFoundException);
@@ -115,8 +114,7 @@ describe('EmailVerificationVerified_UpdateUserStatus_DomainEventHandler', () => 
     it('should handle repository failure', async () => {
       // Arrange
       const { eventHandler } = setup({ shouldFailRepository: true });
-      const user = User.random({ status: UserStatus.emailVerificationPending() });
-      const event = createEventFromUser(user);
+      const event = createEvent();
 
       // Act & Assert
       await expect(eventHandler.handle(event)).rejects.toThrow(InfrastructureException);
@@ -151,17 +149,6 @@ describe('EmailVerificationVerified_UpdateUserStatus_DomainEventHandler', () => 
       // Assert
       const updatedUser = await userRepository.findById(user.id);
       expect(updatedUser!.isActive()).toBe(true);
-    });
-
-    it('should handle invalid user IDs gracefully', async () => {
-      // Arrange
-      const { eventHandler } = setup();
-      const event = createEvent({
-        userId: '', // Empty user ID
-      });
-
-      // Act & Assert
-      await expect(eventHandler.handle(event)).rejects.toThrow(NotFoundException);
     });
   });
 });

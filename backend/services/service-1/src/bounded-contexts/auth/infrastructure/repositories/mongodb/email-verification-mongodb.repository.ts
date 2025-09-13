@@ -6,7 +6,7 @@ import {
 } from '../../../domain/entities/email-verification/email-verification.entity';
 import { EmailVerificationRepository } from '../../../domain/repositories/email-verification/email-verification.repository';
 import { Email } from '../../../domain/value-objects';
-import { InfrastructureException, AlreadyExistsException } from '@libs/nestjs-common';
+import { InfrastructureException, AlreadyExistsException, Id } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from '@libs/nestjs-mongodb';
 import { CorrelationLogger } from '@libs/nestjs-common';
 
@@ -28,21 +28,19 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
 
   async save(emailVerification: EmailVerification): Promise<void> {
     try {
-      const primitives = emailVerification.toValue();
-
       await this.collection.updateOne(
-        { id: emailVerification.id },
-        { $set: { ...primitives } },
+        { id: emailVerification.id.toValue() },
+        { $set: { ...emailVerification.toValue() } },
         { upsert: true },
       );
     } catch (error: unknown) {
-      this.handleDatabaseError('save', emailVerification.id, error);
+      this.handleDatabaseError('save', emailVerification.id.toValue(), error);
     }
   }
 
-  async findByToken(token: string): Promise<EmailVerification | null> {
+  async findById(id: Id): Promise<EmailVerification | null> {
     try {
-      const document = await this.collection.findOne({ token });
+      const document = await this.collection.findOne({ id: id.toValue() });
 
       if (!document) {
         return null;
@@ -50,13 +48,13 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
 
       return EmailVerification.fromValue(document);
     } catch (error: unknown) {
-      this.handleDatabaseError('findByToken', token, error);
+      this.handleDatabaseError('findById', id.toValue(), error);
     }
   }
 
-  async findByUserId(userId: string): Promise<EmailVerification | null> {
+  async findByToken(token: Id): Promise<EmailVerification | null> {
     try {
-      const document = await this.collection.findOne({ userId });
+      const document = await this.collection.findOne({ token: token.toValue() });
 
       if (!document) {
         return null;
@@ -64,7 +62,21 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
 
       return EmailVerification.fromValue(document);
     } catch (error: unknown) {
-      this.handleDatabaseError('findByUserId', userId, error);
+      this.handleDatabaseError('findByToken', token.toValue(), error);
+    }
+  }
+
+  async findByUserId(userId: Id): Promise<EmailVerification | null> {
+    try {
+      const document = await this.collection.findOne({ userId: userId.toValue() });
+
+      if (!document) {
+        return null;
+      }
+
+      return EmailVerification.fromValue(document);
+    } catch (error: unknown) {
+      this.handleDatabaseError('findByUserId', userId.toValue(), error);
     }
   }
 
@@ -84,12 +96,12 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
     }
   }
 
-  async findPendingByUserId(userId: string): Promise<EmailVerification | null> {
+  async findPendingByUserId(userId: Id): Promise<EmailVerification | null> {
     try {
       const document = await this.collection.findOne({
-        userId,
-        isVerified: false,
+        userId: userId.toValue(),
         expiresAt: { $gt: new Date() },
+        verifiedAt: { $eq: new Date(0) },
       });
 
       if (!document) {
@@ -98,16 +110,16 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
 
       return EmailVerification.fromValue(document);
     } catch (error: unknown) {
-      this.handleDatabaseError('findPendingByUserId', userId, error);
+      this.handleDatabaseError('findPendingByUserId', userId.toValue(), error);
     }
   }
 
-  async findPendingByToken(token: string): Promise<EmailVerification | null> {
+  async findPendingByToken(token: Id): Promise<EmailVerification | null> {
     try {
       const document = await this.collection.findOne({
-        token,
-        isVerified: false,
+        token: token.toValue(),
         expiresAt: { $gt: new Date() },
+        verifiedAt: { $eq: new Date(0) },
       });
 
       if (!document) {
@@ -116,24 +128,24 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
 
       return EmailVerification.fromValue(document);
     } catch (error: unknown) {
-      this.handleDatabaseError('findPendingByToken', token, error);
+      this.handleDatabaseError('findPendingByToken', token.toValue(), error);
     }
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: Id): Promise<void> {
     try {
-      await this.collection.deleteOne({ id });
+      await this.collection.deleteOne({ id: id.toValue() });
     } catch (error: unknown) {
-      this.handleDatabaseError('remove', id, error);
+      this.handleDatabaseError('remove', id.toValue(), error);
     }
   }
 
-  async exists(id: string): Promise<boolean> {
+  async exists(id: Id): Promise<boolean> {
     try {
-      const count = await this.collection.countDocuments({ id });
+      const count = await this.collection.countDocuments({ id: id.toValue() });
       return count > 0;
     } catch (error: unknown) {
-      this.handleDatabaseError('exists', id, error);
+      this.handleDatabaseError('exists', id.toValue(), error);
     }
   }
 
@@ -205,7 +217,7 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
       // Query performance indexes
       if (!indexNames.includes('idx_email_verification_pending')) {
         await this.collection.createIndex(
-          { isVerified: 1, expiresAt: 1 },
+          { expiresAt: 1, verifiedAt: 1 },
           { name: 'idx_email_verification_pending' },
         );
       }

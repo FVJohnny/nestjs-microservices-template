@@ -4,7 +4,7 @@ import { User } from '../../../domain/entities/user/user.entity';
 import { UserRepository } from '../../../domain/repositories/user/user.repository';
 import { Email, Username } from '../../../domain/value-objects';
 import { UserDTO } from '../../../domain/entities/user/user.types';
-import { Criteria, InfrastructureException, PaginatedRepoResult } from '@libs/nestjs-common';
+import { Criteria, InfrastructureException, PaginatedRepoResult, Id } from '@libs/nestjs-common';
 import { MongoCriteriaConverter } from '@libs/nestjs-mongodb';
 import { MONGO_CLIENT_TOKEN } from '@libs/nestjs-mongodb';
 import { CorrelationLogger } from '@libs/nestjs-common';
@@ -30,18 +30,18 @@ export class UserMongodbRepository implements UserRepository {
       const primitives = user.toValue();
 
       await this.collection.updateOne(
-        { id: user.id },
+        { id: user.id.toValue() },
         { $set: { ...primitives } },
         { upsert: true },
       );
     } catch (error: unknown) {
-      this.handleDatabaseError('save', user.id, error);
+      this.handleDatabaseError('save', user.id.toValue(), error);
     }
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: Id): Promise<User | null> {
     try {
-      const document = await this.collection.findOne({ id });
+      const document = await this.collection.findOne({ id: id.toValue() });
 
       if (!document) {
         return null;
@@ -49,7 +49,7 @@ export class UserMongodbRepository implements UserRepository {
 
       return User.fromValue(document);
     } catch (error: unknown) {
-      this.handleDatabaseError('findById', id, error);
+      this.handleDatabaseError('findById', id.toValue(), error);
     }
   }
 
@@ -145,20 +145,20 @@ export class UserMongodbRepository implements UserRepository {
     }
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: Id): Promise<void> {
     try {
-      await this.collection.deleteOne({ id });
+      await this.collection.deleteOne({ id: id.toValue() });
     } catch (error: unknown) {
-      this.handleDatabaseError('remove', id, error);
+      this.handleDatabaseError('remove', id.toValue(), error);
     }
   }
 
-  async exists(id: string): Promise<boolean> {
+  async exists(id: Id): Promise<boolean> {
     try {
-      const count = await this.collection.countDocuments({ id });
+      const count = await this.collection.countDocuments({ id: id.toValue() });
       return count > 0;
     } catch (error: unknown) {
-      this.handleDatabaseError('exists', id, error);
+      this.handleDatabaseError('exists', id.toValue(), error);
     }
   }
 

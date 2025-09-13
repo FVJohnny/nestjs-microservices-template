@@ -14,6 +14,7 @@ import {
   OrderTypes,
   Operator,
   PaginationOffset,
+  Id,
 } from '@libs/nestjs-common';
 import { UserTestFactory } from '../../../test-utils';
 
@@ -114,7 +115,7 @@ export function testUserRepositoryContract(
           const allUsers = await repository.findAll();
           expect(allUsers).toHaveLength(users.length);
           users.forEach((user) => {
-            const found = allUsers.find((u) => u.id === user.id);
+            const found = allUsers.find((u) => u.id.toValue() === user.id.toValue());
             expect(found).toBeDefined();
             expect(found?.equals(user)).toBe(true);
           });
@@ -137,7 +138,7 @@ export function testUserRepositoryContract(
 
         it('should return null when user does not exist', async () => {
           // Act
-          const result = await repository.findById('non-existent-id');
+          const result = await repository.findById(Id.random());
 
           // Assert
           expect(result).toBeNull();
@@ -262,7 +263,7 @@ export function testUserRepositoryContract(
 
         it('should return false when user does not exist', async () => {
           // Act
-          const result = await repository.exists('non-existent-id');
+          const result = await repository.exists(Id.random());
 
           // Assert
           expect(result).toBe(false);
@@ -286,7 +287,7 @@ export function testUserRepositoryContract(
 
         it('should handle removal of non-existent user gracefully', async () => {
           // Act & Assert - Should not throw
-          await expect(repository.remove('non-existent-id')).resolves.not.toThrow();
+          await expect(repository.remove(Id.random())).resolves.not.toThrow();
         });
       });
 
@@ -302,7 +303,7 @@ export function testUserRepositoryContract(
           // Assert
           expect(results).toHaveLength(testUsers.length);
           testUsers.forEach((testUser) => {
-            const result = results.find((r) => r.id === testUser.id);
+            const result = results.find((r) => r.id.toValue() === testUser.id.toValue());
             expect(result).toBeDefined();
             expect(result!.equals(testUser)).toBe(true);
           });
@@ -345,7 +346,7 @@ export function testUserRepositoryContract(
           const filter = new Filter(
             new FilterField('id'),
             new FilterOperator(Operator.EQUAL),
-            new FilterValue(testUsers[0].id),
+            new FilterValue(testUsers[0].id.toValue()),
           );
           const criteria = new Criteria({
             filters: new Filters([filter]),
@@ -356,7 +357,7 @@ export function testUserRepositoryContract(
 
           // Assert
           expect(result.data).toHaveLength(1);
-          expect(result.data[0].id).toBe(testUsers[0].id);
+          expect(result.data[0].id.toValue()).toBe(testUsers[0].id.toValue());
         });
 
         it('should filter by email (EQUAL)', async () => {
@@ -935,7 +936,7 @@ export function testUserRepositoryContract(
 
         // Assert
         expect(loadedUser).not.toBeNull();
-        expect(loadedUser!.id).toBe(originalUser.id);
+        expect(loadedUser!.id.toValue()).toBe(originalUser.id.toValue());
         expect(loadedUser!.email.toValue()).toBe(originalUser.email.toValue());
         expect(loadedUser!.username.toValue()).toBe(originalUser.username.toValue());
         expect(loadedUser!.status.toValue()).toBe(originalUser.status.toValue());

@@ -5,7 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ErrorHandlingModule, JwtAuthModule, JwtTokenService } from '@libs/nestjs-common';
+import { ErrorHandlingModule, JwtAuthModule, JwtTokenService, Id } from '@libs/nestjs-common';
 
 // Controllers
 import { RegisterUserController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/users/register-user/register-user.controller';
@@ -114,9 +114,9 @@ describe('Complete User Authentication Flow (E2E)', () => {
       expect(typeof userId).toBe('string');
 
       // Step 2: Get verification token (simulate email received)
-      const verification = await emailVerificationRepository.findByUserId(userId);
+      const verification = await emailVerificationRepository.findByUserId(new Id(userId));
       expect(verification).toBeDefined();
-      const verificationToken = verification!.token;
+      const verificationToken = verification!.token.toValue();
 
       // Step 3: Verify email
       const verifyRes = await request(server)
@@ -194,8 +194,8 @@ describe('Complete User Authentication Flow (E2E)', () => {
       const registerRes = await request(server).post('/users').send(userData).expect(201);
       const userId = registerRes.body.id;
 
-      const verification = await emailVerificationRepository.findByUserId(userId);
-      const verificationToken = verification!.token;
+      const verification = await emailVerificationRepository.findByUserId(new Id(userId));
+      const verificationToken = verification!.token.toValue();
 
       await request(server)
         .post('/auth/verify-email')
@@ -233,10 +233,10 @@ describe('Complete User Authentication Flow (E2E)', () => {
       const registerRes = await request(server).post('/users').send(userData).expect(201);
       const userId = registerRes.body.id;
 
-      const verification = await emailVerificationRepository.findByUserId(userId);
+      const verification = await emailVerificationRepository.findByUserId(new Id(userId));
       await request(server)
         .post('/auth/verify-email')
-        .send({ token: verification!.token })
+        .send({ token: verification!.token.toValue() })
         .expect(200);
 
       const loginRes = await request(server)

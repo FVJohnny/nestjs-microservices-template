@@ -1,27 +1,23 @@
-import { v4 as uuidv4 } from 'uuid';
-import type { SharedAggregateRootDTO } from '@libs/nestjs-common';
+import { type SharedAggregateRootDTO, Id } from '@libs/nestjs-common';
 import { SharedAggregateRoot, InvalidOperationException } from '@libs/nestjs-common';
 import { Email } from '../../value-objects';
 import { EmailVerificationVerifiedDomainEvent } from '../../events/email-verified.domain-event';
 import { EmailVerificationCreatedDomainEvent } from '../../events/email-verification-created.domain-event';
 
 export interface EmailVerificationAttributes {
-  id: string;
-  userId: string;
+  id: Id;
+  userId: Id;
   email: Email;
-  token: string;
+  token: Id;
   expiresAt: Date;
-  isVerified: boolean;
-  verifiedAt?: Date;
+  verifiedAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateEmailVerificationProps {
-  userId: string;
+  userId: Id;
   email: Email;
-  token?: string;
-  expiresAt?: Date;
 }
 
 export interface EmailVerificationDTO extends SharedAggregateRootDTO {
@@ -30,19 +26,17 @@ export interface EmailVerificationDTO extends SharedAggregateRootDTO {
   email: string;
   token: string;
   expiresAt: Date;
-  isVerified: boolean;
-  verifiedAt?: Date;
+  verifiedAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export class EmailVerification extends SharedAggregateRoot implements EmailVerificationAttributes {
-  userId: string;
+export class EmailVerification extends SharedAggregateRoot {
+  userId: Id;
   email: Email;
-  token: string;
+  token: Id;
   expiresAt: Date;
-  isVerified: boolean;
-  verifiedAt?: Date;
+  verifiedAt: Date;
   createdAt: Date;
   updatedAt: Date;
 
@@ -52,46 +46,51 @@ export class EmailVerification extends SharedAggregateRoot implements EmailVerif
   }
 
   static create(props: CreateEmailVerificationProps): EmailVerification {
-    const id = uuidv4();
-    const now = new Date();
-    const token = props.token || uuidv4().replace(/-/g, '');
-    const expiresAt = props.expiresAt || new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours
-
     const emailVerification = new EmailVerification({
-      id,
+      id: Id.random(),
       userId: props.userId,
       email: props.email,
-      token,
-      expiresAt,
-      isVerified: false,
-      verifiedAt: undefined,
-      createdAt: now,
-      updatedAt: now,
+      token: Id.random(),
+      expiresAt: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+      verifiedAt: new Date(0),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     emailVerification.apply(
       new EmailVerificationCreatedDomainEvent(
-        id,
-        props.userId,
-        props.email.toValue(),
-        token,
-        expiresAt,
+        emailVerification.id,
+        emailVerification.userId,
+        emailVerification.email,
+        emailVerification.token,
+        emailVerification.expiresAt,
       ),
     );
 
     return emailVerification;
   }
 
-  verify(): void {
-    if (this.isVerified) {
-      throw new InvalidOperationException('verify', 'verified');
-    }
+  static random(props?: Partial<EmailVerificationAttributes>): EmailVerification {
+    return new EmailVerification({
+      id: Id.random(),
+      userId: props?.userId || Id.random(),
+      email: props?.email || Email.random(),
+      token: props?.token || Id.random(),
+      expiresAt: props?.expiresAt || new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+      verifiedAt: props?.verifiedAt || new Date(0),
+      createdAt: props?.createdAt || new Date(),
+      updatedAt: props?.updatedAt || new Date(),
+    });
+  }
 
+  verify(): void {
     if (this.isExpired()) {
       throw new InvalidOperationException('verify', 'expired');
     }
+    if (this.isVerified()) {
+      throw new InvalidOperationException('verify', 'verified');
+    }
 
-    this.isVerified = true;
     this.verifiedAt = new Date();
     this.updatedAt = new Date();
 
@@ -99,9 +98,13 @@ export class EmailVerification extends SharedAggregateRoot implements EmailVerif
       new EmailVerificationVerifiedDomainEvent({
         emailVerificationId: this.id,
         userId: this.userId,
-        email: this.email.toValue(),
+        email: this.email,
       }),
     );
+  }
+
+  isVerified(): boolean {
+    return this.verifiedAt && this.verifiedAt.getTime() > 0;
   }
 
   isExpired(): boolean {
@@ -109,18 +112,17 @@ export class EmailVerification extends SharedAggregateRoot implements EmailVerif
   }
 
   isPending(): boolean {
-    return !this.isVerified && !this.isExpired();
+    return (!this.verifiedAt || this.verifiedAt.getTime() === 0) && !this.isExpired();
   }
 
   static fromValue(value: EmailVerificationDTO): EmailVerification {
     return new EmailVerification({
-      id: value.id,
-      userId: value.userId,
+      id: new Id(value.id),
+      userId: new Id(value.userId),
       email: new Email(value.email),
-      token: value.token,
+      token: new Id(value.token),
       expiresAt: new Date(value.expiresAt),
-      isVerified: value.isVerified,
-      verifiedAt: value.verifiedAt ? new Date(value.verifiedAt) : undefined,
+      verifiedAt: value.verifiedAt ? new Date(value.verifiedAt) : new Date(0),
       createdAt: new Date(value.createdAt),
       updatedAt: new Date(value.updatedAt),
     });
@@ -128,12 +130,11 @@ export class EmailVerification extends SharedAggregateRoot implements EmailVerif
 
   toValue(): EmailVerificationDTO {
     return {
-      id: this.id,
-      userId: this.userId,
+      id: this.id.toValue(),
+      userId: this.userId.toValue(),
       email: this.email.toValue(),
-      token: this.token,
+      token: this.token.toValue(),
       expiresAt: this.expiresAt,
-      isVerified: this.isVerified,
       verifiedAt: this.verifiedAt,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

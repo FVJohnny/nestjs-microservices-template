@@ -5,6 +5,7 @@ import { Email, Username } from '../../../domain/value-objects';
 import { Criteria, InMemoryCriteriaConverter, PaginatedRepoResult } from '@libs/nestjs-common';
 import { UserDTO } from '../../../domain/entities/user/user.types';
 import { InfrastructureException } from '@libs/nestjs-common';
+import { Id } from '@libs/nestjs-common';
 
 @Injectable()
 export class UserInMemoryRepository implements UserRepository {
@@ -16,14 +17,14 @@ export class UserInMemoryRepository implements UserRepository {
     if (this.shouldFail) {
       throw new InfrastructureException('save', 'Repository operation failed', new Error());
     }
-    this.users.set(user.id, user.toValue());
+    this.users.set(user.id.toValue(), user.toValue());
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: Id): Promise<User | null> {
     if (this.shouldFail) {
       throw new InfrastructureException('findById', 'Repository operation failed', new Error());
     }
-    const userDTO = this.users.get(id);
+    const userDTO = this.users.get(id.toValue());
     return userDTO ? User.fromValue(userDTO) : null;
   }
 
@@ -119,17 +120,17 @@ export class UserInMemoryRepository implements UserRepository {
     return count;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: Id): Promise<void> {
     if (this.shouldFail) {
       throw new InfrastructureException('remove', 'Repository operation failed', new Error());
     }
-    this.users.delete(id);
+    this.users.delete(id.toValue());
   }
 
-  async exists(id: string): Promise<boolean> {
+  async exists(id: Id): Promise<boolean> {
     if (this.shouldFail) {
       throw new InfrastructureException('exists', 'Repository operation failed', new Error());
     }
-    return this.users.has(id);
+    return this.users.has(id.toValue());
   }
 }

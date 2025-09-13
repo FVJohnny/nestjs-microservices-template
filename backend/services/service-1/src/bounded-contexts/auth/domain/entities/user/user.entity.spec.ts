@@ -233,7 +233,7 @@ describe('User Entity', () => {
 
       const value = user.toValue();
 
-      expect(value.id).toBe(user.id);
+      expect(value.id).toBe(user.id.toValue());
       expect(value.email).toBe('test@example.com');
       expect(value.username).toBe('testuser');
       expect(value.password).toMatch(/^\$2[ayb]\$\d{2}\$/); // bcrypt hash
@@ -247,7 +247,7 @@ describe('User Entity', () => {
       
       const user = User.fromValue(primitives);
 
-      expect(user.id).toBe(primitives.id);
+      expect(user.id.toValue()).toBe(primitives.id);
       expect(user.email.toValue()).toBe(primitives.email);
       expect(user.username.toValue()).toBe(primitives.username);
       expect(await user.password.verify('testpassword')).toBe(true);

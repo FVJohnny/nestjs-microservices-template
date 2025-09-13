@@ -1,8 +1,9 @@
 import { DomainEvent } from '@libs/nestjs-common';
 import type { UserRole, Email, Username } from '../value-objects';
+import type { Id } from '@libs/nestjs-common';
 
 export interface UserRegisteredDomainEventParams {
-  userId: string;
+  userId: Id;
   email: Email;
   username: Username;
   role: UserRole;

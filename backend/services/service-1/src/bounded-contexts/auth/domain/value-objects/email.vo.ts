@@ -1,5 +1,6 @@
 import { StringValueObject, DomainValidationException } from '@libs/nestjs-common';
 
+let _seq = 0;
 export class Email extends StringValueObject {
   constructor(value: string) {
     Email.validate(value);
@@ -11,6 +12,10 @@ export class Email extends StringValueObject {
     if (!emailRegex.test(email)) {
       throw new DomainValidationException('email', email, `Invalid email format: ${email}`);
     }
+  }
+
+  static random() {
+    return new Email(`random-email-${_seq++}@random-domain.com`);
   }
 
   getDomain(): string {

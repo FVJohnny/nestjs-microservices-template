@@ -4,14 +4,14 @@ import validate from 'uuid-validate';
 import { ValueObject } from './ValueObject';
 import { DomainValidationException } from '../../../errors';
 
-export class Uuid extends ValueObject<string> {
+export class Id extends ValueObject<string> {
   constructor(value: string) {
     super(value);
     this.ensureIsValidUuid(value);
   }
 
-  static random(): Uuid {
-    return new Uuid(uuid());
+  static random(): Id {
+    return new Id(uuid());
   }
 
   private ensureIsValidUuid(id: string): void {

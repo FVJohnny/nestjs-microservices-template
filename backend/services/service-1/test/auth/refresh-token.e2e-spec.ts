@@ -5,7 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ErrorHandlingModule, JwtAuthModule, JwtTokenService } from '@libs/nestjs-common';
+import { ErrorHandlingModule, JwtAuthModule, JwtTokenService, Id } from '@libs/nestjs-common';
 
 // Controllers
 import { RegisterUserController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/users/register-user/register-user.controller';
@@ -119,10 +119,10 @@ describe('Refresh Token Flow (E2E)', () => {
       const userId = registerRes.body.id;
 
       // Verify email
-      const verification = await emailVerificationRepository.findByUserId(userId);
+      const verification = await emailVerificationRepository.findByUserId(new Id(userId));
       await request(server)
         .post('/auth/verify-email')
-        .send({ token: verification!.token })
+        .send({ token: verification!.token.toValue() })
         .expect(200);
 
       // Login to get tokens

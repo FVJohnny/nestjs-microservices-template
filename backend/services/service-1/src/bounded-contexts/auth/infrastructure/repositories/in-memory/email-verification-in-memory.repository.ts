@@ -5,7 +5,7 @@ import {
 } from '../../../domain/entities/email-verification/email-verification.entity';
 import { EmailVerificationRepository } from '../../../domain/repositories/email-verification/email-verification.repository';
 import { Email } from '../../../domain/value-objects';
-import { AlreadyExistsException, InfrastructureException } from '@libs/nestjs-common';
+import { AlreadyExistsException, InfrastructureException, Id } from '@libs/nestjs-common';
 
 @Injectable()
 export class EmailVerificationInMemoryRepository implements EmailVerificationRepository {
@@ -18,38 +18,50 @@ export class EmailVerificationInMemoryRepository implements EmailVerificationRep
       throw new InfrastructureException('save', 'Repository operation failed', new Error());
 
     // Check if user already has an email verification
-    const existingVerificationByUserId = await this.findByUserId(emailVerification.userId);
-    if (existingVerificationByUserId && existingVerificationByUserId.id !== emailVerification.id) {
-      throw new AlreadyExistsException('userId', emailVerification.userId);
+    const existingByUserID = await this.findByUserId(emailVerification.userId);
+    if (existingByUserID && !existingByUserID.id.equals(emailVerification.id)) {
+      throw new AlreadyExistsException('userId', emailVerification.userId.toValue());
     }
 
     // Check if email is already used by another verification
-    const existingVerificationByEmail = await this.findByEmail(emailVerification.email);
-    if (existingVerificationByEmail && existingVerificationByEmail.id !== emailVerification.id) {
+    const existingByEmail = await this.findByEmail(emailVerification.email);
+    if (existingByEmail && !existingByEmail.id.equals(emailVerification.id)) {
       throw new AlreadyExistsException('email', emailVerification.email.toValue());
     }
 
-    this.emailVerifications.set(emailVerification.id, emailVerification.toValue());
+    this.emailVerifications.set(emailVerification.id.toValue(), emailVerification.toValue());
   }
 
-  async findByToken(token: string): Promise<EmailVerification | null> {
+  async findById(id: Id): Promise<EmailVerification | null> {
     if (this.shouldFail)
-      throw new InfrastructureException('findByToken', 'Repository operation failed', new Error());
+      throw new InfrastructureException('findById', 'Repository operation failed', new Error());
 
     for (const dto of this.emailVerifications.values()) {
-      if (dto.token === token) {
+      if (dto.id === id.toValue()) {
         return EmailVerification.fromValue(dto);
       }
     }
     return null;
   }
 
-  async findByUserId(userId: string): Promise<EmailVerification | null> {
+  async findByToken(token: Id): Promise<EmailVerification | null> {
+    if (this.shouldFail)
+      throw new InfrastructureException('findByToken', 'Repository operation failed', new Error());
+
+    for (const dto of this.emailVerifications.values()) {
+      if (dto.token === token.toValue()) {
+        return EmailVerification.fromValue(dto);
+      }
+    }
+    return null;
+  }
+
+  async findByUserId(userId: Id): Promise<EmailVerification | null> {
     if (this.shouldFail)
       throw new InfrastructureException('findByUserId', 'Repository operation failed', new Error());
 
     for (const dto of this.emailVerifications.values()) {
-      if (dto.userId === userId) {
+      if (dto.userId === userId.toValue()) {
         return EmailVerification.fromValue(dto);
       }
     }
@@ -68,7 +80,7 @@ export class EmailVerificationInMemoryRepository implements EmailVerificationRep
     return null;
   }
 
-  async findPendingByUserId(userId: string): Promise<EmailVerification | null> {
+  async findPendingByUserId(userId: Id): Promise<EmailVerification | null> {
     if (this.shouldFail)
       throw new InfrastructureException(
         'findPendingByUserId',
@@ -77,14 +89,14 @@ export class EmailVerificationInMemoryRepository implements EmailVerificationRep
       );
 
     for (const dto of this.emailVerifications.values()) {
-      if (dto.userId === userId && !dto.isVerified && new Date(dto.expiresAt) > new Date()) {
+      if (dto.userId === userId.toValue() && this.isDtoPending(dto)) {
         return EmailVerification.fromValue(dto);
       }
     }
     return null;
   }
 
-  async findPendingByToken(token: string): Promise<EmailVerification | null> {
+  async findPendingByToken(token: Id): Promise<EmailVerification | null> {
     if (this.shouldFail)
       throw new InfrastructureException(
         'findPendingByToken',
@@ -93,24 +105,28 @@ export class EmailVerificationInMemoryRepository implements EmailVerificationRep
       );
 
     for (const dto of this.emailVerifications.values()) {
-      if (dto.token === token && !dto.isVerified && new Date(dto.expiresAt) > new Date()) {
+      if (dto.token === token.toValue() && this.isDtoPending(dto)) {
         return EmailVerification.fromValue(dto);
       }
     }
     return null;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: Id): Promise<void> {
     if (this.shouldFail)
       throw new InfrastructureException('remove', 'Repository operation failed', new Error());
 
-    this.emailVerifications.delete(id);
+    this.emailVerifications.delete(id.toValue());
   }
 
-  async exists(id: string): Promise<boolean> {
+  async exists(id: Id): Promise<boolean> {
     if (this.shouldFail)
       throw new InfrastructureException('exists', 'Repository operation failed', new Error());
 
-    return this.emailVerifications.has(id);
+    return this.emailVerifications.has(id.toValue());
+  }
+
+  private isDtoPending(dto: EmailVerificationDTO): boolean {
+    return new Date(dto.verifiedAt).getTime() === 0 && new Date(dto.expiresAt) > new Date();
   }
 }

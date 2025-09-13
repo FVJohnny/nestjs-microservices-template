@@ -51,7 +51,7 @@ export class LoginUserCommandHandler extends BaseCommandHandler<
 
     // Generate JWT tokens
     const payload = {
-      userId: user.id,
+      userId: user.id.toValue(),
       email: user.email.toValue(),
       username: user.username.toValue(),
       role: user.role.toValue(),
@@ -61,7 +61,7 @@ export class LoginUserCommandHandler extends BaseCommandHandler<
     const refreshToken = this.jwtTokenService.generateRefreshToken(payload);
 
     return {
-      userId: user.id,
+      userId: user.id.toValue(),
       email: user.email.toValue(),
       username: user.username.toValue(),
       role: user.role.toValue(),

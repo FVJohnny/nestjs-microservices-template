@@ -144,7 +144,7 @@ describe('GET /users (E2E)', () => {
     const token = authHelper.createAuthToken(adminUser);
     const byId = await request(server)
       .get('/users')
-      .query({ userId: admin.id })
+      .query({ userId: admin.id.toValue() })
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
     expect(byId.body.data).toHaveLength(1);

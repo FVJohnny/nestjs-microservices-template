@@ -34,7 +34,7 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<
 
     await this.sendDomainEvents<User>(user);
 
-    return { id: user.id };
+    return { id: user.id.toValue() };
   }
 
   protected authorize(_command: RegisterUserCommand): Promise<boolean> {

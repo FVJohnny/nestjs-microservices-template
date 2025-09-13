@@ -11,7 +11,7 @@ export class UserRegistered_SendIntegrationEvent_DomainEventHandler
   async handle(event: UserRegisteredDomainEvent): Promise<void> {
     const integrationEvent = new UserCreatedIntegrationEvent(
       {
-        userId: event.aggregateId,
+        userId: event.aggregateId.toValue(),
         email: event.email.toValue(),
         username: event.username.toValue(),
         role: event.role.toValue(),

@@ -1,8 +1,10 @@
+import type { Id } from '../value-object/Id';
+
 /**
  * Base repository interface for domain entities.
  * Provides common CRUD operations that can be extended by specific repositories.
  */
-export interface Repository<T, ID = string> {
+export interface Repository<T, ID = Id> {
   /**
    * Finds an entity by its ID
    */
