@@ -2,7 +2,7 @@ import { EmailVerification } from './email-verification.entity';
 import { Email, Verification, Expiration } from '../../value-objects';
 import { EmailVerificationVerifiedDomainEvent } from '../../events/email-verified.domain-event';
 import { EmailVerificationCreatedDomainEvent } from '../../events/email-verification-created.domain-event';
-import { InvalidOperationException, Id } from '@libs/nestjs-common';
+import { InvalidOperationException, Id, DateVO } from '@libs/nestjs-common';
 
 describe('EmailVerification Entity', () => {
   const newTestVerification = ({
@@ -19,8 +19,8 @@ describe('EmailVerification Entity', () => {
       token: Id.random(),
       expiration: Expiration.atHoursFromNow(expired ? -1 : 24),
       verification: verified ? Verification.verified() : Verification.notVerified(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new DateVO(new Date()),
+      updatedAt: new DateVO(new Date()),
     });
 
   describe('Creation', () => {
@@ -36,8 +36,8 @@ describe('EmailVerification Entity', () => {
       expect(verification.token).toBeInstanceOf(Id);
       expect(verification.verification.isVerified()).toBe(false);
       expect(verification.expiration.toValue()).toBeInstanceOf(Date);
-      expect(verification.createdAt).toBeInstanceOf(Date);
-      expect(verification.updatedAt).toBeInstanceOf(Date);
+      expect(verification.createdAt).toBeInstanceOf(DateVO);
+      expect(verification.updatedAt).toBeInstanceOf(DateVO);
     });
 
     it('should generate unique identifiers', () => {
@@ -125,7 +125,7 @@ describe('EmailVerification Entity', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
       verification.verify();
 
-      expect(verification.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+      expect(verification.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
     });
   });
 
@@ -179,8 +179,8 @@ describe('EmailVerification Entity', () => {
         token: emailVerification.token.toValue(),
         expiration: emailVerification.expiration.toValue(),
         verification: emailVerification.verification.toValue(),
-        createdAt: emailVerification.createdAt,
-        updatedAt: emailVerification.updatedAt,
+        createdAt: emailVerification.createdAt.toValue(),
+        updatedAt: emailVerification.updatedAt.toValue(),
       });
     });
 
