@@ -149,7 +149,7 @@ describe('VerifyEmailCommandHandler', () => {
       const verifiedEmail = await repository.findByToken(emailVerification.token);
       expect(verifiedEmail).not.toBeNull();
       expect(verifiedEmail!.isVerified()).toBe(true);
-      expect(verifiedEmail!.email.toValue()).toBe('test+special_chars.123@example-domain.co.uk');
+      expect(verifiedEmail!.email.toValue()).toBe(emailVerification.email.toValue());
     });
   });
 

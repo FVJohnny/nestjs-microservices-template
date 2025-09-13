@@ -223,6 +223,7 @@ export function testEmailVerificationRepositoryContract(
         it('should find pending verification by user id', async () => {
           // Arrange
           const verification = EmailVerification.random({
+            verification: Verification.notVerified(),
             expiration: Expiration.atHoursFromNow(1),
           });
           await repository.save(verification);
@@ -238,8 +239,10 @@ export function testEmailVerificationRepositoryContract(
 
         it('should return null for verified verifications', async () => {
           // Arrange
-          const verification = EmailVerification.random();
-          verification.verify();
+          const verification = EmailVerification.random({
+            verification: Verification.verified(),
+            expiration: Expiration.atHoursFromNow(1),
+          });
           await repository.save(verification);
 
           // Act
@@ -252,6 +255,7 @@ export function testEmailVerificationRepositoryContract(
         it('should return null for expired verifications', async () => {
           // Arrange
           const verification = EmailVerification.random({
+            verification: Verification.notVerified(),
             expiration: Expiration.atHoursFromNow(-1),
           });
           await repository.save(verification);
@@ -268,6 +272,7 @@ export function testEmailVerificationRepositoryContract(
         it('should find pending verification by token', async () => {
           // Arrange
           const verification = EmailVerification.random({
+            verification: Verification.notVerified(),
             expiration: Expiration.atHoursFromNow(1),
           });
           await repository.save(verification);
@@ -283,8 +288,10 @@ export function testEmailVerificationRepositoryContract(
 
         it('should return null for verified verifications', async () => {
           // Arrange
-          const verification = EmailVerification.random();
-          verification.verify();
+          const verification = EmailVerification.random({
+            verification: Verification.verified(),
+            expiration: Expiration.atHoursFromNow(1),
+          });
           await repository.save(verification);
 
           // Act
@@ -297,6 +304,7 @@ export function testEmailVerificationRepositoryContract(
         it('should return null for expired verifications', async () => {
           // Arrange
           const verification = EmailVerification.random({
+            verification: Verification.notVerified(),
             expiration: Expiration.atHoursFromNow(-1),
           });
           await repository.save(verification);

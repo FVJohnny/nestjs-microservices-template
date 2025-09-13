@@ -9,6 +9,7 @@ export * from './domain/entities/AggregateRoot';
 export { CompositeValueObject } from './domain/value-object/CompositeValueObject';
 export { EnumValueObject } from './domain/value-object/EnumValueObject';
 export { StringValueObject } from './domain/value-object/StringValueObject';
+export { DateValueObject } from './domain/value-object/DateValueObject';
 export { ValueObject } from './domain/value-object/ValueObject';
 export { Primitives } from './domain/value-object/ValueObject';
 export { Id } from './domain/value-object/Id';

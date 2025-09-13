@@ -1,6 +1,6 @@
-import { ValueObject } from '@libs/nestjs-common';
+import { DateValueObject } from '@libs/nestjs-common';
 
-export class Verification extends ValueObject<Date> {
+export class Verification extends DateValueObject {
   constructor(value: Date) {
     super(value);
   }

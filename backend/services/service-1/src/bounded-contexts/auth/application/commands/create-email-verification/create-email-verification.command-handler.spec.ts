@@ -123,11 +123,8 @@ describe('CreateEmailVerificationCommandHandler', () => {
       const expectedExpiration = Expiration.atHoursFromNow(24);
       const actualExpiration = verification!.expiration;
 
-      // Allow for small time differences in test execution
-      const timeDiff = Math.abs(
-        actualExpiration.toValue().getTime() - expectedExpiration.toValue().getTime(),
-      );
-      expect(timeDiff).toBeLessThan(5000); // 5 seconds tolerance
+      // Allow for small time differences in test execution  
+      expect(actualExpiration.isWithinTolerance(expectedExpiration.toValue(), 5000)).toBe(true);
     });
   });
 

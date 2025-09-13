@@ -55,17 +55,13 @@ describe('EmailVerification Entity', () => {
     });
 
     it('should set default expiration to 24 hours', () => {
-      const beforeCreation = new Date();
-      const verification = EmailVerification.create({
+      const emailVerification = EmailVerification.create({
         userId: Id.random(),
         email: Email.random(),
       });
-      const expectedExpiration = new Date(beforeCreation.getTime() + 24 * 60 * 60 * 1000);
+      const expectedExpiration = Expiration.atHoursFromNow(24).toValue();
 
-      const timeDiff = Math.abs(
-        verification.expiration.toValue().getTime() - expectedExpiration.getTime(),
-      );
-      expect(timeDiff).toBeLessThan(5000); // 5 seconds tolerance
+      expect(emailVerification.expiration.isWithinTolerance(expectedExpiration, 5000)).toBe(true);
     });
 
     it('should emit EmailVerificationCreatedDomainEvent', () => {
