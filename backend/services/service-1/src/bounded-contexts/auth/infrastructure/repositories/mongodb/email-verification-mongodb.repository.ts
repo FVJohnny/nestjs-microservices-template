@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { MongoClient, Collection, MongoServerError } from 'mongodb';
+import { MongoClient, MongoServerError } from 'mongodb';
 import {
   EmailVerification,
   EmailVerificationDTO,
@@ -7,23 +7,15 @@ import {
 import { EmailVerificationRepository } from '../../../domain/repositories/email-verification/email-verification.repository';
 import { Email, Expiration, Verification } from '../../../domain/value-objects';
 import { InfrastructureException, AlreadyExistsException, Id } from '@libs/nestjs-common';
-import { MONGO_CLIENT_TOKEN } from '@libs/nestjs-mongodb';
-import { CorrelationLogger } from '@libs/nestjs-common';
+import { MONGO_CLIENT_TOKEN, BaseMongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
 
 @Injectable()
-export class EmailVerificationMongodbRepository implements EmailVerificationRepository {
-  private readonly logger = new CorrelationLogger(EmailVerificationMongodbRepository.name);
-  private readonly collection: Collection<EmailVerificationDTO>;
-
-  constructor(
-    @Inject(MONGO_CLIENT_TOKEN)
-    private readonly mongoClient: MongoClient,
-  ) {
-    this.collection = this.mongoClient.db().collection<EmailVerificationDTO>('email_verifications');
-    // Initialize indexes on first connection
-    this.initializeIndexes().catch((error) =>
-      this.logger.error('Failed to initialize email verification collection indexes:', error),
-    );
+export class EmailVerificationMongodbRepository
+  extends BaseMongoRepository<EmailVerificationDTO>
+  implements EmailVerificationRepository
+{
+  constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
+    super(mongoClient, 'email_verifications');
   }
 
   async save(emailVerification: EmailVerification): Promise<void> {
@@ -117,82 +109,39 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
     }
   }
 
-  /**
-   * Initialize MongoDB indexes for optimal query performance
-   * This method is called once when the repository is instantiated
-   */
-  private async initializeIndexes(): Promise<void> {
-    try {
-      // Check if collection exists first
-      const collections = await this.mongoClient
-        .db()
-        .listCollections({ name: 'email_verifications' })
-        .toArray();
-      if (collections.length === 0) {
-        // Collection doesn't exist yet, indexes will be created when first document is inserted
-        this.logger.log(
-          'Email verifications collection does not exist yet, skipping index initialization',
-        );
-        return;
-      }
-
-      // Check if indexes already exist to avoid recreation
-      const existingIndexes = await this.collection.indexes();
-      const indexNames = existingIndexes.map((idx) => idx.name);
-
-      // Primary unique indexes
-      if (!indexNames.includes('idx_email_verification_id')) {
-        await this.collection.createIndex(
-          { id: 1 },
-          {
-            unique: true,
-            name: 'idx_email_verification_id',
-          },
-        );
-      }
-
-      if (!indexNames.includes('idx_email_verification_user_id')) {
-        await this.collection.createIndex(
-          { userId: 1 },
-          {
-            unique: true,
-            name: 'idx_email_verification_user_id',
-          },
-        );
-      }
-
-      if (!indexNames.includes('idx_email_verification_email')) {
-        await this.collection.createIndex(
-          { email: 1 },
-          {
-            unique: true,
-            name: 'idx_email_verification_email',
-            collation: { locale: 'en', strength: 2 }, // Case-insensitive
-          },
-        );
-      }
-
-      // Query performance indexes
-      if (!indexNames.includes('idx_email_verification_pending')) {
-        await this.collection.createIndex(
-          { expiration: 1, verification: 1 },
-          { name: 'idx_email_verification_pending' },
-        );
-      }
-
-      if (!indexNames.includes('idx_email_verification_expiration')) {
-        await this.collection.createIndex(
-          { expiration: 1 },
-          { name: 'idx_email_verification_expiration' },
-        );
-      }
-
-      this.logger.log('Email verification collection indexes initialized successfully');
-    } catch (error) {
-      this.logger.error('Error initializing email verification collection indexes:', error);
-      // Don't throw error to avoid breaking application startup
-      // Indexes can be created manually or on first document insert
-    }
+  protected defineIndexes(): IndexSpec[] {
+    return [
+      {
+        fields: { id: 1 },
+        options: {
+          unique: true,
+          name: 'idx_email_verification_id',
+        },
+      },
+      {
+        fields: { userId: 1 },
+        options: {
+          unique: true,
+          name: 'idx_email_verification_user_id',
+        },
+      },
+      {
+        fields: { email: 1 },
+        options: {
+          unique: true,
+          name: 'idx_email_verification_email',
+          collation: { locale: 'en', strength: 2 }, // Case-insensitive
+        },
+      },
+      {
+        fields: { expiration: 1, verification: 1 },
+        options: { name: 'idx_email_verification_pending' },
+      },
+      {
+        fields: { expiration: 1 },
+        options: { name: 'idx_email_verification_expiration' },
+      },
+    ];
   }
 
   /**

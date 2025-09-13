@@ -1,0 +1,73 @@
+import { Inject, OnModuleInit } from '@nestjs/common';
+import { MongoClient, Collection, CreateIndexesOptions, IndexSpecification } from 'mongodb';
+import { CorrelationLogger, SharedAggregateRootDTO } from '@libs/nestjs-common';
+import { MONGO_CLIENT_TOKEN } from './mongodb.module';
+
+export interface IndexSpec {
+  fields: IndexSpecification;
+  options?: CreateIndexesOptions;
+}
+
+export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO>
+  implements OnModuleInit
+{
+  protected readonly logger: CorrelationLogger;
+  protected readonly collection: Collection<TDto>;
+
+  constructor(
+    @Inject(MONGO_CLIENT_TOKEN)
+    protected readonly mongoClient: MongoClient,
+    private readonly collectionName: string,
+  ) {
+    this.logger = new CorrelationLogger(this.constructor.name);
+    this.collection = this.mongoClient.db().collection<TDto>(this.collectionName);
+  }
+
+  async onModuleInit(): Promise<void> {
+    this.initializeIndexes().catch((error) =>
+      this.logger.error(`Failed to initialize ${this.collectionName} collection indexes:`, error),
+    );
+  }
+
+  protected abstract defineIndexes(): IndexSpec[];
+
+  private async initializeIndexes(): Promise<void> {
+    try {
+      const collections = await this.mongoClient
+        .db()
+        .listCollections({ name: this.collectionName })
+        .toArray();
+
+      if (collections.length === 0) {
+        await this.mongoClient.db().createCollection(this.collectionName);
+        this.logger.log(`${this.collectionName} collection created and initializing indexes`);
+      }
+
+      // Check if indexes already exist to avoid recreation
+      const existingIndexes = await this.collection.indexes();
+      const indexNames = existingIndexes.map((idx) => idx.name);
+
+      const indexSpecs = this.defineIndexes();
+
+      for (const indexSpec of indexSpecs) {
+        const indexName = indexSpec.options?.name;
+        if (!indexName) {
+          this.logger.warn('Index definition missing name, skipping:', indexSpec.fields);
+          continue;
+        }
+
+        if (!indexNames.includes(indexName)) {
+          await this.collection.createIndex(indexSpec.fields, indexSpec.options);
+          this.logger.log(`Created index: ${indexName}`);
+        }
+      }
+
+      this.logger.log(`${this.collectionName} collection indexes initialized successfully`);
+    } catch (error) {
+      this.logger.error(
+        `Error initializing ${this.collectionName} collection indexes:`,
+        error instanceof Error ? error : String(error),
+      );
+    }
+  }
+}

@@ -1,28 +1,21 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { MongoClient, Collection } from 'mongodb';
+import { MongoClient } from 'mongodb';
 import { User } from '../../../domain/entities/user/user.entity';
 import { UserRepository } from '../../../domain/repositories/user/user.repository';
 import { Email, Username } from '../../../domain/value-objects';
 import { UserDTO } from '../../../domain/entities/user/user.types';
 import { Criteria, InfrastructureException, PaginatedRepoResult, Id } from '@libs/nestjs-common';
-import { MongoCriteriaConverter } from '@libs/nestjs-mongodb';
-import { MONGO_CLIENT_TOKEN } from '@libs/nestjs-mongodb';
-import { CorrelationLogger } from '@libs/nestjs-common';
+import {
+  MongoCriteriaConverter,
+  MONGO_CLIENT_TOKEN,
+  BaseMongoRepository,
+  IndexSpec,
+} from '@libs/nestjs-mongodb';
 
 @Injectable()
-export class UserMongodbRepository implements UserRepository {
-  private readonly logger = new CorrelationLogger(UserMongodbRepository.name);
-  private readonly collection: Collection<UserDTO>;
-
-  constructor(
-    @Inject(MONGO_CLIENT_TOKEN)
-    private readonly mongoClient: MongoClient,
-  ) {
-    this.collection = this.mongoClient.db().collection<UserDTO>('users');
-    // Initialize indexes on first connection
-    this.initializeIndexes().catch((error) =>
-      this.logger.error('Failed to initialize user collection indexes:', error),
-    );
+export class UserMongodbRepository extends BaseMongoRepository<UserDTO> implements UserRepository {
+  constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
+    super(mongoClient, 'users');
   }
 
   async save(user: User): Promise<void> {
@@ -162,68 +155,36 @@ export class UserMongodbRepository implements UserRepository {
     }
   }
 
-  /**
-   * Initialize MongoDB indexes for optimal query performance
-   * This method is called once when the repository is instantiated
-   */
-  private async initializeIndexes(): Promise<void> {
-    try {
-      // Check if collection exists first
-      const collections = await this.mongoClient.db().listCollections({ name: 'users' }).toArray();
-      if (collections.length === 0) {
-        // Collection doesn't exist yet, indexes will be created when first document is inserted
-        this.logger.log('Users collection does not exist yet, skipping index initialization');
-        return;
-      }
-
-      // Check if indexes already exist to avoid recreation
-      const existingIndexes = await this.collection.indexes();
-      const indexNames = existingIndexes.map((idx) => idx.name);
-
-      // Primary unique indexes
-      if (!indexNames.includes('idx_user_id')) {
-        await this.collection.createIndex(
-          { id: 1 },
-          {
-            unique: true,
-            name: 'idx_user_id',
-          },
-        );
-      }
-
-      if (!indexNames.includes('idx_user_email')) {
-        await this.collection.createIndex(
-          { email: 1 },
-          {
-            unique: true,
-            name: 'idx_user_email',
-            collation: { locale: 'en', strength: 2 }, // Case-insensitive
-          },
-        );
-      }
-
-      if (!indexNames.includes('idx_user_username')) {
-        await this.collection.createIndex(
-          { username: 1 },
-          {
-            unique: true,
-            name: 'idx_user_username',
-            collation: { locale: 'en', strength: 2 }, // Case-insensitive
-          },
-        );
-      }
-
-      // Query performance indexes
-      if (!indexNames.includes('idx_user_role')) {
-        await this.collection.createIndex({ role: 1 }, { name: 'idx_user_role' });
-      }
-
-      this.logger.log('User collection indexes initialized successfully');
-    } catch (error) {
-      this.logger.error('Error initializing user collection indexes:', error);
-      // Don't throw error to avoid breaking application startup
-      // Indexes can be created manually or on first document insert
-    }
+  protected defineIndexes(): IndexSpec[] {
+    return [
+      {
+        fields: { id: 1 },
+        options: {
+          unique: true,
+          name: 'idx_user_id',
+        },
+      },
+      {
+        fields: { email: 1 },
+        options: {
+          unique: true,
+          name: 'idx_user_email',
+          collation: { locale: 'en', strength: 2 }, // Case-insensitive
+        },
+      },
+      {
+        fields: { username: 1 },
+        options: {
+          unique: true,
+          name: 'idx_user_username',
+          collation: { locale: 'en', strength: 2 }, // Case-insensitive
+        },
+      },
+      {
+        fields: { role: 1 },
+        options: { name: 'idx_user_role' },
+      },
+    ];
   }
 
   /**
