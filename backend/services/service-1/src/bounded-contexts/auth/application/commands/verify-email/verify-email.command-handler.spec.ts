@@ -2,7 +2,7 @@ import { VerifyEmailCommandHandler } from './verify-email.command-handler';
 import { VerifyEmailCommand } from './verify-email.command';
 import { EmailVerificationInMemoryRepository } from '../../../infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EmailVerification } from '../../../domain/entities/email-verification/email-verification.entity';
-import { Email } from '../../../domain/value-objects';
+import { Email, Expiration } from '../../../domain/value-objects';
 import { EventBus } from '@nestjs/cqrs';
 import {
   createEventBusMock,
@@ -15,10 +15,10 @@ import { EmailVerificationVerifiedDomainEvent } from 'src/bounded-contexts/auth/
 
 describe('VerifyEmailCommandHandler', () => {
   // Test data factory
-  const createCommand = (props?: {token?: string}) => {
+  const createCommand = (props?: { token?: string }) => {
     // Default token will be set in tests that need it
     return new VerifyEmailCommand({
-      token: props?.token || Id.random().toValue()
+      token: props?.token || Id.random().toValue(),
     });
   };
 
@@ -96,8 +96,8 @@ describe('VerifyEmailCommandHandler', () => {
     it('should verify multiple different email verifications independently', async () => {
       // Arrange
       const { commandHandler, repository } = setup();
-      const emailVerification1 = EmailVerification.random()
-      const emailVerification2 = EmailVerification.random()
+      const emailVerification1 = EmailVerification.random();
+      const emailVerification2 = EmailVerification.random();
       await repository.save(emailVerification1);
       await repository.save(emailVerification2);
 
@@ -173,7 +173,7 @@ describe('VerifyEmailCommandHandler', () => {
 
       // Assert - EmailVerificationVerifiedDomainEvent should be published
       expect(eventBus.events).toHaveLength(1);
-      const event = eventBus.events[0] as EmailVerificationVerifiedDomainEvent
+      const event = eventBus.events[0] as EmailVerificationVerifiedDomainEvent;
 
       expect(event.aggregateId.toValue()).toBe(emailVerification.id.toValue());
       expect(event.userId.toValue()).toBe(emailVerification.userId.toValue());
@@ -183,7 +183,6 @@ describe('VerifyEmailCommandHandler', () => {
   });
 
   describe('Error Cases', () => {
-
     it('should throw DomainValidationException for malformed token gracefully', async () => {
       // Arrange
       const { commandHandler } = setup();
@@ -210,7 +209,7 @@ describe('VerifyEmailCommandHandler', () => {
       // Arrange
       const { commandHandler, repository } = setup();
       const emailVerification = EmailVerification.random({
-        expiresAt: new Date(Date.now() - 1000),
+        expiration: Expiration.hoursFromNow(-1),
       });
       await repository.save(emailVerification);
 

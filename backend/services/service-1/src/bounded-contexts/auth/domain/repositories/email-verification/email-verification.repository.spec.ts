@@ -1,6 +1,6 @@
 import type { EmailVerificationRepository } from './email-verification.repository';
 import { EmailVerification } from '../../entities/email-verification/email-verification.entity';
-import { Email } from '../../value-objects';
+import { Email, Verification, Expiration } from '../../value-objects';
 import { AlreadyExistsException, Id } from '@libs/nestjs-common';
 
 /**
@@ -22,9 +22,7 @@ describe('EmailVerificationRepository Contract Test Suite', () => {
  */
 export function testEmailVerificationRepositoryContract(
   description: string,
-  createRepository: (
-    verifications?: EmailVerification[],
-  ) => Promise<EmailVerificationRepository>,
+  createRepository: (verifications?: EmailVerification[]) => Promise<EmailVerificationRepository>,
   setupTeardown?: {
     beforeAll?: () => Promise<void>;
     afterAll?: () => Promise<void>;
@@ -74,7 +72,7 @@ export function testEmailVerificationRepositoryContract(
         it('should update an existing verification when saving with same id', async () => {
           // Arrange
           const verification = EmailVerification.random({
-            verifiedAt: new Date(0),
+            verification: Verification.notVerified(),
           });
           await repository.save(verification);
 
@@ -224,9 +222,8 @@ export function testEmailVerificationRepositoryContract(
       describe('findPendingByUserId', () => {
         it('should find pending verification by user id', async () => {
           // Arrange
-          const futureDate = new Date(Date.now() + 3600000); // 1 hour from now
           const verification = EmailVerification.random({
-            expiresAt: futureDate,
+            expiration: Expiration.hoursFromNow(1),
           });
           await repository.save(verification);
 
@@ -254,9 +251,8 @@ export function testEmailVerificationRepositoryContract(
 
         it('should return null for expired verifications', async () => {
           // Arrange
-          const pastDate = new Date(Date.now() - 3600000); // 1 hour ago
           const verification = EmailVerification.random({
-            expiresAt: pastDate,
+            expiration: Expiration.hoursFromNow(-1),
           });
           await repository.save(verification);
 
@@ -271,9 +267,8 @@ export function testEmailVerificationRepositoryContract(
       describe('findPendingByToken', () => {
         it('should find pending verification by token', async () => {
           // Arrange
-          const futureDate = new Date(Date.now() + 3600000); // 1 hour from now
           const verification = EmailVerification.random({
-            expiresAt: futureDate,
+            expiration: Expiration.hoursFromNow(1),
           });
           await repository.save(verification);
 
@@ -301,9 +296,8 @@ export function testEmailVerificationRepositoryContract(
 
         it('should return null for expired verifications', async () => {
           // Arrange
-          const pastDate = new Date(Date.now() - 3600000); // 1 hour ago
           const verification = EmailVerification.random({
-            expiresAt: pastDate,
+            expiration: Expiration.hoursFromNow(-1),
           });
           await repository.save(verification);
 

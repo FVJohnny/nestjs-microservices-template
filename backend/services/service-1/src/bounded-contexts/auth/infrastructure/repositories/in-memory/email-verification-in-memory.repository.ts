@@ -4,7 +4,7 @@ import {
   EmailVerificationDTO,
 } from '../../../domain/entities/email-verification/email-verification.entity';
 import { EmailVerificationRepository } from '../../../domain/repositories/email-verification/email-verification.repository';
-import { Email } from '../../../domain/value-objects';
+import { Email, Expiration, Verification } from '../../../domain/value-objects';
 import { AlreadyExistsException, InfrastructureException, Id } from '@libs/nestjs-common';
 
 @Injectable()
@@ -127,6 +127,8 @@ export class EmailVerificationInMemoryRepository implements EmailVerificationRep
   }
 
   private isDtoPending(dto: EmailVerificationDTO): boolean {
-    return new Date(dto.verifiedAt).getTime() === 0 && new Date(dto.expiresAt) > new Date();
+    const verification = new Verification(dto.verification);
+    const expiration = new Expiration(dto.expiration);
+    return !verification.isVerified() && !expiration.isExpired();
   }
 }

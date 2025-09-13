@@ -2,10 +2,10 @@ import { CreateEmailVerificationCommandHandler } from './create-email-verificati
 import { CreateEmailVerificationCommand } from './create-email-verification.command';
 import { EmailVerificationInMemoryRepository } from '../../../infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
-import { createEventBusMock, InfrastructureException, MockEventBus } from '@libs/nestjs-common';
+import { createEventBusMock, InfrastructureException } from '@libs/nestjs-common';
 import { EmailVerificationCreatedDomainEvent } from '../../../domain/events/email-verification-created.domain-event';
 import { Id } from '@libs/nestjs-common';
-import { Email } from '../../../domain/value-objects';
+import { Email, Expiration } from '../../../domain/value-objects';
 
 describe('CreateEmailVerificationCommandHandler', () => {
   // Test data factory
@@ -111,7 +111,6 @@ describe('CreateEmailVerificationCommandHandler', () => {
     it('should set expiration date 24 hours from creation', async () => {
       // Arrange
       const { commandHandler, repository } = setup();
-      const beforeCreation = new Date();
       const command = createCommand({});
 
       // Act
@@ -121,11 +120,13 @@ describe('CreateEmailVerificationCommandHandler', () => {
       const verification = await repository.findByUserId(new Id(command.userId));
       expect(verification).not.toBeNull();
 
-      const expectedExpiration = new Date(beforeCreation.getTime() + 24 * 60 * 60 * 1000);
-      const actualExpiration = verification!.expiresAt;
+      const expectedExpiration = Expiration.hoursFromNow(24);
+      const actualExpiration = verification!.expiration;
 
       // Allow for small time differences in test execution
-      const timeDiff = Math.abs(actualExpiration.getTime() - expectedExpiration.getTime());
+      const timeDiff = Math.abs(
+        actualExpiration.toValue().getTime() - expectedExpiration.toValue().getTime(),
+      );
       expect(timeDiff).toBeLessThan(5000); // 5 seconds tolerance
     });
   });
@@ -148,7 +149,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
       expect(event.email.toValue()).toBe(command.email);
       expect(event.token.toValue()).toBe(result.token);
       expect(event.occurredOn).toBeInstanceOf(Date);
-      expect(event.expiresAt).toBeInstanceOf(Date);
+      expect(event.expiration).toBeInstanceOf(Expiration);
     });
   });
 

@@ -1,18 +1,24 @@
 import { EmailVerification } from './email-verification.entity';
-import { Email } from '../../value-objects';
+import { Email, Verification, Expiration } from '../../value-objects';
 import { EmailVerificationVerifiedDomainEvent } from '../../events/email-verified.domain-event';
 import { EmailVerificationCreatedDomainEvent } from '../../events/email-verification-created.domain-event';
 import { InvalidOperationException, Id } from '@libs/nestjs-common';
 
 describe('EmailVerification Entity', () => {
-  const newTestVerification = ({ expired = false, verified = false }: { expired?: boolean, verified?: boolean }) =>
+  const newTestVerification = ({
+    expired = false,
+    verified = false,
+  }: {
+    expired?: boolean;
+    verified?: boolean;
+  }) =>
     new EmailVerification({
       id: Id.random(),
       userId: Id.random(),
       email: Email.random(),
       token: Id.random(),
-      expiresAt: expired ? new Date(Date.now() - 1) : new Date(Date.now() + 24 * 60 * 60 * 1000),
-      verifiedAt: verified ? new Date() : new Date(0),
+      expiration: Expiration.hoursFromNow(expired ? -1 : 24),
+      verification: verified ? Verification.verified() : Verification.notVerified(),
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -28,8 +34,8 @@ describe('EmailVerification Entity', () => {
       expect(verification.userId).toBe(userId);
       expect(verification.email).toBe(email);
       expect(verification.token).toBeInstanceOf(Id);
-      expect(verification.verifiedAt).toEqual(new Date(0));
-      expect(verification.expiresAt).toBeInstanceOf(Date);
+      expect(verification.verification.isVerified()).toBe(false);
+      expect(verification.expiration.toValue()).toBeInstanceOf(Date);
       expect(verification.createdAt).toBeInstanceOf(Date);
       expect(verification.updatedAt).toBeInstanceOf(Date);
     });
@@ -57,7 +63,7 @@ describe('EmailVerification Entity', () => {
       const expectedExpiration = new Date(beforeCreation.getTime() + 24 * 60 * 60 * 1000);
 
       const timeDiff = Math.abs(
-        verification.expiresAt.getTime() - expectedExpiration.getTime(),
+        verification.expiration.toValue().getTime() - expectedExpiration.getTime(),
       );
       expect(timeDiff).toBeLessThan(5000); // 5 seconds tolerance
     });
@@ -74,8 +80,8 @@ describe('EmailVerification Entity', () => {
       expect(event).toBeInstanceOf(EmailVerificationCreatedDomainEvent);
       expect(event.userId).toBe(emailVerification.userId);
       expect(event.email).toBe(emailVerification.email);
-      expect(event.token).toBeInstanceOf(Id);
-      expect(event.expiresAt).toBeInstanceOf(Date);
+      expect(event.expiration).toBe(emailVerification.expiration);
+      expect(event.token).toBe(emailVerification.token);
     });
   });
 
@@ -159,8 +165,8 @@ describe('EmailVerification Entity', () => {
       userId: Id.random().toValue(),
       email: Email.random().toValue(),
       token: Id.random().toValue(),
-      expiresAt: new Date('2024-12-31T23:59:59Z'),
-      verifiedAt: new Date(0),
+      expiration: Expiration.hoursFromNow(24).toValue(),
+      verification: Verification.notVerified().toValue(),
       createdAt: new Date('2024-01-01T10:00:00Z'),
       updatedAt: new Date('2024-01-01T10:00:00Z'),
     });
@@ -175,8 +181,8 @@ describe('EmailVerification Entity', () => {
         userId: emailVerification.userId.toValue(),
         email: emailVerification.email.toValue(),
         token: emailVerification.token.toValue(),
-        expiresAt: emailVerification.expiresAt,
-        verifiedAt: emailVerification.verifiedAt,
+        expiration: emailVerification.expiration.toValue(),
+        verification: emailVerification.verification.toValue(),
         createdAt: emailVerification.createdAt,
         updatedAt: emailVerification.updatedAt,
       });
@@ -190,8 +196,8 @@ describe('EmailVerification Entity', () => {
       expect(verification.userId.toValue()).toBe(dto.userId);
       expect(verification.email.toValue()).toBe(dto.email);
       expect(verification.token.toValue()).toBe(dto.token);
-      expect(verification.expiresAt).toEqual(dto.expiresAt);
-      expect(verification.verifiedAt).toEqual(dto.verifiedAt);
+      expect(verification.expiration.toValue()).toEqual(dto.expiration);
+      expect(verification.verification.toValue()).toEqual(dto.verification);
     });
   });
 });

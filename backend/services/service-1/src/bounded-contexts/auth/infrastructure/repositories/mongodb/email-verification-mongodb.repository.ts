@@ -5,7 +5,7 @@ import {
   EmailVerificationDTO,
 } from '../../../domain/entities/email-verification/email-verification.entity';
 import { EmailVerificationRepository } from '../../../domain/repositories/email-verification/email-verification.repository';
-import { Email } from '../../../domain/value-objects';
+import { Email, Expiration, Verification } from '../../../domain/value-objects';
 import { InfrastructureException, AlreadyExistsException, Id } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from '@libs/nestjs-mongodb';
 import { CorrelationLogger } from '@libs/nestjs-common';
@@ -100,8 +100,8 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
     try {
       const document = await this.collection.findOne({
         userId: userId.toValue(),
-        expiresAt: { $gt: new Date() },
-        verifiedAt: { $eq: new Date(0) },
+        expiration: { $gt: Expiration.hoursFromNow(0).toValue() },
+        verification: { $eq: Verification.notVerified().toValue() },
       });
 
       if (!document) {
@@ -118,8 +118,8 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
     try {
       const document = await this.collection.findOne({
         token: token.toValue(),
-        expiresAt: { $gt: new Date() },
-        verifiedAt: { $eq: new Date(0) },
+        expiration: { $gt: new Date() },
+        verification: { $eq: Verification.notVerified().toValue() },
       });
 
       if (!document) {
@@ -217,15 +217,15 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
       // Query performance indexes
       if (!indexNames.includes('idx_email_verification_pending')) {
         await this.collection.createIndex(
-          { expiresAt: 1, verifiedAt: 1 },
+          { expiration: 1, verification: 1 },
           { name: 'idx_email_verification_pending' },
         );
       }
 
-      if (!indexNames.includes('idx_email_verification_expires_at')) {
+      if (!indexNames.includes('idx_email_verification_expiration')) {
         await this.collection.createIndex(
-          { expiresAt: 1 },
-          { name: 'idx_email_verification_expires_at' },
+          { expiration: 1 },
+          { name: 'idx_email_verification_expiration' },
         );
       }
 
