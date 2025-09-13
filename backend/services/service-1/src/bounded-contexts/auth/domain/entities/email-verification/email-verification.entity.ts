@@ -1,4 +1,4 @@
-import { type SharedAggregateRootDTO, Id, DateVO } from '@libs/nestjs-common';
+import { type SharedAggregateRootDTO, Id, TimestampsVO } from '@libs/nestjs-common';
 import { SharedAggregateRoot, InvalidOperationException } from '@libs/nestjs-common';
 import { Email, Verification, Expiration } from '../../value-objects';
 import { EmailVerificationVerifiedDomainEvent } from '../../events/email-verified.domain-event';
@@ -11,8 +11,7 @@ export interface EmailVerificationAttributes {
   token: Id;
   expiration: Expiration;
   verification: Verification;
-  createdAt: DateVO;
-  updatedAt: DateVO;
+  timestamps: TimestampsVO;
 }
 
 export interface CreateEmailVerificationProps {
@@ -37,8 +36,7 @@ export class EmailVerification extends SharedAggregateRoot {
   token: Id;
   expiration: Expiration;
   verification: Verification;
-  createdAt: DateVO;
-  updatedAt: DateVO;
+  timestamps: TimestampsVO;
 
   constructor(props: EmailVerificationAttributes) {
     super(props.id);
@@ -53,8 +51,7 @@ export class EmailVerification extends SharedAggregateRoot {
       token: Id.random(),
       expiration: Expiration.atHoursFromNow(24),
       verification: Verification.notVerified(),
-      createdAt: new DateVO(new Date()),
-      updatedAt: new DateVO(new Date()),
+      timestamps: TimestampsVO.create(),
     });
 
     emailVerification.apply(
@@ -78,8 +75,7 @@ export class EmailVerification extends SharedAggregateRoot {
       token: props?.token || Id.random(),
       expiration: props?.expiration || Expiration.atHoursFromNow(24),
       verification: props?.verification || Verification.notVerified(),
-      createdAt: props?.createdAt || new DateVO(new Date()),
-      updatedAt: props?.updatedAt || new DateVO(new Date()),
+      timestamps: props?.timestamps || TimestampsVO.create(),
     });
   }
 
@@ -92,7 +88,7 @@ export class EmailVerification extends SharedAggregateRoot {
     }
 
     this.verification = Verification.verified();
-    this.updatedAt = new DateVO(new Date());
+    this.timestamps.update();
 
     this.apply(
       new EmailVerificationVerifiedDomainEvent({
@@ -123,8 +119,10 @@ export class EmailVerification extends SharedAggregateRoot {
       token: new Id(value.token),
       expiration: new Expiration(value.expiration),
       verification: new Verification(value.verification),
-      createdAt: new DateVO(value.createdAt),
-      updatedAt: new DateVO(value.updatedAt),
+      timestamps: new TimestampsVO({
+        createdAt: value.createdAt,
+        updatedAt: value.updatedAt,
+      }),
     });
   }
 
@@ -136,8 +134,8 @@ export class EmailVerification extends SharedAggregateRoot {
       token: this.token.toValue(),
       expiration: this.expiration.toValue(),
       verification: this.verification.toValue(),
-      createdAt: this.createdAt.toValue(),
-      updatedAt: this.updatedAt.toValue(),
+      createdAt: this.timestamps.createdAt.toValue(),
+      updatedAt: this.timestamps.updatedAt.toValue(),
     };
   }
 }

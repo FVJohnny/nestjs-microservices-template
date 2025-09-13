@@ -10,7 +10,12 @@ import {
   Password,
 } from '../../value-objects';
 import type { CreateUserProps, UserAttributes, UserDTO } from './user.types';
-import { InvalidOperationException, SharedAggregateRoot, Id, DateVO } from '@libs/nestjs-common';
+import {
+  InvalidOperationException,
+  SharedAggregateRoot,
+  Id,
+  TimestampsVO,
+} from '@libs/nestjs-common';
 
 let _seq = 1;
 
@@ -21,8 +26,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   status: UserStatus;
   role: UserRole;
   lastLoginAt: Date | undefined;
-  createdAt: DateVO;
-  updatedAt: DateVO;
+  timestamps: TimestampsVO;
   constructor(props: UserAttributes) {
     super(props.id);
     Object.assign(this, props);
@@ -30,7 +34,6 @@ export class User extends SharedAggregateRoot implements UserAttributes {
 
   static create(props: CreateUserProps): User {
     const id = uuidv4();
-    const now = new Date();
 
     const user = new User({
       id: new Id(id),
@@ -40,8 +43,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       status: new UserStatus(UserStatusEnum.EMAIL_VERIFICATION_PENDING),
       role: props.role,
       lastLoginAt: undefined,
-      createdAt: new DateVO(now),
-      updatedAt: new DateVO(now),
+      timestamps: TimestampsVO.create(),
     });
 
     user.apply(
@@ -66,8 +68,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       status: props?.status ?? UserStatus.random(),
       role: props?.role ?? UserRole.random(),
       lastLoginAt: props?.lastLoginAt,
-      createdAt: props?.createdAt || new DateVO(new Date()),
-      updatedAt: props?.updatedAt || new DateVO(new Date()),
+      timestamps: props?.timestamps || TimestampsVO.create(),
     });
   }
 
@@ -76,7 +77,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       return;
     }
     this.status = UserStatus.active();
-    this.updatedAt = new DateVO(new Date());
+    this.timestamps.update();
   }
 
   deactivate(): void {
@@ -84,7 +85,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       return;
     }
     this.status = UserStatus.inactive();
-    this.updatedAt = new DateVO(new Date());
+    this.timestamps.update();
   }
 
   verifyEmail(): void {
@@ -92,7 +93,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       throw new InvalidOperationException('verifyEmail', this.status.toValue());
     }
     this.status = UserStatus.active();
-    this.updatedAt = new DateVO(new Date());
+    this.timestamps.update();
   }
 
   hasRole(role: UserRole): boolean {
@@ -102,7 +103,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   changeRole(role: UserRole): void {
     if (!this.hasRole(role)) {
       this.role = role;
-      this.updatedAt = new DateVO(new Date());
+      this.timestamps.update();
     }
   }
 
@@ -116,7 +117,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
 
   recordLogin(): void {
     this.lastLoginAt = new Date();
-    this.updatedAt = new DateVO(new Date());
+    this.timestamps.update();
   }
 
   static fromValue(value: UserDTO): User {
@@ -128,8 +129,10 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       status: new UserStatus(value.status as UserStatusEnum),
       role: new UserRole(value.role as UserRoleEnum),
       lastLoginAt: value.lastLoginAt ? new Date(value.lastLoginAt) : undefined,
-      createdAt: new DateVO(value.createdAt),
-      updatedAt: new DateVO(value.updatedAt),
+      timestamps: new TimestampsVO({
+        createdAt: value.createdAt,
+        updatedAt: value.updatedAt,
+      }),
     });
   }
 
@@ -142,8 +145,8 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       status: this.status.toValue(),
       role: this.role.toValue(),
       lastLoginAt: this.lastLoginAt,
-      createdAt: this.createdAt.toValue(),
-      updatedAt: this.updatedAt.toValue(),
+      createdAt: this.timestamps.createdAt.toValue(),
+      updatedAt: this.timestamps.updatedAt.toValue(),
     };
   }
 }

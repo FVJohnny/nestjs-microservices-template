@@ -1,7 +1,7 @@
 import { User } from './user.entity';
 import { Email, Username, UserRole, UserRoleEnum, UserStatus, UserStatusEnum, Password } from '../../value-objects';
 import { UserRegisteredDomainEvent } from '../../events/user-registered.domain-event';
-import { InvalidOperationException, DateVO } from '@libs/nestjs-common';
+import { InvalidOperationException, TimestampsVO } from '@libs/nestjs-common';
 
 describe('User Entity', () => {
   // Test data factories
@@ -27,8 +27,9 @@ describe('User Entity', () => {
       expect(user.status.toValue()).toBe(UserStatusEnum.EMAIL_VERIFICATION_PENDING);
       expect(user.role.toValue()).toBe(UserRoleEnum.USER);
       expect(user.lastLoginAt).toBeUndefined();
-      expect(user.createdAt).toBeInstanceOf(DateVO);
-      expect(user.updatedAt).toBeInstanceOf(DateVO);
+      expect(user.timestamps).toBeInstanceOf(TimestampsVO);
+      expect(user.timestamps.createdAt.toValue()).toBeInstanceOf(Date);
+      expect(user.timestamps.updatedAt.toValue()).toBeInstanceOf(Date);
       expect(await user.password.verify('password123')).toBe(true);
     });
 
@@ -86,59 +87,59 @@ describe('User Entity', () => {
     describe('activate', () => {
       it('should activate inactive user', async () => {
         const user = User.random({ status: UserStatus.inactive() });
-        const originalUpdatedAt = user.updatedAt;
+        const originalUpdatedAt = user.timestamps.updatedAt;
         
         await waitForTimestamp();
         user.activate();
 
         expect(user.status.toValue()).toBe(UserStatusEnum.ACTIVE);
-        expect(user.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
+        expect(user.timestamps.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
       });
 
       it('should not update already active user', () => {
         const user = User.random({ status: UserStatus.active() });
-        const originalUpdatedAt = user.updatedAt;
+        const originalUpdatedAt = user.timestamps.updatedAt;
 
         user.activate();
 
         expect(user.status.toValue()).toBe(UserStatusEnum.ACTIVE);
-        expect(user.updatedAt).toBe(originalUpdatedAt);
+        expect(user.timestamps.updatedAt).toBe(originalUpdatedAt);
       });
     });
 
     describe('deactivate', () => {
       it('should deactivate active user', async () => {
         const user = User.random({ status: UserStatus.active() });
-        const originalUpdatedAt = user.updatedAt;
+        const originalUpdatedAt = user.timestamps.updatedAt;
 
         await waitForTimestamp();
         user.deactivate();
 
         expect(user.status.toValue()).toBe(UserStatusEnum.INACTIVE);
-        expect(user.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
+        expect(user.timestamps.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
       });
 
       it('should not update already inactive user', () => {
         const user = User.random({ status: UserStatus.inactive() });
-        const originalUpdatedAt = user.updatedAt;
+        const originalUpdatedAt = user.timestamps.updatedAt;
 
         user.deactivate();
 
         expect(user.status.toValue()).toBe(UserStatusEnum.INACTIVE);
-        expect(user.updatedAt).toBe(originalUpdatedAt);
+        expect(user.timestamps.updatedAt).toBe(originalUpdatedAt);
       });
     });
 
     describe('verifyEmail', () => {
       it('should verify pending email', async () => {
         const user = User.random({ status: UserStatus.emailVerificationPending() });
-        const originalUpdatedAt = user.updatedAt;
+        const originalUpdatedAt = user.timestamps.updatedAt;
         
         await waitForTimestamp();
         user.verifyEmail();
 
         expect(user.status.toValue()).toBe(UserStatusEnum.ACTIVE);
-        expect(user.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
+        expect(user.timestamps.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
       });
 
       it('should reject verification for non-pending status', () => {
@@ -187,25 +188,25 @@ describe('User Entity', () => {
 
     it('should change role when different', async () => {
       const user = User.random({ role: UserRole.user() });
-      const originalUpdatedAt = user.updatedAt;
+      const originalUpdatedAt = user.timestamps.updatedAt;
       const newRole = UserRole.admin();
 
       await waitForTimestamp();
       user.changeRole(newRole);
 
       expect(user.hasRole(newRole)).toBe(true);
-      expect(user.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
+      expect(user.timestamps.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
     });
 
     it('should not update when changing to same role', () => {
       const role = UserRole.user();
       const user = User.random({ role });
-      const originalUpdatedAt = user.updatedAt;
+      const originalUpdatedAt = user.timestamps.updatedAt;
 
       user.changeRole(role);
 
       expect(user.role).toBe(role);
-      expect(user.updatedAt).toBe(originalUpdatedAt);
+      expect(user.timestamps.updatedAt).toBe(originalUpdatedAt);
     });
   });
 

@@ -8,7 +8,7 @@ import {
   createEventBusMock,
   InfrastructureException,
   Id,
-  DateVO,
+  TimestampsVO,
 } from '@libs/nestjs-common';
 import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
 
@@ -123,11 +123,11 @@ describe('RegisterUserCommandHandler', () => {
 
       // Assert
       const savedUser = await repository.findById(new Id(result.id));
-      expect(savedUser!.createdAt).toBeInstanceOf(DateVO);
-      expect(savedUser!.updatedAt).toBeInstanceOf(DateVO);
-      expect(savedUser!.createdAt.toValue().getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
-      expect(savedUser!.createdAt.toValue().getTime()).toBeLessThanOrEqual(afterCreation.getTime());
-      expect(savedUser!.updatedAt.toValue().getTime()).toBe(savedUser!.createdAt.toValue().getTime());
+      expect(savedUser!.timestamps).toBeInstanceOf(TimestampsVO);
+      expect(savedUser!.timestamps.createdAt.toValue()).toBeInstanceOf(Date);
+      expect(savedUser!.timestamps.createdAt.toValue().getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
+      expect(savedUser!.timestamps.createdAt.toValue().getTime()).toBeLessThanOrEqual(afterCreation.getTime());
+      expect(savedUser!.timestamps.updatedAt.toValue().getTime()).toBe(savedUser!.timestamps.createdAt.toValue().getTime());
       expect(savedUser!.lastLoginAt).toBeUndefined();
     });
     it('should create unique user IDs for different registrations', async () => {

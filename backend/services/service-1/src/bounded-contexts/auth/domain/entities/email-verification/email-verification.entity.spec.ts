@@ -2,7 +2,7 @@ import { EmailVerification } from './email-verification.entity';
 import { Email, Verification, Expiration } from '../../value-objects';
 import { EmailVerificationVerifiedDomainEvent } from '../../events/email-verified.domain-event';
 import { EmailVerificationCreatedDomainEvent } from '../../events/email-verification-created.domain-event';
-import { InvalidOperationException, Id, DateVO } from '@libs/nestjs-common';
+import { InvalidOperationException, Id, TimestampsVO } from '@libs/nestjs-common';
 
 describe('EmailVerification Entity', () => {
   const newTestVerification = ({
@@ -19,8 +19,7 @@ describe('EmailVerification Entity', () => {
       token: Id.random(),
       expiration: Expiration.atHoursFromNow(expired ? -1 : 24),
       verification: verified ? Verification.verified() : Verification.notVerified(),
-      createdAt: new DateVO(new Date()),
-      updatedAt: new DateVO(new Date()),
+      timestamps: TimestampsVO.create(),
     });
 
   describe('Creation', () => {
@@ -36,8 +35,9 @@ describe('EmailVerification Entity', () => {
       expect(verification.token).toBeInstanceOf(Id);
       expect(verification.verification.isVerified()).toBe(false);
       expect(verification.expiration.toValue()).toBeInstanceOf(Date);
-      expect(verification.createdAt).toBeInstanceOf(DateVO);
-      expect(verification.updatedAt).toBeInstanceOf(DateVO);
+      expect(verification.timestamps).toBeInstanceOf(TimestampsVO);
+      expect(verification.timestamps.createdAt.toValue()).toBeInstanceOf(Date);
+      expect(verification.timestamps.updatedAt.toValue()).toBeInstanceOf(Date);
     });
 
     it('should generate unique identifiers', () => {
@@ -120,12 +120,12 @@ describe('EmailVerification Entity', () => {
 
     it('should update timestamps on verification', async () => {
       const verification = newTestVerification({});
-      const originalUpdatedAt = verification.updatedAt;
+      const originalUpdatedAt = verification.timestamps.updatedAt;
 
       await new Promise((resolve) => setTimeout(resolve, 10));
       verification.verify();
 
-      expect(verification.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
+      expect(verification.timestamps.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
     });
   });
 
@@ -179,8 +179,8 @@ describe('EmailVerification Entity', () => {
         token: emailVerification.token.toValue(),
         expiration: emailVerification.expiration.toValue(),
         verification: emailVerification.verification.toValue(),
-        createdAt: emailVerification.createdAt.toValue(),
-        updatedAt: emailVerification.updatedAt.toValue(),
+        createdAt: emailVerification.timestamps.createdAt.toValue(),
+        updatedAt: emailVerification.timestamps.updatedAt.toValue(),
       });
     });
 

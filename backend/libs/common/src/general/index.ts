@@ -10,6 +10,7 @@ export { CompositeValueObject } from './domain/value-object/CompositeValueObject
 export { EnumValueObject } from './domain/value-object/EnumValueObject';
 export { StringValueObject } from './domain/value-object/StringValueObject';
 export { DateVO } from './domain/value-object/DateValueObject';
+export { TimestampsVO } from './domain/value-object/TimestampsVO';
 export { ValueObject } from './domain/value-object/ValueObject';
 export { Primitives } from './domain/value-object/ValueObject';
 export { Id } from './domain/value-object/Id';
