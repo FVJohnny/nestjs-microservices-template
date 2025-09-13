@@ -46,14 +46,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       timestamps: Timestamps.create(),
     });
 
-    user.apply(
-      new UserRegisteredDomainEvent({
-        userId: user.id,
-        email: props.email,
-        username: props.username,
-        role: user.role,
-      }),
-    );
+    user.apply(new UserRegisteredDomainEvent(user.id, user.email, user.username, user.role));
 
     return user;
   }

@@ -84,13 +84,7 @@ export class EmailVerification extends SharedAggregateRoot {
     this.verification = Verification.verified();
     this.timestamps.update();
 
-    this.apply(
-      new EmailVerificationVerifiedDomainEvent({
-        emailVerificationId: this.id,
-        userId: this.userId,
-        email: this.email,
-      }),
-    );
+    this.apply(new EmailVerificationVerifiedDomainEvent(this.id, this.userId, this.email));
   }
 
   isVerified(): boolean {

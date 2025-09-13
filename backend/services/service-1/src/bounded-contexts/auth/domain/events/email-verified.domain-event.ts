@@ -9,12 +9,11 @@ export interface EmailVerificationVerifiedDomainEventProps {
 }
 
 export class EmailVerificationVerifiedDomainEvent extends DomainEvent {
-  public readonly userId: Id;
-  public readonly email: Email;
-
-  constructor(props: EmailVerificationVerifiedDomainEventProps) {
-    super(props.emailVerificationId);
-    this.userId = props.userId;
-    this.email = props.email;
+  constructor(
+    public readonly emailVerificationId: Id,
+    public readonly userId: Id,
+    public readonly email: Email,
+  ) {
+    super(emailVerificationId);
   }
 }

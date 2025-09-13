@@ -9,12 +9,7 @@ import { User } from '../../../domain/entities/user/user.entity';
 describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
 
   const createEventFromUser = (user: User) =>
-    new UserRegisteredDomainEvent({
-      userId: user.id,
-      email: user.email,
-      username: user.username,
-      role: user.role,
-    });
+    new UserRegisteredDomainEvent(user.id, user.email, user.username, user.role);
 
   // Setup factory
   const setup = (params: { shouldFailOutbox?: boolean } = {}) => {

@@ -1,8 +1,5 @@
 import { EmailVerificationVerified_UpdateUserStatus_DomainEventHandler } from './email-verification-verified_update-user-status.domain-event-handler';
-import {
-  EmailVerificationVerifiedDomainEvent,
-  EmailVerificationVerifiedDomainEventProps,
-} from '../../../domain/events/email-verified.domain-event';
+import { EmailVerificationVerifiedDomainEvent } from '../../../domain/events/email-verified.domain-event';
 import { Email, UserStatus } from '../../../domain/value-objects';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '../../../domain/entities/user/user.entity';
@@ -15,20 +12,11 @@ import {
 
 describe('EmailVerificationVerified_UpdateUserStatus_DomainEventHandler', () => {
   // Test data factory
-  const createEvent = (overrides: Partial<EmailVerificationVerifiedDomainEventProps> = {}) =>
-    new EmailVerificationVerifiedDomainEvent({
-      emailVerificationId: Id.random(),
-      userId: Id.random(),
-      email: Email.random(),
-      ...overrides,
-    });
+  const createEvent = () =>
+    new EmailVerificationVerifiedDomainEvent(Id.random(), Id.random(), Email.random());
 
   const createEventFromUser = (user: User) =>
-    new EmailVerificationVerifiedDomainEvent({
-      emailVerificationId: Id.random(),
-      userId: user.id,
-      email: user.email,
-    });
+    new EmailVerificationVerifiedDomainEvent(user.id, user.id, user.email);
 
   // Setup factory
   const setup = (params: { shouldFailRepository?: boolean } = {}) => {
