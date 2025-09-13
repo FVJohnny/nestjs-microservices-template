@@ -10,7 +10,7 @@ import {
   Password,
 } from '../../value-objects';
 import type { CreateUserProps, UserAttributes, UserDTO } from './user.types';
-import { InvalidOperationException, SharedAggregateRoot, Id } from '@libs/nestjs-common';
+import { InvalidOperationException, SharedAggregateRoot, Id, DateVO } from '@libs/nestjs-common';
 
 let _seq = 1;
 
@@ -21,8 +21,8 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   status: UserStatus;
   role: UserRole;
   lastLoginAt: Date | undefined;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: DateVO;
+  updatedAt: DateVO;
   constructor(props: UserAttributes) {
     super(props.id);
     Object.assign(this, props);
@@ -40,8 +40,8 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       status: new UserStatus(UserStatusEnum.EMAIL_VERIFICATION_PENDING),
       role: props.role,
       lastLoginAt: undefined,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: new DateVO(now),
+      updatedAt: new DateVO(now),
     });
 
     user.apply(
@@ -66,8 +66,8 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       status: props?.status ?? UserStatus.random(),
       role: props?.role ?? UserRole.random(),
       lastLoginAt: props?.lastLoginAt,
-      createdAt: props?.createdAt || new Date(),
-      updatedAt: props?.updatedAt || new Date(),
+      createdAt: props?.createdAt || new DateVO(new Date()),
+      updatedAt: props?.updatedAt || new DateVO(new Date()),
     });
   }
 
@@ -76,7 +76,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       return;
     }
     this.status = UserStatus.active();
-    this.updatedAt = new Date();
+    this.updatedAt = new DateVO(new Date());
   }
 
   deactivate(): void {
@@ -84,7 +84,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       return;
     }
     this.status = UserStatus.inactive();
-    this.updatedAt = new Date();
+    this.updatedAt = new DateVO(new Date());
   }
 
   verifyEmail(): void {
@@ -92,7 +92,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       throw new InvalidOperationException('verifyEmail', this.status.toValue());
     }
     this.status = UserStatus.active();
-    this.updatedAt = new Date();
+    this.updatedAt = new DateVO(new Date());
   }
 
   hasRole(role: UserRole): boolean {
@@ -102,7 +102,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   changeRole(role: UserRole): void {
     if (!this.hasRole(role)) {
       this.role = role;
-      this.updatedAt = new Date();
+      this.updatedAt = new DateVO(new Date());
     }
   }
 
@@ -116,7 +116,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
 
   recordLogin(): void {
     this.lastLoginAt = new Date();
-    this.updatedAt = new Date();
+    this.updatedAt = new DateVO(new Date());
   }
 
   static fromValue(value: UserDTO): User {
@@ -128,8 +128,8 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       status: new UserStatus(value.status as UserStatusEnum),
       role: new UserRole(value.role as UserRoleEnum),
       lastLoginAt: value.lastLoginAt ? new Date(value.lastLoginAt) : undefined,
-      createdAt: new Date(value.createdAt),
-      updatedAt: new Date(value.updatedAt),
+      createdAt: new DateVO(value.createdAt),
+      updatedAt: new DateVO(value.updatedAt),
     });
   }
 
@@ -142,8 +142,8 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       status: this.status.toValue(),
       role: this.role.toValue(),
       lastLoginAt: this.lastLoginAt,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
+      createdAt: this.createdAt.toValue(),
+      updatedAt: this.updatedAt.toValue(),
     };
   }
 }

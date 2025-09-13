@@ -1,7 +1,7 @@
 import { User } from './user.entity';
 import { Email, Username, UserRole, UserRoleEnum, UserStatus, UserStatusEnum, Password } from '../../value-objects';
 import { UserRegisteredDomainEvent } from '../../events/user-registered.domain-event';
-import { InvalidOperationException } from '@libs/nestjs-common';
+import { InvalidOperationException, DateVO } from '@libs/nestjs-common';
 
 describe('User Entity', () => {
   // Test data factories
@@ -27,8 +27,8 @@ describe('User Entity', () => {
       expect(user.status.toValue()).toBe(UserStatusEnum.EMAIL_VERIFICATION_PENDING);
       expect(user.role.toValue()).toBe(UserRoleEnum.USER);
       expect(user.lastLoginAt).toBeUndefined();
-      expect(user.createdAt).toBeInstanceOf(Date);
-      expect(user.updatedAt).toBeInstanceOf(Date);
+      expect(user.createdAt).toBeInstanceOf(DateVO);
+      expect(user.updatedAt).toBeInstanceOf(DateVO);
       expect(await user.password.verify('password123')).toBe(true);
     });
 
@@ -92,7 +92,7 @@ describe('User Entity', () => {
         user.activate();
 
         expect(user.status.toValue()).toBe(UserStatusEnum.ACTIVE);
-        expect(user.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+        expect(user.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
       });
 
       it('should not update already active user', () => {
@@ -115,7 +115,7 @@ describe('User Entity', () => {
         user.deactivate();
 
         expect(user.status.toValue()).toBe(UserStatusEnum.INACTIVE);
-        expect(user.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+        expect(user.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
       });
 
       it('should not update already inactive user', () => {
@@ -138,7 +138,7 @@ describe('User Entity', () => {
         user.verifyEmail();
 
         expect(user.status.toValue()).toBe(UserStatusEnum.ACTIVE);
-        expect(user.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+        expect(user.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
       });
 
       it('should reject verification for non-pending status', () => {
@@ -194,7 +194,7 @@ describe('User Entity', () => {
       user.changeRole(newRole);
 
       expect(user.hasRole(newRole)).toBe(true);
-      expect(user.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+      expect(user.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
     });
 
     it('should not update when changing to same role', () => {

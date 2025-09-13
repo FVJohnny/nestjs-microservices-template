@@ -517,7 +517,7 @@ export function testUserRepositoryContract(
 
           // Assert
           expect(result.data).toHaveLength(3); // All test users were created today
-          expect(result.data.every((user) => user.createdAt > pastDate)).toBe(true);
+          expect(result.data.every((user) => user.createdAt.toValue() > pastDate)).toBe(true);
         });
 
         it('should filter with date fields using LT operator', async () => {
@@ -537,7 +537,7 @@ export function testUserRepositoryContract(
 
           // Assert
           expect(result.data).toHaveLength(3); // All test users were created before tomorrow
-          expect(result.data.every((user) => user.createdAt < futureDate)).toBe(true);
+          expect(result.data.every((user) => user.createdAt.toValue() < futureDate)).toBe(true);
         });
 
         it('should combine multiple filters (AND logic)', async () => {
@@ -941,8 +941,8 @@ export function testUserRepositoryContract(
         expect(loadedUser!.username.toValue()).toBe(originalUser.username.toValue());
         expect(loadedUser!.status.toValue()).toBe(originalUser.status.toValue());
         expect(loadedUser!.role.toValue()).toEqual(originalUser.role.toValue());
-        expect(loadedUser!.createdAt.getTime()).toBe(originalUser.createdAt.getTime());
-        expect(loadedUser!.updatedAt.getTime()).toBe(originalUser.updatedAt.getTime());
+        expect(loadedUser!.createdAt.toValue().getTime()).toBe(originalUser.createdAt.toValue().getTime());
+        expect(loadedUser!.updatedAt.toValue().getTime()).toBe(originalUser.updatedAt.toValue().getTime());
       });
 
       it('should handle users with no last login', async () => {
