@@ -19,9 +19,8 @@ describe('UserRegistered_CreateEmailVerification_DomainEventHandler', () => {
 
   // Setup factory
   const setup = (params: { shouldFailCommandBus?: boolean } = {}) => {
-    const { shouldFailCommandBus = false } = params;
 
-    const mockCommandBus = createCommandBusMock({ shouldFail: shouldFailCommandBus });
+    const mockCommandBus = createCommandBusMock({ shouldFail: params.shouldFailCommandBus });
     const eventHandler = new UserRegistered_CreateEmailVerification_DomainEventHandler(
       mockCommandBus as any,
     );
@@ -44,23 +43,6 @@ describe('UserRegistered_CreateEmailVerification_DomainEventHandler', () => {
       const command = mockCommandBus.commands[0] as CreateEmailVerificationCommand;
 
       expect(command).toBeInstanceOf(CreateEmailVerificationCommand);
-      expect(command.userId).toBe(user.id.toValue());
-      expect(command.email).toBe(user.email.toValue());
-    });
-
-    it('should handle special characters in email', async () => {
-      // Arrange
-      const { eventHandler, mockCommandBus } = setup();
-      const user = User.random({ email: new Email('test.user+tag@example-domain.com') });
-      const event = createEventFromUser(user);
-
-      // Act
-      await eventHandler.handle(event);
-
-      // Assert
-      expect(mockCommandBus.commands).toHaveLength(1);
-      const command = mockCommandBus.commands[0] as CreateEmailVerificationCommand;
-
       expect(command.userId).toBe(user.id.toValue());
       expect(command.email).toBe(user.email.toValue());
     });

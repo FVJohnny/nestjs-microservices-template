@@ -41,7 +41,7 @@ export abstract class BaseIntegrationEvent {
       topic: this.topic,
       occurredOn: this.occurredOn.toISOString(),
       metadata: this.metadata.toJSON(),
-      data: this.toEventJSON(),
+      ...this.toEventJSON(),
     };
   }
 

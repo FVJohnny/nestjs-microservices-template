@@ -3,7 +3,7 @@ import {
   UserRegisteredDomainEvent,
 } from '../../../domain/events/user-registered.domain-event';
 import { Email } from '../../../domain/value-objects';
-import { Topics, createOutboxServiceMock } from '@libs/nestjs-common';
+import { Topics, UserCreatedIntegrationEvent, createOutboxServiceMock } from '@libs/nestjs-common';
 import { User } from '../../../domain/entities/user/user.entity';
 
 describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
@@ -41,15 +41,15 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
       // Assert
       expect(mockOutboxService.storedEvents).toHaveLength(1);
 
-      const storedIntegrationEvent = mockOutboxService.storedEvents[0];
-      expect(storedIntegrationEvent.eventType).toBe(Topics.USERS.events.USER_CREATED);
-      expect(storedIntegrationEvent.topic).toBe(Topics.USERS.topic);
+      const outboxEvent = mockOutboxService.storedEvents[0];
+      expect(outboxEvent.eventName).toBe(Topics.USERS.events.USER_CREATED);
+      expect(outboxEvent.topic).toBe(Topics.USERS.topic);
 
-      const payload = JSON.parse(storedIntegrationEvent.payload);
-      expect(payload.data.userId).toBe(user.id.toValue());
-      expect(payload.data.email).toBe(user.email.toValue());
-      expect(payload.data.username).toBe(user.username.toValue());
-      expect(payload.data.role).toEqual(user.role.toValue());
+      const payload = JSON.parse(outboxEvent.payload) as UserCreatedIntegrationEvent;
+      expect(payload.userId).toBe(user.id.toValue());
+      expect(payload.email).toBe(user.email.toValue());
+      expect(payload.username).toBe(user.username.toValue());
+      expect(payload.role).toEqual(user.role.toValue());
     });
 
     it('should handle special characters in email and username', async () => {
@@ -64,13 +64,15 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
       await eventHandler.handle(event);
 
       // Assert
-      const storedIntegrationEvent = mockOutboxService.storedEvents[0];
-      const payload = JSON.parse(storedIntegrationEvent.payload);
+      const outboxEvent = mockOutboxService.storedEvents[0];
+      expect(outboxEvent.eventName).toBe(Topics.USERS.events.USER_CREATED);
+      expect(outboxEvent.topic).toBe(Topics.USERS.topic);
+      const payload = JSON.parse(outboxEvent.payload) as UserCreatedIntegrationEvent;
 
-      expect(payload.data.userId).toBe(user.id.toValue());
-      expect(payload.data.email).toBe(user.email.toValue());
-      expect(payload.data.username).toBe(user.username.toValue());
-      expect(payload.data.role).toEqual(user.role.toValue());
+      expect(payload.userId).toBe(user.id.toValue());
+      expect(payload.email).toBe(user.email.toValue());
+      expect(payload.username).toBe(user.username.toValue());
+      expect(payload.role).toEqual(user.role.toValue());
     });
 
     it('should handle multiple events sequentially', async () => {
@@ -87,13 +89,13 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
       // Assert
       expect(mockOutboxService.storedEvents).toHaveLength(2);
 
-      const firstPayload = JSON.parse(mockOutboxService.storedEvents[0].payload);
-      expect(firstPayload.data.userId).toBe(users[0].id.toValue());
-      expect(firstPayload.data.role).toBe(users[0].role.toValue());
+      const firstPayload = JSON.parse(mockOutboxService.storedEvents[0].payload) as UserCreatedIntegrationEvent;
+      expect(firstPayload.userId).toBe(users[0].id.toValue());
+      expect(firstPayload.role).toBe(users[0].role.toValue());
 
-      const secondPayload = JSON.parse(mockOutboxService.storedEvents[1].payload);
-      expect(secondPayload.data.userId).toBe(users[1].id.toValue());
-      expect(secondPayload.data.role).toBe(users[1].role.toValue());
+      const secondPayload = JSON.parse(mockOutboxService.storedEvents[1].payload) as UserCreatedIntegrationEvent;
+      expect(secondPayload.userId).toBe(users[1].id.toValue());
+      expect(secondPayload.role).toBe(users[1].role.toValue());
     });
   });
 
