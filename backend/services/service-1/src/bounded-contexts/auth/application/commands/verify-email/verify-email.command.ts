@@ -3,11 +3,11 @@ import type { TracingMetadataParams } from '@libs/nestjs-common';
 import { BaseCommand } from '@libs/nestjs-common';
 
 export class VerifyEmailCommand extends BaseCommand implements ICommand {
-  public readonly token: string;
+  public readonly emailVerificationId: string;
 
   constructor(props: VerifyEmailCommand, metadata?: TracingMetadataParams) {
     super(metadata);
-    this.token = props.token;
+    this.emailVerificationId = props.emailVerificationId;
   }
 }
 

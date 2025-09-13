@@ -122,7 +122,7 @@ describe('Refresh Token Flow (E2E)', () => {
       const verification = await emailVerificationRepository.findByUserId(new Id(userId));
       await request(server)
         .post('/auth/verify-email')
-        .send({ token: verification!.token.toValue() })
+        .send({ emailVerificationId: verification!.id.toValue() })
         .expect(200);
 
       // Login to get tokens

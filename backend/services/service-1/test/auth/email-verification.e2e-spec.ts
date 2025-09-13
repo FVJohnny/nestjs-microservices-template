@@ -150,8 +150,8 @@ describe('Email Verification (E2E)', () => {
     expect(userRes.body.email).toBe(body.email);
   });
 
-  it('should verify email successfully with valid token', async () => {
-    // Arrange - Create user and get verification token
+  it('should verify email successfully with valid email verification ID', async () => {
+    // Arrange - Create user and get verification ID
     const userData = {
       email: 'verify@example.com',
       username: 'verifyuser',
@@ -162,13 +162,13 @@ describe('Email Verification (E2E)', () => {
     const registerRes = await request(server).post('/users').send(userData).expect(201);
     const userId = registerRes.body.id;
 
-    // Get verification token (only peeking into repository for the token)
+    // Get verification ID (only peeking into repository for the ID)
     const verification = await emailVerificationRepository.findByUserId(new Id(userId));
-    const token = verification!.token.toValue();
-    expect(token).toBeDefined();
+    const emailVerificationId = verification!.id.toValue();
+    expect(emailVerificationId).toBeDefined();
 
     // Act
-    const res = await request(server).post('/auth/verify-email').send({ token }).expect(200);
+    const res = await request(server).post('/auth/verify-email').send({ emailVerificationId }).expect(200);
 
     // Assert
     expect(res.body.success).toBe(true);
@@ -183,14 +183,16 @@ describe('Email Verification (E2E)', () => {
     expect(updatedUserRes.body.status).toBe('active');
   });
 
-  it('should return 404 for non-existent token', async () => {
+  it('should return 404 for non-existent ID', async () => {
+    // Use a properly formatted UUID that doesn't exist
+    const nonExistentId = '123e4567-e89b-12d3-a456-426614174999';
     await request(server)
       .post('/auth/verify-email')
-      .send({ token: '00000000-0000-0000-0000-000000000000' })
-      .expect(422);
+      .send({ emailVerificationId: nonExistentId })
+      .expect(404);
   });
 
-  it('should return 404 when trying to verify already verified token', async () => {
+  it('should return 404 when trying to verify already verified email verification', async () => {
     // Arrange - Create and verify user
     const userData = {
       email: 'already@example.com',
@@ -203,20 +205,20 @@ describe('Email Verification (E2E)', () => {
     const userId = registerRes.body.id;
 
     const verification = await emailVerificationRepository.findByUserId(new Id(userId));
-    const token = verification!.token.toValue();
+    const emailVerificationId = verification!.id.toValue();
 
     // First verification
-    await request(server).post('/auth/verify-email').send({ token }).expect(200);
+    await request(server).post('/auth/verify-email').send({ emailVerificationId }).expect(200);
 
-    // Act - Try to verify again
-    await request(server).post('/auth/verify-email').send({ token }).expect(404);
+    // Act - Try to verify again - expect 400 Bad Request for already verified
+    await request(server).post('/auth/verify-email').send({ emailVerificationId }).expect(400);
   });
 
-  it('should return 400 for empty token', async () => {
-    await request(server).post('/auth/verify-email').send({ token: '' }).expect(400);
+  it('should return 400 for empty email verification ID', async () => {
+    await request(server).post('/auth/verify-email').send({ emailVerificationId: '' }).expect(400);
   });
 
-  it('should return 400 for missing token', async () => {
+  it('should return 400 for missing email verification ID', async () => {
     await request(server).post('/auth/verify-email').send({}).expect(400);
   });
 
@@ -234,7 +236,7 @@ describe('Email Verification (E2E)', () => {
     const verification = await emailVerificationRepository.findByUserId(new Id(userId));
     expect(verification!.email.toValue()).toBe(userData.email);
 
-    const token = verification!.token.toValue();
-    await request(server).post('/auth/verify-email').send({ token }).expect(200);
+    const emailVerificationId = verification!.id.toValue();
+    await request(server).post('/auth/verify-email').send({ emailVerificationId }).expect(200);
   });
 });

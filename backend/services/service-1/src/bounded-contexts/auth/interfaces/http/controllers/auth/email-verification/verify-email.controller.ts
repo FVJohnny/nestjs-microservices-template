@@ -16,10 +16,10 @@ export class VerifyEmailController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Verify user email address',
-    description: 'Verifies a user email address using the token sent to their email',
+    description: 'Verifies a user email address using the email verification ID',
   })
   @ApiBody({
-    description: 'Email verification token',
+    description: 'Email verification ID',
     type: VerifyEmailRequestDto,
   })
   @ApiResponse({
@@ -29,7 +29,7 @@ export class VerifyEmailController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Invalid or expired verification token',
+    description: 'Invalid or expired email verification',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -37,7 +37,7 @@ export class VerifyEmailController {
   })
   async verifyEmail(@Body() body: VerifyEmailRequestDto): Promise<VerifyEmailResponseDto> {
     const command = new VerifyEmailCommand({
-      token: body.token,
+      emailVerificationId: body.emailVerificationId,
     });
 
     const result = await this.commandBus.execute<VerifyEmailCommand, VerifyEmailCommandResponse>(

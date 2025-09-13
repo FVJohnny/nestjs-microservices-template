@@ -15,5 +15,4 @@ export class CreateEmailVerificationCommand extends BaseCommand implements IComm
 
 export class CreateEmailVerificationCommandResponse {
   id: string;
-  token: string;
 }

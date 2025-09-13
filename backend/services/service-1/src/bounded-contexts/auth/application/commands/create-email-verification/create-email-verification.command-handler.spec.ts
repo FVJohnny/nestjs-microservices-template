@@ -41,9 +41,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
       // Assert
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
-      expect(result.token).toBeDefined();
       expect(typeof result.id).toBe('string');
-      expect(typeof result.token).toBe('string');
 
       // Verify email verification was saved
       const savedVerification = await repository.findByUserId(new Id(command.userId));
@@ -54,7 +52,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
       expect(savedVerification!.isPending()).toBe(true);
     });
 
-    it('should generate unique tokens for different email verifications', async () => {
+    it('should generate unique IDs for different email verifications', async () => {
       // Arrange
       const { commandHandler, repository } = setup();
       const command1 = createCommand({});
@@ -65,7 +63,6 @@ describe('CreateEmailVerificationCommandHandler', () => {
       const result2 = await commandHandler.execute(command2);
 
       // Assert
-      expect(result1.token).not.toBe(result2.token);
       expect(result1.id).not.toBe(result2.id);
 
       // Verify both were saved
@@ -73,7 +70,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
       const verification2 = await repository.findByUserId(new Id(command2.userId));
       expect(verification1?.userId.toValue()).toBe(command1.userId);
       expect(verification2?.userId.toValue()).toBe(command2.userId);
-      expect(verification1?.token).not.toBe(verification2?.token);
+      expect(verification1?.id).not.toBe(verification2?.id);
     });
 
     it('should replace existing email verification for same user', async () => {
@@ -144,7 +141,6 @@ describe('CreateEmailVerificationCommandHandler', () => {
       expect(event.aggregateId.toValue()).toBe(result.id);
       expect(event.userId.toValue()).toBe(command.userId);
       expect(event.email.toValue()).toBe(command.email);
-      expect(event.token.toValue()).toBe(result.token);
       expect(event.occurredOn).toBeInstanceOf(Date);
       expect(event.expiration).toBeInstanceOf(Expiration);
     });

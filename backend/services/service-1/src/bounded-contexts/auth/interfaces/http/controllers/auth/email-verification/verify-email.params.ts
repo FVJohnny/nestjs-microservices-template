@@ -3,13 +3,13 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class VerifyEmailRequestDto {
   @ApiProperty({
-    description: 'The email verification token sent to the user',
-    example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
+    description: 'The email verification ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
     type: String,
   })
   @IsString()
   @IsNotEmpty()
-  token: string;
+  emailVerificationId: string;
 }
 
 export class VerifyEmailResponseDto {

@@ -133,45 +133,6 @@ export function testEmailVerificationRepositoryContract(
         });
       });
 
-      describe('findByToken', () => {
-        it('should find verification by token', async () => {
-          // Arrange
-          const verification = EmailVerification.random();
-          await repository.save(verification);
-
-          // Act
-          const found = await repository.findByToken(verification.token);
-
-          // Assert
-          expect(found).not.toBeNull();
-          expect(found?.id.toValue()).toBe(verification.id.toValue());
-          expect(found?.token.toValue()).toBe(verification.token.toValue());
-        });
-
-        it('should return null when token not found', async () => {
-          // Act
-          const found = await repository.findByToken(Id.random());
-
-          // Assert
-          expect(found).toBeNull();
-        });
-
-        it('should find correct verification among multiple', async () => {
-          // Arrange
-          const verification1 = EmailVerification.random();
-          const verification2 = EmailVerification.random();
-          await repository.save(verification1);
-          await repository.save(verification2);
-
-          // Act
-          const found = await repository.findByToken(verification2.token);
-
-          // Assert
-          expect(found).not.toBeNull();
-          expect(found?.userId.toValue()).toBe(verification2.userId.toValue());
-        });
-      });
-
       describe('findByUserId', () => {
         it('should find verification by user id', async () => {
           // Arrange
@@ -268,55 +229,6 @@ export function testEmailVerificationRepositoryContract(
         });
       });
 
-      describe('findPendingByToken', () => {
-        it('should find pending verification by token', async () => {
-          // Arrange
-          const verification = EmailVerification.random({
-            verification: Verification.notVerified(),
-            expiration: Expiration.atHoursFromNow(1),
-          });
-          await repository.save(verification);
-
-          // Act
-          const found = await repository.findPendingByToken(verification.token);
-
-          // Assert
-          expect(found).not.toBeNull();
-          expect(found?.token.toValue()).toBe(verification.token.toValue());
-          expect(found?.isVerified()).toBe(false);
-        });
-
-        it('should return null for verified verifications', async () => {
-          // Arrange
-          const verification = EmailVerification.random({
-            verification: Verification.verified(),
-            expiration: Expiration.atHoursFromNow(1),
-          });
-          await repository.save(verification);
-
-          // Act
-          const found = await repository.findPendingByToken(verification.token);
-
-          // Assert
-          expect(found).toBeNull();
-        });
-
-        it('should return null for expired verifications', async () => {
-          // Arrange
-          const verification = EmailVerification.random({
-            verification: Verification.notVerified(),
-            expiration: Expiration.atHoursFromNow(-1),
-          });
-          await repository.save(verification);
-
-          // Act
-          const found = await repository.findPendingByToken(verification.token);
-
-          // Assert
-          expect(found).toBeNull();
-        });
-      });
-
       describe('remove', () => {
         it('should remove verification by id', async () => {
           // Arrange
@@ -401,7 +313,7 @@ export function testEmailVerificationRepositoryContract(
 
         // Act & Assert - Initial state
         await repository.save(verification);
-        let found = await repository.findPendingByToken(verification.token);
+        let found = await repository.findById(verification.id);
 
         expect(found).not.toBeNull();
         expect(found?.isPending()).toBe(true);
@@ -409,13 +321,13 @@ export function testEmailVerificationRepositoryContract(
         // Act & Assert - After verification
         verification.verify();
         await repository.save(verification);
-        found = await repository.findByToken(verification.token);
+        found = await repository.findById(verification.id);
 
         expect(found).not.toBeNull();
         expect(found?.isVerified()).toBe(true);
 
-        // Pending search should return null
-        const pending = await repository.findPendingByToken(verification.token);
+        // Pending search using user ID should return null after verification
+        const pending = await repository.findPendingByUserId(verification.userId);
         expect(pending).toBeNull();
       });
 
@@ -443,7 +355,7 @@ export function testEmailVerificationRepositoryContract(
         // Act - Multiple operations
         await repository.save(verification);
         const exists1 = await repository.exists(verification.id);
-        const found1 = await repository.findByToken(verification.token);
+        const found1 = await repository.findById(verification.id);
 
         verification.verify();
         await repository.save(verification);
@@ -451,7 +363,7 @@ export function testEmailVerificationRepositoryContract(
 
         await repository.remove(verification.id);
         const exists2 = await repository.exists(verification.id);
-        const found3 = await repository.findByToken(verification.token);
+        const found3 = await repository.findById(verification.id);
 
         // Assert
         expect(exists1).toBe(true);

@@ -7,7 +7,6 @@ export class EmailVerificationCreatedDomainEvent extends DomainEvent {
     public readonly emailVerificationId: Id,
     public readonly userId: Id,
     public readonly email: Email,
-    public readonly token: Id,
     public readonly expiration: Expiration,
   ) {
     super(emailVerificationId);

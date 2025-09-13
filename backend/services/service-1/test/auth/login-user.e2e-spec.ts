@@ -116,12 +116,12 @@ describe('Complete User Authentication Flow (E2E)', () => {
       // Step 2: Get verification token (simulate email received)
       const verification = await emailVerificationRepository.findByUserId(new Id(userId));
       expect(verification).toBeDefined();
-      const verificationToken = verification!.token.toValue();
+      const verificationToken = verification!.id.toValue();
 
       // Step 3: Verify email
       const verifyRes = await request(server)
         .post('/auth/verify-email')
-        .send({ token: verificationToken })
+        .send({ emailVerificationId: verificationToken })
         .expect(200);
 
       expect(verifyRes.body.success).toBe(true);
@@ -195,11 +195,11 @@ describe('Complete User Authentication Flow (E2E)', () => {
       const userId = registerRes.body.id;
 
       const verification = await emailVerificationRepository.findByUserId(new Id(userId));
-      const verificationToken = verification!.token.toValue();
+      const verificationToken = verification!.id.toValue();
 
       await request(server)
         .post('/auth/verify-email')
-        .send({ token: verificationToken })
+        .send({ emailVerificationId: verificationToken })
         .expect(200);
 
       // Try login with wrong password
@@ -236,7 +236,7 @@ describe('Complete User Authentication Flow (E2E)', () => {
       const verification = await emailVerificationRepository.findByUserId(new Id(userId));
       await request(server)
         .post('/auth/verify-email')
-        .send({ token: verification!.token.toValue() })
+        .send({ emailVerificationId: verification!.id.toValue() })
         .expect(200);
 
       const loginRes = await request(server)

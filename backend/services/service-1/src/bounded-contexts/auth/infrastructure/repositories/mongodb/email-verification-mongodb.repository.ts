@@ -52,20 +52,6 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
     }
   }
 
-  async findByToken(token: Id): Promise<EmailVerification | null> {
-    try {
-      const document = await this.collection.findOne({ token: token.toValue() });
-
-      if (!document) {
-        return null;
-      }
-
-      return EmailVerification.fromValue(document);
-    } catch (error: unknown) {
-      this.handleDatabaseError('findByToken', token.toValue(), error);
-    }
-  }
-
   async findByUserId(userId: Id): Promise<EmailVerification | null> {
     try {
       const document = await this.collection.findOne({ userId: userId.toValue() });
@@ -111,24 +97,6 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
       return EmailVerification.fromValue(document);
     } catch (error: unknown) {
       this.handleDatabaseError('findPendingByUserId', userId.toValue(), error);
-    }
-  }
-
-  async findPendingByToken(token: Id): Promise<EmailVerification | null> {
-    try {
-      const document = await this.collection.findOne({
-        token: token.toValue(),
-        expiration: { $gt: new Date() },
-        verification: { $eq: Verification.notVerified().toValue() },
-      });
-
-      if (!document) {
-        return null;
-      }
-
-      return EmailVerification.fromValue(document);
-    } catch (error: unknown) {
-      this.handleDatabaseError('findPendingByToken', token.toValue(), error);
     }
   }
 
@@ -204,16 +172,6 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
         );
       }
 
-      if (!indexNames.includes('idx_email_verification_token')) {
-        await this.collection.createIndex(
-          { token: 1 },
-          {
-            unique: true,
-            name: 'idx_email_verification_token',
-          },
-        );
-      }
-
       // Query performance indexes
       if (!indexNames.includes('idx_email_verification_pending')) {
         await this.collection.createIndex(
@@ -254,9 +212,6 @@ export class EmailVerificationMongodbRepository implements EmailVerificationRepo
         // Extract email value from the error details
         const emailValue = error.keyValue?.email || 'unknown email';
         throw new AlreadyExistsException('email', emailValue);
-      }
-      if (keyPattern?.token) {
-        throw new AlreadyExistsException('token', id);
       }
     }
 

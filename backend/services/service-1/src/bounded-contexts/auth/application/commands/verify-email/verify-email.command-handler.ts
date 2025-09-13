@@ -22,9 +22,9 @@ export class VerifyEmailCommandHandler extends BaseCommandHandler<
   }
 
   protected async handle(command: VerifyEmailCommand): Promise<VerifyEmailCommandResponse> {
-    // Find pending email verification by token
-    const emailVerification = await this.emailVerificationRepository.findPendingByToken(
-      new Id(command.token),
+    // Find email verification by ID
+    const emailVerification = await this.emailVerificationRepository.findById(
+      new Id(command.emailVerificationId),
     );
 
     if (!emailVerification) {
@@ -44,11 +44,11 @@ export class VerifyEmailCommandHandler extends BaseCommandHandler<
   }
 
   protected authorize(_command: VerifyEmailCommand): Promise<boolean> {
-    // No special authorization needed - anyone with a valid token can verify
+    // No special authorization needed - anyone with a valid email verification ID can verify
     return Promise.resolve(true);
   }
 
   protected async validate(_command: VerifyEmailCommand): Promise<void> {
-    // Token validation is done in the handle method
+    // Email verification validation is done in the handle method
   }
 }

@@ -44,7 +44,6 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
 
     return {
       id: emailVerification.id.toValue(),
-      token: emailVerification.token.toValue(),
     };
   }
 

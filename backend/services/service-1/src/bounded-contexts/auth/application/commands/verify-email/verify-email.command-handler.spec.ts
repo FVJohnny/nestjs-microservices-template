@@ -10,15 +10,16 @@ import {
   InfrastructureException,
   Id,
   DomainValidationException,
+  InvalidOperationException,
 } from '@libs/nestjs-common';
 import { EmailVerificationVerifiedDomainEvent } from 'src/bounded-contexts/auth/domain/events/email-verified.domain-event';
 
 describe('VerifyEmailCommandHandler', () => {
   // Test data factory
-  const createCommand = (props?: { token?: string }) => {
-    // Default token will be set in tests that need it
+  const createCommand = (props?: { emailVerificationId?: string }) => {
+    // Default emailVerificationId will be set in tests that need it
     return new VerifyEmailCommand({
-      token: props?.token || Id.random().toValue(),
+      emailVerificationId: props?.emailVerificationId || Id.random().toValue(),
     });
   };
 
@@ -37,7 +38,7 @@ describe('VerifyEmailCommandHandler', () => {
   };
 
   describe('Happy Path', () => {
-    it('should successfully verify email with valid token', async () => {
+    it('should successfully verify email with valid ID', async () => {
       // Arrange
       const userId1 = Id.random();
       const { commandHandler, repository } = setup();
@@ -48,7 +49,7 @@ describe('VerifyEmailCommandHandler', () => {
       await repository.save(emailVerification);
 
       const command = createCommand({
-        token: emailVerification.token.toValue(),
+        emailVerificationId: emailVerification.id.toValue(),
       });
 
       // Act
@@ -60,13 +61,13 @@ describe('VerifyEmailCommandHandler', () => {
       expect(result.userId).toBe(userId1.toValue());
 
       // Verify the email verification is now verified
-      const verifiedEmail = await repository.findByToken(emailVerification.token);
+      const verifiedEmail = await repository.findById(emailVerification.id);
       expect(verifiedEmail).not.toBeNull();
       expect(verifiedEmail!.isVerified()).toBe(true);
       expect(verifiedEmail!.isPending()).toBe(false);
     });
 
-    it('should verify email with different token formats', async () => {
+    it('should verify email with different email formats', async () => {
       // Arrange
       const { commandHandler, repository } = setup();
       const emailVerification = EmailVerification.random({
@@ -75,7 +76,7 @@ describe('VerifyEmailCommandHandler', () => {
       await repository.save(emailVerification);
 
       const command = createCommand({
-        token: emailVerification.token.toValue(),
+        emailVerificationId: emailVerification.id.toValue(),
       });
 
       // Act
@@ -87,7 +88,7 @@ describe('VerifyEmailCommandHandler', () => {
       expect(result.userId).toBe(emailVerification.userId.toValue());
 
       // Verify the email verification is now verified
-      const verifiedEmail = await repository.findByToken(emailVerification.token);
+      const verifiedEmail = await repository.findById(emailVerification.id);
       expect(verifiedEmail).not.toBeNull();
       expect(verifiedEmail!.isVerified()).toBe(true);
       expect(verifiedEmail!.email.toValue()).toBe(emailVerification.email.toValue());
@@ -102,10 +103,10 @@ describe('VerifyEmailCommandHandler', () => {
       await repository.save(emailVerification2);
 
       const command1 = createCommand({
-        token: emailVerification1.token.toValue(),
+        emailVerificationId: emailVerification1.id.toValue(),
       });
       const command2 = createCommand({
-        token: emailVerification2.token.toValue(),
+        emailVerificationId: emailVerification2.id.toValue(),
       });
 
       // Act
@@ -119,8 +120,8 @@ describe('VerifyEmailCommandHandler', () => {
       expect(result2.userId).toBe(emailVerification2.userId.toValue());
 
       // Verify both are now verified
-      const verified1 = await repository.findByToken(emailVerification1.token);
-      const verified2 = await repository.findByToken(emailVerification2.token);
+      const verified1 = await repository.findById(emailVerification1.id);
+      const verified2 = await repository.findById(emailVerification2.id);
       expect(verified1!.isVerified()).toBe(true);
       expect(verified2!.isVerified()).toBe(true);
     });
@@ -134,7 +135,7 @@ describe('VerifyEmailCommandHandler', () => {
       await repository.save(emailVerification);
 
       const command = createCommand({
-        token: emailVerification.token.toValue(),
+        emailVerificationId: emailVerification.id.toValue(),
       });
 
       // Act
@@ -146,7 +147,7 @@ describe('VerifyEmailCommandHandler', () => {
       expect(result.userId).toBe(emailVerification.userId.toValue());
 
       // Verify the email verification is now verified with correct email
-      const verifiedEmail = await repository.findByToken(emailVerification.token);
+      const verifiedEmail = await repository.findById(emailVerification.id);
       expect(verifiedEmail).not.toBeNull();
       expect(verifiedEmail!.isVerified()).toBe(true);
       expect(verifiedEmail!.email.toValue()).toBe(emailVerification.email.toValue());
@@ -165,7 +166,7 @@ describe('VerifyEmailCommandHandler', () => {
       await repository.save(emailVerification);
 
       const command = createCommand({
-        token: emailVerification.token.toValue(),
+        emailVerificationId: emailVerification.id.toValue(),
       });
 
       // Act
@@ -183,29 +184,29 @@ describe('VerifyEmailCommandHandler', () => {
   });
 
   describe('Error Cases', () => {
-    it('should throw DomainValidationException for malformed token gracefully', async () => {
+    it('should throw DomainValidationException for malformed ID gracefully', async () => {
       // Arrange
       const { commandHandler } = setup();
       const command = createCommand({
-        token: '!!!invalid-token-format!!!',
+        emailVerificationId: '!!!invalid-id-format!!!',
       });
 
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(DomainValidationException);
     });
 
-    it('should throw NotFoundException when token does not exist', async () => {
+    it('should throw NotFoundException when ID does not exist', async () => {
       // Arrange
       const { commandHandler } = setup();
       const command = createCommand({
-        token: Id.random().toValue(),
+        emailVerificationId: Id.random().toValue(),
       });
 
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw NotFoundException when token is expired', async () => {
+    it('should throw InvalidOperationException when email verification is expired', async () => {
       // Arrange
       const { commandHandler, repository } = setup();
       const emailVerification = EmailVerification.random({
@@ -214,14 +215,14 @@ describe('VerifyEmailCommandHandler', () => {
       await repository.save(emailVerification);
 
       const command = createCommand({
-        token: emailVerification.token.toValue(),
+        emailVerificationId: emailVerification.id.toValue(),
       });
 
       // Act & Assert
-      await expect(commandHandler.execute(command)).rejects.toThrow(NotFoundException);
+      await expect(commandHandler.execute(command)).rejects.toThrow(InvalidOperationException);
     });
 
-    it('should throw NotFoundException when email is already verified', async () => {
+    it('should throw InvalidOperationException when email is already verified', async () => {
       // Arrange
       const { commandHandler, repository } = setup();
       const emailVerification = EmailVerification.random();
@@ -229,11 +230,11 @@ describe('VerifyEmailCommandHandler', () => {
       await repository.save(emailVerification);
 
       const command = createCommand({
-        token: emailVerification.token.toValue(),
+        emailVerificationId: emailVerification.id.toValue(),
       });
 
       // Act & Assert
-      await expect(commandHandler.execute(command)).rejects.toThrow(NotFoundException);
+      await expect(commandHandler.execute(command)).rejects.toThrow(InvalidOperationException);
     });
 
     it('should handle repository failures gracefully', async () => {
@@ -252,7 +253,7 @@ describe('VerifyEmailCommandHandler', () => {
       await repository.save(emailVerification);
 
       const command = createCommand({
-        token: emailVerification.token.toValue(),
+        emailVerificationId: emailVerification.id.toValue(),
       });
 
       // Act & Assert
@@ -266,7 +267,7 @@ describe('VerifyEmailCommandHandler', () => {
       await repository.save(emailVerification);
 
       const command = createCommand({
-        token: emailVerification.token.toValue(),
+        emailVerificationId: emailVerification.id.toValue(),
       });
 
       // Act - First verification
@@ -276,7 +277,7 @@ describe('VerifyEmailCommandHandler', () => {
       expect(result1.success).toBe(true);
 
       // Act & Assert - Second verification should fail
-      await expect(commandHandler.execute(command)).rejects.toThrow(NotFoundException);
+      await expect(commandHandler.execute(command)).rejects.toThrow(InvalidOperationException);
     });
   });
 });

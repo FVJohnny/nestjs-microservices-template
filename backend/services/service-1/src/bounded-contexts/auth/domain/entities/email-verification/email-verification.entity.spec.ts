@@ -16,7 +16,6 @@ describe('EmailVerification Entity', () => {
       id: Id.random(),
       userId: Id.random(),
       email: Email.random(),
-      token: Id.random(),
       expiration: Expiration.atHoursFromNow(expired ? -1 : 24),
       verification: verified ? Verification.verified() : Verification.notVerified(),
       timestamps: Timestamps.create(),
@@ -32,7 +31,6 @@ describe('EmailVerification Entity', () => {
       expect(verification.id).toBeDefined();
       expect(verification.userId).toBe(userId);
       expect(verification.email).toBe(email);
-      expect(verification.token).toBeInstanceOf(Id);
       expect(verification.verification.isVerified()).toBe(false);
       expect(verification.expiration.toValue()).toBeInstanceOf(Date);
       expect(verification.timestamps).toBeInstanceOf(Timestamps);
@@ -50,7 +48,6 @@ describe('EmailVerification Entity', () => {
         email: Email.random(),
       });
 
-      expect(verification1.token).not.toBe(verification2.token);
       expect(verification1.id).not.toBe(verification2.id);
     });
 
@@ -77,7 +74,6 @@ describe('EmailVerification Entity', () => {
       expect(event.userId).toBe(emailVerification.userId);
       expect(event.email).toBe(emailVerification.email);
       expect(event.expiration).toBe(emailVerification.expiration);
-      expect(event.token).toBe(emailVerification.token);
     });
   });
 
@@ -112,7 +108,7 @@ describe('EmailVerification Entity', () => {
       expect(() => verification.verify()).toThrow(InvalidOperationException);
     });
 
-    it('should prevent verification of expired tokens', () => {
+    it('should prevent verification of expired email verifications', () => {
       const expiredVerification = newTestVerification({ expired: true });
 
       expect(() => expiredVerification.verify()).toThrow(InvalidOperationException);
@@ -160,7 +156,6 @@ describe('EmailVerification Entity', () => {
       id: Id.random().toValue(),
       userId: Id.random().toValue(),
       email: Email.random().toValue(),
-      token: Id.random().toValue(),
       expiration: Expiration.atHoursFromNow(24).toValue(),
       verification: Verification.notVerified().toValue(),
       createdAt: new Date('2024-01-01T10:00:00Z'),
@@ -176,7 +171,6 @@ describe('EmailVerification Entity', () => {
         id: emailVerification.id.toValue(),
         userId: emailVerification.userId.toValue(),
         email: emailVerification.email.toValue(),
-        token: emailVerification.token.toValue(),
         expiration: emailVerification.expiration.toValue(),
         verification: emailVerification.verification.toValue(),
         createdAt: emailVerification.timestamps.createdAt.toValue(),
@@ -191,7 +185,6 @@ describe('EmailVerification Entity', () => {
       expect(verification.id.toValue()).toBe(dto.id);
       expect(verification.userId.toValue()).toBe(dto.userId);
       expect(verification.email.toValue()).toBe(dto.email);
-      expect(verification.token.toValue()).toBe(dto.token);
       expect(verification.expiration.toValue()).toEqual(dto.expiration);
       expect(verification.verification.toValue()).toEqual(dto.verification);
     });

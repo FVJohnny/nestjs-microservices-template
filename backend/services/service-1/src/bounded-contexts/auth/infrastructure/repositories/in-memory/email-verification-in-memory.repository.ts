@@ -44,18 +44,6 @@ export class EmailVerificationInMemoryRepository implements EmailVerificationRep
     return null;
   }
 
-  async findByToken(token: Id): Promise<EmailVerification | null> {
-    if (this.shouldFail)
-      throw new InfrastructureException('findByToken', 'Repository operation failed', new Error());
-
-    for (const dto of this.emailVerifications.values()) {
-      if (dto.token === token.toValue()) {
-        return EmailVerification.fromValue(dto);
-      }
-    }
-    return null;
-  }
-
   async findByUserId(userId: Id): Promise<EmailVerification | null> {
     if (this.shouldFail)
       throw new InfrastructureException('findByUserId', 'Repository operation failed', new Error());
@@ -90,22 +78,6 @@ export class EmailVerificationInMemoryRepository implements EmailVerificationRep
 
     for (const dto of this.emailVerifications.values()) {
       if (dto.userId === userId.toValue() && this.isDtoPending(dto)) {
-        return EmailVerification.fromValue(dto);
-      }
-    }
-    return null;
-  }
-
-  async findPendingByToken(token: Id): Promise<EmailVerification | null> {
-    if (this.shouldFail)
-      throw new InfrastructureException(
-        'findPendingByToken',
-        'Repository operation failed',
-        new Error(),
-      );
-
-    for (const dto of this.emailVerifications.values()) {
-      if (dto.token === token.toValue() && this.isDtoPending(dto)) {
         return EmailVerification.fromValue(dto);
       }
     }

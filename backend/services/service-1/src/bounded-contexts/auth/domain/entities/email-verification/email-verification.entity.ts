@@ -8,7 +8,6 @@ export interface EmailVerificationAttributes {
   id: Id;
   userId: Id;
   email: Email;
-  token: Id;
   expiration: Expiration;
   verification: Verification;
   timestamps: Timestamps;
@@ -23,7 +22,6 @@ export interface EmailVerificationDTO extends SharedAggregateRootDTO {
   id: string;
   userId: string;
   email: string;
-  token: string;
   expiration: Date;
   verification: Date;
   createdAt: Date;
@@ -33,7 +31,6 @@ export interface EmailVerificationDTO extends SharedAggregateRootDTO {
 export class EmailVerification extends SharedAggregateRoot {
   userId: Id;
   email: Email;
-  token: Id;
   expiration: Expiration;
   verification: Verification;
   timestamps: Timestamps;
@@ -48,7 +45,6 @@ export class EmailVerification extends SharedAggregateRoot {
       id: Id.random(),
       userId: props.userId,
       email: props.email,
-      token: Id.random(),
       expiration: Expiration.atHoursFromNow(24),
       verification: Verification.notVerified(),
       timestamps: Timestamps.create(),
@@ -59,7 +55,6 @@ export class EmailVerification extends SharedAggregateRoot {
         emailVerification.id,
         emailVerification.userId,
         emailVerification.email,
-        emailVerification.token,
         emailVerification.expiration,
       ),
     );
@@ -72,7 +67,6 @@ export class EmailVerification extends SharedAggregateRoot {
       id: Id.random(),
       userId: props?.userId || Id.random(),
       email: props?.email || Email.random(),
-      token: props?.token || Id.random(),
       expiration: props?.expiration || Expiration.atHoursFromNow(24),
       verification: props?.verification || Verification.notVerified(),
       timestamps: props?.timestamps || Timestamps.create(),
@@ -116,7 +110,6 @@ export class EmailVerification extends SharedAggregateRoot {
       id: new Id(value.id),
       userId: new Id(value.userId),
       email: new Email(value.email),
-      token: new Id(value.token),
       expiration: new Expiration(value.expiration),
       verification: new Verification(value.verification),
       timestamps: new Timestamps({
@@ -131,7 +124,6 @@ export class EmailVerification extends SharedAggregateRoot {
       id: this.id.toValue(),
       userId: this.userId.toValue(),
       email: this.email.toValue(),
-      token: this.token.toValue(),
       expiration: this.expiration.toValue(),
       verification: this.verification.toValue(),
       createdAt: this.timestamps.createdAt.toValue(),
