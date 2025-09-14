@@ -1,3 +1,9 @@
+echo "Building project..."
+npm run -s build || {
+  echo "\n✖ Build failed. Fix issues before committing."
+  exit 1;
+}
+
 echo "Running pre-commit checks: lint and tests"
 
 # Lint all packages (Nx)
