@@ -1,6 +1,17 @@
 import { Inject } from '@nestjs/common';
-import { MongoClient, Collection, CreateIndexesOptions, IndexSpecification, MongoServerError } from 'mongodb';
-import { CorrelationLogger, SharedAggregateRootDTO, AlreadyExistsException, InfrastructureException } from '@libs/nestjs-common';
+import {
+  MongoClient,
+  Collection,
+  CreateIndexesOptions,
+  IndexSpecification,
+  MongoServerError,
+} from 'mongodb';
+import {
+  CorrelationLogger,
+  SharedAggregateRootDTO,
+  AlreadyExistsException,
+  InfrastructureException,
+} from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from './mongodb.module';
 
 export interface IndexSpec {
