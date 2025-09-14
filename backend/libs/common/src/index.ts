@@ -29,9 +29,7 @@ export * from './event-tracker';
 export * from './outbox';
 
 // Utility exports
-export * from './utils/runtime-auto-discovery.util';
-export * from './utils/data';
-export * from './utils/utils';
+export * from './utils';
 
 // Tracing
 export * from './tracing';
