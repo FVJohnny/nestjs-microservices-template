@@ -1,7 +1,9 @@
-const { pathsToModuleNameMapper } = require('ts-jest');
-const { compilerOptions: baseCompilerOptions } = require('../../../../tsconfig.base.json');
+import { pathsToModuleNameMapper } from 'ts-jest';
+import tsConfigBase from '../../../../tsconfig.base.json' with { type: 'json' };
 
-module.exports = {
+const { compilerOptions: baseCompilerOptions } = tsConfigBase;
+
+export default {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
   testEnvironment: 'node',
