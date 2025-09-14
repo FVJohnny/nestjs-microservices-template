@@ -3,6 +3,7 @@ import { IntegrationEventHandler, UserExampleIntegrationEvent } from '@libs/nest
 import { RegisterUserCommand } from '@bc/auth/application/commands';
 import { UserRoleEnum } from '@bc/auth/domain/value-objects';
 import { CorrelationLogger } from '@libs/nestjs-common';
+import { User } from '@bc/auth/domain/entities/user/user.entity';
 
 @IntegrationEventHandler(UserExampleIntegrationEvent)
 export class UserExampleIntegrationEventHandler {
@@ -15,12 +16,12 @@ export class UserExampleIntegrationEventHandler {
 
     try {
       // Generate random user data
-      const randomId = Math.floor(Math.random() * 10000);
+      const user = User.random();
       const command = new RegisterUserCommand({
-        email: `example-user-${randomId}@demo.com`,
-        username: `example_user_${randomId}`,
+        email: user.email.toValue(),
+        username: user.username.toValue(),
         password: 'password',
-        role: UserRoleEnum.USER,
+        role: user.role.toValue(),
       });
       await this.commandBus.execute(command);
 

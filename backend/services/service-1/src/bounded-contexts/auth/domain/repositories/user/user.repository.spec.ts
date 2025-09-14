@@ -128,7 +128,9 @@ export function testUserRepositoryContract(
             username: users[0].username,
           });
 
-          await expect(repository.save(duplicateUsernameUser)).rejects.toThrow(AlreadyExistsException);
+          await expect(repository.save(duplicateUsernameUser)).rejects.toThrow(
+            AlreadyExistsException,
+          );
         });
       });
 
@@ -464,7 +466,7 @@ export function testUserRepositoryContract(
         });
 
         it('should filter with date fields using GT operator', async () => {
-          const { repository, users } = await setup({ numUsers: 10 });
+          const { repository, users } = await setup({ numUsers: 100 });
           // Arrange
           const pastDate = DateVO.dateVOAtDaysFromNow(-30); // Yesterday
           const filter = new Filter(
@@ -474,6 +476,7 @@ export function testUserRepositoryContract(
           );
           const criteria = new Criteria({
             filters: new Filters([filter]),
+            pagination: new PaginationOffset(users.length, 0),
           });
 
           // Act
