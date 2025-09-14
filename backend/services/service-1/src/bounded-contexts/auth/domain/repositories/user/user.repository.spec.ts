@@ -1,6 +1,14 @@
 import type { UserRepository } from './user.repository';
 import { User } from '../../entities/user/user.entity';
-import { Email, LastLogin, Username, UserRole, UserRoleEnum, UserStatus, UserStatusEnum } from '../../value-objects';
+import {
+  Email,
+  LastLogin,
+  Username,
+  UserRole,
+  UserRoleEnum,
+  UserStatus,
+  UserStatusEnum,
+} from '../../value-objects';
 import {
   Criteria,
   Filters,
@@ -28,7 +36,6 @@ describe('UserRepository Contract Test Suite', () => {
   });
 });
 
-
 export function testUserRepositoryContract(
   description: string,
   createRepository: (users?: User[]) => Promise<UserRepository>,
@@ -39,14 +46,14 @@ export function testUserRepositoryContract(
     afterEach?: () => Promise<void>;
   },
 ) {
-  const setup = async ({numUsers = 0}: {numUsers?: number}) => {
+  const setup = async ({ numUsers = 0 }: { numUsers?: number }) => {
     const repository = await createRepository();
-    const users = Array.from({length: numUsers}).map(() => User.random());
+    const users = Array.from({ length: numUsers }).map(() => User.random());
     for (const user of users) {
       await repository.save(user);
     }
-    return {repository, users};
-  }
+    return { repository, users };
+  };
 
   describe(`UserRepository Contract: ${description}`, () => {
     if (setupTeardown?.beforeAll) {
@@ -68,7 +75,7 @@ export function testUserRepositoryContract(
     describe('Basic CRUD Operations', () => {
       describe('save', () => {
         it('should save a new user successfully', async () => {
-          const {repository, users} = await setup({numUsers: 1});
+          const { repository, users } = await setup({ numUsers: 1 });
 
           const savedUser = await repository.findById(users[0].id);
           expect(savedUser).not.toBeNull();
@@ -76,7 +83,7 @@ export function testUserRepositoryContract(
         });
 
         it('should update an existing user when saving with same id', async () => {
-          const {repository, users} = await setup({numUsers: 1});
+          const { repository, users } = await setup({ numUsers: 1 });
 
           users[0].changeRole(UserRole.admin());
           await repository.save(users[0]);
@@ -90,7 +97,7 @@ export function testUserRepositoryContract(
         });
 
         it('should save multiple users', async () => {
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
 
           const allSavedUsers = await repository.findAll();
           expect(allSavedUsers).toHaveLength(users.length);
@@ -104,7 +111,7 @@ export function testUserRepositoryContract(
 
       describe('findById', () => {
         it('should return user when it exists', async () => {
-          const {repository, users} = await setup({numUsers: 1});
+          const { repository, users } = await setup({ numUsers: 1 });
 
           const result = await repository.findById(users[0].id);
 
@@ -113,7 +120,7 @@ export function testUserRepositoryContract(
         });
 
         it('should return null when user does not exist', async () => {
-          const {repository} = await setup({numUsers: 0});
+          const { repository } = await setup({ numUsers: 0 });
           const result = await repository.findById(Id.random());
 
           expect(result).toBeNull();
@@ -122,7 +129,7 @@ export function testUserRepositoryContract(
 
       describe('findByEmail', () => {
         it('should return user when email exists', async () => {
-          const {repository, users} = await setup({numUsers: 1});
+          const { repository, users } = await setup({ numUsers: 1 });
 
           const result = await repository.findByEmail(users[0].email);
 
@@ -131,7 +138,7 @@ export function testUserRepositoryContract(
         });
 
         it('should return null when email does not exist', async () => {
-          const {repository} = await setup({numUsers: 0});
+          const { repository } = await setup({ numUsers: 0 });
           const result = await repository.findByEmail(Email.random());
 
           expect(result).toBeNull();
@@ -140,7 +147,7 @@ export function testUserRepositoryContract(
 
       describe('findByUsername', () => {
         it('should return user when username exists', async () => {
-          const {repository, users} = await setup({numUsers: 1});
+          const { repository, users } = await setup({ numUsers: 1 });
 
           const result = await repository.findByUsername(users[0].username);
 
@@ -149,7 +156,7 @@ export function testUserRepositoryContract(
         });
 
         it('should return null when username does not exist', async () => {
-          const {repository} = await setup({numUsers: 0});
+          const { repository } = await setup({ numUsers: 0 });
           const result = await repository.findByUsername(Username.random());
 
           expect(result).toBeNull();
@@ -158,7 +165,7 @@ export function testUserRepositoryContract(
 
       describe('existsByEmail', () => {
         it('should return true when email exists', async () => {
-          const {repository, users} = await setup({numUsers: 1});
+          const { repository, users } = await setup({ numUsers: 1 });
 
           const result = await repository.existsByEmail(users[0].email);
 
@@ -166,7 +173,7 @@ export function testUserRepositoryContract(
         });
 
         it('should return false when email does not exist', async () => {
-          const {repository} = await setup({numUsers: 0});
+          const { repository } = await setup({ numUsers: 0 });
           const result = await repository.existsByEmail(Email.random());
 
           expect(result).toBe(false);
@@ -175,7 +182,7 @@ export function testUserRepositoryContract(
 
       describe('existsByUsername', () => {
         it('should return true when username exists', async () => {
-          const {repository, users} = await setup({numUsers: 1});
+          const { repository, users } = await setup({ numUsers: 1 });
 
           const result = await repository.existsByUsername(users[0].username);
 
@@ -183,7 +190,7 @@ export function testUserRepositoryContract(
         });
 
         it('should return false when username does not exist', async () => {
-          const {repository} = await setup({numUsers: 0});
+          const { repository } = await setup({ numUsers: 0 });
           const result = await repository.existsByUsername(Username.random());
 
           expect(result).toBe(false);
@@ -192,7 +199,7 @@ export function testUserRepositoryContract(
 
       describe('exists', () => {
         it('should return true when user exists', async () => {
-          const {repository, users} = await setup({numUsers: 1});
+          const { repository, users } = await setup({ numUsers: 1 });
 
           const result = await repository.exists(users[0].id);
 
@@ -200,7 +207,7 @@ export function testUserRepositoryContract(
         });
 
         it('should return false when user does not exist', async () => {
-          const {repository} = await setup({numUsers: 0});
+          const { repository } = await setup({ numUsers: 0 });
 
           const result = await repository.exists(Id.random());
 
@@ -210,7 +217,7 @@ export function testUserRepositoryContract(
 
       describe('remove', () => {
         it('should remove an existing user', async () => {
-          const {repository, users} = await setup({numUsers: 1});
+          const { repository, users } = await setup({ numUsers: 1 });
 
           expect(await repository.exists(users[0].id)).toBe(true);
           expect(await repository.findById(users[0].id)).not.toBeNull();
@@ -222,7 +229,7 @@ export function testUserRepositoryContract(
         });
 
         it('should handle removal of non-existent user gracefully', async () => {
-          const {repository} = await setup({numUsers: 0});
+          const { repository } = await setup({ numUsers: 0 });
           await expect(repository.remove(Id.random())).resolves.not.toThrow();
         });
       });
@@ -230,7 +237,7 @@ export function testUserRepositoryContract(
       describe('findAll', () => {
         it('should return all users', async () => {
           // Arrange
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
 
           // Act
           const results = await repository.findAll();
@@ -246,7 +253,7 @@ export function testUserRepositoryContract(
 
         it('should return empty array when no users exist', async () => {
           // Arrange
-          const {repository} = await setup({numUsers: 0});
+          const { repository } = await setup({ numUsers: 0 });
 
           // Act
           const result = await repository.findAll();
@@ -261,7 +268,7 @@ export function testUserRepositoryContract(
     describe('Criteria-based Operations', () => {
       describe('findByCriteria - Basic Filtering', () => {
         it('should return all users when no filters applied', async () => {
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const criteria = new Criteria();
 
           const result = await repository.findByCriteria(criteria);
@@ -270,7 +277,7 @@ export function testUserRepositoryContract(
         });
 
         it('should filter by id (EQUAL)', async () => {
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const filter = new Filter(
             new FilterField('id'),
             new FilterOperator(Operator.EQUAL),
@@ -287,7 +294,7 @@ export function testUserRepositoryContract(
         });
 
         it('should filter by email (EQUAL)', async () => {
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const filter = new Filter(
             new FilterField('email'),
             new FilterOperator(Operator.EQUAL),
@@ -304,7 +311,7 @@ export function testUserRepositoryContract(
         });
 
         it('should filter by username (EQUAL)', async () => {
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const filter = new Filter(
             new FilterField('username'),
             new FilterOperator(Operator.EQUAL),
@@ -321,7 +328,7 @@ export function testUserRepositoryContract(
         });
 
         it('should filter by status (EQUAL)', async () => {
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const status = users[0].status;
           const filter = new Filter(
             new FilterField('status'),
@@ -334,13 +341,13 @@ export function testUserRepositoryContract(
 
           const result = await repository.findByCriteria(criteria);
           const numUsersWithStatus = users.filter((user) => user.status.equals(status)).length;
-  
+
           expect(result.data).toHaveLength(numUsersWithStatus);
           expect(result.data[0].equals(users[0])).toBe(true);
         });
 
         it('should filter by role (EQUAL)', async () => {
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const role = users[0].role;
           const filter = new Filter(
             new FilterField('role'),
@@ -361,7 +368,7 @@ export function testUserRepositoryContract(
 
       describe('findByCriteria - Advanced Filtering', () => {
         it('should filter with NOT_EQUAL operator', async () => {
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const filter = new Filter(
             new FilterField('username'),
             new FilterOperator(Operator.NOT_EQUAL),
@@ -374,11 +381,15 @@ export function testUserRepositoryContract(
           const result = await repository.findByCriteria(criteria);
 
           expect(result.data).toHaveLength(users.length - 1);
-          expect(result.data.every((resultUser) => resultUser.username.toValue() !== users[0].username.toValue())).toBe(true);
+          expect(
+            result.data.every(
+              (resultUser) => resultUser.username.toValue() !== users[0].username.toValue(),
+            ),
+          ).toBe(true);
         });
 
         it('should filter with CONTAINS operator (case-insensitive)', async () => {
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const emailSubstring = users[0].email.toValue().substring(0, 5);
           const filter = new Filter(
             new FilterField('email'),
@@ -389,9 +400,11 @@ export function testUserRepositoryContract(
             filters: new Filters([filter]),
           });
 
-          const usersWithSubstring = users.filter((user) => user.email.toValue().toLowerCase().includes(emailSubstring));
+          const usersWithSubstring = users.filter((user) =>
+            user.email.toValue().toLowerCase().includes(emailSubstring),
+          );
           const result = await repository.findByCriteria(criteria);
-          
+
           expect(result.data).toHaveLength(usersWithSubstring.length);
           usersWithSubstring.forEach((user) => {
             const userInResult = result.data.find((r) => r.id.toValue() === user.id.toValue());
@@ -401,7 +414,7 @@ export function testUserRepositoryContract(
         });
 
         it('should filter with NOT_CONTAINS operator', async () => {
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const usernameSubstring = users[0].username.toValue().substring(0, 3);
           const filter = new Filter(
             new FilterField('username'),
@@ -413,7 +426,9 @@ export function testUserRepositoryContract(
           });
 
           // Act
-          const usersWithoutSubstring = users.filter((user) => !user.username.toValue().includes(usernameSubstring));
+          const usersWithoutSubstring = users.filter(
+            (user) => !user.username.toValue().includes(usernameSubstring),
+          );
           const result = await repository.findByCriteria(criteria);
 
           // Assert
@@ -426,7 +441,7 @@ export function testUserRepositoryContract(
         });
 
         it('should filter with date fields using GT operator', async () => {
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           // Arrange
           const pastDate = DateVO.dateVOAtDaysFromNow(-30); // Yesterday
           const filter = new Filter(
@@ -440,16 +455,22 @@ export function testUserRepositoryContract(
 
           // Act
           const result = await repository.findByCriteria(criteria);
-          const usersNotInResult = users.filter((user) => !result.data.some((r) => r.id.toValue() === user.id.toValue()));
+          const usersNotInResult = users.filter(
+            (user) => !result.data.some((r) => r.id.toValue() === user.id.toValue()),
+          );
 
           // Assert
-          expect(result.data.every((user) => user.timestamps.createdAt.isAfter(pastDate))).toBe(true);
-          expect(usersNotInResult.every((user) => user.timestamps.createdAt.isBefore(pastDate))).toBe(true);
+          expect(result.data.every((user) => user.timestamps.createdAt.isAfter(pastDate))).toBe(
+            true,
+          );
+          expect(
+            usersNotInResult.every((user) => user.timestamps.createdAt.isBefore(pastDate)),
+          ).toBe(true);
         });
 
         it('should filter with date fields using LT operator', async () => {
           // Arrange
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const pastDate = DateVO.dateVOAtDaysFromNow(-30); // Yesterday
           const filter = new Filter(
             new FilterField('createdAt'),
@@ -462,26 +483,32 @@ export function testUserRepositoryContract(
 
           // Act
           const result = await repository.findByCriteria(criteria);
-          const usersNotInResult = users.filter((user) => !result.data.some((r) => r.id.toValue() === user.id.toValue()));
+          const usersNotInResult = users.filter(
+            (user) => !result.data.some((r) => r.id.toValue() === user.id.toValue()),
+          );
 
           // Assert
-          expect(result.data.every((user) => user.timestamps.createdAt.isBefore(pastDate))).toBe(true);
-          expect(usersNotInResult.every((user) => user.timestamps.createdAt.isAfter(pastDate))).toBe(true);
+          expect(result.data.every((user) => user.timestamps.createdAt.isBefore(pastDate))).toBe(
+            true,
+          );
+          expect(
+            usersNotInResult.every((user) => user.timestamps.createdAt.isAfter(pastDate)),
+          ).toBe(true);
         });
 
         it('should combine multiple filters (AND logic)', async () => {
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           // Arrange
           const filters = [
             new Filter(
               new FilterField('username'),
               new FilterOperator(Operator.CONTAINS),
-              new FilterValue(users[0].username.toValue()), 
+              new FilterValue(users[0].username.toValue()),
             ),
             new Filter(
               new FilterField('email'),
               new FilterOperator(Operator.CONTAINS),
-              new FilterValue(users[0].email.toValue()), 
+              new FilterValue(users[0].email.toValue()),
             ),
           ];
           const criteria = new Criteria({
@@ -492,12 +519,12 @@ export function testUserRepositoryContract(
           const result = await repository.findByCriteria(criteria);
 
           // Assert
-          expect(result.data).toHaveLength(1); 
+          expect(result.data).toHaveLength(1);
           expect(result.data[0].equals(users[0])).toBe(true);
         });
 
         it('should return empty array when no matches found', async () => {
-          const {repository} = await setup({numUsers: 10});
+          const { repository } = await setup({ numUsers: 10 });
           // Arrange
           const filter = new Filter(
             new FilterField('email'),
@@ -519,13 +546,15 @@ export function testUserRepositoryContract(
       describe('findByCriteria - Sorting', () => {
         it('should sort by username ascending', async () => {
           // Arrange
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const order = new Order(new OrderBy('username'), new OrderType(OrderTypes.ASC));
           const criteria = new Criteria({ order });
 
           // Act
           const result = await repository.findByCriteria(criteria);
-          const usersSorted = users.sort((a, b) => a.username.toValue().localeCompare(b.username.toValue()));
+          const usersSorted = users.sort((a, b) =>
+            a.username.toValue().localeCompare(b.username.toValue()),
+          );
 
           // Assert
           for (let i = 0; i < usersSorted.length; i++) {
@@ -533,15 +562,15 @@ export function testUserRepositoryContract(
           }
         });
 
-        it('should handle sorting with lastLoginAt never', async () => {
-          const {repository} = await setup({numUsers: 9});
+        it('should handle sorting with lastLogin never', async () => {
+          const { repository } = await setup({ numUsers: 9 });
           // Add extra user with who never logged in
           const userNeverLogged = User.random({
-            lastLoginAt: LastLogin.never(),
+            lastLogin: LastLogin.never(),
           });
           await repository.save(userNeverLogged);
 
-          const order = new Order(new OrderBy('lastLoginAt'), new OrderType(OrderTypes.ASC));
+          const order = new Order(new OrderBy('lastLogin'), new OrderType(OrderTypes.ASC));
           const criteria = new Criteria({ order });
 
           // Act
@@ -549,14 +578,14 @@ export function testUserRepositoryContract(
 
           // Assert
           expect(result.data).toHaveLength(10);
-          expect(result.data[0].lastLoginAt.isNever()).toBe(true); // Never = First when orderType = ASC
+          expect(result.data[0].lastLogin.isNever()).toBe(true); // Never = First when orderType = ASC
         });
       });
 
       describe('findByCriteria - Pagination', () => {
         it('should apply limit', async () => {
           // Arrange
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const criteria = new Criteria({
             pagination: new PaginationOffset(2, 0),
           });
@@ -572,7 +601,7 @@ export function testUserRepositoryContract(
 
         it('should apply offset', async () => {
           // Arrange
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const criteria = new Criteria({
             pagination: new PaginationOffset(0, 1),
           });
@@ -589,7 +618,7 @@ export function testUserRepositoryContract(
 
         it('should combine limit and offset', async () => {
           // Arrange
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const criteria = new Criteria({
             pagination: new PaginationOffset(1, 1),
           });
@@ -604,7 +633,7 @@ export function testUserRepositoryContract(
 
         it('should handle offset larger than collection size', async () => {
           // Arrange
-          const {repository} = await setup({numUsers: 10});
+          const { repository } = await setup({ numUsers: 10 });
           const criteria = new Criteria({
             pagination: new PaginationOffset(10, 50),
           });
@@ -618,7 +647,7 @@ export function testUserRepositoryContract(
 
         it('should handle limit larger than remaining items', async () => {
           // Arrange
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const criteria = new Criteria({
             pagination: new PaginationOffset(50, 2),
           });
@@ -637,7 +666,7 @@ export function testUserRepositoryContract(
       describe('findByCriteria - withTotal functionality', () => {
         it('should return null total when withTotal is false (default)', async () => {
           // Arrange
-          const {repository} = await setup({numUsers: 10});
+          const { repository } = await setup({ numUsers: 10 });
           const criteria = new Criteria();
 
           // Act
@@ -650,7 +679,7 @@ export function testUserRepositoryContract(
 
         it('should return total count when withTotal is true', async () => {
           // Arrange
-          const {repository} = await setup({numUsers: 10});
+          const { repository } = await setup({ numUsers: 10 });
           const criteria = new Criteria({
             pagination: new PaginationOffset(0, 0, true),
           });
@@ -665,7 +694,7 @@ export function testUserRepositoryContract(
 
         it('should return correct total with pagination (limit only)', async () => {
           // Arrange
-          const {repository} = await setup({numUsers: 10});
+          const { repository } = await setup({ numUsers: 10 });
           const criteria = new Criteria({
             pagination: new PaginationOffset(2, 0, true),
           });
@@ -680,7 +709,7 @@ export function testUserRepositoryContract(
 
         it('should return correct total with pagination (offset only)', async () => {
           // Arrange
-          const {repository} = await setup({numUsers: 10});
+          const { repository } = await setup({ numUsers: 10 });
           const criteria = new Criteria({
             pagination: new PaginationOffset(0, 2, true),
           });
@@ -695,7 +724,7 @@ export function testUserRepositoryContract(
 
         it('should return correct total with pagination (limit and offset)', async () => {
           // Arrange
-          const {repository} = await setup({numUsers: 10});
+          const { repository } = await setup({ numUsers: 10 });
           const criteria = new Criteria({
             pagination: new PaginationOffset(1, 1, true),
           });
@@ -710,7 +739,7 @@ export function testUserRepositoryContract(
 
         it('should return correct total with filters and pagination', async () => {
           // Arrange
-          const {repository} = await setup({numUsers: 10});
+          const { repository } = await setup({ numUsers: 10 });
           const filter = new Filter(
             new FilterField('email'),
             new FilterOperator(Operator.CONTAINS),
@@ -731,7 +760,7 @@ export function testUserRepositoryContract(
 
         it('should return zero total when no records match filter', async () => {
           // Arrange
-          const {repository} = await setup({numUsers: 10});
+          const { repository } = await setup({ numUsers: 10 });
           const filter = new Filter(
             new FilterField('email'),
             new FilterOperator(Operator.EQUAL),
@@ -754,7 +783,7 @@ export function testUserRepositoryContract(
       describe('countByCriteria', () => {
         it('should count all users when no filters applied', async () => {
           // Arrange
-          const {repository} = await setup({numUsers: 10});
+          const { repository } = await setup({ numUsers: 10 });
           const criteria = new Criteria();
 
           // Act
@@ -766,7 +795,7 @@ export function testUserRepositoryContract(
 
         it('should count filtered users', async () => {
           // Arrange
-          const {repository, users} = await setup({numUsers: 10});
+          const { repository, users } = await setup({ numUsers: 10 });
           const filter = new Filter(
             new FilterField('username'),
             new FilterOperator(Operator.CONTAINS),
@@ -785,7 +814,7 @@ export function testUserRepositoryContract(
 
         it('should return 0 when no matches found', async () => {
           // Arrange
-          const {repository} = await setup({numUsers: 10});
+          const { repository } = await setup({ numUsers: 10 });
           const filter = new Filter(
             new FilterField('email'),
             new FilterOperator(Operator.EQUAL),
@@ -804,7 +833,7 @@ export function testUserRepositoryContract(
 
         it('should ignore pagination in count', async () => {
           // Arrange
-          const {repository} = await setup({numUsers: 10});
+          const { repository } = await setup({ numUsers: 10 });
           const filter = new Filter(
             new FilterField('username'),
             new FilterOperator(Operator.CONTAINS),

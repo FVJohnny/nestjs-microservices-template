@@ -1,45 +1,34 @@
 import { DomainValidationException } from '../../../errors';
 import { DateVO } from './DateValueObject';
 
-export interface TimestampsData {
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export class Timestamps {
-  readonly createdAt: DateVO;
-  updatedAt: DateVO;
-
-  constructor(data: TimestampsData) {
-    this.createdAt = new DateVO(data.createdAt);
-    this.updatedAt = new DateVO(data.updatedAt);
-
+  constructor(
+    public readonly createdAt: DateVO,
+    public updatedAt: DateVO,
+  ) {
     this.validate();
   }
 
   static create(): Timestamps {
     const now = new Date();
-    return new Timestamps({
-      createdAt: now,
-      updatedAt: now,
-    });
+    return new Timestamps(new DateVO(now), new DateVO(now));
   }
 
   static random(): Timestamps {
-    return new Timestamps({
-      createdAt: DateVO.dateVOAtDaysFromNow(Math.floor(Math.random() * -100)).toValue(),
-      updatedAt: DateVO.dateVOAtDaysFromNow(Math.floor(Math.random() * -100)).toValue(),
-    });
+    return new Timestamps(
+      DateVO.dateVOAtDaysFromNow(Math.floor(Math.random() * -100)),
+      DateVO.dateVOAtDaysFromNow(Math.floor(Math.random() * -100)),
+    );
   }
 
   update(): void {
-    this.updatedAt = new DateVO(new Date());
+    this.updatedAt = DateVO.now();
   }
 
-  toValue(): TimestampsData {
+  toValue() {
     return {
-      createdAt: this.createdAt.toValue(),
-      updatedAt: this.updatedAt.toValue(),
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
     };
   }
 

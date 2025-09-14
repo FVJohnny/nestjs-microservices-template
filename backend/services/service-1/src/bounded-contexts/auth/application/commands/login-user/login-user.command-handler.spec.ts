@@ -68,7 +68,7 @@ describe('LoginUserCommandHandler', () => {
       expect(result.refreshToken).toBe('mock-refresh-token');
     });
 
-    it('should update lastLoginAt timestamp on successful login', async () => {
+    it('should update lastLogin timestamp on successful login', async () => {
       // Arrange
       const { commandHandler, repository } = setup();
       const password = 'MyPassword789!';
@@ -77,7 +77,7 @@ describe('LoginUserCommandHandler', () => {
         email: new Email('user@example.com'),
         password: await Password.createFromPlainText(password),
         status: UserStatus.active(),
-        lastLoginAt: LastLogin.never(),
+        lastLogin: LastLogin.never(),
       });
       await repository.save(user);
 
@@ -92,10 +92,12 @@ describe('LoginUserCommandHandler', () => {
 
       // Assert
       const updatedUser = await repository.findById(user.id);
-      expect(updatedUser!.lastLoginAt).toBeDefined();
-      expect(updatedUser!.lastLoginAt.isNever()).toBe(false);
-      expect(updatedUser!.lastLoginAt.toValue().getTime()).toBeGreaterThanOrEqual(beforeLogin.getTime());
-      expect(updatedUser!.lastLoginAt.toValue().getTime()).toBeLessThanOrEqual(afterLogin.getTime());
+      expect(updatedUser!.lastLogin).toBeDefined();
+      expect(updatedUser!.lastLogin.isNever()).toBe(false);
+      expect(updatedUser!.lastLogin.toValue().getTime()).toBeGreaterThanOrEqual(
+        beforeLogin.getTime(),
+      );
+      expect(updatedUser!.lastLogin.toValue().getTime()).toBeLessThanOrEqual(afterLogin.getTime());
     });
   });
 

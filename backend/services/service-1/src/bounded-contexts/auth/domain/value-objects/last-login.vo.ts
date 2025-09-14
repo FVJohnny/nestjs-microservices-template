@@ -29,7 +29,7 @@ export class LastLogin extends DateVO {
     const now = new Date();
     if (this.toValue() > now) {
       throw new DomainValidationException(
-        'lastLoginAt',
+        'lastLogin',
         this.toValue(),
         'Last login date cannot be in the future',
       );

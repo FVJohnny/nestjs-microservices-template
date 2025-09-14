@@ -125,10 +125,16 @@ describe('RegisterUserCommandHandler', () => {
       const savedUser = await repository.findById(new Id(result.id));
       expect(savedUser!.timestamps).toBeInstanceOf(Timestamps);
       expect(savedUser!.timestamps.createdAt.toValue()).toBeInstanceOf(Date);
-      expect(savedUser!.timestamps.createdAt.toValue().getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
-      expect(savedUser!.timestamps.createdAt.toValue().getTime()).toBeLessThanOrEqual(afterCreation.getTime());
-      expect(savedUser!.timestamps.updatedAt.toValue().getTime()).toBe(savedUser!.timestamps.createdAt.toValue().getTime());
-      expect(savedUser!.lastLoginAt.isNever()).toBe(true);
+      expect(savedUser!.timestamps.createdAt.toValue().getTime()).toBeGreaterThanOrEqual(
+        beforeCreation.getTime(),
+      );
+      expect(savedUser!.timestamps.createdAt.toValue().getTime()).toBeLessThanOrEqual(
+        afterCreation.getTime(),
+      );
+      expect(savedUser!.timestamps.updatedAt.toValue().getTime()).toBe(
+        savedUser!.timestamps.createdAt.toValue().getTime(),
+      );
+      expect(savedUser!.lastLogin.isNever()).toBe(true);
     });
     it('should create unique user IDs for different registrations', async () => {
       // Arrange

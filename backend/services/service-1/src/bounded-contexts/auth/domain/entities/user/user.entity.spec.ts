@@ -33,8 +33,8 @@ describe('User Entity', () => {
       expect(user.password).toBe(password);
       expect(user.role).toBe(role);
       expect(user.status.toValue()).toBe(UserStatusEnum.EMAIL_VERIFICATION_PENDING);
-      expect(user.lastLoginAt).toBeInstanceOf(LastLogin);
-      expect(user.lastLoginAt.isNever()).toBe(true);
+      expect(user.lastLogin).toBeInstanceOf(LastLogin);
+      expect(user.lastLogin.isNever()).toBe(true);
       expect(user.timestamps).toBeInstanceOf(Timestamps);
     });
 
@@ -57,7 +57,7 @@ describe('User Entity', () => {
       const events = user.getUncommittedEvents();
       expect(events).toHaveLength(1);
       expect(events[0]).toBeInstanceOf(UserRegisteredDomainEvent);
-      
+
       const event = events[0] as UserRegisteredDomainEvent;
       expect(event.aggregateId).toBe(user.id);
       expect(event.email).toBe(email);
@@ -79,7 +79,7 @@ describe('User Entity', () => {
       expect(user.password).toBeInstanceOf(Password);
       expect(user.status).toBeInstanceOf(UserStatus);
       expect(user.role).toBeInstanceOf(UserRole);
-      expect(user.lastLoginAt).toBeInstanceOf(LastLogin);
+      expect(user.lastLogin).toBeInstanceOf(LastLogin);
       expect(user.timestamps).toBeInstanceOf(Timestamps);
     });
 
@@ -308,7 +308,7 @@ describe('User Entity', () => {
   });
 
   describe('recordLogin()', () => {
-    it('should update lastLoginAt to current time', async () => {
+    it('should update lastLogin to current time', async () => {
       // Arrange
       const user = User.random();
       const beforeLogin = DateVO.now();
@@ -323,9 +323,9 @@ describe('User Entity', () => {
       const afterLogin = DateVO.now();
 
       // Assert
-      expect(user.lastLoginAt.isNever()).toBe(false);
-      expect(user.lastLoginAt.isAfter(beforeLogin)).toBe(true);
-      expect(user.lastLoginAt.isBefore(afterLogin)).toBe(true);
+      expect(user.lastLogin.isNever()).toBe(false);
+      expect(user.lastLogin.isAfter(beforeLogin)).toBe(true);
+      expect(user.lastLogin.isBefore(afterLogin)).toBe(true);
     });
 
     it('should update timestamps when recording login', async () => {
@@ -342,17 +342,17 @@ describe('User Entity', () => {
       expect(user.timestamps.updatedAt.isAfter(originalUpdatedAt)).toBe(true);
     });
 
-    it('should update lastLoginAt from never to actual date', () => {
+    it('should update lastLogin from never to actual date', () => {
       // Arrange
-      const user = User.random({ lastLoginAt: LastLogin.never() });
-      expect(user.lastLoginAt.isNever()).toBe(true);
+      const user = User.random({ lastLogin: LastLogin.never() });
+      expect(user.lastLogin.isNever()).toBe(true);
 
       // Act
       user.recordLogin();
 
       // Assert
-      expect(user.lastLoginAt.isNever()).toBe(false);
-      expect(user.lastLoginAt.toValue()).toBeInstanceOf(Date);
+      expect(user.lastLogin.isNever()).toBe(false);
+      expect(user.lastLogin.toValue()).toBeInstanceOf(Date);
     });
   });
 
@@ -371,7 +371,7 @@ describe('User Entity', () => {
       expect(user.password.toValue()).toBe(dto.password);
       expect(user.status.toValue()).toBe(dto.status);
       expect(user.role.toValue()).toBe(dto.role);
-      expect(user.lastLoginAt.toValue()).toEqual(dto.lastLoginAt);
+      expect(user.lastLogin.toValue()).toEqual(dto.lastLogin);
       expect(user.timestamps.createdAt.toValue()).toEqual(dto.createdAt);
       expect(user.timestamps.updatedAt.toValue()).toEqual(dto.updatedAt);
     });
@@ -386,7 +386,7 @@ describe('User Entity', () => {
         password: await Password.createFromPlainText('Password123!'),
         status: UserStatus.active(),
         role: UserRole.admin(),
-        lastLoginAt: new LastLogin(new Date('2024-01-01T12:00:00Z')),
+        lastLogin: new LastLogin(new Date('2024-01-01T12:00:00Z')),
       });
 
       // Act
@@ -400,7 +400,7 @@ describe('User Entity', () => {
       expect(await password.verify('Password123!')).toBe(true);
       expect(dto.status).toBe(UserStatusEnum.ACTIVE);
       expect(dto.role).toBe(UserRoleEnum.ADMIN);
-      expect(dto.lastLoginAt).toEqual(new Date('2024-01-01T12:00:00Z'));
+      expect(dto.lastLogin).toEqual(new Date('2024-01-01T12:00:00Z'));
       expect(dto.createdAt).toBeInstanceOf(Date);
       expect(dto.updatedAt).toBeInstanceOf(Date);
     });
@@ -419,7 +419,7 @@ describe('User Entity', () => {
       // Verify initial state
       expect(user.isEmailVerificationPending()).toBe(true);
       expect(user.isActive()).toBe(false);
-      expect(user.lastLoginAt.isNever()).toBe(true);
+      expect(user.lastLogin.isNever()).toBe(true);
 
       // Verify email
       user.verifyEmail();
@@ -428,7 +428,7 @@ describe('User Entity', () => {
 
       // Record login
       user.recordLogin();
-      expect(user.lastLoginAt.isNever()).toBe(false);
+      expect(user.lastLogin.isNever()).toBe(false);
 
       // Change role
       user.changeRole(UserRole.admin());
@@ -451,7 +451,7 @@ describe('User Entity', () => {
         password: await Password.createFromPlainText('Password123!'),
         status: UserStatus.active(),
         role: UserRole.admin(),
-        lastLoginAt: new LastLogin(new Date('2024-06-15T14:30:00Z')),
+        lastLogin: new LastLogin(new Date('2024-06-15T14:30:00Z')),
       });
 
       // Act
@@ -465,12 +465,12 @@ describe('User Entity', () => {
       expect(restoredUser.password.toValue()).toBe(originalUser.password.toValue());
       expect(restoredUser.status.toValue()).toBe(originalUser.status.toValue());
       expect(restoredUser.role.toValue()).toBe(originalUser.role.toValue());
-      expect(restoredUser.lastLoginAt.toValue()).toEqual(originalUser.lastLoginAt.toValue());
+      expect(restoredUser.lastLogin.toValue()).toEqual(originalUser.lastLogin.toValue());
       expect(restoredUser.timestamps.createdAt.toValue()).toEqual(
-        originalUser.timestamps.createdAt.toValue()
+        originalUser.timestamps.createdAt.toValue(),
       );
       expect(restoredUser.timestamps.updatedAt.toValue()).toEqual(
-        originalUser.timestamps.updatedAt.toValue()
+        originalUser.timestamps.updatedAt.toValue(),
       );
     });
 

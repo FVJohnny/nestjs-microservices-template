@@ -16,6 +16,7 @@ import {
   SharedAggregateRoot,
   Id,
   Timestamps,
+  DateVO,
 } from '@libs/nestjs-common';
 
 export class User extends SharedAggregateRoot implements UserAttributes {
@@ -24,8 +25,9 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   password: Password;
   status: UserStatus;
   role: UserRole;
-  lastLoginAt: LastLogin;
+  lastLogin: LastLogin;
   timestamps: Timestamps;
+
   constructor(props: UserAttributes) {
     super(props.id);
     Object.assign(this, props);
@@ -41,7 +43,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       password: props.password,
       status: new UserStatus(UserStatusEnum.EMAIL_VERIFICATION_PENDING),
       role: props.role,
-      lastLoginAt: LastLogin.never(),
+      lastLogin: LastLogin.never(),
       timestamps: Timestamps.create(),
     });
 
@@ -58,7 +60,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       password: props?.password || Password.random(),
       status: props?.status || UserStatus.random(),
       role: props?.role || UserRole.random(),
-      lastLoginAt: props?.lastLoginAt || LastLogin.random(),
+      lastLogin: props?.lastLogin || LastLogin.random(),
       timestamps: props?.timestamps || Timestamps.random(),
     });
   }
@@ -111,7 +113,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   }
 
   recordLogin(): void {
-    this.lastLoginAt.update();
+    this.lastLogin.update();
     this.timestamps.update();
   }
 
@@ -123,11 +125,8 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       password: Password.createFromHash(value.password),
       status: new UserStatus(value.status as UserStatusEnum),
       role: new UserRole(value.role as UserRoleEnum),
-      lastLoginAt: new LastLogin(value.lastLoginAt),
-      timestamps: new Timestamps({
-        createdAt: value.createdAt,
-        updatedAt: value.updatedAt,
-      }),
+      lastLogin: new LastLogin(value.lastLogin),
+      timestamps: new Timestamps(new DateVO(value.createdAt), new DateVO(value.updatedAt)),
     });
   }
 
@@ -139,7 +138,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       password: this.password.toValue(),
       status: this.status.toValue(),
       role: this.role.toValue(),
-      lastLoginAt: this.lastLoginAt.toValue(),
+      lastLogin: this.lastLogin.toValue(),
       createdAt: this.timestamps.createdAt.toValue(),
       updatedAt: this.timestamps.updatedAt.toValue(),
     };

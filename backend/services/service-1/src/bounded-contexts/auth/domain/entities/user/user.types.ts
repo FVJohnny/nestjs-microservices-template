@@ -15,7 +15,7 @@ export interface UserAttributes {
   password: Password;
   status: UserStatus;
   role: UserRole;
-  lastLoginAt: LastLogin;
+  lastLogin: LastLogin;
   timestamps: Timestamps;
 }
 
@@ -26,7 +26,7 @@ export class UserDTO extends SharedAggregateRootDTO {
   password: string;
   status: string;
   role: string;
-  lastLoginAt: Date;
+  lastLogin: Date;
   createdAt: Date;
   updatedAt: Date;
 
@@ -38,7 +38,7 @@ export class UserDTO extends SharedAggregateRootDTO {
       password: Password.random().toValue(),
       status: UserStatus.random().toValue(),
       role: UserRole.random().toValue(),
-      lastLoginAt: LastLogin.random().toValue(),
+      lastLogin: LastLogin.random().toValue(),
       createdAt: Timestamps.random().createdAt.toValue(),
       updatedAt: Timestamps.random().updatedAt.toValue(),
     };
