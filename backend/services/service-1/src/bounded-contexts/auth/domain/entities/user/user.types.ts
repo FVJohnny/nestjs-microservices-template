@@ -1,5 +1,12 @@
 import { Id, Timestamps } from '@libs/nestjs-common';
-import { Email, Username, UserRole, UserStatus, Password, LastLogin } from '@bc/auth/domain/value-objects';
+import {
+  Email,
+  Username,
+  UserRole,
+  UserStatus,
+  Password,
+  LastLogin,
+} from '@bc/auth/domain/value-objects';
 import { SharedAggregateRootDTO } from '@libs/nestjs-common';
 
 export interface CreateUserProps {
