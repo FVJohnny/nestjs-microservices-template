@@ -8,7 +8,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
 import { ErrorHandlingModule, JwtAuthModule } from '@libs/nestjs-common';
 import { GetUserController } from '../../src/bounded-contexts/auth/interfaces/controllers/users/get-user-by-id/get-user-by-id.controller';
-import { GetUserByIdQueryHandler } from '../../src/bounded-contexts/auth/application/queries/get-user-by-id/get-user-by-id.query-handler';
+import { GetUserByIdQueryHandler } from '../../src/bounded-contexts/auth/application/queries';
 import type { UserRepository } from '../../src/bounded-contexts/auth/domain/repositories/user/user.repository';
 import { USER_REPOSITORY } from '../../src/bounded-contexts/auth/domain/repositories/user/user.repository';
 import { UserInMemoryRepository } from '../../src/bounded-contexts/auth/infrastructure/repositories/in-memory/user-in-memory.repository';

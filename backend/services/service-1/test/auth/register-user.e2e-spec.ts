@@ -7,7 +7,7 @@ import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ErrorHandlingModule } from '@libs/nestjs-common';
 import { RegisterUserController } from '../../src/bounded-contexts/auth/interfaces/controllers/users/register-user/register-user.controller';
-import { RegisterUserCommandHandler } from '../../src/bounded-contexts/auth/application/commands/register-user/register-user.command-handler';
+import { RegisterUserCommandHandler } from '../../src/bounded-contexts/auth/application/commands';
 import { USER_REPOSITORY } from '../../src/bounded-contexts/auth/domain/repositories/user/user.repository';
 import { UserInMemoryRepository } from '../../src/bounded-contexts/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 

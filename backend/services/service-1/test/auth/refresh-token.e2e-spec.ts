@@ -14,16 +14,20 @@ import { LoginUserController } from '../../src/bounded-contexts/auth/interfaces/
 import { RefreshTokenController } from '../../src/bounded-contexts/auth/interfaces/controllers/auth/refresh-token/refresh-token.controller';
 
 // Command Handlers
-import { RegisterUserCommandHandler } from '../../src/bounded-contexts/auth/application/commands/register-user/register-user.command-handler';
-import { CreateEmailVerificationCommandHandler } from '../../src/bounded-contexts/auth/application/commands/create-email-verification/create-email-verification.command-handler';
-import { VerifyEmailCommandHandler } from '../../src/bounded-contexts/auth/application/commands/verify-email/verify-email.command-handler';
-import { LoginUserCommandHandler } from '../../src/bounded-contexts/auth/application/commands/login-user/login-user.command-handler';
-import { RefreshTokenCommandHandler } from '../../src/bounded-contexts/auth/application/commands/refresh-token/refresh-token.command-handler';
+import {
+  RegisterUserCommandHandler,
+  CreateEmailVerificationCommandHandler,
+  VerifyEmailCommandHandler,
+  LoginUserCommandHandler,
+  RefreshTokenCommandHandler,
+} from '../../src/bounded-contexts/auth/application/commands';
 
 // Domain Event Handlers
-import { UserRegistered_SendIntegrationEvent_DomainEventHandler } from '../../src/bounded-contexts/auth/application/domain-event-handlers/user-registered/user-registered_send-integration-event.domain-event-handler';
-import { UserRegistered_CreateEmailVerification_DomainEventHandler } from '../../src/bounded-contexts/auth/application/domain-event-handlers/user-registered/user-registered_create-email-verification.domain-event-handler';
-import { EmailVerificationVerified_UpdateUserStatus_DomainEventHandler } from '../../src/bounded-contexts/auth/application/domain-event-handlers/email-verification-verified/email-verification-verified_update-user-status.domain-event-handler';
+import {
+  UserRegistered_SendIntegrationEvent_DomainEventHandler,
+  UserRegistered_CreateEmailVerification_DomainEventHandler,
+  EmailVerificationVerified_UpdateUserStatus_DomainEventHandler,
+} from '../../src/bounded-contexts/auth/application/domain-event-handlers';
 
 // Repositories
 import { EMAIL_VERIFICATION_REPOSITORY } from '../../src/bounded-contexts/auth/domain/repositories/email-verification/email-verification.repository';
