@@ -1,7 +1,6 @@
 import { CommandBus } from '@nestjs/cqrs';
 import { IntegrationEventHandler, UserExampleIntegrationEvent } from '@libs/nestjs-common';
 import { RegisterUserCommand } from '@bc/auth/application/commands';
-import { UserRoleEnum } from '@bc/auth/domain/value-objects';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 
