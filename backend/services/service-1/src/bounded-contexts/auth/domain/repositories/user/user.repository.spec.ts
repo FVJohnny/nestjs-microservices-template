@@ -24,6 +24,7 @@ import {
   PaginationOffset,
   Id,
   DateVO,
+  AlreadyExistsException,
 } from '@libs/nestjs-common';
 import { UserTestFactory } from '../../../test-utils';
 
@@ -106,6 +107,28 @@ export function testUserRepositoryContract(
             expect(savedUser).toBeDefined();
             expect(savedUser?.equals(user)).toBe(true);
           });
+        });
+
+        it('should throw AlreadyExistsException on email collision', async () => {
+          const { repository, users } = await setup({ numUsers: 1 });
+
+          // Create a new user with the same email but different ID and username
+          const duplicateEmailUser = User.random({
+            email: users[0].email,
+          });
+
+          await expect(repository.save(duplicateEmailUser)).rejects.toThrow(AlreadyExistsException);
+        });
+
+        it('should throw AlreadyExistsException on username collision', async () => {
+          const { repository, users } = await setup({ numUsers: 1 });
+
+          // Create a new user with the same username but different ID and email
+          const duplicateUsernameUser = User.random({
+            username: users[0].username,
+          });
+
+          await expect(repository.save(duplicateUsernameUser)).rejects.toThrow(AlreadyExistsException);
         });
       });
 

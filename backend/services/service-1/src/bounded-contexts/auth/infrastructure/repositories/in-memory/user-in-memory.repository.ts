@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { User } from '../../../domain/entities/user/user.entity';
 import { UserRepository } from '../../../domain/repositories/user/user.repository';
 import { Email, Username } from '../../../domain/value-objects';
-import { Criteria, InMemoryCriteriaConverter, PaginatedRepoResult } from '@libs/nestjs-common';
+import {
+  AlreadyExistsException,
+  Criteria,
+  InMemoryCriteriaConverter,
+  PaginatedRepoResult,
+} from '@libs/nestjs-common';
 import { UserDTO } from '../../../domain/entities/user/user.types';
 import { InfrastructureException } from '@libs/nestjs-common';
 import { Id } from '@libs/nestjs-common';
@@ -17,6 +22,15 @@ export class UserInMemoryRepository implements UserRepository {
     if (this.shouldFail) {
       throw new InfrastructureException('save', 'Repository operation failed', new Error());
     }
+    const existingByEmail = await this.findByEmail(user.email);
+    if (existingByEmail && !existingByEmail.id.equals(user.id)) {
+      throw new AlreadyExistsException('email', user.email.toValue());
+    }
+    const existingByUsername = await this.findByUsername(user.username);
+    if (existingByUsername && !existingByUsername.id.equals(user.id)) {
+      throw new AlreadyExistsException('username', user.username.toValue());
+    }
+
     this.users.set(user.id.toValue(), user.toValue());
   }
 

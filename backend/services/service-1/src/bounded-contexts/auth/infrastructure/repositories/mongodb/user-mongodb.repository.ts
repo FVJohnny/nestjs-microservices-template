@@ -4,7 +4,7 @@ import { User } from '../../../domain/entities/user/user.entity';
 import { UserRepository } from '../../../domain/repositories/user/user.repository';
 import { Email, Username } from '../../../domain/value-objects';
 import { UserDTO } from '../../../domain/entities/user/user.types';
-import { Criteria, InfrastructureException, PaginatedRepoResult, Id } from '@libs/nestjs-common';
+import { Criteria, PaginatedRepoResult, Id } from '@libs/nestjs-common';
 import {
   MongoCriteriaConverter,
   MONGO_CLIENT_TOKEN,
@@ -185,13 +185,5 @@ export class UserMongodbRepository extends BaseMongoRepository<UserDTO> implemen
         options: { name: 'idx_user_role' },
       },
     ];
-  }
-
-  /**
-   * Handle database errors consistently
-   */
-  private handleDatabaseError(operation: string, id: string, error: unknown): never {
-    const err = error instanceof Error ? error : new Error(String(error));
-    throw new InfrastructureException(operation, id, err);
   }
 }
