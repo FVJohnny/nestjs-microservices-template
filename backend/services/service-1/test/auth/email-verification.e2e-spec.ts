@@ -9,9 +9,9 @@ import { JwtService } from '@nestjs/jwt';
 import { ErrorHandlingModule, JwtAuthModule, Id } from '@libs/nestjs-common';
 
 // Controllers
-import { RegisterUserController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/users/register-user/register-user.controller';
-import { GetUserController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/users/get-user-by-id/get-user-by-id.controller';
-import { VerifyEmailController } from '../../src/bounded-contexts/auth/interfaces/http/controllers/auth/email-verification/verify-email.controller';
+import { RegisterUserController } from '../../src/bounded-contexts/auth/interfaces/controllers/users/register-user/register-user.controller';
+import { GetUserController } from '../../src/bounded-contexts/auth/interfaces/controllers/users/get-user-by-id/get-user-by-id.controller';
+import { VerifyEmailController } from '../../src/bounded-contexts/auth/interfaces/controllers/auth/email-verification/verify-email.controller';
 
 // Command Handlers
 import { RegisterUserCommandHandler } from '../../src/bounded-contexts/auth/application/commands/register-user/register-user.command-handler';
