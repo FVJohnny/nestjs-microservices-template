@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "build": "nx run-many -t build --exclude=nestjs-microservices-monorepo-template",
-    "test": "nx run-many --target=test --all --exclude=nestjs-microservices-monorepo-template && nx run-many --target=test:e2e --all",
+    "testcommand": "nx run-many --target=test --all --exclude=nestjs-microservices-monorepo-template && nx run-many --target=test:e2e --all",
+    "test": "LOG_LEVEL=error npm run testcommand",
+    "test:silent": "LOG_LEVEL=error npm run testcommand",
+    "test:verbose": "LOG_LEVEL=verbose npm run testcommand",
     "lint": "nx run-many -t lint --fix --exclude=nestjs-microservices-monorepo-template",
     "dev": "./infra/docker/start-dev.sh && npm run dev-logs",
     "dev-down": "docker compose -f infra/docker/docker-compose.dev.yml down",

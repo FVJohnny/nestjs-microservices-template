@@ -6,8 +6,56 @@ import { TracingService } from '../tracing/tracing.service';
 type LogMessage = string | number | boolean | object | Error;
 
 export class CorrelationLogger extends NestLogger implements LoggerService {
+  private logLevel: string;
+
   constructor(context?: string) {
     super(context || 'CorrelationLogger');
+    this.logLevel = process.env.LOG_LEVEL || 'debug';
+  }
+
+  log(message: LogMessage, ...optionalParams: any[]) {
+    if (this.shouldLog('log')) {
+      super.log(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
+    }
+  }
+
+  error(message: LogMessage, traceOrError?: string | Error, ...optionalParams: any[]) {
+    if (this.shouldLog('error')) {
+      if (traceOrError instanceof Error) {
+        super.error(
+          `${this.prefix()} ${this.toString(message)}`,
+          traceOrError.stack,
+          ...optionalParams,
+        );
+      } else {
+        super.error(`${this.prefix()} ${this.toString(message)}`, traceOrError, ...optionalParams);
+      }
+    }
+  }
+
+  warn(message: LogMessage, ...optionalParams: any[]) {
+    if (this.shouldLog('warn')) {
+      super.warn(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
+    }
+  }
+
+  debug(message: LogMessage, ...optionalParams: any[]) {
+    if (this.shouldLog('debug')) {
+      super.debug(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
+    }
+  }
+
+  verbose(message: LogMessage, ...optionalParams: any[]) {
+    if (this.shouldLog('verbose')) {
+      super.verbose(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
+    }
+  }
+
+  private shouldLog(level: string): boolean {
+    const levels = ['error', 'warn', 'log', 'debug', 'verbose'];
+    const currentLevelIndex = levels.indexOf(this.logLevel);
+    const requestedLevelIndex = levels.indexOf(level);
+    return requestedLevelIndex <= currentLevelIndex;
   }
 
   private prefix(): string {
@@ -23,33 +71,5 @@ export class CorrelationLogger extends NestLogger implements LoggerService {
     } catch {
       return String(message);
     }
-  }
-
-  log(message: LogMessage, ...optionalParams: any[]) {
-    super.log(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
-  }
-
-  error(message: LogMessage, traceOrError?: string | Error, ...optionalParams: any[]) {
-    if (traceOrError instanceof Error) {
-      super.error(
-        `${this.prefix()} ${this.toString(message)}`,
-        traceOrError.stack,
-        ...optionalParams,
-      );
-    } else {
-      super.error(`${this.prefix()} ${this.toString(message)}`, traceOrError, ...optionalParams);
-    }
-  }
-
-  warn(message: LogMessage, ...optionalParams: any[]) {
-    super.warn(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
-  }
-
-  debug(message: LogMessage, ...optionalParams: any[]) {
-    super.debug(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
-  }
-
-  verbose(message: LogMessage, ...optionalParams: any[]) {
-    super.verbose(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
   }
 }

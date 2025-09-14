@@ -5,13 +5,13 @@ import {
   USER_REPOSITORY,
   type UserRepository,
 } from '@bc/auth/domain/repositories/user/user.repository';
-import { TracingLogger, NotFoundException } from '@libs/nestjs-common';
+import { CorrelationLogger, NotFoundException } from '@libs/nestjs-common';
 
 @EventsHandler(EmailVerificationVerifiedDomainEvent)
 export class EmailVerificationVerified_UpdateUserStatus_DomainEventHandler
   implements IEventHandler<EmailVerificationVerifiedDomainEvent>
 {
-  private readonly logger = new TracingLogger(
+  private readonly logger = new CorrelationLogger(
     EmailVerificationVerified_UpdateUserStatus_DomainEventHandler.name,
   );
 
