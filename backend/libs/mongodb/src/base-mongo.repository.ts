@@ -1,4 +1,4 @@
-import { Inject, OnModuleInit } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { MongoClient, Collection, CreateIndexesOptions, IndexSpecification } from 'mongodb';
 import { CorrelationLogger, SharedAggregateRootDTO } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from './mongodb.module';
@@ -8,9 +8,7 @@ export interface IndexSpec {
   options?: CreateIndexesOptions;
 }
 
-export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO>
-  implements OnModuleInit
-{
+export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
   protected readonly logger: CorrelationLogger;
   protected readonly collection: Collection<TDto>;
 
@@ -21,12 +19,7 @@ export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO>
   ) {
     this.logger = new CorrelationLogger(this.constructor.name);
     this.collection = this.mongoClient.db().collection<TDto>(this.collectionName);
-  }
-
-  async onModuleInit(): Promise<void> {
-    this.initializeIndexes().catch((error) =>
-      this.logger.error(`Failed to initialize ${this.collectionName} collection indexes:`, error),
-    );
+    this.initializeIndexes();
   }
 
   protected abstract defineIndexes(): IndexSpec[];
