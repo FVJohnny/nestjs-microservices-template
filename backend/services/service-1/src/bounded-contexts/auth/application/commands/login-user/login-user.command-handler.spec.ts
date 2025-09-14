@@ -13,6 +13,7 @@ import {
   createJwtTokenServiceMock,
   wait,
   DateVO,
+  ApplicationException,
 } from '@libs/nestjs-common';
 
 describe('LoginUserCommandHandler', () => {
@@ -181,7 +182,7 @@ describe('LoginUserCommandHandler', () => {
       await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
     });
 
-    it('should throw InfrastructureException when event bus fails', async () => {
+    it('should propagate event bus exceptions', async () => {
       // Arrange
       const { commandHandler, user } = await setup({ withDefaultUser: true, shouldFailEventBus: true });
       const command = createCommand({
@@ -190,7 +191,7 @@ describe('LoginUserCommandHandler', () => {
       });
 
       // Act & Assert
-      await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
+      await expect(commandHandler.execute(command)).rejects.toThrow(ApplicationException);
     });
   });
 });

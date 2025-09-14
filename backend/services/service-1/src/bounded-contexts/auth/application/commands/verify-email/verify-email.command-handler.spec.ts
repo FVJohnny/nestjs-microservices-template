@@ -11,6 +11,7 @@ import {
   Id,
   DomainValidationException,
   InvalidOperationException,
+  ApplicationException,
 } from '@libs/nestjs-common';
 import { EmailVerificationVerifiedDomainEvent } from 'src/bounded-contexts/auth/domain/events/email-verified.domain-event';
 
@@ -237,7 +238,7 @@ describe('VerifyEmailCommandHandler', () => {
       await expect(commandHandler.execute(command)).rejects.toThrow(InvalidOperationException);
     });
 
-    it('should handle repository failures gracefully', async () => {
+    it('should throw InfrastructureException when repository fails', async () => {
       // Arrange
       const { commandHandler } = setup({ shouldFailRepository: true });
       const command = createCommand();
@@ -246,7 +247,7 @@ describe('VerifyEmailCommandHandler', () => {
       await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
     });
 
-    it('should handle event bus failures gracefully', async () => {
+    it('should propagate event bus exceptions', async () => {
       // Arrange
       const { commandHandler, repository } = setup({ shouldFailEventBus: true });
       const emailVerification = EmailVerification.random();
@@ -257,7 +258,7 @@ describe('VerifyEmailCommandHandler', () => {
       });
 
       // Act & Assert
-      await expect(commandHandler.execute(command)).rejects.toThrow('EventBus publishAll failed');
+      await expect(commandHandler.execute(command)).rejects.toThrow(ApplicationException);
     });
 
     it('should not verify same email twice', async () => {

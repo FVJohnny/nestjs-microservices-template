@@ -75,7 +75,7 @@ describe('UserRegistered_CreateEmailVerification_DomainEventHandler', () => {
   });
 
   describe('Error Cases', () => {
-    it('should handle command bus execution failure gracefully', async () => {
+    it('should propagate command bus exception', async () => {
       // Arrange
       const { eventHandler } = setup({ shouldFailCommandBus: true });
       const user = User.random();

@@ -1,4 +1,5 @@
 import type { ICommand } from '@nestjs/cqrs';
+import { ApplicationException } from '../errors';
 
 export interface MockCommandBus {
   commands: ICommand[];
@@ -24,7 +25,7 @@ export function createCommandBusMock(options: CreateCommandBusMockOptions = {}):
 
   const executeMock = (command: ICommand) => {
     if (shouldFail) {
-      throw new Error('CommandBus execute failed');
+      throw new ApplicationException('CommandBus execute failed');
     }
     commands.push(command);
     return Promise.resolve({ success: true });

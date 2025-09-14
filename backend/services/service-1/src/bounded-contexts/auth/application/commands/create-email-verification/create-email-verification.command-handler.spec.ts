@@ -2,7 +2,7 @@ import { CreateEmailVerificationCommandHandler } from './create-email-verificati
 import { CreateEmailVerificationCommand } from './create-email-verification.command';
 import { EmailVerificationInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
-import { createEventBusMock, InfrastructureException } from '@libs/nestjs-common';
+import { ApplicationException, createEventBusMock, InfrastructureException } from '@libs/nestjs-common';
 import { EmailVerificationCreatedDomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
 import { Id } from '@libs/nestjs-common';
 import { Email, Expiration } from '@bc/auth/domain/value-objects';
@@ -147,7 +147,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
   });
 
   describe('Error Cases', () => {
-    it('should handle repository failures gracefully', async () => {
+    it('should throw InfrastructureException when repository fails', async () => {
       // Arrange
       const { commandHandler } = setup({ shouldFailRepository: true });
       const command = createCommand({});
@@ -156,14 +156,14 @@ describe('CreateEmailVerificationCommandHandler', () => {
       await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
     });
 
-    it('should handle event bus failures gracefully', async () => {
+    it('should propagate event bus exceptions', async () => {
       // Arrange
       const { commandHandler } = setup({ shouldFailEventBus: true });
       const command = createCommand({});
 
       // Act & Assert
       // Since domain events are sent during command execution, this should fail
-      await expect(commandHandler.execute(command)).rejects.toThrow('EventBus publishAll failed');
+      await expect(commandHandler.execute(command)).rejects.toThrow(ApplicationException);
     });
   });
 });

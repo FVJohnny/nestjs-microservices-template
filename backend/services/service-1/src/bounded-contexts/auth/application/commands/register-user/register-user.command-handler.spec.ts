@@ -11,6 +11,7 @@ import {
   Timestamps,
   DateVO,
   wait,
+  ApplicationException,
 } from '@libs/nestjs-common';
 import { UserRegisteredDomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 
@@ -124,13 +125,13 @@ describe('RegisterUserCommandHandler', () => {
       await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
     });
 
-    it('should throw InfrastructureException when EventBus publishing fails', async () => {
+    it('should throw ApplicationException when EventBus publishing fails', async () => {
       // Arrange
       const { commandHandler } = setup({ shouldFailEventBus: true });
       const command = createCommand();
 
       // Act & Assert
-      await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
+      await expect(commandHandler.execute(command)).rejects.toThrow(ApplicationException);
     });
 
     it('should throw AlreadyExistsException when email already exists', async () => {

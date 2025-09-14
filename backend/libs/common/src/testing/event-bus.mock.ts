@@ -1,4 +1,4 @@
-import { InfrastructureException } from '../errors';
+import { ApplicationException } from '../errors';
 import type { DomainEvent } from '../general';
 
 export interface MockEventBus {
@@ -32,7 +32,7 @@ export function createEventBusMock(options: CreateEventBusMockOptions = {}): Moc
   // Create mock functions without jest dependency
   const publishMock = (event: DomainEvent) => {
     if (shouldFail) {
-      throw new InfrastructureException('publish', 'EventBus publish failed', new Error());
+      throw new ApplicationException('EventBus publish failed');
     }
     events.push(event);
     return Promise.resolve();
@@ -40,7 +40,7 @@ export function createEventBusMock(options: CreateEventBusMockOptions = {}): Moc
 
   const publishAllMock = (eventArray: DomainEvent[]) => {
     if (shouldFail) {
-      throw new InfrastructureException('publishAll', 'EventBus publishAll failed', new Error());
+      throw new ApplicationException('EventBus publishAll failed');
     }
     events.push(...eventArray);
     return Promise.resolve();

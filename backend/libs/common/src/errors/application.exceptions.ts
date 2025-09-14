@@ -39,3 +39,9 @@ export class InfrastructureException extends BaseException {
     );
   }
 }
+
+export class ApplicationException extends BaseException {
+  constructor(message: string, metadata?: Metadata) {
+    super(message, 'APPLICATION_ERROR', HttpStatus.INTERNAL_SERVER_ERROR, { ...metadata });
+  }
+}
