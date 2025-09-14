@@ -10,6 +10,14 @@ export class DateVO extends ValueObject<Date> {
     super(value);
   }
 
+  static random(): DateVO {
+    // Generate a random date between 2 years ago and now
+    const now = Date.now();
+    const twoYearsAgo = now - 2 * 365 * DateVO.DAY_MS;
+    const randomTime = twoYearsAgo + Math.random() * (now - twoYearsAgo);
+    return new DateVO(new Date(randomTime));
+  }
+
   static dateVOAtDaysFromNow(days: number): DateVO {
     const date = new Date();
     date.setTime(date.getTime() + days * DateVO.DAY_MS);

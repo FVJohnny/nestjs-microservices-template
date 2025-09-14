@@ -534,6 +534,7 @@ export function testUserRepositoryContract(
         });
 
         // it('should handle sorting with null/undefined values', async () => {
+        //   const {repository} = await setup({numUsers: 10});
         //   // Arrange - Create user with lastLoginAt undefined
         //   const userWithoutLogin = User.random({
         //     username: new Username('nologin'),
@@ -547,7 +548,7 @@ export function testUserRepositoryContract(
         //   const result = await repository.findByCriteria(criteria);
 
         //   // Assert
-        //   expect(result.data).toHaveLength(4);
+        //   expect(result.data).toHaveLength(10);
         //   // Users with undefined lastLoginAt should be sorted to the end
         //   expect(result.data[result.data.length - 1].lastLoginAt).toBeUndefined();
         // });

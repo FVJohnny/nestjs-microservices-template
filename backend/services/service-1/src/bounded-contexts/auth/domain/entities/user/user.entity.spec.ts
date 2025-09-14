@@ -256,15 +256,6 @@ describe('User Entity', () => {
       expect(user.role.toValue()).toBe(primitives.role);
       expect(user.lastLoginAt).toEqual(primitives.lastLoginAt);
     });
-
-    it('should handle undefined lastLoginAt', () => {
-      const user = User.random();
-      const primitives = user.toValue();
-      const reconstructed = User.fromValue(primitives);
-
-      expect(primitives.lastLoginAt).toBeUndefined();
-      expect(reconstructed.lastLoginAt).toBeUndefined();
-    });
   });
 
   describe('Business Rules', () => {

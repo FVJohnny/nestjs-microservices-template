@@ -15,6 +15,7 @@ import {
   SharedAggregateRoot,
   Id,
   Timestamps,
+  DateVO,
 } from '@libs/nestjs-common';
 
 let _seq = 1;
@@ -60,7 +61,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       password: props?.password || Password.createFromPlainTextSync('password' + _seq),
       status: props?.status ?? UserStatus.random(),
       role: props?.role ?? UserRole.random(),
-      lastLoginAt: props?.lastLoginAt,
+      lastLoginAt: props?.lastLoginAt ?? DateVO.random().toValue(),
       timestamps: props?.timestamps || Timestamps.random(),
     });
   }
