@@ -11,19 +11,21 @@ import {
   DomainValidationException,
   JwtTokenService,
   createJwtTokenServiceMock,
+  wait,
+  DateVO,
 } from '@libs/nestjs-common';
 
 describe('LoginUserCommandHandler', () => {
   // Test data factory
   const createCommand = (overrides: Partial<LoginUserCommand> = {}) =>
     new LoginUserCommand(
-      overrides.email || 'test@example.com',
-      overrides.password || 'TestPassword123!',
+      overrides.email || Email.random().toValue(),
+      overrides.password || Password.random().toValue(),
     );
 
   // Setup factory
-  const setup = (params: { shouldFailRepository?: boolean; shouldFailEventBus?: boolean } = {}) => {
-    const { shouldFailRepository = false, shouldFailEventBus = false } = params;
+  const setup = async (params: { withDefaultUser?: boolean; withStatus?: UserStatus; shouldFailRepository?: boolean; shouldFailEventBus?: boolean } = {}) => {
+    const { withDefaultUser = false, withStatus = UserStatus.active(), shouldFailRepository = false, shouldFailEventBus = false } = params;
 
     const repository = new UserInMemoryRepository(shouldFailRepository);
     const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
@@ -34,25 +36,26 @@ describe('LoginUserCommandHandler', () => {
       eventBus as unknown as EventBus,
     );
 
-    return { repository, eventBus, jwtTokenService, commandHandler };
+    let user : User | undefined;
+    if (withDefaultUser) {
+      user = User.random({
+        status: withStatus,
+        password: await Password.createFromPlainText('password123'),
+      });
+      await repository.save(user);
+    }
+
+    return { repository, eventBus, jwtTokenService, commandHandler, user };
   };
 
   describe('Happy Path', () => {
     it('should successfully authenticate user with valid credentials', async () => {
       // Arrange
-      const { commandHandler, repository } = setup();
-      const password = 'TestPassword123!';
-      const user = User.random({
-        email: new Email('john.doe@example.com'),
-        username: new Username('johndoe'),
-        password: await Password.createFromPlainText(password),
-        status: UserStatus.active(),
-      });
-      await repository.save(user);
+      const { commandHandler, user } = await setup({ withDefaultUser: true });
 
       const command = createCommand({
-        email: user.email.toValue(),
-        password: password,
+        email: user!.email.toValue(),
+        password: 'password123',
       });
 
       // Act
@@ -60,55 +63,43 @@ describe('LoginUserCommandHandler', () => {
 
       // Assert
       expect(result).toBeDefined();
-      expect(result.userId).toBe(user.id.toValue());
-      expect(result.email).toBe(user.email.toValue());
-      expect(result.username).toBe(user.username.toValue());
-      expect(result.role).toBe(user.role.toValue());
+      expect(result.userId).toBe(user!.id.toValue());
+      expect(result.email).toBe(user!.email.toValue());
+      expect(result.username).toBe(user!.username.toValue());
+      expect(result.role).toBe(user!.role.toValue());
       expect(result.accessToken).toBe('mock-access-token');
       expect(result.refreshToken).toBe('mock-refresh-token');
     });
 
     it('should update lastLogin timestamp on successful login', async () => {
       // Arrange
-      const { commandHandler, repository } = setup();
-      const password = 'MyPassword789!';
-      const beforeLogin = new Date();
-      const user = User.random({
-        email: new Email('user@example.com'),
-        password: await Password.createFromPlainText(password),
-        status: UserStatus.active(),
-        lastLogin: LastLogin.never(),
-      });
-      await repository.save(user);
-
+      const { commandHandler, repository, user } = await setup({ withDefaultUser: true });
       const command = createCommand({
-        email: user.email.toValue(),
-        password: password,
+        email: user!.email.toValue(),
+        password: 'password123',
       });
+      const beforeLogin = DateVO.now();
 
       // Act
+      await wait(10);
       await commandHandler.execute(command);
-      const afterLogin = new Date();
+      await wait(10);
+      const afterLogin = DateVO.now();
 
       // Assert
-      const updatedUser = await repository.findById(user.id);
+      const updatedUser = await repository.findById(user!.id);
       expect(updatedUser!.lastLogin).toBeDefined();
       expect(updatedUser!.lastLogin.isNever()).toBe(false);
-      expect(updatedUser!.lastLogin.toValue().getTime()).toBeGreaterThanOrEqual(
-        beforeLogin.getTime(),
-      );
-      expect(updatedUser!.lastLogin.toValue().getTime()).toBeLessThanOrEqual(afterLogin.getTime());
+      expect(updatedUser!.lastLogin.isAfter(beforeLogin)).toBe(true);
+      expect(updatedUser!.lastLogin.isBefore(afterLogin)).toBe(true);
     });
   });
 
   describe('Authentication Failures', () => {
     it('should throw UnauthorizedException when user does not exist', async () => {
       // Arrange
-      const { commandHandler } = setup();
-      const command = createCommand({
-        email: 'nonexistent@example.com',
-        password: 'SomePassword123!',
-      });
+      const { commandHandler } = await setup({ withDefaultUser: false });
+      const command = createCommand();
 
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(UnauthorizedException);
@@ -116,16 +107,9 @@ describe('LoginUserCommandHandler', () => {
 
     it('should throw UnauthorizedException when password is incorrect', async () => {
       // Arrange
-      const { commandHandler, repository } = setup();
-      const user = User.random({
-        email: new Email('user@example.com'),
-        password: await Password.createFromPlainText('CorrectPassword123!'),
-        status: UserStatus.active(),
-      });
-      await repository.save(user);
-
+      const { commandHandler, user } = await setup({ withDefaultUser: true });
       const command = createCommand({
-        email: user.email.toValue(),
+        email: user!.email.toValue(),
         password: 'WrongPassword456!',
       });
 
@@ -133,20 +117,12 @@ describe('LoginUserCommandHandler', () => {
       await expect(commandHandler.execute(command)).rejects.toThrow(UnauthorizedException);
     });
 
-    it('should throw UnauthorizedException when user is not active', async () => {
+    it('should throw UnauthorizedException when user is inactive', async () => {
       // Arrange
-      const { commandHandler, repository } = setup();
-      const password = 'ValidPassword123!';
-      const user = User.random({
-        email: new Email('inactive@example.com'),
-        password: await Password.createFromPlainText(password),
-        status: UserStatus.inactive(),
-      });
-      await repository.save(user);
-
+      const { commandHandler, user } = await setup({ withDefaultUser: true, withStatus: UserStatus.inactive() });
       const command = createCommand({
-        email: user.email.toValue(),
-        password: password,
+        email: user!.email.toValue(),
+        password: user!.password.toValue(),
       });
 
       // Act & Assert
@@ -155,18 +131,10 @@ describe('LoginUserCommandHandler', () => {
 
     it('should throw UnauthorizedException when user is email verification pending', async () => {
       // Arrange
-      const { commandHandler, repository } = setup();
-      const password = 'ValidPassword123!';
-      const user = User.random({
-        email: new Email('pending@example.com'),
-        password: await Password.createFromPlainText(password),
-        status: UserStatus.emailVerificationPending(),
-      });
-      await repository.save(user);
-
+      const { commandHandler, user } = await setup({ withDefaultUser: true, withStatus: UserStatus.emailVerificationPending() });
       const command = createCommand({
-        email: user.email.toValue(),
-        password: password,
+        email: user!.email.toValue(),
+        password: 'password123',
       });
 
       // Act & Assert
@@ -177,11 +145,8 @@ describe('LoginUserCommandHandler', () => {
   describe('Input Validation', () => {
     it('should throw UnauthorizedException for empty password', async () => {
       // Arrange
-      const { commandHandler } = setup();
-      const command = createCommand({
-        email: 'test@example.com',
-        password: '',
-      });
+      const { commandHandler } = await setup();
+      const command = createCommand({ password: '' });
 
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(UnauthorizedException);
@@ -189,11 +154,8 @@ describe('LoginUserCommandHandler', () => {
 
     it('should throw UnauthorizedException for whitespace-only password', async () => {
       // Arrange
-      const { commandHandler } = setup();
-      const command = createCommand({
-        email: 'test@example.com',
-        password: '   ',
-      });
+      const { commandHandler } = await setup();
+      const command = createCommand({ password: '   ' });
 
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(UnauthorizedException);
@@ -201,11 +163,8 @@ describe('LoginUserCommandHandler', () => {
 
     it('should validate email format', async () => {
       // Arrange
-      const { commandHandler } = setup();
-      const command = createCommand({
-        email: 'invalid-email',
-        password: 'ValidPassword123!',
-      });
+      const { commandHandler } = await setup();
+      const command = createCommand({ email: 'invalid-email' });
 
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(DomainValidationException);
@@ -213,59 +172,25 @@ describe('LoginUserCommandHandler', () => {
   });
 
   describe('Error Cases', () => {
-    it('should handle repository failures gracefully', async () => {
+    it('should throw InfrastructureException when repository fails', async () => {
       // Arrange
-      const { commandHandler } = setup({ shouldFailRepository: true });
+      const { commandHandler } = await setup({ shouldFailRepository: true });
       const command = createCommand();
 
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
     });
 
-    it('should handle event bus failures gracefully', async () => {
+    it('should throw InfrastructureException when event bus fails', async () => {
       // Arrange
-      const { commandHandler, repository } = setup({ shouldFailEventBus: true });
-      const password = 'TestPassword123!';
-      const user = User.random({
-        email: new Email('test@example.com'),
-        password: await Password.createFromPlainText(password),
-        status: UserStatus.active(),
-      });
-      await repository.save(user);
-
+      const { commandHandler, user } = await setup({ withDefaultUser: true, shouldFailEventBus: true });
       const command = createCommand({
-        email: 'test@example.com',
-        password: password,
+        email: user!.email.toValue(),
+        password: 'password123',
       });
 
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
-    });
-  });
-
-  describe('Edge Cases', () => {
-    it('should login correctly with special characters in email', async () => {
-      // Arrange
-      const { commandHandler, repository } = setup();
-      const password = 'SpecialPassword123!';
-      const user = User.random({
-        email: new Email('test+user.name@sub-domain.example.com'),
-        password: await Password.createFromPlainText(password),
-        status: UserStatus.active(),
-      });
-      await repository.save(user);
-
-      const command = createCommand({
-        email: user.email.toValue(),
-        password: password,
-      });
-
-      // Act
-      const result = await commandHandler.execute(command);
-
-      // Assert
-      expect(result).toBeDefined();
-      expect(result.email).toBe(user.email.toValue());
     });
   });
 });

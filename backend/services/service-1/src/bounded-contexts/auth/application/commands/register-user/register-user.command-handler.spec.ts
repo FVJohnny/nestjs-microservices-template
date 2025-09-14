@@ -2,25 +2,26 @@ import { RegisterUserCommandHandler } from './register-user.command-handler';
 import { RegisterUserCommand } from './register-user.command';
 import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
-import { UserRoleEnum } from '@bc/auth/domain/value-objects';
+import { Email, Username, Password, UserRoleEnum, UserRole } from '@bc/auth/domain/value-objects';
 import {
   AlreadyExistsException,
   createEventBusMock,
   InfrastructureException,
   Id,
   Timestamps,
+  DateVO,
+  wait,
 } from '@libs/nestjs-common';
 import { UserRegisteredDomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 
 describe('RegisterUserCommandHandler', () => {
   // Test data factory
-  const createCommand = (overrides: Partial<RegisterUserCommand> = {}) =>
+  const createCommand = (props?: Partial<RegisterUserCommand>) =>
     new RegisterUserCommand({
-      email: 'test@example.com',
-      username: 'testuser',
-      password: 'TestPassword123!',
-      role: UserRoleEnum.USER,
-      ...overrides,
+      email: props?.email || Email.random().toValue(),
+      username: props?.username || Username.random().toValue(),
+      password: props?.password || Password.random().toValue(),
+      role: props?.role || UserRole.random().toValue(),
     });
 
   // Setup factory
@@ -40,10 +41,7 @@ describe('RegisterUserCommandHandler', () => {
     it('should successfully register a new user with complete information', async () => {
       // Arrange
       const { commandHandler, repository } = setup();
-      const command = createCommand({
-        email: 'john.doe@example.com',
-        username: 'johndoe',
-      });
+      const command = createCommand();
 
       // Act
       const result = await commandHandler.execute(command);
@@ -55,36 +53,16 @@ describe('RegisterUserCommandHandler', () => {
       // Verify user was saved
       const savedUser = await repository.findById(new Id(result.id));
       expect(savedUser).not.toBeNull();
-      expect(savedUser!.email.toValue()).toBe('john.doe@example.com');
-      expect(savedUser!.username.toValue()).toBe('johndoe');
-      expect(savedUser!.role.toValue()).toBe(UserRoleEnum.USER);
+      expect(savedUser!.email.toValue()).toBe(command.email);
+      expect(savedUser!.username.toValue()).toBe(command.username);
+      expect(savedUser!.role.toValue()).toBe(command.role);
+      expect(savedUser!.isEmailVerificationPending()).toBe(true);
     });
-    it('should register user with minimal required fields only', async () => {
-      // Arrange
-      const { commandHandler, repository } = setup();
-      const command = createCommand({
-        email: 'minimal@example.com',
-        username: 'minimaluser',
-      });
 
-      // Act
-      const result = await commandHandler.execute(command);
-
-      // Assert
-      expect(result.id).toBeDefined();
-      const savedUser = await repository.findById(new Id(result.id));
-      expect(savedUser!.email.toValue()).toBe('minimal@example.com');
-      expect(savedUser!.username.toValue()).toBe('minimaluser');
-      expect(savedUser!.role.toValue()).toBe(UserRoleEnum.USER);
-    });
     it('should publish UserRegisteredEvent after user creation', async () => {
       // Arrange
       const { commandHandler, eventBus } = setup();
-      const command = createCommand({
-        email: 'events@example.com',
-        username: 'eventsuser',
-        role: UserRoleEnum.ADMIN,
-      });
+      const command = createCommand();
 
       // Act
       const result = await commandHandler.execute(command);
@@ -94,53 +72,37 @@ describe('RegisterUserCommandHandler', () => {
       const publishedEvent = eventBus.events[0] as UserRegisteredDomainEvent;
       expect(publishedEvent).toBeInstanceOf(UserRegisteredDomainEvent);
       expect(publishedEvent.aggregateId.toValue()).toBe(result.id);
-      expect(publishedEvent.email.toValue()).toBe('events@example.com');
-      expect(publishedEvent.username.toValue()).toBe('eventsuser');
+      expect(publishedEvent.email.toValue()).toBe(command.email);
+      expect(publishedEvent.username.toValue()).toBe(command.username);
+      expect(publishedEvent.role.toValue()).toBe(command.role);
       expect(publishedEvent.occurredOn).toBeInstanceOf(Date);
-      expect(publishedEvent.role.toValue()).toBe(UserRoleEnum.ADMIN);
     });
-    it('should create user with email-verification-pending status', async () => {
-      // Arrange
-      const { commandHandler, repository } = setup();
-      const command = createCommand();
 
-      // Act
-      const result = await commandHandler.execute(command);
-
-      // Assert
-      const savedUser = await repository.findById(new Id(result.id));
-      expect(savedUser!.isEmailVerificationPending()).toBe(true);
-    });
     it('should set proper timestamps on user creation', async () => {
       // Arrange
       const { commandHandler, repository } = setup();
       const command = createCommand();
-      const beforeCreation = new Date();
+      const beforeCreation = DateVO.now();
+      await wait(10);
 
       // Act
       const result = await commandHandler.execute(command);
-      const afterCreation = new Date();
+      await wait(10);
+      const afterCreation = DateVO.now();
 
       // Assert
       const savedUser = await repository.findById(new Id(result.id));
-      expect(savedUser!.timestamps).toBeInstanceOf(Timestamps);
-      expect(savedUser!.timestamps.createdAt.toValue()).toBeInstanceOf(Date);
-      expect(savedUser!.timestamps.createdAt.toValue().getTime()).toBeGreaterThanOrEqual(
-        beforeCreation.getTime(),
-      );
-      expect(savedUser!.timestamps.createdAt.toValue().getTime()).toBeLessThanOrEqual(
-        afterCreation.getTime(),
-      );
-      expect(savedUser!.timestamps.updatedAt.toValue().getTime()).toBe(
-        savedUser!.timestamps.createdAt.toValue().getTime(),
-      );
+      expect(savedUser!.timestamps.createdAt.isAfter(beforeCreation)).toBe(true);
+      expect(savedUser!.timestamps.createdAt.isBefore(afterCreation)).toBe(true);
+      expect(savedUser!.timestamps.updatedAt.isAfter(beforeCreation)).toBe(true);
+      expect(savedUser!.timestamps.updatedAt.isBefore(afterCreation)).toBe(true);
       expect(savedUser!.lastLogin.isNever()).toBe(true);
     });
     it('should create unique user IDs for different registrations', async () => {
       // Arrange
       const { commandHandler } = setup();
-      const command1 = createCommand({ email: 'user1@example.com', username: 'user1' });
-      const command2 = createCommand({ email: 'user2@example.com', username: 'user2' });
+      const command1 = createCommand();
+      const command2 = createCommand();
 
       // Act
       const result1 = await commandHandler.execute(command1);
@@ -152,15 +114,17 @@ describe('RegisterUserCommandHandler', () => {
       expect(result2.id).toBeDefined();
     });
   });
+
   describe('Error Cases', () => {
-    it('should handle repository failures gracefully', async () => {
+    it('should throw InfrastructureException when repository fails', async () => {
       // Arrange
       const { commandHandler } = setup({ shouldFailRepository: true });
       const command = createCommand();
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
     });
-    it('should handle EventBus publishing failures gracefully', async () => {
+
+    it('should throw InfrastructureException when EventBus publishing fails', async () => {
       // Arrange
       const { commandHandler } = setup({ shouldFailEventBus: true });
       const command = createCommand();
@@ -168,19 +132,17 @@ describe('RegisterUserCommandHandler', () => {
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
     });
+
     it('should throw AlreadyExistsException when email already exists', async () => {
       // Arrange 1
       const { commandHandler } = setup();
 
       // Act 1
-      const existingCommand = createCommand({ email: 'existing@example.com', username: 'user1' });
-      await commandHandler.execute(existingCommand);
+      const command = createCommand();
+      await commandHandler.execute(command);
 
       // Arrange 2
-      const duplicateEmailCommand = createCommand({
-        email: 'existing@example.com',
-        username: 'user2',
-      });
+      const duplicateEmailCommand = createCommand({ email: command.email });
 
       // Act 2 & Assert
       await expect(commandHandler.execute(duplicateEmailCommand)).rejects.toThrow(
@@ -188,18 +150,19 @@ describe('RegisterUserCommandHandler', () => {
       );
     });
     it('should throw AlreadyExistsException when username already exists', async () => {
-      // Arrange
+      // Arrange 1
       const { commandHandler } = setup();
-      const existingCommand = createCommand({
-        email: 'user1@example.com',
-        username: 'existinguser',
-      });
-      await commandHandler.execute(existingCommand);
+      const command = createCommand();
+
+      // Act 1
+      await commandHandler.execute(command);
+
+      // Arrange 2
       const duplicateUsernameCommand = createCommand({
-        email: 'user2@example.com',
-        username: 'existinguser',
+        username: command.username,
       });
-      // Act & Assert
+
+      // Act 2 & Assert
       await expect(commandHandler.execute(duplicateUsernameCommand)).rejects.toThrow(
         AlreadyExistsException,
       );

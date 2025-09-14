@@ -1,6 +1,9 @@
 const { pathsToModuleNameMapper } = require('ts-jest');
 const { compilerOptions: baseCompilerOptions } = require('../../../tsconfig.base.json');
 
+// Set log level to error only during tests
+process.env.LOG_LEVEL = 'error';
+
 module.exports = {
   displayName: 'service-1',
   preset: 'ts-jest',

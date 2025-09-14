@@ -1,7 +1,9 @@
+import { CorrelationLogger } from '@libs/nestjs-common';
 import { MongoClient } from 'mongodb';
 
 export class MongodbTestService {
   readonly mongoClient: MongoClient;
+  private readonly logger = new CorrelationLogger(MongodbTestService.name);
 
   constructor(private readonly dbName: string) {
     const uri =
@@ -12,15 +14,16 @@ export class MongodbTestService {
 
   async setupDatabase(): Promise<void> {
     try {
-      console.log('Connecting to existing MongoDB instance...');
+      this.logger.debug('Connecting to existing MongoDB instance...');
 
       await this.mongoClient.connect();
 
       await this.mongoClient.db(this.dbName).admin().ping();
+      await this.mongoClient.db(this.dbName).dropDatabase();
 
-      console.log('Test setup completed');
+      this.logger.debug('Test setup completed');
     } catch (error) {
-      console.error('Error in database setup:', error);
+      this.logger.error('Error in database setup:', error);
       throw error;
     }
   }
@@ -28,9 +31,9 @@ export class MongodbTestService {
   async cleanupDatabase(): Promise<void> {
     try {
       await this.mongoClient.db(this.dbName).dropDatabase();
-      console.log('Cleaned up test database');
+      this.logger.debug('Cleaned up test database');
     } catch (error) {
-      console.error('Error cleaning up test database:', error);
+      this.logger.error('Error cleaning up test database:', error);
     }
     await this.mongoClient.close();
   }

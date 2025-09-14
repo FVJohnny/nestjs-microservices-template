@@ -44,7 +44,7 @@ export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
 
       if (collections.length === 0) {
         await this.mongoClient.db().createCollection(this.collectionName);
-        this.logger.log(`${this.collectionName} collection created and initializing indexes`);
+        this.logger.debug(`${this.collectionName} collection created and initializing indexes`);
       }
 
       // Check if indexes already exist to avoid recreation
@@ -62,11 +62,11 @@ export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
 
         if (!indexNames.includes(indexName)) {
           await this.collection.createIndex(indexSpec.fields, indexSpec.options);
-          this.logger.log(`Created index: ${indexName}`);
+          this.logger.debug(`Created index: ${indexName}`);
         }
       }
 
-      this.logger.log(`${this.collectionName} collection indexes initialized successfully`);
+      this.logger.debug(`${this.collectionName} collection indexes initialized successfully`);
     } catch (error) {
       this.logger.error(
         `Error initializing ${this.collectionName} collection indexes:`,
