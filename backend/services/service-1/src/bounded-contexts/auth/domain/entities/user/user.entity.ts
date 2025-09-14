@@ -61,7 +61,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       status: props?.status ?? UserStatus.random(),
       role: props?.role ?? UserRole.random(),
       lastLoginAt: props?.lastLoginAt,
-      timestamps: props?.timestamps || Timestamps.create(),
+      timestamps: props?.timestamps || Timestamps.random(),
     });
   }
 

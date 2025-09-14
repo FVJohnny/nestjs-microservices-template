@@ -1,5 +1,6 @@
 import { StringValueObject, DomainValidationException } from '@libs/nestjs-common';
 
+let _seq = 0;
 export class Username extends StringValueObject {
   private static readonly MIN_LENGTH = 3;
   private static readonly MAX_LENGTH = 30;
@@ -8,6 +9,11 @@ export class Username extends StringValueObject {
   constructor(value: string) {
     Username.validate(value);
     super(value.toLowerCase());
+  }
+
+  static random(): Username {
+    _seq++;
+    return new Username(`user${_seq}`);
   }
 
   static validate(username: string): void {

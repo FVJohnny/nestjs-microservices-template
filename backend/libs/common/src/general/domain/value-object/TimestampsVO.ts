@@ -1,3 +1,4 @@
+import { DomainValidationException } from '../../../errors';
 import { DateVO } from './DateValueObject';
 
 export interface TimestampsData {
@@ -12,6 +13,8 @@ export class Timestamps {
   constructor(data: TimestampsData) {
     this.createdAt = new DateVO(data.createdAt);
     this.updatedAt = new DateVO(data.updatedAt);
+
+    this.validate();
   }
 
   static create(): Timestamps {
@@ -19,6 +22,13 @@ export class Timestamps {
     return new Timestamps({
       createdAt: now,
       updatedAt: now,
+    });
+  }
+
+  static random(): Timestamps {
+    return new Timestamps({
+      createdAt: DateVO.dateVOAtDaysFromNow(Math.floor(Math.random() * -100)).toValue(),
+      updatedAt: DateVO.dateVOAtDaysFromNow(Math.floor(Math.random() * -100)).toValue(),
     });
   }
 
@@ -35,5 +45,25 @@ export class Timestamps {
 
   equals(other: Timestamps): boolean {
     return this.createdAt.equals(other.createdAt) && this.updatedAt.equals(other.updatedAt);
+  }
+
+  private validate(): void {
+    const now = new Date();
+
+    if (this.createdAt.toValue() > now) {
+      throw new DomainValidationException(
+        'createdAt',
+        this.createdAt.toValue(),
+        'Creation date cannot be in the future',
+      );
+    }
+
+    if (this.updatedAt.toValue() > now) {
+      throw new DomainValidationException(
+        'updatedAt',
+        this.updatedAt.toValue(),
+        'Update date cannot be in the future',
+      );
+    }
   }
 }

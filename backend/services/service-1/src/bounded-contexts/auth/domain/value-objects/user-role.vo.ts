@@ -33,4 +33,8 @@ export class UserRole extends EnumValueObject<UserRoleEnum> {
   static moderator(): UserRole {
     return new UserRole(UserRoleEnum.MODERATOR);
   }
+
+  equals(other: UserRole): boolean {
+    return this.toValue() === other.toValue();
+  }
 }

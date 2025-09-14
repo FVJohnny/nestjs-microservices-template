@@ -1,7 +1,6 @@
 import { ValueObject } from './ValueObject';
 
 export class DateVO extends ValueObject<Date> {
-  // Time constants in milliseconds
   private static readonly SECOND_MS = 1000;
   private static readonly MINUTE_MS = 60 * DateVO.SECOND_MS;
   private static readonly HOUR_MS = 60 * DateVO.MINUTE_MS;
@@ -11,32 +10,30 @@ export class DateVO extends ValueObject<Date> {
     super(value);
   }
 
-  // Static helper methods to create dates - these return Date objects for concrete VOs to use
-  protected static dateVOAtDaysFromNow(days: number): DateVO {
+  static dateVOAtDaysFromNow(days: number): DateVO {
     const date = new Date();
     date.setTime(date.getTime() + days * DateVO.DAY_MS);
     return new DateVO(date);
   }
 
-  protected static dateVOAtHoursFromNow(hours: number): DateVO {
+  static dateVOAtHoursFromNow(hours: number): DateVO {
     const date = new Date();
     date.setTime(date.getTime() + hours * DateVO.HOUR_MS);
     return new DateVO(date);
   }
 
-  protected static dateVOAtMinutesFromNow(minutes: number): DateVO {
+  static dateVOAtMinutesFromNow(minutes: number): DateVO {
     const date = new Date();
     date.setTime(date.getTime() + minutes * DateVO.MINUTE_MS);
     return new DateVO(date);
   }
 
-  protected static dateVOAtSecondsFromNow(seconds: number): DateVO {
+  static dateVOAtSecondsFromNow(seconds: number): DateVO {
     const date = new Date();
     date.setTime(date.getTime() + seconds * DateVO.SECOND_MS);
     return new DateVO(date);
   }
 
-  // Instance methods to calculate differences from now to this value
   hoursFromNow(): number {
     return (this.toValue().getTime() - new Date().getTime()) / DateVO.HOUR_MS;
   }
@@ -61,10 +58,26 @@ export class DateVO extends ValueObject<Date> {
     return this.toValue() > new Date();
   }
 
+  isBefore(other: DateVO): boolean {
+    return this.toValue() < other.toValue();
+  }
+
+  isAfter(other: DateVO): boolean {
+    return this.toValue() > other.toValue();
+  }
+
+  equals(other: DateVO): boolean {
+    return this.toValue().getTime() === other.toValue().getTime();
+  }
+
   isToday(): boolean {
     const today = new Date();
     const thisDate = this.toValue();
-    return thisDate.toDateString() === today.toDateString();
+    return (
+      thisDate.getFullYear() === today.getFullYear() &&
+      thisDate.getMonth() === today.getMonth() &&
+      thisDate.getDate() === today.getDate()
+    );
   }
 
   diffInMilliseconds(other: Date): number {
