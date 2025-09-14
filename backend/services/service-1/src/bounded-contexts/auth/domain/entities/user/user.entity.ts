@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { UserRegisteredDomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 import type { UserRoleEnum } from '@bc/auth/domain/value-objects';
 import {
@@ -34,10 +33,8 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   }
 
   static create(props: CreateUserProps): User {
-    const id = uuidv4();
-
     const user = new User({
-      id: new Id(id),
+      id: Id.random(),
       email: props.email,
       username: props.username,
       password: props.password,
@@ -54,7 +51,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
 
   static random(props?: Partial<UserAttributes>): User {
     return new User({
-      id: props?.id || new Id(uuidv4()),
+      id: props?.id || Id.random(),
       email: props?.email || Email.random(),
       username: props?.username || Username.random(),
       password: props?.password || Password.random(),
