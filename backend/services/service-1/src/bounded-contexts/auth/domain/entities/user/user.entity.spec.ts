@@ -255,7 +255,7 @@ describe('User Entity', () => {
       expect(await user.password.verify('testpassword')).toBe(true);
       expect(user.status.toValue()).toBe(primitives.status);
       expect(user.role.toValue()).toBe(primitives.role);
-      expect(user.lastLoginAt).toBe(primitives.lastLoginAt);
+      expect(user.lastLoginAt).toEqual(primitives.lastLoginAt);
     });
   });
 });
