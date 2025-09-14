@@ -60,12 +60,12 @@ COPY --from=builder /app/backend/libs ./backend/libs
 
 # Copy service files and node_modules to the service directory
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/backend/services/service-1/dist ./services/service-1/dist
-COPY --from=builder /app/backend/services/service-1/package*.json ./services/service-1/
+COPY --from=builder /app/backend/services/service-1/dist ./backend/services/service-1/dist
+COPY --from=builder /app/backend/services/service-1/package*.json ./backend/services/service-1/
 
 # Set working directory to service
-WORKDIR /app/services/service-1
+WORKDIR /app/backend/services/service-1
 
 EXPOSE 3000
 # Use node directly for fast startup
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]
