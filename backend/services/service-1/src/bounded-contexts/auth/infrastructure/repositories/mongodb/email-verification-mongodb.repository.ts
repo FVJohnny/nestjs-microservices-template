@@ -1,12 +1,12 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { MongoClient, MongoServerError } from 'mongodb';
+import { MongoClient } from 'mongodb';
 import {
   EmailVerification,
   EmailVerificationDTO,
 } from '../../../domain/entities/email-verification/email-verification.entity';
 import { EmailVerificationRepository } from '../../../domain/repositories/email-verification/email-verification.repository';
 import { Email, Expiration, Verification } from '../../../domain/value-objects';
-import { InfrastructureException, AlreadyExistsException, Id } from '@libs/nestjs-common';
+import { Id } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN, BaseMongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
 
 @Injectable()
@@ -142,28 +142,5 @@ export class EmailVerificationMongodbRepository
         options: { name: 'idx_email_verification_expiration' },
       },
     ];
-  }
-
-  /**
-   * Handle database errors consistently
-   */
-  private handleDatabaseError(operation: string, id: string, error: unknown): never {
-    const err = error instanceof Error ? error : new Error(String(error));
-
-    // Handle MongoDB duplicate key errors
-    if (error instanceof MongoServerError && error.code === 11000) {
-      const keyPattern = error.keyPattern;
-
-      if (keyPattern?.userId) {
-        throw new AlreadyExistsException('userId', id);
-      }
-      if (keyPattern?.email) {
-        // Extract email value from the error details
-        const emailValue = error.keyValue?.email || 'unknown email';
-        throw new AlreadyExistsException('email', emailValue);
-      }
-    }
-
-    throw new InfrastructureException(operation, id, err);
   }
 }

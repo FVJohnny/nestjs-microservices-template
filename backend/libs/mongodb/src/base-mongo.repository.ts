@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
-import { MongoClient, Collection, CreateIndexesOptions, IndexSpecification } from 'mongodb';
-import { CorrelationLogger, SharedAggregateRootDTO } from '@libs/nestjs-common';
+import { MongoClient, Collection, CreateIndexesOptions, IndexSpecification, MongoServerError } from 'mongodb';
+import { CorrelationLogger, SharedAggregateRootDTO, AlreadyExistsException, InfrastructureException } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from './mongodb.module';
 
 export interface IndexSpec {
@@ -62,5 +62,26 @@ export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
         error instanceof Error ? error : String(error),
       );
     }
+  }
+
+  /**
+   * Handle database errors consistently
+   */
+  protected handleDatabaseError(operation: string, id: string, error: unknown): never {
+    const err = error instanceof Error ? error : new Error(String(error));
+
+    // Handle MongoDB duplicate key errors
+    if (error instanceof MongoServerError && error.code === 11000) {
+      const keyPattern = error.keyPattern;
+      const keyValue = error.keyValue;
+
+      if (keyPattern && keyValue) {
+        const duplicateKey = Object.keys(keyPattern)[0];
+        const duplicateValue = keyValue[duplicateKey] || 'unknown value';
+        throw new AlreadyExistsException(duplicateKey, duplicateValue);
+      }
+    }
+
+    throw new InfrastructureException(operation, id, err);
   }
 }
