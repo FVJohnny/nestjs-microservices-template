@@ -1,6 +1,6 @@
 import type { UserRepository } from './user.repository';
 import { User } from '../../entities/user/user.entity';
-import { Email, Username, UserRole, UserRoleEnum, UserStatus, UserStatusEnum } from '../../value-objects';
+import { Email, LastLogin, Username, UserRole, UserRoleEnum, UserStatus, UserStatusEnum } from '../../value-objects';
 import {
   Criteria,
   Filters,
@@ -533,25 +533,24 @@ export function testUserRepositoryContract(
           }
         });
 
-        // it('should handle sorting with null/undefined values', async () => {
-        //   const {repository} = await setup({numUsers: 10});
-        //   // Arrange - Create user with lastLoginAt undefined
-        //   const userWithoutLogin = User.random({
-        //     username: new Username('nologin'),
-        //   });
-        //   await repository.save(userWithoutLogin);
+        it('should handle sorting with lastLoginAt never', async () => {
+          const {repository} = await setup({numUsers: 9});
+          // Add extra user with who never logged in
+          const userNeverLogged = User.random({
+            lastLoginAt: LastLogin.never(),
+          });
+          await repository.save(userNeverLogged);
 
-        //   const order = new Order(new OrderBy('lastLoginAt'), new OrderType(OrderTypes.ASC));
-        //   const criteria = new Criteria({ order });
+          const order = new Order(new OrderBy('lastLoginAt'), new OrderType(OrderTypes.ASC));
+          const criteria = new Criteria({ order });
 
-        //   // Act
-        //   const result = await repository.findByCriteria(criteria);
+          // Act
+          const result = await repository.findByCriteria(criteria);
 
-        //   // Assert
-        //   expect(result.data).toHaveLength(10);
-        //   // Users with undefined lastLoginAt should be sorted to the end
-        //   expect(result.data[result.data.length - 1].lastLoginAt).toBeUndefined();
-        // });
+          // Assert
+          expect(result.data).toHaveLength(10);
+          expect(result.data[0].lastLoginAt.isNever()).toBe(true); // Never = First when orderType = ASC
+        });
       });
 
       describe('findByCriteria - Pagination', () => {
