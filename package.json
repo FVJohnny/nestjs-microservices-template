@@ -8,6 +8,7 @@
     "test": "LOG_LEVEL=error npm run testcommand",
     "test:silent": "LOG_LEVEL=error npm run testcommand",
     "test:verbose": "LOG_LEVEL=verbose npm run testcommand",
+    "test:nocache": "LOG_LEVEL=error nx run-many --target=test --all --exclude=nestjs-microservices-monorepo-template --skip-nx-cache && nx run-many --target=test:e2e --all --skip-nx-cache",
     "lint": "nx run-many -t lint --fix --exclude=nestjs-microservices-monorepo-template",
     "dev": "./infra/docker/start-dev.sh && npm run dev-logs",
     "dev-down": "docker compose -f infra/docker/docker-compose.dev.yml down",
