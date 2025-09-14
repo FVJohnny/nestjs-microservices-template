@@ -2,15 +2,22 @@ import { GetUsersQueryHandler } from './get-users.query-handler';
 import { GetUsersQuery } from './get-users.query';
 import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { Email, Username, UserStatus, UserStatusEnum, UserRoleEnum } from '@bc/auth/domain/value-objects';
+import {
+  Email,
+  Username,
+  UserStatus,
+  UserStatusEnum,
+  UserRoleEnum,
+} from '@bc/auth/domain/value-objects';
 import { UserTestFactory } from '@bc/auth/test-utils';
 import { InfrastructureException } from '@libs/nestjs-common';
 
 describe('GetUsersQueryHandler', () => {
   // Test data factory
-  const createQuery = (overrides: Partial<GetUsersQuery> = {}) => new GetUsersQuery({
-    ...overrides,
-  });
+  const createQuery = (overrides: Partial<GetUsersQuery> = {}) =>
+    new GetUsersQuery({
+      ...overrides,
+    });
 
   // Setup factory
   const setup = (params: { shouldFailRepository?: boolean } = {}) => {
@@ -18,13 +25,13 @@ describe('GetUsersQueryHandler', () => {
 
     const repository = new UserInMemoryRepository(shouldFailRepository);
     const handler = new GetUsersQueryHandler(repository);
-    
+
     const seedUsers = async () => {
       const users = UserTestFactory.createStandardTestUsers();
       await UserTestFactory.saveUsersToRepository(repository, users);
       return users;
     };
-    
+
     return { repository, handler, seedUsers };
   };
 
@@ -69,7 +76,7 @@ describe('GetUsersQueryHandler', () => {
       await seedUsers();
       const userFound = await repository.findAll();
       // Act
-      const queryById = createQuery({ userId: userFound[0].id });
+      const queryById = createQuery({ userId: userFound[0].id.toValue() });
       const resultsById = await handler.execute(queryById);
 
       const queryByEmail = createQuery({ email: 'admin@' });
@@ -81,7 +88,7 @@ describe('GetUsersQueryHandler', () => {
       // Assert
       expect(resultsById.data).toHaveLength(1);
       expect(resultsById.data[0].username).toBe(userFound[0].username.toValue());
-      
+
       expect(resultsByEmail.data).toHaveLength(1);
       expect(resultsByEmail.data[0].username).toBe('admin');
 

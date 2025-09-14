@@ -74,7 +74,7 @@ describe('GetUsersCursorQueryHandler', () => {
       const userFound = await repository.findAll();
 
       // Act
-      const queryById = createQuery({ userId: userFound[0].id });
+      const queryById = createQuery({ userId: userFound[0].id.toValue() });
       const resultsById = await handler.execute(queryById);
 
       const queryByEmail = createQuery({ email: 'admin@' });

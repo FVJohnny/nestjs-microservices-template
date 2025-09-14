@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { EventTrackerService } from './event-tracker.service';
 import {
   INTEGRATION_EVENT_LISTENER_TOKEN,
-  IntegrationEventListener,
+  type IntegrationEventListener,
 } from '../integration-events/module/integration-event-listener.base';
 import type { IIntegrationEventHandler } from '../integration-events/module/integration-event-handler.base';
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';

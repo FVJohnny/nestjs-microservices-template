@@ -2,7 +2,7 @@ import { Injectable, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/commo
 import { OutboxRepository } from './outbox.repository';
 import {
   INTEGRATION_EVENT_PUBLISHER_TOKEN,
-  IntegrationEventPublisher,
+  type IntegrationEventPublisher,
 } from '../integration-events';
 import { randomUUID } from 'crypto';
 import { OutboxEvent } from './outbox-event.entity';

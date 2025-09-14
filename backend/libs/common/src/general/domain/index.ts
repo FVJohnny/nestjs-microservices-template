@@ -11,7 +11,6 @@ export { StringValueObject } from './value-object/StringValueObject';
 export { DateVO } from './value-object/DateValueObject';
 export { Timestamps } from './value-object/TimestampsVO';
 export { ValueObject } from './value-object/ValueObject';
-export { Primitives } from './value-object/ValueObject';
 export { Id } from './value-object/Id';
 
 // Repositories

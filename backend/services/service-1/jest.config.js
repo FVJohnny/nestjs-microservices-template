@@ -1,5 +1,5 @@
 const { pathsToModuleNameMapper } = require('ts-jest');
-const { compilerOptions } = require('./tsconfig.json');
+const { compilerOptions: baseCompilerOptions } = require('../../../tsconfig.base.json');
 
 module.exports = {
   displayName: 'service-1',
@@ -16,7 +16,7 @@ module.exports = {
   coverageDirectory: '../coverage',
   moduleFileExtensions: ['js', 'json', 'ts'],
   moduleNameMapper: {
-    ...pathsToModuleNameMapper(compilerOptions.paths || {}, { prefix: '<rootDir>/../' }),
+    ...pathsToModuleNameMapper(baseCompilerOptions.paths || {}, { prefix: '<rootDir>/../' }),
     '^express$': '<rootDir>/../node_modules/express/index.js'
   }
 };

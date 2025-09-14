@@ -3,35 +3,49 @@
   "compilerOptions": {
     "rootDir": ".",
     "sourceMap": true,
-    "declaration": false,
-    "moduleResolution": "node",
+    "declaration": true,
+    "moduleResolution": "nodenext",
+    "module": "nodenext",
+    "resolvePackageJsonExports": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "target": "es2015",
-    "module": "esnext",
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2023",
     "lib": [
       "es2020",
       "dom"
     ],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "noFallthroughCasesInSwitch": false,
+    "incremental": true,
     "baseUrl": ".",
     "paths": {
       "@libs/nestjs-common": [
-        "backend/libs/common/src/index.ts"
+        "../../libs/common/dist"
       ],
       "@libs/nestjs-kafka": [
-        "backend/libs/kafka/src/index.ts"
+        "../../libs/kafka/dist"
       ],
       "@libs/nestjs-mongodb": [
-        "backend/libs/mongodb/src/index.ts"
+        "../../libs/mongodb/dist"
       ],
       "@libs/nestjs-redis": [
-        "backend/libs/redis/src/index.ts"
+        "../../libs/redis/dist"
       ],
       "@libs/nestjs-postgresql": [
-        "backend/libs/postgresql/src/index.ts"
+        "../../libs/postgresql/dist"
+      ],
+      "@bc/*": [
+        "src/bounded-contexts/*"
       ]
     }
   },
