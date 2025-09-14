@@ -2,7 +2,7 @@ import { EmailVerification } from './email-verification.entity';
 import { Email, Verification, Expiration } from '../../value-objects';
 import { EmailVerificationVerifiedDomainEvent } from '../../events/email-verified.domain-event';
 import { EmailVerificationCreatedDomainEvent } from '../../events/email-verification-created.domain-event';
-import { InvalidOperationException, Id, Timestamps } from '@libs/nestjs-common';
+import { InvalidOperationException, Id, Timestamps, wait } from '@libs/nestjs-common';
 
 describe('EmailVerification Entity', () => {
   const newTestVerification = ({
@@ -118,7 +118,7 @@ describe('EmailVerification Entity', () => {
       const verification = newTestVerification({});
       const originalUpdatedAt = verification.timestamps.updatedAt;
 
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await wait(10);
       verification.verify();
 
       expect(verification.timestamps.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
