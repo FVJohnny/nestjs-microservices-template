@@ -31,6 +31,7 @@ export * from './outbox';
 // Utility exports
 export * from './utils/runtime-auto-discovery.util';
 export * from './utils/data';
+export * from './utils/utils';
 
 // Tracing
 export * from './tracing';

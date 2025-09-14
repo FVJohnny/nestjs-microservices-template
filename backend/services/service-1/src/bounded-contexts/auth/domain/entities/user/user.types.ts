@@ -1,5 +1,5 @@
-import type { Id, Timestamps } from '@libs/nestjs-common';
-import type { Email, Username, UserRole, UserStatus, Password } from '../../value-objects';
+import { Id, Timestamps } from '@libs/nestjs-common';
+import { Email, Username, UserRole, UserStatus, Password, LastLogin } from '../../value-objects';
 import { SharedAggregateRootDTO } from '@libs/nestjs-common';
 
 export interface CreateUserProps {
@@ -15,7 +15,7 @@ export interface UserAttributes {
   password: Password;
   status: UserStatus;
   role: UserRole;
-  lastLoginAt: Date | undefined;
+  lastLoginAt: LastLogin;
   timestamps: Timestamps;
 }
 
@@ -26,7 +26,21 @@ export class UserDTO extends SharedAggregateRootDTO {
   password: string;
   status: string;
   role: string;
-  lastLoginAt: Date | undefined;
+  lastLoginAt: Date;
   createdAt: Date;
   updatedAt: Date;
+
+  static random(): UserDTO {
+    return {
+      id: Id.random().toValue(),
+      email: Email.random().toValue(),
+      username: Username.random().toValue(),
+      password: Password.random().toValue(),
+      status: UserStatus.random().toValue(),
+      role: UserRole.random().toValue(),
+      lastLoginAt: LastLogin.random().toValue(),
+      createdAt: Timestamps.random().createdAt.toValue(),
+      updatedAt: Timestamps.random().updatedAt.toValue(),
+    };
+  }
 }

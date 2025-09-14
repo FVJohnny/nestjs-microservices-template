@@ -3,7 +3,7 @@ import { LoginUserCommand } from './login-user.command';
 import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
 import { User } from '../../../domain/entities/user/user.entity';
-import { Email, Username, Password, UserStatus } from '../../../domain/value-objects';
+import { Email, Username, Password, UserStatus, LastLogin } from '../../../domain/value-objects';
 import {
   UnauthorizedException,
   createEventBusMock,
@@ -47,7 +47,6 @@ describe('LoginUserCommandHandler', () => {
         username: new Username('johndoe'),
         password: await Password.createFromPlainText(password),
         status: UserStatus.active(),
-        lastLoginAt: new Date(0),
       });
       await repository.save(user);
 
@@ -78,7 +77,7 @@ describe('LoginUserCommandHandler', () => {
         email: new Email('user@example.com'),
         password: await Password.createFromPlainText(password),
         status: UserStatus.active(),
-        lastLoginAt: undefined,
+        lastLoginAt: LastLogin.never(),
       });
       await repository.save(user);
 
@@ -94,8 +93,9 @@ describe('LoginUserCommandHandler', () => {
       // Assert
       const updatedUser = await repository.findById(user.id);
       expect(updatedUser!.lastLoginAt).toBeDefined();
-      expect(updatedUser!.lastLoginAt!.getTime()).toBeGreaterThanOrEqual(beforeLogin.getTime());
-      expect(updatedUser!.lastLoginAt!.getTime()).toBeLessThanOrEqual(afterLogin.getTime());
+      expect(updatedUser!.lastLoginAt.isNever()).toBe(false);
+      expect(updatedUser!.lastLoginAt.toValue().getTime()).toBeGreaterThanOrEqual(beforeLogin.getTime());
+      expect(updatedUser!.lastLoginAt.toValue().getTime()).toBeLessThanOrEqual(afterLogin.getTime());
     });
   });
 

@@ -1,6 +1,8 @@
 import { StringValueObject, DomainValidationException } from '@libs/nestjs-common';
 import * as bcrypt from 'bcrypt';
 
+let _seq = 1;
+
 export class Password extends StringValueObject {
   private static readonly SALT_ROUNDS = process.env.NODE_ENV === 'test' ? 1 : 12;
   private static readonly MIN_LENGTH = 8;
@@ -24,6 +26,10 @@ export class Password extends StringValueObject {
   static createFromHash(hash: string) {
     Password.validateHash(hash);
     return new Password(hash);
+  }
+
+  static random(): Password {
+    return Password.createFromPlainTextSync('password' + _seq++);
   }
 
   async verify(plainText: string) {

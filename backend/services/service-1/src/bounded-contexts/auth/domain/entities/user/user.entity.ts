@@ -8,6 +8,7 @@ import {
   Email,
   Username,
   Password,
+  LastLogin,
 } from '../../value-objects';
 import type { CreateUserProps, UserAttributes, UserDTO } from './user.types';
 import {
@@ -15,10 +16,7 @@ import {
   SharedAggregateRoot,
   Id,
   Timestamps,
-  DateVO,
 } from '@libs/nestjs-common';
-
-let _seq = 1;
 
 export class User extends SharedAggregateRoot implements UserAttributes {
   email: Email;
@@ -26,7 +24,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   password: Password;
   status: UserStatus;
   role: UserRole;
-  lastLoginAt: Date | undefined;
+  lastLoginAt: LastLogin;
   timestamps: Timestamps;
   constructor(props: UserAttributes) {
     super(props.id);
@@ -43,7 +41,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       password: props.password,
       status: new UserStatus(UserStatusEnum.EMAIL_VERIFICATION_PENDING),
       role: props.role,
-      lastLoginAt: undefined,
+      lastLoginAt: LastLogin.never(),
       timestamps: Timestamps.create(),
     });
 
@@ -53,30 +51,29 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   }
 
   static random(props?: Partial<UserAttributes>): User {
-    _seq++;
     return new User({
       id: props?.id || new Id(uuidv4()),
-      email: props?.email || new Email('user' + _seq + '@example.com'),
-      username: props?.username || new Username('user' + _seq),
-      password: props?.password || Password.createFromPlainTextSync('password' + _seq),
-      status: props?.status ?? UserStatus.random(),
-      role: props?.role ?? UserRole.random(),
-      lastLoginAt: props?.lastLoginAt ?? DateVO.random().toValue(),
+      email: props?.email || Email.random(),
+      username: props?.username || Username.random(),
+      password: props?.password || Password.random(),
+      status: props?.status || UserStatus.random(),
+      role: props?.role || UserRole.random(),
+      lastLoginAt: props?.lastLoginAt || LastLogin.random(),
       timestamps: props?.timestamps || Timestamps.random(),
     });
   }
 
   activate(): void {
-    if (this.status.equals(UserStatus.active())) {
-      return;
+    if (!this.isInactive()) {
+      throw new InvalidOperationException('activate', this.status.toValue());
     }
     this.status = UserStatus.active();
     this.timestamps.update();
   }
 
   deactivate(): void {
-    if (this.status.equals(UserStatus.inactive())) {
-      return;
+    if (!this.isActive()) {
+      throw new InvalidOperationException('deactivate', this.status.toValue());
     }
     this.status = UserStatus.inactive();
     this.timestamps.update();
@@ -109,8 +106,12 @@ export class User extends SharedAggregateRoot implements UserAttributes {
     return this.status.equals(UserStatus.emailVerificationPending());
   }
 
+  isInactive(): boolean {
+    return this.status.equals(UserStatus.inactive());
+  }
+
   recordLogin(): void {
-    this.lastLoginAt = new Date();
+    this.lastLoginAt.update();
     this.timestamps.update();
   }
 
@@ -122,7 +123,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       password: Password.createFromHash(value.password),
       status: new UserStatus(value.status as UserStatusEnum),
       role: new UserRole(value.role as UserRoleEnum),
-      lastLoginAt: value.lastLoginAt ? new Date(value.lastLoginAt) : undefined,
+      lastLoginAt: new LastLogin(value.lastLoginAt),
       timestamps: new Timestamps({
         createdAt: value.createdAt,
         updatedAt: value.updatedAt,
@@ -138,7 +139,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       password: this.password.toValue(),
       status: this.status.toValue(),
       role: this.role.toValue(),
-      lastLoginAt: this.lastLoginAt,
+      lastLoginAt: this.lastLoginAt.toValue(),
       createdAt: this.timestamps.createdAt.toValue(),
       updatedAt: this.timestamps.updatedAt.toValue(),
     };

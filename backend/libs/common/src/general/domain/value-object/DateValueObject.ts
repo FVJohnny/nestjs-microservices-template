@@ -10,6 +10,10 @@ export class DateVO extends ValueObject<Date> {
     super(value);
   }
 
+  static now(): DateVO {
+    return new DateVO(new Date());
+  }
+
   static random(): DateVO {
     // Generate a random date between 2 years ago and now
     const now = Date.now();

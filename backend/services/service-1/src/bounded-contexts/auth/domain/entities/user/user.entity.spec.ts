@@ -1,261 +1,492 @@
 import { User } from './user.entity';
-import { Email, Username, UserRole, UserRoleEnum, UserStatus, UserStatusEnum, Password } from '../../value-objects';
+import {
+  Email,
+  Username,
+  UserRole,
+  UserRoleEnum,
+  UserStatus,
+  UserStatusEnum,
+  Password,
+  LastLogin,
+} from '../../value-objects';
 import { UserRegisteredDomainEvent } from '../../events/user-registered.domain-event';
-import { InvalidOperationException, Timestamps } from '@libs/nestjs-common';
+import { InvalidOperationException, Timestamps, Id, wait, DateVO } from '@libs/nestjs-common';
 import { UserDTO } from './user.types';
 
 describe('User Entity', () => {
-  // Test data factories
-  const createTestUser = async (overrides = {}) => {
-    const defaults = {
-      email: new Email('test@example.com'),
-      username: new Username('testuser'),
-      password: await Password.createFromPlainText('password123'),
-      role: UserRole.user(),
-    };
-    return User.create({ ...defaults, ...overrides });
-  };
+  describe('create()', () => {
+    it('should create a new user with email verification pending status', async () => {
+      // Arrange
+      const email = new Email('test@example.com');
+      const username = new Username('testuser');
+      const password = await Password.createFromPlainText('Password123!');
+      const role = new UserRole(UserRoleEnum.USER);
 
-  const waitForTimestamp = () => new Promise(resolve => setTimeout(resolve, 10));
+      // Act
+      const user = User.create({ email, username, password, role });
 
-  describe('Creation', () => {
-    it('should create user with default status', async () => {
-      const user = await createTestUser();
-
-      expect(user.id).toBeDefined();
-      expect(user.email.toValue()).toBe('test@example.com');
-      expect(user.username.toValue()).toBe('testuser');
+      // Assert
+      expect(user).toBeInstanceOf(User);
+      expect(user.id).toBeInstanceOf(Id);
+      expect(user.email).toBe(email);
+      expect(user.username).toBe(username);
+      expect(user.password).toBe(password);
+      expect(user.role).toBe(role);
       expect(user.status.toValue()).toBe(UserStatusEnum.EMAIL_VERIFICATION_PENDING);
-      expect(user.role.toValue()).toBe(UserRoleEnum.USER);
-      expect(user.lastLoginAt).toBeUndefined();
+      expect(user.lastLoginAt).toBeInstanceOf(LastLogin);
+      expect(user.lastLoginAt.isNever()).toBe(true);
       expect(user.timestamps).toBeInstanceOf(Timestamps);
-      expect(user.timestamps.createdAt.toValue()).toBeInstanceOf(Date);
-      expect(user.timestamps.updatedAt.toValue()).toBeInstanceOf(Date);
-      expect(await user.password.verify('password123')).toBe(true);
     });
 
-    it('should emit UserRegisteredDomainEvent', async () => {
-      const user = await createTestUser();
-      const events = user.getUncommittedEvents();
+    it('should emit UserRegisteredDomainEvent when created', async () => {
+      // Arrange
+      const email = new Email('test@example.com');
+      const username = new Username('testuser');
+      const password = await Password.createFromPlainText('Password123!');
+      const role = new UserRole(UserRoleEnum.ADMIN);
 
+      // Act
+      const user = User.create({
+        email,
+        username,
+        password,
+        role,
+      });
+
+      // Assert
+      const events = user.getUncommittedEvents();
       expect(events).toHaveLength(1);
+      expect(events[0]).toBeInstanceOf(UserRegisteredDomainEvent);
+      
       const event = events[0] as UserRegisteredDomainEvent;
-      expect(event).toBeInstanceOf(UserRegisteredDomainEvent);
       expect(event.aggregateId).toBe(user.id);
-      expect(event.email).toBe(user.email);
-      expect(event.username).toBe(user.username);
-      expect(event.role).toBe(user.role);
+      expect(event.email).toBe(email);
+      expect(event.username).toBe(username);
+      expect(event.role).toBe(role);
     });
   });
 
-  describe('Random Factory', () => {
-    it('should create user with random values', () => {
+  describe('random()', () => {
+    it('should create a user with random values', () => {
+      // Act
       const user = User.random();
 
-      expect(user.id).toBeDefined();
-      expect(user.email.toValue()).toBeTruthy();
-      expect(user.username.toValue()).toBeTruthy();
-      expect(user.password.toValue()).toBeTruthy();
-      expect(user.status.toValue()).toBeTruthy();
-      expect(user.role.toValue()).toBeTruthy();
+      // Assert
+      expect(user).toBeInstanceOf(User);
+      expect(user.id).toBeInstanceOf(Id);
+      expect(user.email).toBeInstanceOf(Email);
+      expect(user.username).toBeInstanceOf(Username);
+      expect(user.password).toBeInstanceOf(Password);
+      expect(user.status).toBeInstanceOf(UserStatus);
+      expect(user.role).toBeInstanceOf(UserRole);
+      expect(user.lastLoginAt).toBeInstanceOf(LastLogin);
+      expect(user.timestamps).toBeInstanceOf(Timestamps);
     });
 
-    it('should accept overrides', async () => {
-      const customEmail = new Email('custom@test.com');
+    it('should accept partial overrides', () => {
+      // Arrange
+      const customEmail = new Email('custom@example.com');
+      const customStatus = UserStatus.active();
       const customRole = UserRole.admin();
-      
+
+      // Act
       const user = User.random({
         email: customEmail,
+        status: customStatus,
         role: customRole,
-        status: UserStatus.inactive(),
       });
 
+      // Assert
       expect(user.email).toBe(customEmail);
+      expect(user.status).toBe(customStatus);
       expect(user.role).toBe(customRole);
-      expect(user.status.toValue()).toBe(UserStatusEnum.INACTIVE);
     });
 
-    it('should generate unique identifiers', () => {
+    it('should generate unique users on each call', () => {
+      // Act
       const user1 = User.random();
       const user2 = User.random();
 
-      expect(user1.id).not.toBe(user2.id);
+      // Assert
+      expect(user1.id.toValue()).not.toBe(user2.id.toValue());
+      expect(user1.email.toValue()).not.toBe(user2.email.toValue());
       expect(user1.username.toValue()).not.toBe(user2.username.toValue());
     });
   });
 
-  describe('Status Management', () => {
-    describe('activate', () => {
-      it('should activate inactive user', async () => {
-        const user = User.random({ status: UserStatus.inactive() });
-        const originalUpdatedAt = user.timestamps.updatedAt;
-        
-        await waitForTimestamp();
-        user.activate();
+  describe('activate()', () => {
+    it('should activate an inactive user', async () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.inactive() });
+      const originalUpdatedAt = new DateVO(user.timestamps.updatedAt.toValue());
+      await wait(10);
 
-        expect(user.status.toValue()).toBe(UserStatusEnum.ACTIVE);
-        expect(user.timestamps.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
-      });
+      // Act
+      user.activate();
 
-      it('should not update already active user', () => {
-        const user = User.random({ status: UserStatus.active() });
-        const originalUpdatedAt = user.timestamps.updatedAt;
-
-        user.activate();
-
-        expect(user.status.toValue()).toBe(UserStatusEnum.ACTIVE);
-        expect(user.timestamps.updatedAt).toBe(originalUpdatedAt);
-      });
+      // Assert
+      expect(user.status.toValue()).toBe(UserStatusEnum.ACTIVE);
+      expect(user.timestamps.updatedAt.isAfter(originalUpdatedAt)).toBe(true);
     });
 
-    describe('deactivate', () => {
-      it('should deactivate active user', async () => {
-        const user = User.random({ status: UserStatus.active() });
-        const originalUpdatedAt = user.timestamps.updatedAt;
-
-        await waitForTimestamp();
-        user.deactivate();
-
-        expect(user.status.toValue()).toBe(UserStatusEnum.INACTIVE);
-        expect(user.timestamps.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
-      });
-
-      it('should not update already inactive user', () => {
-        const user = User.random({ status: UserStatus.inactive() });
-        const originalUpdatedAt = user.timestamps.updatedAt;
-
-        user.deactivate();
-
-        expect(user.status.toValue()).toBe(UserStatusEnum.INACTIVE);
-        expect(user.timestamps.updatedAt).toBe(originalUpdatedAt);
-      });
+    it('should throw InvalidOperationException for email-verification-pending user', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.emailVerificationPending() });
+      // Act
+      expect(() => user.activate()).toThrow(InvalidOperationException);
     });
 
-    describe('verifyEmail', () => {
-      it('should verify pending email', async () => {
-        const user = User.random({ status: UserStatus.emailVerificationPending() });
-        const originalUpdatedAt = user.timestamps.updatedAt;
-        
-        await waitForTimestamp();
-        user.verifyEmail();
-
-        expect(user.status.toValue()).toBe(UserStatusEnum.ACTIVE);
-        expect(user.timestamps.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
-      });
-
-      it('should reject verification for non-pending status', () => {
-        const statuses = [
-          UserStatus.active(),
-          UserStatus.inactive(),
-        ];
-
-        statuses.forEach(status => {
-          const user = User.random({ status });
-          expect(() => user.verifyEmail()).toThrow(InvalidOperationException);
-        });
-      });
-    });
-
-    describe('status queries', () => {
-      it('should identify active users', () => {
-        const activeUser = User.random({ status: UserStatus.active() });
-        const inactiveUser = User.random({ status: UserStatus.inactive() });
-
-        expect(activeUser.isActive()).toBe(true);
-        expect(inactiveUser.isActive()).toBe(false);
-      });
-
-      it('should identify email verification pending', async () => {
-        const pendingUser = User.random({ status: UserStatus.emailVerificationPending() });
-        const activeUser = User.random({ status: UserStatus.active() });
-        const newUser = await createTestUser();
-
-        expect(pendingUser.isEmailVerificationPending()).toBe(true);
-        expect(activeUser.isEmailVerificationPending()).toBe(false);
-        expect(newUser.isEmailVerificationPending()).toBe(true);
-      });
+    it('should throw InvalidOperationException for active user', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.active() });
+      // Act
+      expect(() => user.activate()).toThrow(InvalidOperationException);
     });
   });
 
-  describe('Role Management', () => {
-    it('should check role correctly', () => {
+  describe('deactivate()', () => {
+    it('should deactivate an active user', async () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.active() });
+      const originalUpdatedAt = new DateVO(user.timestamps.updatedAt.toValue());
+      await wait(10);
+
+      // Act
+      user.deactivate();
+
+      // Assert
+      expect(user.status.toValue()).toBe(UserStatusEnum.INACTIVE);
+      expect(user.timestamps.updatedAt.isAfter(originalUpdatedAt)).toBe(true);
+    });
+
+    it('should throw InvalidOperationException for email-verification-pending user', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.emailVerificationPending() });
+      // Act
+      expect(() => user.deactivate()).toThrow(InvalidOperationException);
+    });
+
+    it('should throw InvalidOperationException for inactive user', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.inactive() });
+      // Act
+      expect(() => user.deactivate()).toThrow(InvalidOperationException);
+    });
+  });
+
+  describe('verifyEmail()', () => {
+    it('should verify email for user with pending verification status', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.emailVerificationPending() });
+      const originalUpdatedAt = new DateVO(user.timestamps.updatedAt.toValue());
+
+      // Act
+      user.verifyEmail();
+
+      // Assert
+      expect(user.status.toValue()).toBe(UserStatusEnum.ACTIVE);
+      expect(user.timestamps.updatedAt.isAfter(originalUpdatedAt)).toBe(true);
+    });
+
+    it('should throw InvalidOperationException for active user', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.active() });
+
+      // Act & Assert
+      expect(() => user.verifyEmail()).toThrow(InvalidOperationException);
+    });
+
+    it('should throw InvalidOperationException for inactive user', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.inactive() });
+
+      // Act & Assert
+      expect(() => user.verifyEmail()).toThrow(InvalidOperationException);
+    });
+  });
+
+  describe('hasRole()', () => {
+    it('should return true when user has the specified role', () => {
+      // Arrange
       const adminRole = UserRole.admin();
-      const userRole = UserRole.user();
       const user = User.random({ role: adminRole });
 
+      // Act & Assert
       expect(user.hasRole(adminRole)).toBe(true);
-      expect(user.hasRole(userRole)).toBe(false);
     });
 
-    it('should change role when different', async () => {
+    it('should return false when user does not have the specified role', () => {
+      // Arrange
       const user = User.random({ role: UserRole.user() });
-      const originalUpdatedAt = user.timestamps.updatedAt;
-      const newRole = UserRole.admin();
 
-      await waitForTimestamp();
-      user.changeRole(newRole);
-
-      expect(user.hasRole(newRole)).toBe(true);
-      expect(user.timestamps.updatedAt.toValue().getTime()).toBeGreaterThan(originalUpdatedAt.toValue().getTime());
-    });
-
-    it('should not update when changing to same role', () => {
-      const role = UserRole.user();
-      const user = User.random({ role });
-      const originalUpdatedAt = user.timestamps.updatedAt;
-
-      user.changeRole(role);
-
-      expect(user.role).toBe(role);
-      expect(user.timestamps.updatedAt).toBe(originalUpdatedAt);
+      // Act & Assert
+      expect(user.hasRole(UserRole.admin())).toBe(false);
     });
   });
 
-  describe('Serialization', () => {
-    const createTestPrimitives = async (): Promise<UserDTO> => ({
-      id: '123e4567-e89b-12d3-a456-426614174000',
-      email: 'test@example.com',
-      username: 'testuser',
-      password: (await Password.createFromPlainText('testpassword')).toValue(),
-      status: UserStatusEnum.ACTIVE,
-      role: UserRoleEnum.ADMIN,
-      lastLoginAt: new Date('2024-01-01T12:00:00Z'),
-      createdAt: new Date('2024-01-01T10:00:00Z'),
-      updatedAt: new Date('2024-01-01T11:00:00Z'),
+  describe('changeRole()', () => {
+    it('should change role when new role is different', () => {
+      // Arrange
+      const user = User.random({ role: UserRole.user() });
+      const originalUpdatedAt = new DateVO(user.timestamps.updatedAt.toValue());
+      const newRole = UserRole.admin();
+
+      // Act
+      user.changeRole(newRole);
+
+      // Assert
+      expect(user.role).toBe(newRole);
+      expect(user.hasRole(newRole)).toBe(true);
+      expect(user.timestamps.updatedAt.isAfter(originalUpdatedAt)).toBe(true);
     });
 
-    it('should convert to primitives', async () => {
+    it('should not update timestamps when changing to the same role', () => {
+      // Arrange
+      const role = UserRole.user();
+      const user = User.random({ role });
+      const originalUpdatedAt = new DateVO(user.timestamps.updatedAt.toValue());
+
+      // Act
+      user.changeRole(role);
+
+      // Assert
+      expect(user.role).toBe(role);
+      expect(user.timestamps.updatedAt.equals(originalUpdatedAt)).toBe(true);
+    });
+  });
+
+  describe('isActive()', () => {
+    it('should return true for active user', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.active() });
+
+      // Act & Assert
+      expect(user.isActive()).toBe(true);
+    });
+
+    it('should return false for inactive user', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.inactive() });
+
+      // Act & Assert
+      expect(user.isActive()).toBe(false);
+    });
+
+    it('should return false for email verification pending user', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.emailVerificationPending() });
+
+      // Act & Assert
+      expect(user.isActive()).toBe(false);
+    });
+  });
+
+  describe('isEmailVerificationPending()', () => {
+    it('should return true for user with email verification pending status', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.emailVerificationPending() });
+
+      // Act & Assert
+      expect(user.isEmailVerificationPending()).toBe(true);
+    });
+
+    it('should return false for active user', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.active() });
+
+      // Act & Assert
+      expect(user.isEmailVerificationPending()).toBe(false);
+    });
+
+    it('should return false for inactive user', () => {
+      // Arrange
+      const user = User.random({ status: UserStatus.inactive() });
+
+      // Act & Assert
+      expect(user.isEmailVerificationPending()).toBe(false);
+    });
+  });
+
+  describe('recordLogin()', () => {
+    it('should update lastLoginAt to current time', async () => {
+      // Arrange
+      const user = User.random();
+      const beforeLogin = DateVO.now();
+
+      await wait(10);
+
+      // Act
+      user.recordLogin();
+
+      await wait(10);
+
+      const afterLogin = DateVO.now();
+
+      // Assert
+      expect(user.lastLoginAt.isNever()).toBe(false);
+      expect(user.lastLoginAt.isAfter(beforeLogin)).toBe(true);
+      expect(user.lastLoginAt.isBefore(afterLogin)).toBe(true);
+    });
+
+    it('should update timestamps when recording login', async () => {
+      // Arrange
+      const user = User.random();
+      const originalUpdatedAt = new DateVO(user.timestamps.updatedAt.toValue());
+
+      await wait(10);
+
+      // Act
+      user.recordLogin();
+
+      // Assert
+      expect(user.timestamps.updatedAt.isAfter(originalUpdatedAt)).toBe(true);
+    });
+
+    it('should update lastLoginAt from never to actual date', () => {
+      // Arrange
+      const user = User.random({ lastLoginAt: LastLogin.never() });
+      expect(user.lastLoginAt.isNever()).toBe(true);
+
+      // Act
+      user.recordLogin();
+
+      // Assert
+      expect(user.lastLoginAt.isNever()).toBe(false);
+      expect(user.lastLoginAt.toValue()).toBeInstanceOf(Date);
+    });
+  });
+
+  describe('fromValue()', () => {
+    it('should create user from DTO', async () => {
+      // Arrange
+      const dto = UserDTO.random();
+
+      // Act
+      const user = User.fromValue(dto);
+
+      // Assert
+      expect(user.id.toValue()).toBe(dto.id);
+      expect(user.email.toValue()).toBe(dto.email);
+      expect(user.username.toValue()).toBe(dto.username);
+      expect(user.password.toValue()).toBe(dto.password);
+      expect(user.status.toValue()).toBe(dto.status);
+      expect(user.role.toValue()).toBe(dto.role);
+      expect(user.lastLoginAt.toValue()).toEqual(dto.lastLoginAt);
+      expect(user.timestamps.createdAt.toValue()).toEqual(dto.createdAt);
+      expect(user.timestamps.updatedAt.toValue()).toEqual(dto.updatedAt);
+    });
+  });
+
+  describe('toValue()', () => {
+    it('should convert user to DTO', async () => {
+      // Arrange
       const user = User.random({
         email: new Email('test@example.com'),
         username: new Username('testuser'),
-        role: UserRole.admin(),
+        password: await Password.createFromPlainText('Password123!'),
         status: UserStatus.active(),
-        lastLoginAt: new Date('2024-01-01T12:00:00Z'),
+        role: UserRole.admin(),
+        lastLoginAt: new LastLogin(new Date('2024-01-01T12:00:00Z')),
       });
 
-      const value = user.toValue();
+      // Act
+      const dto = user.toValue();
 
-      expect(value.id).toBe(user.id.toValue());
-      expect(value.email).toBe('test@example.com');
-      expect(value.username).toBe('testuser');
-      expect(value.password).toMatch(/^\$2[ayb]\$\d{2}\$/); // bcrypt hash
-      expect(value.status).toBe(UserStatusEnum.ACTIVE);
-      expect(value.role).toBe(UserRoleEnum.ADMIN);
-      expect(value.lastLoginAt).toEqual(new Date('2024-01-01T12:00:00Z'));
+      // Assert
+      expect(dto.id).toBe(user.id.toValue());
+      expect(dto.email).toBe('test@example.com');
+      expect(dto.username).toBe('testuser');
+      const password = await Password.createFromHash(dto.password);
+      expect(await password.verify('Password123!')).toBe(true);
+      expect(dto.status).toBe(UserStatusEnum.ACTIVE);
+      expect(dto.role).toBe(UserRoleEnum.ADMIN);
+      expect(dto.lastLoginAt).toEqual(new Date('2024-01-01T12:00:00Z'));
+      expect(dto.createdAt).toBeInstanceOf(Date);
+      expect(dto.updatedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  describe('Integration scenarios', () => {
+    it('should handle complete user lifecycle', async () => {
+      // Create user
+      const user = User.create({
+        email: new Email('lifecycle@example.com'),
+        username: new Username('lifecycleuser'),
+        password: await Password.createFromPlainText('Password123!'),
+        role: new UserRole(UserRoleEnum.USER),
+      });
+
+      // Verify initial state
+      expect(user.isEmailVerificationPending()).toBe(true);
+      expect(user.isActive()).toBe(false);
+      expect(user.lastLoginAt.isNever()).toBe(true);
+
+      // Verify email
+      user.verifyEmail();
+      expect(user.isActive()).toBe(true);
+      expect(user.isEmailVerificationPending()).toBe(false);
+
+      // Record login
+      user.recordLogin();
+      expect(user.lastLoginAt.isNever()).toBe(false);
+
+      // Change role
+      user.changeRole(UserRole.admin());
+      expect(user.hasRole(UserRole.admin())).toBe(true);
+
+      // Deactivate
+      user.deactivate();
+      expect(user.isActive()).toBe(false);
+
+      // Reactivate
+      user.activate();
+      expect(user.isActive()).toBe(true);
     });
 
-    it('should recreate from primitives', async () => {
-      const primitives = await createTestPrimitives();
-      
-      const user = User.fromValue(primitives);
+    it('should serialize and deserialize correctly', async () => {
+      // Arrange
+      const originalUser = User.random({
+        email: new Email('serialize@example.com'),
+        username: new Username('serializeuser'),
+        password: await Password.createFromPlainText('Password123!'),
+        status: UserStatus.active(),
+        role: UserRole.admin(),
+        lastLoginAt: new LastLogin(new Date('2024-06-15T14:30:00Z')),
+      });
 
-      expect(user.id.toValue()).toBe(primitives.id);
-      expect(user.email.toValue()).toBe(primitives.email);
-      expect(user.username.toValue()).toBe(primitives.username);
-      expect(await user.password.verify('testpassword')).toBe(true);
-      expect(user.status.toValue()).toBe(primitives.status);
-      expect(user.role.toValue()).toBe(primitives.role);
-      expect(user.lastLoginAt).toEqual(primitives.lastLoginAt);
+      // Act
+      const dto = originalUser.toValue();
+      const restoredUser = User.fromValue(dto);
+
+      // Assert
+      expect(restoredUser.id.toValue()).toBe(originalUser.id.toValue());
+      expect(restoredUser.email.toValue()).toBe(originalUser.email.toValue());
+      expect(restoredUser.username.toValue()).toBe(originalUser.username.toValue());
+      expect(restoredUser.password.toValue()).toBe(originalUser.password.toValue());
+      expect(restoredUser.status.toValue()).toBe(originalUser.status.toValue());
+      expect(restoredUser.role.toValue()).toBe(originalUser.role.toValue());
+      expect(restoredUser.lastLoginAt.toValue()).toEqual(originalUser.lastLoginAt.toValue());
+      expect(restoredUser.timestamps.createdAt.toValue()).toEqual(
+        originalUser.timestamps.createdAt.toValue()
+      );
+      expect(restoredUser.timestamps.updatedAt.toValue()).toEqual(
+        originalUser.timestamps.updatedAt.toValue()
+      );
+    });
+
+    it('should maintain domain events on creation', async () => {
+      // Arrange & Act
+      const user = User.create({
+        email: new Email('events@example.com'),
+        username: new Username('eventsuser'),
+        password: await Password.createFromPlainText('Password123!'),
+        role: new UserRole(UserRoleEnum.USER),
+      });
+
+      // Assert - UserRegisteredDomainEvent should be emitted
+      const events = user.getUncommittedEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0]).toBeInstanceOf(UserRegisteredDomainEvent);
     });
   });
 });
