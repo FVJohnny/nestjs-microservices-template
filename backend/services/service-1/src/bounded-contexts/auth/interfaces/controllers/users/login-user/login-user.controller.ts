@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { LoginUserCommand, LoginUserCommandResponse } from '../../../../../application/commands';
+import { LoginUserCommand, LoginUserCommandResponse } from '../../../../application/commands';
 import { LoginUserControllerParams } from './login-user.params';
 import { LoginUserResponseDto } from './login-user.response';
 

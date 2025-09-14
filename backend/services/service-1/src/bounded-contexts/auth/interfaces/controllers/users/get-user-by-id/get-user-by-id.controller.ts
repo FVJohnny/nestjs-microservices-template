@@ -2,8 +2,7 @@ import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@libs/nestjs-common';
-import { GetUserByIdQuery } from '../../../../../application/queries';
-import { GetUserByIdQueryResponse } from 'src/bounded-contexts/auth/application/queries/get-user-by-id/get-user-by-id.response';
+import { GetUserByIdQuery, GetUserByIdQueryResponse } from '../../../../application/queries';
 
 @ApiTags('users')
 @ApiBearerAuth()

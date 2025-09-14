@@ -1,10 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import {
-  RefreshTokenCommand,
-  RefreshTokenCommandResponse,
-} from '../../../../../application/commands';
+import { RefreshTokenCommand, RefreshTokenCommandResponse } from '../../../../application/commands';
 import { RefreshTokenControllerParams } from './refresh-token.params';
 import { RefreshTokenResponseDto } from './refresh-token.response';
 

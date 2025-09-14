@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty } from 'class-validator';
-import { UserRoleEnum } from '../../../../../domain/value-objects';
+import { UserRoleEnum } from '../../../../domain/value-objects';
 
 export class RegisterUserControllerParams {
   @ApiProperty({
