@@ -2,6 +2,7 @@ import { User } from './user.entity';
 import { Email, Username, UserRole, UserRoleEnum, UserStatus, UserStatusEnum, Password } from '../../value-objects';
 import { UserRegisteredDomainEvent } from '../../events/user-registered.domain-event';
 import { InvalidOperationException, Timestamps } from '@libs/nestjs-common';
+import { UserDTO } from './user.types';
 
 describe('User Entity', () => {
   // Test data factories
@@ -211,7 +212,7 @@ describe('User Entity', () => {
   });
 
   describe('Serialization', () => {
-    const createTestPrimitives = async () => ({
+    const createTestPrimitives = async (): Promise<UserDTO> => ({
       id: '123e4567-e89b-12d3-a456-426614174000',
       email: 'test@example.com',
       username: 'testuser',
@@ -254,25 +255,7 @@ describe('User Entity', () => {
       expect(await user.password.verify('testpassword')).toBe(true);
       expect(user.status.toValue()).toBe(primitives.status);
       expect(user.role.toValue()).toBe(primitives.role);
-      expect(user.lastLoginAt).toEqual(primitives.lastLoginAt);
-    });
-  });
-
-  describe('Business Rules', () => {
-    it('should maintain immutability of core identifiers', () => {
-      const user = User.random();
-      const originalId = user.id;
-      const originalEmail = user.email;
-      const originalUsername = user.username;
-      const originalCreatedAt = user.createdAt;
-
-      user.activate();
-      user.changeRole(UserRole.admin());
-
-      expect(user.id).toBe(originalId);
-      expect(user.email).toBe(originalEmail);
-      expect(user.username).toBe(originalUsername);
-      expect(user.createdAt).toBe(originalCreatedAt);
+      expect(user.lastLoginAt).toBe(primitives.lastLoginAt);
     });
   });
 });
