@@ -1,5 +1,5 @@
 import type { UserRepository } from './user.repository';
-import { User } from '../../entities/user/user.entity';
+import { User } from '@bc/auth/domain/entities/user/user.entity';
 import {
   Email,
   LastLogin,
@@ -8,7 +8,7 @@ import {
   UserRoleEnum,
   UserStatus,
   UserStatusEnum,
-} from '../../value-objects';
+} from '@bc/auth/domain/value-objects';
 import {
   Criteria,
   Filters,
@@ -26,7 +26,7 @@ import {
   DateVO,
   AlreadyExistsException,
 } from '@libs/nestjs-common';
-import { UserTestFactory } from '../../../test-utils';
+import { UserTestFactory } from '@bc/auth/test-utils';
 
 /**
  * Basic validation test to prevent Jest "no tests found" error

@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '../../../domain/entities/user/user.entity';
-import { UserRepository } from '../../../domain/repositories/user/user.repository';
-import { Email, Username } from '../../../domain/value-objects';
+import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { UserRepository } from '@bc/auth/domain/repositories/user/user.repository';
+import { Email, Username } from '@bc/auth/domain/value-objects';
 import {
   AlreadyExistsException,
   Criteria,
   InMemoryCriteriaConverter,
   PaginatedRepoResult,
 } from '@libs/nestjs-common';
-import { UserDTO } from '../../../domain/entities/user/user.types';
+import { UserDTO } from '@bc/auth/domain/entities/user/user.types';
 import { InfrastructureException } from '@libs/nestjs-common';
 import { Id } from '@libs/nestjs-common';
 

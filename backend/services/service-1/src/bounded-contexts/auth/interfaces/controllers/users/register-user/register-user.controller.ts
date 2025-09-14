@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { RegisterUserCommand, RegisterUserCommandResponse } from '../../../../application/commands';
+import { RegisterUserCommand, RegisterUserCommandResponse } from '@bc/auth/application/commands';
 import { RegisterUserControllerParams } from './register-user.params';
 
 @ApiTags('users')

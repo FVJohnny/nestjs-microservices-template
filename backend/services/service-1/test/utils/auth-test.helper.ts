@@ -1,5 +1,5 @@
 import type { JwtService } from '@nestjs/jwt';
-import type { User } from '../../src/bounded-contexts/auth/domain/entities/user/user.entity';
+import type { User } from '@bc/auth/domain/entities/user/user.entity';
 
 /**
  * Simple utility class for creating JWT tokens in E2E tests

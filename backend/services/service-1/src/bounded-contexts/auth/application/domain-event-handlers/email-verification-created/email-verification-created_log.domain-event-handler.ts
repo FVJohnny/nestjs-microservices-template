@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { CorrelationLogger } from '@libs/nestjs-common';
-import { EmailVerificationCreatedDomainEvent } from '../../../domain/events/email-verification-created.domain-event';
+import { EmailVerificationCreatedDomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
 
 @EventsHandler(EmailVerificationCreatedDomainEvent)
 export class EmailVerificationCreated_Log_DomainEventHandler

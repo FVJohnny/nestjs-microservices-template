@@ -1,11 +1,11 @@
 import { CreateEmailVerificationCommandHandler } from './create-email-verification.command-handler';
 import { CreateEmailVerificationCommand } from './create-email-verification.command';
-import { EmailVerificationInMemoryRepository } from '../../../infrastructure/repositories/in-memory/email-verification-in-memory.repository';
+import { EmailVerificationInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
 import { createEventBusMock, InfrastructureException } from '@libs/nestjs-common';
-import { EmailVerificationCreatedDomainEvent } from '../../../domain/events/email-verification-created.domain-event';
+import { EmailVerificationCreatedDomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
 import { Id } from '@libs/nestjs-common';
-import { Email, Expiration } from '../../../domain/value-objects';
+import { Email, Expiration } from '@bc/auth/domain/value-objects';
 
 describe('CreateEmailVerificationCommandHandler', () => {
   // Test data factory

@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
+import { UserRegisteredDomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 import { UserCreatedIntegrationEvent, OutboxService } from '@libs/nestjs-common';
 
 @EventsHandler(UserRegisteredDomainEvent)

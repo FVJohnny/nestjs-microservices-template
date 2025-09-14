@@ -1,9 +1,9 @@
 import { GetUsersQueryHandler } from './get-users.query-handler';
 import { GetUsersQuery } from './get-users.query';
-import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
-import { User } from '../../../domain/entities/user/user.entity';
-import { Email, Username, UserStatus, UserStatusEnum, UserRoleEnum } from '../../../domain/value-objects';
-import { UserTestFactory } from '../../../test-utils';
+import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { Email, Username, UserStatus, UserStatusEnum, UserRoleEnum } from '@bc/auth/domain/value-objects';
+import { UserTestFactory } from '@bc/auth/test-utils';
 import { InfrastructureException } from '@libs/nestjs-common';
 
 describe('GetUsersQueryHandler', () => {

@@ -1,5 +1,5 @@
-import { User } from '../domain/entities/user/user.entity';
-import { Email, Username, UserRole, UserStatus } from '../domain/value-objects';
+import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { Email, Username, UserRole, UserStatus } from '@bc/auth/domain/value-objects';
 
 /**
  * Test user factory for creating consistent lists of test users

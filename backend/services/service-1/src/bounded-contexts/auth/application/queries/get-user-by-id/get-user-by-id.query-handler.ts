@@ -4,7 +4,7 @@ import { GetUserByIdQuery } from './get-user-by-id.query';
 import {
   USER_REPOSITORY,
   type UserRepository,
-} from '../../../domain/repositories/user/user.repository';
+} from '@bc/auth/domain/repositories/user/user.repository';
 import { BaseQueryHandler, NotFoundException, Id } from '@libs/nestjs-common';
 import { GetUserByIdQueryResponse } from './get-user-by-id.response';
 

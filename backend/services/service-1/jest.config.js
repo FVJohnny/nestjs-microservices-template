@@ -1,3 +1,6 @@
+const { pathsToModuleNameMapper } = require('ts-jest');
+const { compilerOptions } = require('./tsconfig.json');
+
 module.exports = {
   displayName: 'service-1',
   preset: 'ts-jest',
@@ -13,11 +16,7 @@ module.exports = {
   coverageDirectory: '../coverage',
   moduleFileExtensions: ['js', 'json', 'ts'],
   moduleNameMapper: {
-    '^@libs/nestjs-common(.*)$': '<rootDir>/../../../libs/common/src$1',
-    '^@libs/nestjs-kafka(.*)$': '<rootDir>/../../../libs/kafka/src$1',
-    '^@libs/nestjs-mongodb(.*)$': '<rootDir>/../../../libs/mongodb/src$1',
-    '^@libs/nestjs-redis(.*)$': '<rootDir>/../../../libs/redis/src$1',
-    '^@libs/nestjs-postgresql(.*)$': '<rootDir>/../../../libs/postgresql/src$1',
+    ...pathsToModuleNameMapper(compilerOptions.paths || {}, { prefix: '<rootDir>/../' }),
     '^express$': '<rootDir>/../node_modules/express/index.js'
   }
 };

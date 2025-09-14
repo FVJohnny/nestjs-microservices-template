@@ -1,10 +1,10 @@
 import { UserRegistered_SendIntegrationEvent_DomainEventHandler } from './user-registered_send-integration-event.domain-event-handler';
 import {
   UserRegisteredDomainEvent,
-} from '../../../domain/events/user-registered.domain-event';
-import { Email } from '../../../domain/value-objects';
+} from '@bc/auth/domain/events/user-registered.domain-event';
+import { Email } from '@bc/auth/domain/value-objects';
 import { Topics, UserCreatedIntegrationEvent, createOutboxServiceMock } from '@libs/nestjs-common';
-import { User } from '../../../domain/entities/user/user.entity';
+import { User } from '@bc/auth/domain/entities/user/user.entity';
 
 describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
 

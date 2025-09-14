@@ -1,6 +1,6 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { VerifyEmailCommand, VerifyEmailCommandResponse } from '../../../../application/commands';
+import { VerifyEmailCommand, VerifyEmailCommandResponse } from '@bc/auth/application/commands';
 import { VerifyEmailRequestDto, VerifyEmailResponseDto } from './verify-email.params';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 

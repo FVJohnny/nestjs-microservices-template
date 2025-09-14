@@ -1,5 +1,5 @@
 import { UserMongodbRepository } from './user-mongodb.repository';
-import { testUserRepositoryContract } from '../../../domain/repositories/user/user.repository.spec';
+import { testUserRepositoryContract } from '@bc/auth/domain/repositories/user/user.repository.spec';
 import { MongodbTestService } from '@libs/nestjs-mongodb';
 
 describe('UserMongodbRepository (Integration)', () => {

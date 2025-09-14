@@ -1,6 +1,6 @@
 import type { EmailVerificationRepository } from './email-verification.repository';
-import { EmailVerification } from '../../entities/email-verification/email-verification.entity';
-import { Email, Verification, Expiration } from '../../value-objects';
+import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
+import { Email, Verification, Expiration } from '@bc/auth/domain/value-objects';
 import { AlreadyExistsException, Id } from '@libs/nestjs-common';
 
 /**

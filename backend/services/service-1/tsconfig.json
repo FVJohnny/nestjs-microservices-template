@@ -39,6 +39,9 @@
       ],
       "@libs/nestjs-redis": [
         "../../libs/redis/dist"
+      ],
+      "@bc/*": [
+        "src/bounded-contexts/*"
       ]
     }
   }

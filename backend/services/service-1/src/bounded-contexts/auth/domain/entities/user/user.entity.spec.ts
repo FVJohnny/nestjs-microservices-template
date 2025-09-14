@@ -8,8 +8,8 @@ import {
   UserStatusEnum,
   Password,
   LastLogin,
-} from '../../value-objects';
-import { UserRegisteredDomainEvent } from '../../events/user-registered.domain-event';
+} from '@bc/auth/domain/value-objects';
+import { UserRegisteredDomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 import { InvalidOperationException, Timestamps, Id, wait, DateVO } from '@libs/nestjs-common';
 import { UserDTO } from './user.types';
 

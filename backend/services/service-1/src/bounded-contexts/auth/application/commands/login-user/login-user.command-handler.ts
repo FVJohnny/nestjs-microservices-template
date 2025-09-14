@@ -4,9 +4,9 @@ import { LoginUserCommand, LoginUserCommandResponse } from './login-user.command
 import {
   USER_REPOSITORY,
   type UserRepository,
-} from '../../../domain/repositories/user/user.repository';
-import { User } from '../../../domain/entities/user/user.entity';
-import { Email } from '../../../domain/value-objects';
+} from '@bc/auth/domain/repositories/user/user.repository';
+import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { Email } from '@bc/auth/domain/value-objects';
 import { BaseCommandHandler, UnauthorizedException, JwtTokenService } from '@libs/nestjs-common';
 
 @CommandHandler(LoginUserCommand)

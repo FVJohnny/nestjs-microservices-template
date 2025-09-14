@@ -1,6 +1,6 @@
 import type { PaginatedRepoResult, Repository } from '@libs/nestjs-common';
-import type { User } from '../../entities/user/user.entity';
-import type { Email, Username } from '../../value-objects';
+import type { User } from '@bc/auth/domain/entities/user/user.entity';
+import type { Email, Username } from '@bc/auth/domain/value-objects';
 import type { Criteria } from '@libs/nestjs-common';
 import type { Id } from '@libs/nestjs-common';
 

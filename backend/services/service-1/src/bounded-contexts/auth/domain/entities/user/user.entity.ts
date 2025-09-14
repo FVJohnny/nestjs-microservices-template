@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UserRegisteredDomainEvent } from '../../events/user-registered.domain-event';
-import type { UserRoleEnum } from '../../value-objects';
+import { UserRegisteredDomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
+import type { UserRoleEnum } from '@bc/auth/domain/value-objects';
 import {
   UserStatus,
   UserStatusEnum,
@@ -9,7 +9,7 @@ import {
   Username,
   Password,
   LastLogin,
-} from '../../value-objects';
+} from '@bc/auth/domain/value-objects';
 import type { CreateUserProps, UserAttributes, UserDTO } from './user.types';
 import {
   InvalidOperationException,

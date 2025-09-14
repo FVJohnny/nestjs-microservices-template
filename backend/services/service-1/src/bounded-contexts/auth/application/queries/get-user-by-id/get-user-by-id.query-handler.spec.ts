@@ -1,8 +1,8 @@
 import { GetUserByIdQueryHandler } from './get-user-by-id.query-handler';
 import { GetUserByIdQuery } from './get-user-by-id.query';
-import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
-import { User } from '../../../domain/entities/user/user.entity';
-import { Email, Username } from '../../../domain/value-objects';
+import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { Email, Username } from '@bc/auth/domain/value-objects';
 import { NotFoundException, InfrastructureException, Id } from '@libs/nestjs-common';
 
 describe('GetUserByIdQueryHandler', () => {

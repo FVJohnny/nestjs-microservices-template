@@ -4,9 +4,9 @@ import { RegisterUserCommand, RegisterUserCommandResponse } from './register-use
 import {
   USER_REPOSITORY,
   type UserRepository,
-} from '../../../domain/repositories/user/user.repository';
-import { User } from '../../../domain/entities/user/user.entity';
-import { Email, Username, Password, UserRole, UserRoleEnum } from '../../../domain/value-objects';
+} from '@bc/auth/domain/repositories/user/user.repository';
+import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { Email, Username, Password, UserRole, UserRoleEnum } from '@bc/auth/domain/value-objects';
 import { AlreadyExistsException, BaseCommandHandler } from '@libs/nestjs-common';
 
 @CommandHandler(RegisterUserCommand)

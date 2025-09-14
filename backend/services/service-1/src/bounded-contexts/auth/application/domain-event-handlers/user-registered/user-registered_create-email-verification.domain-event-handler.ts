@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler, CommandBus } from '@nestjs/cqrs';
-import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
-import { CreateEmailVerificationCommand } from '../../commands/create-email-verification/create-email-verification.command';
+import { UserRegisteredDomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
+import { CreateEmailVerificationCommand } from '@bc/auth/application/commands/create-email-verification/create-email-verification.command';
 
 @EventsHandler(UserRegisteredDomainEvent)
 export class UserRegistered_CreateEmailVerification_DomainEventHandler

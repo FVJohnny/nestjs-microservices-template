@@ -1,9 +1,9 @@
 import { LoginUserCommandHandler } from './login-user.command-handler';
 import { LoginUserCommand } from './login-user.command';
-import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
+import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
-import { User } from '../../../domain/entities/user/user.entity';
-import { Email, Username, Password, UserStatus, LastLogin } from '../../../domain/value-objects';
+import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { Email, Username, Password, UserStatus, LastLogin } from '@bc/auth/domain/value-objects';
 import {
   UnauthorizedException,
   createEventBusMock,

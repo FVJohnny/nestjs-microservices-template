@@ -8,9 +8,9 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { ErrorHandlingModule, JwtAuthModule, JwtTokenService, Id } from '@libs/nestjs-common';
 
 // Controllers
-import { RegisterUserController } from '../../src/bounded-contexts/auth/interfaces/controllers/users/register-user/register-user.controller';
-import { VerifyEmailController } from '../../src/bounded-contexts/auth/interfaces/controllers/auth/email-verification/verify-email.controller';
-import { LoginUserController } from '../../src/bounded-contexts/auth/interfaces/controllers/users/login-user/login-user.controller';
+import { RegisterUserController } from '@bc/auth/interfaces/controllers/users/register-user/register-user.controller';
+import { VerifyEmailController } from '@bc/auth/interfaces/controllers/auth/email-verification/verify-email.controller';
+import { LoginUserController } from '@bc/auth/interfaces/controllers/users/login-user/login-user.controller';
 
 // Command Handlers
 import {
@@ -18,20 +18,20 @@ import {
   CreateEmailVerificationCommandHandler,
   VerifyEmailCommandHandler,
   LoginUserCommandHandler,
-} from '../../src/bounded-contexts/auth/application/commands';
+} from '@bc/auth/application/commands';
 
 // Domain Event Handlers
 import {
   UserRegistered_SendIntegrationEvent_DomainEventHandler,
   UserRegistered_CreateEmailVerification_DomainEventHandler,
   EmailVerificationVerified_UpdateUserStatus_DomainEventHandler,
-} from '../../src/bounded-contexts/auth/application/domain-event-handlers';
+} from '@bc/auth/application/domain-event-handlers';
 
 // Repositories
-import { EMAIL_VERIFICATION_REPOSITORY } from '../../src/bounded-contexts/auth/domain/repositories/email-verification/email-verification.repository';
-import { EmailVerificationInMemoryRepository } from '../../src/bounded-contexts/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
-import { USER_REPOSITORY } from '../../src/bounded-contexts/auth/domain/repositories/user/user.repository';
-import { UserInMemoryRepository } from '../../src/bounded-contexts/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { EMAIL_VERIFICATION_REPOSITORY } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
+import { EmailVerificationInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
+import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
+import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 
 // Mocks
 import type { MockOutboxService } from '@libs/nestjs-common';

@@ -6,18 +6,13 @@ import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { GetUsersController } from '../../src/bounded-contexts/auth/interfaces/controllers/users/get-users/get-users.controller';
-import { GetUsersQueryHandler } from '../../src/bounded-contexts/auth/application/queries';
-import type { UserRepository } from '../../src/bounded-contexts/auth/domain/repositories/user/user.repository';
-import { USER_REPOSITORY } from '../../src/bounded-contexts/auth/domain/repositories/user/user.repository';
-import { UserInMemoryRepository } from '../../src/bounded-contexts/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
-import { User } from '../../src/bounded-contexts/auth/domain/entities/user/user.entity';
-import {
-  Email,
-  Username,
-  UserRole,
-  UserStatus,
-} from '../../src/bounded-contexts/auth/domain/value-objects';
+import { GetUsersController } from '@bc/auth/interfaces/controllers/users/get-users/get-users.controller';
+import { GetUsersQueryHandler } from '@bc/auth/application/queries';
+import type { UserRepository } from '@bc/auth/domain/repositories/user/user.repository';
+import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
+import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { Email, Username, UserRole, UserStatus } from '@bc/auth/domain/value-objects';
 import { JwtAuthModule } from '@libs/nestjs-common';
 import { ErrorHandlingModule } from '@libs/nestjs-common';
 import { AuthTestHelper } from '../utils/auth-test.helper';

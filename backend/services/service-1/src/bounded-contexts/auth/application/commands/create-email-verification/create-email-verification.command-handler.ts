@@ -5,12 +5,12 @@ import {
   CreateEmailVerificationCommandResponse,
 } from './create-email-verification.command';
 import { BaseCommandHandler, Id } from '@libs/nestjs-common';
-import { EmailVerification } from '../../../domain/entities/email-verification/email-verification.entity';
-import { Email } from '../../../domain/value-objects';
+import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
+import { Email } from '@bc/auth/domain/value-objects';
 import {
   EMAIL_VERIFICATION_REPOSITORY,
   type EmailVerificationRepository,
-} from '../../../domain/repositories/email-verification/email-verification.repository';
+} from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 
 @CommandHandler(CreateEmailVerificationCommand)
 export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<

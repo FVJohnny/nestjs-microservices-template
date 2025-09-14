@@ -1,10 +1,10 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { EmailVerificationVerifiedDomainEvent } from '../../../domain/events/email-verified.domain-event';
+import { EmailVerificationVerifiedDomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
 import {
   USER_REPOSITORY,
   type UserRepository,
-} from '../../../domain/repositories/user/user.repository';
+} from '@bc/auth/domain/repositories/user/user.repository';
 import { TracingLogger, NotFoundException } from '@libs/nestjs-common';
 
 @EventsHandler(EmailVerificationVerifiedDomainEvent)

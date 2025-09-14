@@ -1,8 +1,8 @@
 import { RegisterUserCommandHandler } from './register-user.command-handler';
 import { RegisterUserCommand } from './register-user.command';
-import { UserInMemoryRepository } from '../../../infrastructure/repositories/in-memory/user-in-memory.repository';
+import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
-import { UserRoleEnum } from '../../../domain/value-objects';
+import { UserRoleEnum } from '@bc/auth/domain/value-objects';
 import {
   AlreadyExistsException,
   createEventBusMock,
@@ -10,7 +10,7 @@ import {
   Id,
   Timestamps,
 } from '@libs/nestjs-common';
-import { UserRegisteredDomainEvent } from '../../../domain/events/user-registered.domain-event';
+import { UserRegisteredDomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 
 describe('RegisterUserCommandHandler', () => {
   // Test data factory

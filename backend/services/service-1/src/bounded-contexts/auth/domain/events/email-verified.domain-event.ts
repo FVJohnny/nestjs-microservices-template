@@ -1,6 +1,6 @@
 import { DomainEvent } from '@libs/nestjs-common';
 import type { Id } from '@libs/nestjs-common';
-import type { Email } from '../value-objects';
+import type { Email } from '@bc/auth/domain/value-objects';
 
 export interface EmailVerificationVerifiedDomainEventProps {
   emailVerificationId: Id;

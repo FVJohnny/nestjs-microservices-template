@@ -2,7 +2,7 @@ import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@libs/nestjs-common';
-import { GetUserByIdQuery, GetUserByIdQueryResponse } from '../../../../application/queries';
+import { GetUserByIdQuery, GetUserByIdQueryResponse } from '@bc/auth/application/queries';
 
 @ApiTags('users')
 @ApiBearerAuth()
