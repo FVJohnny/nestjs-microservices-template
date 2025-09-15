@@ -10,7 +10,3 @@ export class VerifyEmailCommand extends BaseCommand implements ICommand {
     this.emailVerificationId = props.emailVerificationId;
   }
 }
-
-export class VerifyEmailCommandResponse {
-  userId: string;
-}

@@ -74,11 +74,7 @@ describe('VerifyEmailCommandHandler', () => {
       });
 
       // Act
-      const result = await commandHandler.execute(command);
-
-      // Assert
-      expect(result).toBeDefined();
-      expect(result.userId).toBe(emailVerification!.userId.toValue());
+      await commandHandler.execute(command);
 
       // Verify the email verification is now verified
       const verifiedEmail = await repository.findById(emailVerification!.id);

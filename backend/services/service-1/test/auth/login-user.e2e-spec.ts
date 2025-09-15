@@ -140,12 +140,10 @@ describe('Complete User Authentication Flow (E2E)', () => {
       const verificationToken = verification!.id.toValue();
 
       // Step 3: Verify email
-      const verifyRes = await request(server)
+      await request(server)
         .post('/auth/verify-email')
         .send({ emailVerificationId: verificationToken })
         .expect(200);
-
-      expect(verifyRes.body.userId).toBe(user.id);
 
       // Step 4: Login with verified account
       const loginRes = await request(server)

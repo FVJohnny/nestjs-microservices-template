@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { VerifyEmailCommand, VerifyEmailCommandResponse } from '@bc/auth/application/commands';
-import { VerifyEmailRequestDto, VerifyEmailResponseDto } from './verify-email.params';
+import { VerifyEmailCommand } from '@bc/auth/application/commands';
+import { VerifyEmailRequestDto } from './verify-email.params';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('auth')
@@ -22,7 +22,6 @@ export class VerifyEmailController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Email successfully verified',
-    type: VerifyEmailResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -32,17 +31,11 @@ export class VerifyEmailController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid request parameters',
   })
-  async verifyEmail(@Body() body: VerifyEmailRequestDto): Promise<VerifyEmailResponseDto> {
+  async verifyEmail(@Body() body: VerifyEmailRequestDto): Promise<void> {
     const command = new VerifyEmailCommand({
       emailVerificationId: body.emailVerificationId,
     });
 
-    const result = await this.commandBus.execute<VerifyEmailCommand, VerifyEmailCommandResponse>(
-      command,
-    );
-
-    return {
-      userId: result.userId,
-    };
+    await this.commandBus.execute<VerifyEmailCommand, void>(command);
   }
 }

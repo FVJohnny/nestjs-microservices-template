@@ -187,13 +187,7 @@ describe('Email Verification (E2E)', () => {
     expect(emailVerificationId).toBeDefined();
 
     // Act
-    const res = await request(server)
-      .post('/auth/verify-email')
-      .send({ emailVerificationId })
-      .expect(200);
-
-    // Assert
-    expect(res.body.userId).toBe(userId);
+    await request(server).post('/auth/verify-email').send({ emailVerificationId }).expect(200);
 
     // Verify the user is now active via API
     const authToken = authHelper.createAuthToken(adminUser);
