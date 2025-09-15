@@ -14,13 +14,6 @@ export class VerifyEmailRequestDto {
 
 export class VerifyEmailResponseDto {
   @ApiProperty({
-    description: 'Indicates whether the email verification was successful',
-    example: true,
-    type: Boolean,
-  })
-  success: boolean;
-
-  @ApiProperty({
     description: 'The ID of the user whose email was verified',
     example: '123e4567-e89b-12d3-a456-426614174000',
     type: String,

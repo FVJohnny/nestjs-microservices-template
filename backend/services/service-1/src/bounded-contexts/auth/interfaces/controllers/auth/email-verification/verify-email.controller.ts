@@ -42,7 +42,6 @@ export class VerifyEmailController {
     );
 
     return {
-      success: result.success,
       userId: result.userId,
     };
   }

@@ -128,7 +128,6 @@ describe('Complete User Authentication Flow (E2E)', () => {
         .send({ emailVerificationId: verificationToken })
         .expect(200);
 
-      expect(verifyRes.body.success).toBe(true);
       expect(verifyRes.body.userId).toBe(userId);
 
       // Step 4: Login with verified account

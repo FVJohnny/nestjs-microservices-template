@@ -172,7 +172,6 @@ describe('Email Verification (E2E)', () => {
       .expect(200);
 
     // Assert
-    expect(res.body.success).toBe(true);
     expect(res.body.userId).toBe(userId);
 
     // Verify the user is now active via API

@@ -22,7 +22,6 @@ export class VerifyEmailCommandHandler extends BaseCommandHandler<
   }
 
   protected async handle(command: VerifyEmailCommand): Promise<VerifyEmailCommandResponse> {
-    // Find email verification by ID
     const emailVerification = await this.emailVerificationRepository.findById(
       new Id(command.emailVerificationId),
     );
@@ -38,7 +37,6 @@ export class VerifyEmailCommandHandler extends BaseCommandHandler<
     await this.sendDomainEvents(emailVerification);
 
     return {
-      success: true,
       userId: emailVerification.userId.toValue(),
     };
   }

@@ -12,6 +12,5 @@ export class VerifyEmailCommand extends BaseCommand implements ICommand {
 }
 
 export class VerifyEmailCommandResponse {
-  success: boolean;
   userId: string;
 }
