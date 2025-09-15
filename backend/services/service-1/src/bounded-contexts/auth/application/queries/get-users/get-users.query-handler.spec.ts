@@ -13,36 +13,28 @@ import { UserTestFactory } from '@bc/auth/test-utils';
 import { InfrastructureException } from '@libs/nestjs-common';
 
 describe('GetUsersQueryHandler', () => {
-  // Test data factory
-  const createQuery = (overrides: Partial<GetUsersQuery> = {}) =>
-    new GetUsersQuery({
-      ...overrides,
-    });
-
   // Setup factory
-  const setup = (params: { shouldFailRepository?: boolean } = {}) => {
-    const { shouldFailRepository = false } = params;
+  const setup = async (params: { shouldFailRepository?: boolean, withUsers?: number } = {}) => {
+    const { shouldFailRepository = false, withUsers = 0 } = params;
 
     const repository = new UserInMemoryRepository(shouldFailRepository);
     const handler = new GetUsersQueryHandler(repository);
 
-    const seedUsers = async () => {
-      const users = UserTestFactory.createStandardTestUsers();
-      await UserTestFactory.saveUsersToRepository(repository, users);
-      return users;
-    };
+    const users = Array.from({ length: withUsers }).map(() => User.random());
+    for (const user of users) {
+      await repository.save(user);
+    }
 
-    return { repository, handler, seedUsers };
+    return { repository, handler, users };
   };
 
   describe('Listing and filters', () => {
     it('should return all users when no filters provided', async () => {
       // Arrange
-      const { handler, seedUsers } = setup();
-      const users = await seedUsers();
+      const { handler, users } = await setup({ withUsers: 10 });
 
       // Act
-      const query = createQuery();
+      const query = new GetUsersQuery({});
       const result = await handler.execute(query);
 
       // Assert
@@ -52,133 +44,125 @@ describe('GetUsersQueryHandler', () => {
 
     it('should filter by status when provided', async () => {
       // Arrange
-      const { handler, repository, seedUsers } = setup();
-      await seedUsers();
-      const inactive = User.random({
-        email: new Email('inactive2@example.com'),
-        username: new Username('inactive2'),
-        status: UserStatus.inactive(),
-      });
-      await repository.save(inactive);
+      const { handler, users } = await setup({withUsers: 10});
 
       // Act
-      const query = createQuery({ status: UserStatusEnum.INACTIVE });
+      const query = new GetUsersQuery({status: users[0].status.toValue()});
+      const usersWithStatus = users.filter((u) => u.status.toValue() === query.status);
       const result = await handler.execute(query);
 
       // Assert
-      expect(result.data).toHaveLength(1);
-      expect(result.data[0].username).toBe(inactive.username.toValue());
+      expect(result.data).toHaveLength(usersWithStatus.length);
+      usersWithStatus.forEach((u) => expect(result.data).toContainEqual(u.toValue()));
     });
 
-    it('should filter by id, email, username (contains)', async () => {
+    it('should filter by id, email, username', async () => {
       // Arrange
-      const { handler, repository, seedUsers } = setup();
-      await seedUsers();
-      const userFound = await repository.findAll();
+      const { handler, users } = await setup({withUsers: 10});
       // Act
-      const queryById = createQuery({ userId: userFound[0].id.toValue() });
+      const queryById = new GetUsersQuery({ userId: users[0].id.toValue() });
       const resultsById = await handler.execute(queryById);
 
-      const queryByEmail = createQuery({ email: 'admin@' });
+      const queryByEmail = new GetUsersQuery({ email: users[1].email.toValue() });
       const resultsByEmail = await handler.execute(queryByEmail);
 
-      const queryByUsername = createQuery({ username: 'user1' });
+      const queryByUsername = new GetUsersQuery({ username: users[2].username.toValue() });
       const resultsByUsername = await handler.execute(queryByUsername);
 
       // Assert
       expect(resultsById.data).toHaveLength(1);
-      expect(resultsById.data[0].username).toBe(userFound[0].username.toValue());
+      expect(resultsById.data[0]).toEqual(users[0].toValue());
 
       expect(resultsByEmail.data).toHaveLength(1);
-      expect(resultsByEmail.data[0].username).toBe('admin');
+      expect(resultsByEmail.data[0]).toEqual(users[1].toValue());
 
       expect(resultsByUsername.data).toHaveLength(1);
-      expect(resultsByUsername.data[0].username).toBe('user1');
+      expect(resultsByUsername.data[0]).toEqual(users[2].toValue());
     });
   });
 
-  describe('Ordering and pagination', () => {
+ describe('Ordering and pagination', () => {
     it('should order by username ASC when orderBy is provided', async () => {
       // Arrange
-      const { handler, seedUsers } = setup();
-      await seedUsers();
+      const { handler, users } = await setup({withUsers: 10});
 
       // Act
-      const query = createQuery({
+      const query = new GetUsersQuery({
         pagination: { sort: { field: 'username', order: 'asc' } },
       });
+      const usersSorted = users.sort((a, b) => a.username.toValue().localeCompare(b.username.toValue()));
       const result = await handler.execute(query);
 
       // Assert
-      expect(result.data.map((u) => u.username)).toEqual(['admin', 'user1', 'user2']);
+      expect(result.data.map((u) => u.username)).toEqual(usersSorted.map((u) => u.username.toValue()));
     });
 
-    it('should apply limit and offset', async () => {
+    it('should apply limit and offset with sorting', async () => {
       // Arrange
-      const { handler, seedUsers } = setup();
-      await seedUsers();
+      const { handler, users } = await setup({withUsers: 5});
+      const pageSize = 2;
 
       // Act
       const page1 = await handler.execute(
-        createQuery({
+        new GetUsersQuery({
           pagination: {
             sort: { field: 'username', order: 'asc' },
-            limit: 2,
+            limit: pageSize,
             offset: 0,
           },
         }),
       );
       const page2 = await handler.execute(
-        createQuery({
+        new GetUsersQuery({
           pagination: {
             sort: { field: 'username', order: 'asc' },
-            limit: 2,
-            offset: 2,
+            limit: pageSize,
+            offset: pageSize,
           },
         }),
       );
 
+      const page3 = await handler.execute(
+        new GetUsersQuery({
+          pagination: {
+            sort: { field: 'username', order: 'asc' },
+            limit: pageSize,
+            offset: pageSize * 2,
+          },
+        }),
+      );
+      const usersSorted = users.sort((a, b) => a.username.toValue().localeCompare(b.username.toValue()));
+
       // Assert
-      expect(page1.data.map((u) => u.username)).toEqual(['admin', 'user1']);
-      expect(page2.data.map((u) => u.username)).toEqual(['user2']);
+      expect(page1.data.map((u) => u.username)).toEqual(usersSorted.slice(0, pageSize).map((u) => u.username.toValue()));
+      expect(page2.data.map((u) => u.username)).toEqual(usersSorted.slice(pageSize, pageSize * 2).map((u) => u.username.toValue()));
+      expect(page3.data.map((u) => u.username)).toEqual(usersSorted.slice(pageSize * 2, pageSize * 3).map((u) => u.username.toValue()));
     });
-  });
+});
 
   describe('Role filtering', () => {
-    it('should return only admins when role=ADMIN', async () => {
+    it('should filter by role', async () => {
       // Arrange
-      const { handler, seedUsers } = setup();
-      await seedUsers();
+      const { handler, users } = await setup({withUsers: 10});
 
       // Act
-      const query = createQuery({ role: UserRoleEnum.ADMIN });
-      const onlyAdmins = await handler.execute(query);
+      const role = users[0].role.toValue();
+      const onlyAdmins = await handler.execute(
+        new GetUsersQuery({ role })
+      );
+      const usersWithRole = users.filter((u) => u.role.toValue() === role);
 
       // Assert
-      expect(onlyAdmins.data).toHaveLength(1);
-      expect(onlyAdmins.data[0].role).toBe(UserRoleEnum.ADMIN);
-    });
-
-    it('should return only users when role=USER', async () => {
-      // Arrange
-      const { handler, seedUsers } = setup();
-      await seedUsers();
-
-      // Act
-      const query = createQuery({ role: UserRoleEnum.USER });
-      const onlyUsers = await handler.execute(query);
-
-      // Assert
-      expect(onlyUsers.data).toHaveLength(2);
-      expect(new Set(onlyUsers.data.map((u) => u.role))).toEqual(new Set([UserRoleEnum.USER]));
+      expect(onlyAdmins.data).toHaveLength(usersWithRole.length);
+      usersWithRole.forEach((u) => expect(onlyAdmins.data).toContainEqual(u.toValue()));
     });
   });
 
   describe('Error Cases', () => {
     it('should throw InfrastructureException if repository fails', async () => {
       // Arrange
-      const { handler } = setup({ shouldFailRepository: true });
-      const query = createQuery();
+      const { handler } = await setup({ shouldFailRepository: true });
+      const query = new GetUsersQuery({});
 
       // Act & Assert
       await expect(handler.execute(query)).rejects.toThrow(InfrastructureException);

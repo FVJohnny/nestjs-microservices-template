@@ -42,7 +42,7 @@ describe('GetUserByIdQueryHandler', () => {
   it('should throw NotFoundException when user does not exist', async () => {
     // Arrange
     const { handler } = setup();
-    const query = createQuery({ userId: Id.random().toValue() });
+    const query = createQuery();
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(NotFoundException);
