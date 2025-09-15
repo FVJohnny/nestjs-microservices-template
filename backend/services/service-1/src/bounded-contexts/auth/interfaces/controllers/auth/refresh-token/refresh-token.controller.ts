@@ -1,7 +1,10 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { GetNewTokensFromRefreshTokenQuery, GetNewTokensFromRefreshTokenQueryResponse } from '@bc/auth/application/queries';
+import {
+  GetNewTokensFromRefreshTokenQuery,
+  GetNewTokensFromRefreshTokenQueryResponse,
+} from '@bc/auth/application/queries';
 import { RefreshTokenControllerParams } from './refresh-token.params';
 import { RefreshTokenResponseDto } from './refresh-token.response';
 

@@ -22,9 +22,7 @@ import {
 } from '@bc/auth/application/commands';
 
 // Query Handlers
-import {
-  GetNewTokensFromRefreshTokenQueryHandler,
-} from '@bc/auth/application/queries';
+import { GetNewTokensFromRefreshTokenQueryHandler } from '@bc/auth/application/queries';
 
 // Domain Event Handlers
 import {
@@ -268,9 +266,11 @@ describe('Refresh Token Flow (E2E)', () => {
       // Assert
       expect(jwtTokenService.verifyAccessToken(secondRefreshRes.body.accessToken)).toBeDefined();
       expect(jwtTokenService.verifyRefreshToken(secondRefreshRes.body.refreshToken)).toBeDefined();
-      
+
       // Verify the user data is correct in the tokens
-      const decodedAccessToken = jwtTokenService.verifyAccessToken(secondRefreshRes.body.accessToken);
+      const decodedAccessToken = jwtTokenService.verifyAccessToken(
+        secondRefreshRes.body.accessToken,
+      );
       expect(decodedAccessToken.userId).toBe(userId);
     });
 
