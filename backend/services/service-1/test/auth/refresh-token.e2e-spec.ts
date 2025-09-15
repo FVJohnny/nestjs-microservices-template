@@ -12,6 +12,7 @@ import { RegisterUserController } from '@bc/auth/interfaces/controllers/users/re
 import { VerifyEmailController } from '@bc/auth/interfaces/controllers/auth/email-verification/verify-email.controller';
 import { LoginUserController } from '@bc/auth/interfaces/controllers/users/login-user/login-user.controller';
 import { RefreshTokenController } from '@bc/auth/interfaces/controllers/auth/refresh-token/refresh-token.controller';
+import { GetUsersController } from '@bc/auth/interfaces/controllers/users/get-users/get-users.controller';
 
 // Command Handlers
 import {
@@ -22,7 +23,10 @@ import {
 } from '@bc/auth/application/commands';
 
 // Query Handlers
-import { GetNewTokensFromRefreshTokenQueryHandler } from '@bc/auth/application/queries';
+import {
+  GetNewTokensFromRefreshTokenQueryHandler,
+  GetUsersQueryHandler,
+} from '@bc/auth/application/queries';
 
 // Domain Event Handlers
 import {
@@ -57,6 +61,7 @@ describe('Refresh Token Flow (E2E)', () => {
         VerifyEmailController,
         LoginUserController,
         RefreshTokenController,
+        GetUsersController,
       ],
       providers: [
         // Command Handlers
@@ -67,6 +72,7 @@ describe('Refresh Token Flow (E2E)', () => {
 
         // Query Handlers
         GetNewTokensFromRefreshTokenQueryHandler,
+        GetUsersQueryHandler,
 
         // Domain Event Handlers
         UserRegistered_SendIntegrationEvent_DomainEventHandler,
@@ -123,8 +129,15 @@ describe('Refresh Token Flow (E2E)', () => {
       };
 
       // Register user
-      const registerRes = await request(server).post('/users').send(userData).expect(201);
-      const userId = registerRes.body.id;
+      await request(server).post('/users').send(userData).expect(201);
+
+      // Find the created user via GET request
+      const getUsersRes = await request(server)
+        .get('/users')
+        .query({ email: userData.email })
+        .expect(200);
+
+      const userId = getUsersRes.body.data[0].id;
 
       // Verify email
       const verification = await emailVerificationRepository.findByUserId(new Id(userId));
@@ -201,8 +214,15 @@ describe('Refresh Token Flow (E2E)', () => {
       };
 
       // Register user but don't verify email
-      const registerRes = await request(server).post('/users').send(userData).expect(201);
-      const userId = registerRes.body.id;
+      await request(server).post('/users').send(userData).expect(201);
+
+      // Find the created user via GET request
+      const getUsersRes = await request(server)
+        .get('/users')
+        .query({ email: userData.email })
+        .expect(200);
+
+      const userId = getUsersRes.body.data[0].id;
 
       // Create a refresh token for unverified user using the real service
       const refreshToken = jwtTokenService.generateRefreshToken({ userId });

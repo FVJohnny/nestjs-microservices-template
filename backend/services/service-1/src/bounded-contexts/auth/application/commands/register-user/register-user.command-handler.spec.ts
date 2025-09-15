@@ -45,38 +45,40 @@ describe('RegisterUserCommandHandler', () => {
       const command = createCommand();
 
       // Act
-      const result = await commandHandler.execute(command);
+      await commandHandler.execute(command);
 
-      // Assert
-      expect(result).toBeDefined();
-      expect(result.id).toBeDefined();
-      expect(typeof result.id).toBe('string');
-      // Verify user was saved
-      const savedUser = await repository.findById(new Id(result.id));
+      // Assert - Verify user was saved by finding it in repository
+      const savedUser = await repository.findByEmail(new Email(command.email));
       expect(savedUser).not.toBeNull();
       expect(savedUser!.email.toValue()).toBe(command.email);
       expect(savedUser!.username.toValue()).toBe(command.username);
       expect(savedUser!.role.toValue()).toBe(command.role);
       expect(savedUser!.isEmailVerificationPending()).toBe(true);
+      expect(savedUser!.id).toBeDefined();
     });
 
     it('should publish UserRegisteredEvent after user creation', async () => {
       // Arrange
-      const { commandHandler, eventBus } = setup();
+      const { commandHandler, eventBus, repository } = setup();
       const command = createCommand();
 
       // Act
-      const result = await commandHandler.execute(command);
+      await commandHandler.execute(command);
+
+      // Assert - Check the event was published
       expect(eventBus.events).toBeDefined();
       expect(eventBus.events).toHaveLength(1);
 
       const publishedEvent = eventBus.events[0] as UserRegisteredDomainEvent;
       expect(publishedEvent).toBeInstanceOf(UserRegisteredDomainEvent);
-      expect(publishedEvent.aggregateId.toValue()).toBe(result.id);
       expect(publishedEvent.email.toValue()).toBe(command.email);
       expect(publishedEvent.username.toValue()).toBe(command.username);
       expect(publishedEvent.role.toValue()).toBe(command.role);
       expect(publishedEvent.occurredOn).toBeInstanceOf(Date);
+
+      // Verify the event's aggregateId matches the created user
+      const savedUser = await repository.findByEmail(new Email(command.email));
+      expect(publishedEvent.aggregateId.toValue()).toBe(savedUser!.id.toValue());
     });
 
     it('should set proper timestamps on user creation', async () => {
@@ -87,12 +89,12 @@ describe('RegisterUserCommandHandler', () => {
       await wait(10);
 
       // Act
-      const result = await commandHandler.execute(command);
+      await commandHandler.execute(command);
       await wait(10);
       const afterCreation = DateVO.now();
 
       // Assert
-      const savedUser = await repository.findById(new Id(result.id));
+      const savedUser = await repository.findByEmail(new Email(command.email));
       expect(savedUser!.timestamps.createdAt.isAfter(beforeCreation)).toBe(true);
       expect(savedUser!.timestamps.createdAt.isBefore(afterCreation)).toBe(true);
       expect(savedUser!.timestamps.updatedAt.isAfter(beforeCreation)).toBe(true);
@@ -101,18 +103,20 @@ describe('RegisterUserCommandHandler', () => {
     });
     it('should create unique user IDs for different registrations', async () => {
       // Arrange
-      const { commandHandler } = setup();
+      const { commandHandler, repository } = setup();
       const command1 = createCommand();
       const command2 = createCommand();
 
       // Act
-      const result1 = await commandHandler.execute(command1);
-      const result2 = await commandHandler.execute(command2);
+      await commandHandler.execute(command1);
+      await commandHandler.execute(command2);
 
       // Assert
-      expect(result1.id).not.toBe(result2.id);
-      expect(result1.id).toBeDefined();
-      expect(result2.id).toBeDefined();
+      const user1 = await repository.findByEmail(new Email(command1.email));
+      const user2 = await repository.findByEmail(new Email(command2.email));
+      expect(user1!.id.toValue()).not.toBe(user2!.id.toValue());
+      expect(user1!.id).toBeDefined();
+      expect(user2!.id).toBeDefined();
     });
   });
 

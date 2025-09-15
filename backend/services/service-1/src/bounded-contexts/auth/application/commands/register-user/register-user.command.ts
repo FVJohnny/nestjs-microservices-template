@@ -16,7 +16,3 @@ export class RegisterUserCommand extends BaseCommand implements ICommand {
     this.role = props.role;
   }
 }
-
-export class RegisterUserCommandResponse {
-  id: string;
-}

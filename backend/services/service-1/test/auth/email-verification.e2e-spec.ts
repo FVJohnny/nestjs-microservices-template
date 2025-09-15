@@ -11,6 +11,7 @@ import { ErrorHandlingModule, JwtAuthModule, Id } from '@libs/nestjs-common';
 // Controllers
 import { RegisterUserController } from '@bc/auth/interfaces/controllers/users/register-user/register-user.controller';
 import { GetUserController } from '@bc/auth/interfaces/controllers/users/get-user-by-id/get-user-by-id.controller';
+import { GetUsersController } from '@bc/auth/interfaces/controllers/users/get-users/get-users.controller';
 import { VerifyEmailController } from '@bc/auth/interfaces/controllers/auth/email-verification/verify-email.controller';
 
 // Command Handlers
@@ -21,7 +22,7 @@ import {
 } from '@bc/auth/application/commands';
 
 // Query Handlers
-import { GetUserByIdQueryHandler } from '@bc/auth/application/queries';
+import { GetUserByIdQueryHandler, GetUsersQueryHandler } from '@bc/auth/application/queries';
 
 // Domain Event Handlers
 import {
@@ -58,7 +59,12 @@ describe('Email Verification (E2E)', () => {
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [CqrsModule, ErrorHandlingModule, JwtAuthModule],
-      controllers: [RegisterUserController, GetUserController, VerifyEmailController],
+      controllers: [
+        RegisterUserController,
+        GetUserController,
+        GetUsersController,
+        VerifyEmailController,
+      ],
       providers: [
         // Command Handlers
         RegisterUserCommandHandler,
@@ -67,6 +73,7 @@ describe('Email Verification (E2E)', () => {
 
         // Query Handlers
         GetUserByIdQueryHandler,
+        GetUsersQueryHandler,
 
         // Domain Event Handlers
         UserRegistered_SendIntegrationEvent_DomainEventHandler,
@@ -134,9 +141,16 @@ describe('Email Verification (E2E)', () => {
       role: 'user',
     };
 
-    const registerRes = await request(server).post('/users').send(body).expect(201);
-    const userId = registerRes.body.id;
-    expect(userId).toBeDefined();
+    await request(server).post('/users').send(body).expect(201);
+
+    // Find the created user via GET request
+    const getUsersRes = await request(server)
+      .get('/users')
+      .query({ email: body.email })
+      .expect(200);
+
+    expect(getUsersRes.body.data).toHaveLength(1);
+    const userId = getUsersRes.body.data[0].id;
 
     // Check user status via API (using admin auth)
     const authToken = authHelper.createAuthToken(adminUser);
@@ -157,8 +171,15 @@ describe('Email Verification (E2E)', () => {
       role: 'user',
     };
 
-    const registerRes = await request(server).post('/users').send(userData).expect(201);
-    const userId = registerRes.body.id;
+    await request(server).post('/users').send(userData).expect(201);
+
+    // Find the created user via GET request
+    const getUsersRes = await request(server)
+      .get('/users')
+      .query({ email: userData.email })
+      .expect(200);
+
+    const userId = getUsersRes.body.data[0].id;
 
     // Get verification ID (only peeking into repository for the ID)
     const verification = await emailVerificationRepository.findByUserId(new Id(userId));
@@ -201,8 +222,15 @@ describe('Email Verification (E2E)', () => {
       role: 'user',
     };
 
-    const registerRes = await request(server).post('/users').send(userData).expect(201);
-    const userId = registerRes.body.id;
+    await request(server).post('/users').send(userData).expect(201);
+
+    // Find the created user via GET request
+    const getUsersRes = await request(server)
+      .get('/users')
+      .query({ email: userData.email })
+      .expect(200);
+
+    const userId = getUsersRes.body.data[0].id;
 
     const verification = await emailVerificationRepository.findByUserId(new Id(userId));
     const emailVerificationId = verification!.id.toValue();
@@ -230,8 +258,15 @@ describe('Email Verification (E2E)', () => {
       role: 'user',
     };
 
-    const registerRes = await request(server).post('/users').send(userData).expect(201);
-    const userId = registerRes.body.id;
+    await request(server).post('/users').send(userData).expect(201);
+
+    // Find the created user via GET request
+    const getUsersRes = await request(server)
+      .get('/users')
+      .query({ email: userData.email })
+      .expect(200);
+
+    const userId = getUsersRes.body.data[0].id;
 
     const verification = await emailVerificationRepository.findByUserId(new Id(userId));
     expect(verification!.email.toValue()).toBe(userData.email);

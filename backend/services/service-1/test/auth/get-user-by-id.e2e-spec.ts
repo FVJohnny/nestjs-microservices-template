@@ -5,27 +5,30 @@ import { ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
-import { JwtService } from '@nestjs/jwt';
-import { ErrorHandlingModule, JwtAuthModule } from '@libs/nestjs-common';
+import { ErrorHandlingModule } from '@libs/nestjs-common';
 import { GetUserController } from '@bc/auth/interfaces/controllers/users/get-user-by-id/get-user-by-id.controller';
-import { GetUserByIdQueryHandler } from '@bc/auth/application/queries';
+import { RegisterUserController } from '@bc/auth/interfaces/controllers/users/register-user/register-user.controller';
+import { GetUsersController } from '@bc/auth/interfaces/controllers/users/get-users/get-users.controller';
+import { GetUserByIdQueryHandler, GetUsersQueryHandler } from '@bc/auth/application/queries';
+import { RegisterUserCommandHandler } from '@bc/auth/application/commands';
 import type { UserRepository } from '@bc/auth/domain/repositories/user/user.repository';
 import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
 import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { AuthTestHelper } from '../utils/auth-test.helper';
+import { v4 as uuid } from 'uuid';
 
 describe('GET /users/:id (E2E)', () => {
   let app: INestApplication;
   let repository: UserRepository;
-  let authHelper: AuthTestHelper;
+  let server: Server;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [CqrsModule, ErrorHandlingModule, JwtAuthModule],
-      controllers: [GetUserController],
+      imports: [CqrsModule, ErrorHandlingModule],
+      controllers: [GetUserController, RegisterUserController, GetUsersController],
       providers: [
         GetUserByIdQueryHandler,
+        GetUsersQueryHandler,
+        RegisterUserCommandHandler,
         { provide: USER_REPOSITORY, useFactory: () => new UserInMemoryRepository(false) },
       ],
     }).compile();
@@ -34,41 +37,52 @@ describe('GET /users/:id (E2E)', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
     repository = app.get<UserRepository>(USER_REPOSITORY);
-
-    // Initialize auth helper
-    const jwtService = app.get<JwtService>(JwtService);
-    authHelper = new AuthTestHelper(jwtService);
+    server = app.getHttpServer() as unknown as Server;
   });
+
+  const clearRepo = async () => {
+    (repository as any).users.clear();
+  };
 
   afterAll(async () => {
     await app.close();
   });
 
-  it('returns a user when found', async () => {
-    const user = User.random();
-    await repository.save(user);
-
-    const token = authHelper.createAuthToken(user);
-    const server: Server = app.getHttpServer();
-    const res = await request(server)
-      .get(`/users/${user.id.toValue()}`)
-      .set('Authorization', `Bearer ${token}`)
-      .expect(200);
-    expect(res.body.id).toBe(user.id.toValue());
-    expect(res.body.username).toBe(user.username.toValue());
-    expect(res.body.email).toBe(user.email.toValue());
+  beforeEach(async () => {
+    await clearRepo();
   });
 
-  it('returns 404 when not found', async () => {
-    // Create any user to get a valid token for auth
-    const user = User.random();
-    await repository.save(user);
-    const token = authHelper.createAuthToken(user);
-
-    const server: Server = app.getHttpServer();
+  it('returns a user when found', async () => {
+    // Create user via endpoint
     await request(server)
-      .get(`/users/00000000-0000-0000-0000-000000000000`)
-      .set('Authorization', `Bearer ${token}`)
-      .expect(422);
+      .post('/users')
+      .send({
+        email: 'test@example.com',
+        username: 'testuser',
+        password: 'Password123!',
+        role: 'user',
+      })
+      .expect(201);
+
+    // Find the user to get its ID
+    const getUsersRes = await request(server)
+      .get('/users')
+      .query({ email: 'test@example.com' })
+      .expect(200);
+
+    const userId = getUsersRes.body.data[0].id;
+
+    const res = await request(server).get(`/users/${userId}`).expect(200);
+    expect(res.body.id).toBe(userId);
+    expect(res.body.username).toBe('testuser');
+    expect(res.body.email).toBe('test@example.com');
+  });
+
+  it('returns 404 Not Found when not found', async () => {
+    await request(server).get(`/users/${uuid()}`).expect(404);
+  });
+
+  it('returns 422 Unprocessable Entity when invalid id', async () => {
+    await request(server).get(`/users/invalid-id`).expect(422);
   });
 });

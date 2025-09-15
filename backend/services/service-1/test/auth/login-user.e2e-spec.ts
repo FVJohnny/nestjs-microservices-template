@@ -11,6 +11,7 @@ import { ErrorHandlingModule, JwtAuthModule, JwtTokenService, Id } from '@libs/n
 import { RegisterUserController } from '@bc/auth/interfaces/controllers/users/register-user/register-user.controller';
 import { VerifyEmailController } from '@bc/auth/interfaces/controllers/auth/email-verification/verify-email.controller';
 import { LoginUserController } from '@bc/auth/interfaces/controllers/users/login-user/login-user.controller';
+import { GetUsersController } from '@bc/auth/interfaces/controllers/users/get-users/get-users.controller';
 
 // Command Handlers
 import {
@@ -19,6 +20,9 @@ import {
   VerifyEmailCommandHandler,
   LoginUserCommandHandler,
 } from '@bc/auth/application/commands';
+
+// Query Handlers
+import { GetUsersQueryHandler } from '@bc/auth/application/queries';
 
 // Domain Event Handlers
 import {
@@ -48,13 +52,21 @@ describe('Complete User Authentication Flow (E2E)', () => {
     const mockOutboxService: MockOutboxService = createOutboxServiceMock({ shouldFail: false });
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [CqrsModule, ErrorHandlingModule, JwtAuthModule],
-      controllers: [RegisterUserController, VerifyEmailController, LoginUserController],
+      controllers: [
+        RegisterUserController,
+        VerifyEmailController,
+        LoginUserController,
+        GetUsersController,
+      ],
       providers: [
         // Command Handlers
         RegisterUserCommandHandler,
         CreateEmailVerificationCommandHandler,
         VerifyEmailCommandHandler,
         LoginUserCommandHandler,
+
+        // Query Handlers
+        GetUsersQueryHandler,
 
         // Domain Event Handlers
         UserRegistered_SendIntegrationEvent_DomainEventHandler,
@@ -111,14 +123,19 @@ describe('Complete User Authentication Flow (E2E)', () => {
       };
 
       // Step 1: Register user
-      const registerRes = await request(server).post('/users').send(userData).expect(201);
+      await request(server).post('/users').send(userData).expect(201);
 
-      const userId = registerRes.body.id;
-      expect(userId).toBeDefined();
-      expect(typeof userId).toBe('string');
+      // Find the created user via GET request
+      const getUsersRes = await request(server)
+        .get('/users')
+        .query({ email: userData.email })
+        .expect(200);
+
+      expect(getUsersRes.body.data).toHaveLength(1);
+      const user = getUsersRes.body.data[0];
 
       // Step 2: Get verification token (simulate email received)
-      const verification = await emailVerificationRepository.findByUserId(new Id(userId));
+      const verification = await emailVerificationRepository.findByUserId(new Id(user.id));
       expect(verification).toBeDefined();
       const verificationToken = verification!.id.toValue();
 
@@ -128,7 +145,7 @@ describe('Complete User Authentication Flow (E2E)', () => {
         .send({ emailVerificationId: verificationToken })
         .expect(200);
 
-      expect(verifyRes.body.userId).toBe(userId);
+      expect(verifyRes.body.userId).toBe(user.id);
 
       // Step 4: Login with verified account
       const loginRes = await request(server)
@@ -140,10 +157,10 @@ describe('Complete User Authentication Flow (E2E)', () => {
         .expect(200);
 
       // Verify login response structure
-      expect(loginRes.body.userId).toBe(userId);
-      expect(loginRes.body.email).toBe(userData.email);
-      expect(loginRes.body.username).toBe(userData.username);
-      expect(loginRes.body.role).toBe(userData.role);
+      expect(loginRes.body.userId).toBe(user.id);
+      expect(loginRes.body.email).toBe(user.email);
+      expect(loginRes.body.username).toBe(user.username);
+      expect(loginRes.body.role).toBe(user.role);
       expect(typeof loginRes.body.accessToken).toBe('string');
       expect(typeof loginRes.body.refreshToken).toBe('string');
 
@@ -152,10 +169,10 @@ describe('Complete User Authentication Flow (E2E)', () => {
 
       // Verify token can be decoded
       const decodedToken = jwtTokenService.verifyAccessToken(token);
-      expect(decodedToken.userId).toBe(userId);
-      expect(decodedToken.email).toBe(userData.email);
-      expect(decodedToken.username).toBe(userData.username);
-      expect(decodedToken.role).toBe(userData.role);
+      expect(decodedToken.userId).toBe(user.id);
+      expect(decodedToken.email).toBe(user.email);
+      expect(decodedToken.username).toBe(user.username);
+      expect(decodedToken.role).toBe(user.role);
       expect(decodedToken.iat).toBeDefined();
       expect(decodedToken.exp).toBeDefined();
 
@@ -194,8 +211,15 @@ describe('Complete User Authentication Flow (E2E)', () => {
       };
 
       // Complete registration and verification flow
-      const registerRes = await request(server).post('/users').send(userData).expect(201);
-      const userId = registerRes.body.id;
+      await request(server).post('/users').send(userData).expect(201);
+
+      // Find the created user via GET request
+      const getUsersRes = await request(server)
+        .get('/users')
+        .query({ email: userData.email })
+        .expect(200);
+
+      const userId = getUsersRes.body.data[0].id;
 
       const verification = await emailVerificationRepository.findByUserId(new Id(userId));
       const verificationToken = verification!.id.toValue();
@@ -233,8 +257,15 @@ describe('Complete User Authentication Flow (E2E)', () => {
       };
 
       // Complete flow to get valid JWT
-      const registerRes = await request(server).post('/users').send(userData).expect(201);
-      const userId = registerRes.body.id;
+      await request(server).post('/users').send(userData).expect(201);
+
+      // Find the created user via GET request
+      const getUsersRes = await request(server)
+        .get('/users')
+        .query({ email: userData.email })
+        .expect(200);
+
+      const userId = getUsersRes.body.data[0].id;
 
       const verification = await emailVerificationRepository.findByUserId(new Id(userId));
       await request(server)

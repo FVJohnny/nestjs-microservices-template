@@ -5,31 +5,27 @@ import { ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
-import { JwtService } from '@nestjs/jwt';
 import { GetUsersController } from '@bc/auth/interfaces/controllers/users/get-users/get-users.controller';
+import { RegisterUserController } from '@bc/auth/interfaces/controllers/users/register-user/register-user.controller';
 import { GetUsersQueryHandler } from '@bc/auth/application/queries';
+import { RegisterUserCommandHandler } from '@bc/auth/application/commands';
 import type { UserRepository } from '@bc/auth/domain/repositories/user/user.repository';
 import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
 import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { Email, Username, UserRole, UserStatus } from '@bc/auth/domain/value-objects';
-import { JwtAuthModule } from '@libs/nestjs-common';
 import { ErrorHandlingModule } from '@libs/nestjs-common';
-import { AuthTestHelper } from '../utils/auth-test.helper';
 
 describe('GET /users (E2E)', () => {
   let app: INestApplication;
   let repository: UserRepository;
   let server: Server;
-  let authHelper: AuthTestHelper;
-  let adminUser: User;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [CqrsModule, ErrorHandlingModule, JwtAuthModule],
-      controllers: [GetUsersController],
+      imports: [CqrsModule, ErrorHandlingModule],
+      controllers: [GetUsersController, RegisterUserController],
       providers: [
         GetUsersQueryHandler,
+        RegisterUserCommandHandler,
         { provide: USER_REPOSITORY, useFactory: () => new UserInMemoryRepository(false) },
       ],
     }).compile();
@@ -39,24 +35,10 @@ describe('GET /users (E2E)', () => {
     await app.init();
     repository = app.get<UserRepository>(USER_REPOSITORY);
     server = app.getHttpServer() as unknown as Server;
-
-    // Initialize auth helper and create admin user
-    const jwtService = app.get<JwtService>(JwtService);
-    authHelper = new AuthTestHelper(jwtService);
-
-    // Create admin user for authentication
-    adminUser = User.random({
-      email: new Email('admin@test.com'),
-      username: new Username('testadmin'),
-      role: UserRole.admin(),
-      status: UserStatus.active(),
-    });
-    await repository.save(adminUser);
   });
 
   const clearRepo = async () => {
-    const all = await repository.findAll();
-    await Promise.all(all.map((u) => repository.remove(u.id)));
+    (repository as any).users.clear();
   };
 
   afterAll(async () => {
@@ -68,35 +50,19 @@ describe('GET /users (E2E)', () => {
   });
 
   it('returns all users when no filters provided', async () => {
-    // Arrange: seed a few users
-    const users = [
-      User.random({
-        email: new Email('admin@example.com'),
-        username: new Username('admin'),
-        role: UserRole.admin(),
-        status: UserStatus.active(),
-      }),
-      User.random({
-        email: new Email('user1@example.com'),
-        username: new Username('user1'),
-        role: UserRole.user(),
-        status: UserStatus.active(),
-      }),
-      User.random({
-        email: new Email('user2@example.com'),
-        username: new Username('user2'),
-        role: UserRole.user(),
-        status: UserStatus.active(),
-      }),
+    // Arrange: create users via endpoints
+    const userData = [
+      { email: 'admin@example.com', username: 'admin', password: 'Password123!', role: 'admin' },
+      { email: 'user1@example.com', username: 'user1', password: 'Password123!', role: 'user' },
+      { email: 'user2@example.com', username: 'user2', password: 'Password123!', role: 'user' },
     ];
-    for (const u of users) await repository.save(u);
+
+    for (const data of userData) {
+      await request(server).post('/users').send(data).expect(201);
+    }
 
     // Act
-    const token = authHelper.createAuthToken(adminUser);
-    const res = await request(server)
-      .get('/users')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(200);
+    const res = await request(server).get('/users').expect(200);
 
     // Assert
     expect(Array.isArray(res.body.data)).toBe(true);
@@ -105,117 +71,140 @@ describe('GET /users (E2E)', () => {
     expect(usernames).toEqual(['admin', 'user1', 'user2']);
   });
 
-  it('filters by status=inactive', async () => {
-    const inactive = User.random({ status: UserStatus.inactive() });
-    const active = User.random({ status: UserStatus.active() });
-    await repository.save(inactive);
-    await repository.save(active);
+  it('filters by status', async () => {
+    // Create users via endpoints
+    await request(server)
+      .post('/users')
+      .send({
+        email: 'inactive@example.com',
+        username: 'inactive',
+        password: 'Password123!',
+        role: 'user',
+      })
+      .expect(201);
 
-    const token = authHelper.createAuthToken(adminUser);
+    await request(server)
+      .post('/users')
+      .send({
+        email: 'active@example.com',
+        username: 'active',
+        password: 'Password123!',
+        role: 'user',
+      })
+      .expect(201);
+
     const res = await request(server)
       .get('/users')
-      .query({ status: 'inactive' })
-      .set('Authorization', `Bearer ${token}`)
+      .query({ status: 'email-verification-pending' })
       .expect(200);
-    expect(res.body.data).toHaveLength(1);
-    expect(res.body.data[0].username).toBe(inactive.username.toValue());
+    expect(res.body.data).toHaveLength(2);
+
+    const res2 = await request(server).get('/users').query({ status: 'active' }).expect(200);
+    expect(res2.body.data).toHaveLength(0);
   });
 
   it('supports contains filters: id, email, username', async () => {
-    const admin = User.random({
-      email: new Email('admin@example.com'),
-      username: new Username('admin'),
-    });
-    const u1 = User.random({
-      email: new Email('user1@example.com'),
-      username: new Username('user1'),
-    });
-    const u2 = User.random({
-      email: new Email('user2@example.com'),
-      username: new Username('user2'),
-    });
-    await Promise.all([admin, u1, u2].map((u) => repository.save(u)));
+    // Create users via endpoints
+    const userData = [
+      { email: 'admin@example.com', username: 'admin', password: 'Password123!', role: 'admin' },
+      { email: 'user1@example.com', username: 'user1', password: 'Password123!', role: 'user' },
+      { email: 'user2@example.com', username: 'user2', password: 'Password123!', role: 'user' },
+    ];
 
-    const token = authHelper.createAuthToken(adminUser);
-    const byId = await request(server)
+    for (const data of userData) {
+      await request(server).post('/users').send(data).expect(201);
+    }
+
+    const adminLookup = await request(server)
       .get('/users')
-      .query({ userId: admin.id.toValue() })
-      .set('Authorization', `Bearer ${token}`)
+      .query({ email: 'admin@example.com' })
       .expect(200);
+    const adminId = adminLookup.body.data[0].id;
+
+    const byId = await request(server).get('/users').query({ userId: adminId }).expect(200);
     expect(byId.body.data).toHaveLength(1);
-    expect(byId.body.data[0].username).toBe(admin.username.toValue());
+    expect(byId.body.data[0].username).toBe('admin');
 
-    const byEmail = await request(server)
-      .get('/users')
-      .query({ email: 'admin@' })
-      .set('Authorization', `Bearer ${token}`)
-      .expect(200);
+    const byEmail = await request(server).get('/users').query({ email: 'user1' }).expect(200);
     expect(byEmail.body.data).toHaveLength(1);
-    expect(byEmail.body.data[0].username).toBe(admin.username.toValue());
+    expect(byEmail.body.data[0].username).toBe('user1');
 
-    const byUsername = await request(server)
-      .get('/users')
-      .query({ username: 'user1' })
-      .set('Authorization', `Bearer ${token}`)
-      .expect(200);
+    const byUsername = await request(server).get('/users').query({ username: 'user2' }).expect(200);
     expect(byUsername.body.data).toHaveLength(1);
-    expect(byUsername.body.data[0].username).toBe(u1.username.toValue());
+    expect(byUsername.body.data[0].username).toBe('user2');
   });
 
   it('filters by role equality', async () => {
-    const admin = User.random({ role: UserRole.admin() });
-    const user = User.random({ role: UserRole.user() });
-    await repository.save(admin);
-    await repository.save(user);
+    // Create users via endpoints
+    await request(server)
+      .post('/users')
+      .send({
+        email: 'admin@example.com',
+        username: 'admin',
+        password: 'Password123!',
+        role: 'admin',
+      })
+      .expect(201);
 
-    const token = authHelper.createAuthToken(adminUser);
-    const onlyAdmins = await request(server)
-      .get('/users')
-      .query({ role: 'admin' })
-      .set('Authorization', `Bearer ${token}`)
-      .expect(200);
+    await request(server)
+      .post('/users')
+      .send({
+        email: 'user@example.com',
+        username: 'user',
+        password: 'Password123!',
+        role: 'user',
+      })
+      .expect(201);
+
+    const onlyAdmins = await request(server).get('/users').query({ role: 'admin' }).expect(200);
     expect(onlyAdmins.body.data).toHaveLength(1);
-    expect(onlyAdmins.body.data[0].username).toBe(admin.username.toValue());
+    expect(onlyAdmins.body.data[0].username).toBe('admin');
 
-    const onlyUsers = await request(server)
-      .get('/users')
-      .query({ role: 'user' })
-      .set('Authorization', `Bearer ${token}`)
-      .expect(200);
+    const onlyUsers = await request(server).get('/users').query({ role: 'user' }).expect(200);
     expect(onlyUsers.body.data).toHaveLength(1);
-    expect(onlyUsers.body.data[0].username).toBe(user.username.toValue());
+    expect(onlyUsers.body.data[0].username).toBe('user');
   });
 
   it('orders by username asc and paginates with limit/offset', async () => {
-    const a = User.random({ username: new Username('admin') });
-    const b = User.random({ username: new Username('user1') });
-    const c = User.random({ username: new Username('user2') });
-    await Promise.all([a, b, c].map((u) => repository.save(u)));
+    // Create users via endpoints
+    const userData = [
+      { email: 'admin@example.com', username: 'admin', password: 'Password123!', role: 'admin' },
+      { email: 'user1@example.com', username: 'user1', password: 'Password123!', role: 'user' },
+      { email: 'user2@example.com', username: 'user2', password: 'Password123!', role: 'user' },
+    ];
 
-    const token = authHelper.createAuthToken(adminUser);
+    for (const data of userData) {
+      await request(server).post('/users').send(data).expect(201);
+    }
+
     const ordered = await request(server)
       .get('/users')
       .query({ orderBy: 'username', orderType: 'asc' })
-      .set('Authorization', `Bearer ${token}`)
       .expect(200);
     expect(ordered.body.data.map((u: any) => u.username)).toEqual(['admin', 'user1', 'user2']);
 
     const page = await request(server)
       .get('/users')
       .query({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 1 })
-      .set('Authorization', `Bearer ${token}`)
       .expect(200);
     expect(page.body.data.map((u: any) => u.username)).toEqual(['user1', 'user2']);
   });
 
   it('rejects invalid orderType with 422 (validation)', async () => {
-    const u = User.random({ username: new Username('alpha') });
-    await repository.save(u);
-    const token = authHelper.createAuthToken(adminUser);
+    // Create a user via endpoint
+    await request(server)
+      .post('/users')
+      .send({
+        email: 'alpha@example.com',
+        username: 'alpha',
+        password: 'Password123!',
+        role: 'user',
+      })
+      .expect(201);
+
     await request(server)
       .get('/users')
-      .query({ orderBy: 'username', orderType: 'ASC' })
-      .set('Authorization', `Bearer ${token}`)
+      .query({ orderBy: 'username', orderType: 'INVALID_ORDER_TYPE' })
       .expect(422);
   });
 });

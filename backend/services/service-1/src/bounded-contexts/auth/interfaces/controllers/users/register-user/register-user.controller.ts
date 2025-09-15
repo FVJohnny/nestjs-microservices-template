@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { RegisterUserCommand, RegisterUserCommandResponse } from '@bc/auth/application/commands';
+import { RegisterUserCommand } from '@bc/auth/application/commands';
 import { RegisterUserControllerParams } from './register-user.params';
 
 @ApiTags('users')
@@ -15,17 +15,14 @@ export class RegisterUserController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'User successfully created',
-    type: RegisterUserCommandResponse,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid input or user already exists',
   })
-  async registerUser(
-    @Body() body: RegisterUserControllerParams,
-  ): Promise<RegisterUserCommandResponse> {
+  async registerUser(@Body() body: RegisterUserControllerParams): Promise<void> {
     const command = new RegisterUserCommand(body);
 
-    return await this.commandBus.execute(command);
+    await this.commandBus.execute(command);
   }
 }

@@ -35,7 +35,7 @@ describe('POST /users (E2E)', () => {
     await app.close();
   });
 
-  it('creates a user and returns 201 with id', async () => {
+  it('creates a user and returns 201', async () => {
     const body = {
       email: 'john.doe@example.com',
       username: 'johndoe',
@@ -43,8 +43,7 @@ describe('POST /users (E2E)', () => {
       role: 'user',
     };
 
-    const res = await request(server).post('/users').send(body).expect(201);
-    expect(res.body.id).toBeDefined();
+    await request(server).post('/users').send(body).expect(201);
   });
 
   it('returns 409 for duplicate email', async () => {

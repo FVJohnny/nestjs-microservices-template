@@ -1,6 +1,6 @@
 import { CommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { RegisterUserCommand, RegisterUserCommandResponse } from './register-user.command';
+import { RegisterUserCommand } from './register-user.command';
 import {
   USER_REPOSITORY,
   type UserRepository,
@@ -10,10 +10,7 @@ import { Email, Username, Password, UserRole, UserRoleEnum } from '@bc/auth/doma
 import { AlreadyExistsException, BaseCommandHandler } from '@libs/nestjs-common';
 
 @CommandHandler(RegisterUserCommand)
-export class RegisterUserCommandHandler extends BaseCommandHandler<
-  RegisterUserCommand,
-  RegisterUserCommandResponse
-> {
+export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserCommand, void> {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
@@ -22,7 +19,7 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<
     super(eventBus);
   }
 
-  protected async handle(command: RegisterUserCommand): Promise<RegisterUserCommandResponse> {
+  protected async handle(command: RegisterUserCommand): Promise<void> {
     const user = User.create({
       email: new Email(command.email),
       username: new Username(command.username),
@@ -33,8 +30,6 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<
     await this.userRepository.save(user);
 
     await this.sendDomainEvents<User>(user);
-
-    return { id: user.id.toValue() };
   }
 
   protected authorize(_command: RegisterUserCommand): Promise<boolean> {
