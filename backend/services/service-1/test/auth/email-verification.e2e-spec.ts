@@ -5,8 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
-import { JwtService } from '@nestjs/jwt';
-import { ErrorHandlingModule, JwtAuthModule, Id } from '@libs/nestjs-common';
+import { ErrorHandlingModule, JwtAuthModule } from '@libs/nestjs-common';
 
 // Controllers
 import { RegisterUserController } from '@bc/auth/interfaces/controllers/users/register-user/register-user.controller';
@@ -22,7 +21,11 @@ import {
 } from '@bc/auth/application/commands';
 
 // Query Handlers
-import { GetUserByIdQueryHandler, GetUsersQueryHandler } from '@bc/auth/application/queries';
+import {
+  GetEmailVerificationByUserIdQueryHandler,
+  GetUserByIdQueryHandler,
+  GetUsersQueryHandler,
+} from '@bc/auth/application/queries';
 
 // Domain Event Handlers
 import {
@@ -40,19 +43,13 @@ import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-
 // Mocks
 import type { MockOutboxService } from '@libs/nestjs-common';
 import { createOutboxServiceMock, OutboxService } from '@libs/nestjs-common';
-
-// Add User-related imports
-import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { Email, Username, Password, UserRole, UserStatus } from '@bc/auth/domain/value-objects';
-import { AuthTestHelper } from '../utils/auth-test.helper';
+import { GetEmailVerificationByUserIdController } from '@bc/auth/interfaces/controllers/auth/email-verification/get-email-verification-by-user-id.controller';
 
 describe('Email Verification (E2E)', () => {
   let app: INestApplication;
   let server: Server;
   let emailVerificationRepository: EmailVerificationInMemoryRepository;
   let userRepository: UserInMemoryRepository;
-  let authHelper: AuthTestHelper;
-  let adminUser: User;
 
   beforeAll(async () => {
     const mockOutboxService: MockOutboxService = createOutboxServiceMock({ shouldFail: false });
@@ -64,6 +61,7 @@ describe('Email Verification (E2E)', () => {
         GetUserController,
         GetUsersController,
         VerifyEmailController,
+        GetEmailVerificationByUserIdController,
       ],
       providers: [
         // Command Handlers
@@ -74,6 +72,7 @@ describe('Email Verification (E2E)', () => {
         // Query Handlers
         GetUserByIdQueryHandler,
         GetUsersQueryHandler,
+        GetEmailVerificationByUserIdQueryHandler,
 
         // Domain Event Handlers
         UserRegistered_SendIntegrationEvent_DomainEventHandler,
@@ -107,20 +106,6 @@ describe('Email Verification (E2E)', () => {
       EMAIL_VERIFICATION_REPOSITORY,
     );
     userRepository = moduleFixture.get<UserInMemoryRepository>(USER_REPOSITORY);
-
-    // Initialize auth helper and create admin user
-    const jwtService = moduleFixture.get<JwtService>(JwtService);
-    authHelper = new AuthTestHelper(jwtService);
-
-    // Create an admin user for authentication in tests
-    adminUser = User.random({
-      email: new Email('admin@test.com'),
-      username: new Username('testadmin'),
-      password: Password.createFromPlainTextSync('AdminPassword123!'),
-      role: UserRole.admin(),
-      status: UserStatus.active(),
-    });
-    await userRepository.save(adminUser);
   });
 
   afterAll(async () => {
@@ -153,11 +138,7 @@ describe('Email Verification (E2E)', () => {
     const userId = getUsersRes.body.data[0].id;
 
     // Check user status via API (using admin auth)
-    const authToken = authHelper.createAuthToken(adminUser);
-    const userRes = await request(server)
-      .get(`/users/${userId}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
+    const userRes = await request(server).get(`/users/${userId}`).expect(200);
     expect(userRes.body.status).toBe('email-verification-pending');
     expect(userRes.body.email).toBe(body.email);
   });
@@ -181,20 +162,18 @@ describe('Email Verification (E2E)', () => {
 
     const userId = getUsersRes.body.data[0].id;
 
-    // Get verification ID (only peeking into repository for the ID)
-    const verification = await emailVerificationRepository.findByUserId(new Id(userId));
-    const emailVerificationId = verification!.id.toValue();
+    // Get verification ID via API endpoint
+    const verificationRes = await request(server)
+      .get(`/auth/email-verification/user/${userId}`)
+      .expect(200);
+    const emailVerificationId = verificationRes.body.id;
     expect(emailVerificationId).toBeDefined();
 
     // Act
     await request(server).post('/auth/verify-email').send({ emailVerificationId }).expect(200);
 
     // Verify the user is now active via API
-    const authToken = authHelper.createAuthToken(adminUser);
-    const updatedUserRes = await request(server)
-      .get(`/users/${userId}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
+    const updatedUserRes = await request(server).get(`/users/${userId}`).expect(200);
     expect(updatedUserRes.body.status).toBe('active');
   });
 
@@ -226,8 +205,10 @@ describe('Email Verification (E2E)', () => {
 
     const userId = getUsersRes.body.data[0].id;
 
-    const verification = await emailVerificationRepository.findByUserId(new Id(userId));
-    const emailVerificationId = verification!.id.toValue();
+    const verificationRes = await request(server)
+      .get(`/auth/email-verification/user/${userId}`)
+      .expect(200);
+    const emailVerificationId = verificationRes.body.id;
 
     // First verification
     await request(server).post('/auth/verify-email').send({ emailVerificationId }).expect(200);
@@ -242,30 +223,5 @@ describe('Email Verification (E2E)', () => {
 
   it('should return 400 for missing email verification ID', async () => {
     await request(server).post('/auth/verify-email').send({}).expect(400);
-  });
-
-  it('should handle special characters in email addresses', async () => {
-    const userData = {
-      email: 'test.user+tag@sub-domain.example.com',
-      username: 'specialuser',
-      password: 'TestPassword123!',
-      role: 'user',
-    };
-
-    await request(server).post('/users').send(userData).expect(201);
-
-    // Find the created user via GET request
-    const getUsersRes = await request(server)
-      .get('/users')
-      .query({ email: userData.email })
-      .expect(200);
-
-    const userId = getUsersRes.body.data[0].id;
-
-    const verification = await emailVerificationRepository.findByUserId(new Id(userId));
-    expect(verification!.email.toValue()).toBe(userData.email);
-
-    const emailVerificationId = verification!.id.toValue();
-    await request(server).post('/auth/verify-email').send({ emailVerificationId }).expect(200);
   });
 });

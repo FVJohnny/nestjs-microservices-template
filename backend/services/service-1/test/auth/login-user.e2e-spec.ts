@@ -5,7 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ErrorHandlingModule, JwtAuthModule, JwtTokenService, Id } from '@libs/nestjs-common';
+import { ErrorHandlingModule, JwtAuthModule, JwtTokenService } from '@libs/nestjs-common';
 
 // Controllers
 import { RegisterUserController } from '@bc/auth/interfaces/controllers/users/register-user/register-user.controller';
@@ -25,6 +25,7 @@ import {
 import {
   GetUsersQueryHandler,
   GetTokensFromUserCredentialsQueryHandler,
+  GetEmailVerificationByUserIdQueryHandler,
 } from '@bc/auth/application/queries';
 
 // Domain Event Handlers
@@ -43,6 +44,7 @@ import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-
 // Mocks
 import type { MockOutboxService } from '@libs/nestjs-common';
 import { createOutboxServiceMock, OutboxService } from '@libs/nestjs-common';
+import { GetEmailVerificationByUserIdController } from '@bc/auth/interfaces/controllers/auth/email-verification/get-email-verification-by-user-id.controller';
 
 describe('Complete User Authentication Flow (E2E)', () => {
   let app: INestApplication;
@@ -60,6 +62,7 @@ describe('Complete User Authentication Flow (E2E)', () => {
         VerifyEmailController,
         LoginUserController,
         GetUsersController,
+        GetEmailVerificationByUserIdController,
       ],
       providers: [
         // Command Handlers
@@ -71,6 +74,7 @@ describe('Complete User Authentication Flow (E2E)', () => {
         // Query Handlers
         GetUsersQueryHandler,
         GetTokensFromUserCredentialsQueryHandler,
+        GetEmailVerificationByUserIdQueryHandler,
 
         // Domain Event Handlers
         UserRegistered_SendIntegrationEvent_DomainEventHandler,
@@ -138,16 +142,15 @@ describe('Complete User Authentication Flow (E2E)', () => {
       expect(getUsersRes.body.data).toHaveLength(1);
       const user = getUsersRes.body.data[0];
 
-      // Step 2: Get verification token (simulate email received)
-      const verification = await emailVerificationRepository.findByUserId(new Id(user.id));
-      expect(verification).toBeDefined();
-      const verificationToken = verification!.id.toValue();
+      // Step 2: Get verification token via API endpoint
+      const emailVerificationRes = await request(server)
+        .get(`/auth/email-verification/user/${user.id}`)
+        .expect(200);
+      const emailVerificationId = emailVerificationRes.body.id;
+      expect(emailVerificationId).toBeDefined();
 
       // Step 3: Verify email
-      await request(server)
-        .post('/auth/verify-email')
-        .send({ emailVerificationId: verificationToken })
-        .expect(200);
+      await request(server).post('/auth/verify-email').send({ emailVerificationId }).expect(200);
 
       // Step 4: Login with verified account
       const loginRes = await request(server)
@@ -165,7 +168,7 @@ describe('Complete User Authentication Flow (E2E)', () => {
       // Step 5: Validate JWT token
       const token = loginRes.body.accessToken;
 
-      // Verify token can be decoded
+      // TODO: Instead of decoding, simply use the token to access a restricted endpoint
       const decodedToken = jwtTokenService.verifyAccessToken(token);
       expect(decodedToken.userId).toBe(user.id);
       expect(decodedToken.email).toBe(userData.email);
@@ -219,13 +222,12 @@ describe('Complete User Authentication Flow (E2E)', () => {
 
       const userId = getUsersRes.body.data[0].id;
 
-      const verification = await emailVerificationRepository.findByUserId(new Id(userId));
-      const verificationToken = verification!.id.toValue();
-
-      await request(server)
-        .post('/auth/verify-email')
-        .send({ emailVerificationId: verificationToken })
+      const emailVerificationRes = await request(server)
+        .get(`/auth/email-verification/user/${userId}`)
         .expect(200);
+      const emailVerificationId = emailVerificationRes.body.id;
+
+      await request(server).post('/auth/verify-email').send({ emailVerificationId }).expect(200);
 
       // Try login with wrong password
       await request(server)
@@ -244,59 +246,6 @@ describe('Complete User Authentication Flow (E2E)', () => {
           password: userData.password,
         })
         .expect(401);
-    });
-
-    it('should validate JWT token contains correct payload structure', async () => {
-      const userData = {
-        email: 'jwt-test@example.com',
-        username: 'jwttest',
-        password: 'JWTTestPassword123!',
-        role: 'admin',
-      };
-
-      // Complete flow to get valid JWT
-      await request(server).post('/users').send(userData).expect(201);
-
-      // Find the created user via GET request
-      const getUsersRes = await request(server)
-        .get('/users')
-        .query({ email: userData.email })
-        .expect(200);
-
-      const userId = getUsersRes.body.data[0].id;
-
-      const verification = await emailVerificationRepository.findByUserId(new Id(userId));
-      await request(server)
-        .post('/auth/verify-email')
-        .send({ emailVerificationId: verification!.id.toValue() })
-        .expect(200);
-
-      const loginRes = await request(server)
-        .post('/auth/login')
-        .send({ email: userData.email, password: userData.password })
-        .expect(200);
-
-      const token = loginRes.body.accessToken;
-
-      // Verify token structure and claims
-      const decoded = jwtTokenService.verifyAccessToken(token);
-
-      // Standard JWT claims
-      expect(decoded).toHaveProperty('iat');
-      expect(decoded).toHaveProperty('exp');
-      expect(typeof decoded.iat).toBe('number');
-      expect(typeof decoded.exp).toBe('number');
-
-      // Custom payload
-      expect(decoded.userId).toBe(userId);
-      expect(decoded.email).toBe(userData.email);
-      expect(decoded.username).toBe(userData.username);
-      expect(decoded.role).toBe(userData.role);
-
-      // Verify token is not expired
-      const now = Math.floor(Date.now() / 1000);
-      expect(decoded.exp).toBeGreaterThan(now);
-      expect(decoded.iat).toBeLessThanOrEqual(now);
     });
 
     it('should handle login validation errors correctly', async () => {

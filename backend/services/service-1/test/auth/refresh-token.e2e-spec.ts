@@ -5,11 +5,12 @@ import { ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ErrorHandlingModule, JwtAuthModule, JwtTokenService, Id } from '@libs/nestjs-common';
+import { ErrorHandlingModule, JwtAuthModule, JwtTokenService } from '@libs/nestjs-common';
 
 // Controllers
 import { RegisterUserController } from '@bc/auth/interfaces/controllers/users/register-user/register-user.controller';
 import { VerifyEmailController } from '@bc/auth/interfaces/controllers/auth/email-verification/verify-email.controller';
+import { GetEmailVerificationByUserIdController } from '@bc/auth/interfaces/controllers/auth/email-verification/get-email-verification-by-user-id.controller';
 import { LoginUserController } from '@bc/auth/interfaces/controllers/auth/login-user/login-user.controller';
 import { RefreshTokenController } from '@bc/auth/interfaces/controllers/auth/refresh-token/refresh-token.controller';
 import { GetUsersController } from '@bc/auth/interfaces/controllers/users/get-users/get-users.controller';
@@ -27,6 +28,7 @@ import {
   GetTokensFromRefreshTokenQueryHandler,
   GetUsersQueryHandler,
   GetTokensFromUserCredentialsQueryHandler,
+  GetEmailVerificationByUserIdQueryHandler,
 } from '@bc/auth/application/queries';
 
 // Domain Event Handlers
@@ -60,6 +62,7 @@ describe('Refresh Token Flow (E2E)', () => {
       controllers: [
         RegisterUserController,
         VerifyEmailController,
+        GetEmailVerificationByUserIdController,
         LoginUserController,
         RefreshTokenController,
         GetUsersController,
@@ -75,6 +78,7 @@ describe('Refresh Token Flow (E2E)', () => {
         GetTokensFromRefreshTokenQueryHandler,
         GetUsersQueryHandler,
         GetTokensFromUserCredentialsQueryHandler,
+        GetEmailVerificationByUserIdQueryHandler,
 
         // Domain Event Handlers
         UserRegistered_SendIntegrationEvent_DomainEventHandler,
@@ -142,11 +146,11 @@ describe('Refresh Token Flow (E2E)', () => {
       const userId = getUsersRes.body.data[0].id;
 
       // Verify email
-      const verification = await emailVerificationRepository.findByUserId(new Id(userId));
-      await request(server)
-        .post('/auth/verify-email')
-        .send({ emailVerificationId: verification!.id.toValue() })
+      const verificationRes = await request(server)
+        .get(`/auth/email-verification/user/${userId}`)
         .expect(200);
+      const emailVerificationId = verificationRes.body.id;
+      await request(server).post('/auth/verify-email').send({ emailVerificationId }).expect(200);
 
       // Login to get tokens
       const loginRes = await request(server)
