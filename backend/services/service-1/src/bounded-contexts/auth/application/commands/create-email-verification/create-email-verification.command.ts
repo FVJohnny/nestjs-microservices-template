@@ -12,7 +12,3 @@ export class CreateEmailVerificationCommand extends BaseCommand implements IComm
     this.email = props.email;
   }
 }
-
-export class CreateEmailVerificationCommandResponse {
-  id: string;
-}

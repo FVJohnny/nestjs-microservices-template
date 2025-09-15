@@ -1,9 +1,6 @@
 import { CommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import {
-  CreateEmailVerificationCommand,
-  CreateEmailVerificationCommandResponse,
-} from './create-email-verification.command';
+import { CreateEmailVerificationCommand } from './create-email-verification.command';
 import {
   AlreadyExistsException,
   BaseCommandHandler,
@@ -22,7 +19,7 @@ import type { UserRepository } from '@bc/auth/domain/repositories/user/user.repo
 @CommandHandler(CreateEmailVerificationCommand)
 export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
   CreateEmailVerificationCommand,
-  CreateEmailVerificationCommandResponse
+  void
 > {
   constructor(
     @Inject(EMAIL_VERIFICATION_REPOSITORY)
@@ -34,9 +31,7 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
     super(eventBus);
   }
 
-  protected async handle(
-    command: CreateEmailVerificationCommand,
-  ): Promise<CreateEmailVerificationCommandResponse> {
+  protected async handle(command: CreateEmailVerificationCommand): Promise<void> {
     const userId = new Id(command.userId);
     const email = new Email(command.email);
 
@@ -48,10 +43,6 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
     await this.emailVerificationRepository.save(emailVerification);
 
     await this.sendDomainEvents<EmailVerification>(emailVerification);
-
-    return {
-      id: emailVerification.id.toValue(),
-    };
   }
 
   protected authorize(_command: CreateEmailVerificationCommand): Promise<boolean> {

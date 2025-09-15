@@ -82,12 +82,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
       const command = createCommand({ userId: user!.id.toValue(), email: user!.email.toValue() });
 
       // Act
-      const result = await commandHandler.execute(command);
-
-      // Assert
-      expect(result).toBeDefined();
-      expect(result.id).toBeDefined();
-      expect(typeof result.id).toBe('string');
+      await commandHandler.execute(command);
 
       // Verify email verification was saved
       const savedVerification = await repository.findByUserId(new Id(command.userId));
@@ -125,13 +120,13 @@ describe('CreateEmailVerificationCommandHandler', () => {
       const command = createCommand({ userId: user!.id.toValue(), email: user!.email.toValue() });
 
       // Act
-      const result = await commandHandler.execute(command);
+      await commandHandler.execute(command);
 
       // Assert
       expect(eventBus.events).toHaveLength(1);
       const event = eventBus.events[0] as EmailVerificationCreatedDomainEvent;
       expect(event).toBeInstanceOf(EmailVerificationCreatedDomainEvent);
-      expect(event.aggregateId.toValue()).toBe(result.id);
+      expect(event.aggregateId.toValue()).toBeDefined();
       expect(event.userId.toValue()).toBe(command.userId);
       expect(event.email.toValue()).toBe(command.email);
       expect(event.occurredOn).toBeInstanceOf(Date);
