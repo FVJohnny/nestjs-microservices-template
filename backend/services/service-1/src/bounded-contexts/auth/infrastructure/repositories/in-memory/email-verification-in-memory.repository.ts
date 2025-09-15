@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import {
-  EmailVerification,
-  EmailVerificationDTO,
-} from '@bc/auth/domain/entities/email-verification/email-verification.entity';
+import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
+import { EmailVerificationDTO } from '@bc/auth/domain/entities/email-verification/email-verification.dto';
 import { EmailVerificationRepository } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { Email, Expiration, Verification } from '@bc/auth/domain/value-objects';
 import { AlreadyExistsException, InfrastructureException, Id } from '@libs/nestjs-common';

@@ -11,7 +11,7 @@ import {
 } from '@bc/auth/domain/value-objects';
 import { UserRegisteredDomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 import { InvalidOperationException, Timestamps, Id, wait, DateVO } from '@libs/nestjs-common';
-import { UserDTO } from './user.types';
+import { UserDTO } from './user.dto';
 
 describe('User Entity', () => {
   describe('create()', () => {

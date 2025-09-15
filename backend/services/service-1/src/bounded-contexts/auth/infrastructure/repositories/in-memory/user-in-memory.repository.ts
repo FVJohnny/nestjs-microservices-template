@@ -8,7 +8,7 @@ import {
   InMemoryCriteriaConverter,
   PaginatedRepoResult,
 } from '@libs/nestjs-common';
-import { UserDTO } from '@bc/auth/domain/entities/user/user.types';
+import { UserDTO } from '@bc/auth/domain/entities/user/user.dto';
 import { InfrastructureException } from '@libs/nestjs-common';
 import { Id } from '@libs/nestjs-common';
 

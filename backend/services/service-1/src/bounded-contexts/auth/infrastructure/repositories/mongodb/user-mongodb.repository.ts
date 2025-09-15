@@ -3,7 +3,7 @@ import { MongoClient } from 'mongodb';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { UserRepository } from '@bc/auth/domain/repositories/user/user.repository';
 import { Email, Username } from '@bc/auth/domain/value-objects';
-import { UserDTO } from '@bc/auth/domain/entities/user/user.types';
+import { UserDTO } from '@bc/auth/domain/entities/user/user.dto';
 import { Criteria, PaginatedRepoResult, Id } from '@libs/nestjs-common';
 import {
   MongoCriteriaConverter,

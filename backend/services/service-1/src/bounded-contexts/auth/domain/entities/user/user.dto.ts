@@ -1,30 +1,5 @@
-import { Id, Timestamps } from '@libs/nestjs-common';
-import {
-  Email,
-  Username,
-  UserRole,
-  UserStatus,
-  Password,
-  LastLogin,
-} from '@bc/auth/domain/value-objects';
-import { SharedAggregateRootDTO } from '@libs/nestjs-common';
-
-export interface CreateUserProps {
-  email: Email;
-  username: Username;
-  password: Password;
-  role: UserRole;
-}
-export interface UserAttributes {
-  id: Id;
-  email: Email;
-  username: Username;
-  password: Password;
-  status: UserStatus;
-  role: UserRole;
-  lastLogin: LastLogin;
-  timestamps: Timestamps;
-}
+import { SharedAggregateRootDTO, Id, Timestamps } from '@libs/nestjs-common';
+import { Email, Username, Password, UserStatus, UserRole, LastLogin } from '../../value-objects';
 
 export class UserDTO extends SharedAggregateRootDTO {
   id: string;

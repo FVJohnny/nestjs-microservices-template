@@ -9,7 +9,7 @@ import {
   Password,
   LastLogin,
 } from '@bc/auth/domain/value-objects';
-import type { CreateUserProps, UserAttributes, UserDTO } from './user.types';
+import type { UserDTO } from './user.dto';
 import {
   InvalidOperationException,
   SharedAggregateRoot,
@@ -18,6 +18,22 @@ import {
   DateVO,
 } from '@libs/nestjs-common';
 
+export interface CreateUserProps {
+  email: Email;
+  username: Username;
+  password: Password;
+  role: UserRole;
+}
+export interface UserAttributes {
+  id: Id;
+  email: Email;
+  username: Username;
+  password: Password;
+  status: UserStatus;
+  role: UserRole;
+  lastLogin: LastLogin;
+  timestamps: Timestamps;
+}
 export class User extends SharedAggregateRoot implements UserAttributes {
   email: Email;
   username: Username;

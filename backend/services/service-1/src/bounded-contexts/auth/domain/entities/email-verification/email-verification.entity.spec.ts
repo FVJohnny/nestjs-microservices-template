@@ -3,21 +3,16 @@ import { Email, Verification, Expiration } from '@bc/auth/domain/value-objects';
 import { EmailVerificationVerifiedDomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
 import { EmailVerificationCreatedDomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
 import { InvalidOperationException, Id, Timestamps, wait, DateVO } from '@libs/nestjs-common';
+import { EmailVerificationDTO } from './email-verification.dto';
 
 describe('EmailVerification Entity', () => {
-  const newTestVerification = ({
-    expired = false,
-    verified = false,
-  }: {
-    expired?: boolean;
-    verified?: boolean;
-  }) =>
+  const createTestVerification = (type = 'pending' as 'pending' | 'verified' | 'expired') =>
     new EmailVerification({
       id: Id.random(),
       userId: Id.random(),
       email: Email.random(),
-      expiration: Expiration.atHoursFromNow(expired ? -1 : 24),
-      verification: verified ? Verification.verified() : Verification.notVerified(),
+      expiration: Expiration.atHoursFromNow(type === 'expired' ? -1 : 24),
+      verification: type === 'verified' ? Verification.verified() : Verification.notVerified(),
       timestamps: Timestamps.create(),
     });
 
@@ -79,7 +74,7 @@ describe('EmailVerification Entity', () => {
 
   describe('Verification', () => {
     it('should verify successfully', () => {
-      const verification = newTestVerification({});
+      const verification = createTestVerification();
 
       expect(verification.isVerified()).toBe(false);
 
@@ -89,7 +84,7 @@ describe('EmailVerification Entity', () => {
     });
 
     it('should emit EmailVerificationVerifiedDomainEvent', () => {
-      const verification = newTestVerification({});
+      const verification = createTestVerification();
       verification.verify();
       const events = verification.getUncommittedEvents();
       const verifiedEvent = events[0] as EmailVerificationVerifiedDomainEvent;
@@ -100,22 +95,20 @@ describe('EmailVerification Entity', () => {
     });
 
     it('should prevent double verification', () => {
-      const verification = newTestVerification({
-        verified: false,
-      });
+      const verification = createTestVerification();
       verification.verify();
 
       expect(() => verification.verify()).toThrow(InvalidOperationException);
     });
 
     it('should prevent verification of expired email verifications', () => {
-      const expiredVerification = newTestVerification({ expired: true });
+      const expiredVerification = createTestVerification('expired');
 
       expect(() => expiredVerification.verify()).toThrow(InvalidOperationException);
     });
 
     it('should update timestamps on verification', async () => {
-      const verification = newTestVerification({});
+      const verification = createTestVerification();
       const originalUpdatedAt = new DateVO(verification.timestamps.updatedAt.toValue());
 
       await wait(10);
@@ -127,7 +120,7 @@ describe('EmailVerification Entity', () => {
 
   describe('State Queries', () => {
     it('should identify expired verification', () => {
-      const verification = newTestVerification({ expired: true });
+      const verification = createTestVerification('expired');
 
       expect(verification.isVerified()).toBe(false);
       expect(verification.isPending()).toBe(false);
@@ -135,7 +128,7 @@ describe('EmailVerification Entity', () => {
     });
 
     it('should identify pending verification', () => {
-      const verification = newTestVerification({});
+      const verification = createTestVerification();
 
       expect(verification.isExpired()).toBe(false);
       expect(verification.isVerified()).toBe(false);
@@ -143,7 +136,7 @@ describe('EmailVerification Entity', () => {
     });
 
     it('should identify verified as not pending', () => {
-      const verification = newTestVerification({ verified: true });
+      const verification = createTestVerification('verified');
 
       expect(verification.isPending()).toBe(false);
       expect(verification.isExpired()).toBe(false);
@@ -152,18 +145,8 @@ describe('EmailVerification Entity', () => {
   });
 
   describe('Serialization', () => {
-    const createTestDto = () => ({
-      id: Id.random().toValue(),
-      userId: Id.random().toValue(),
-      email: Email.random().toValue(),
-      expiration: Expiration.atHoursFromNow(24).toValue(),
-      verification: Verification.notVerified().toValue(),
-      createdAt: new Date('2024-01-01T10:00:00Z'),
-      updatedAt: new Date('2024-01-01T10:00:00Z'),
-    });
-
     it('should convert to DTO', () => {
-      const emailVerification = newTestVerification({});
+      const emailVerification = createTestVerification();
 
       const dto = emailVerification.toValue();
 
@@ -179,7 +162,7 @@ describe('EmailVerification Entity', () => {
     });
 
     it('should create from DTO', () => {
-      const dto = createTestDto();
+      const dto = EmailVerificationDTO.random();
       const verification = EmailVerification.fromValue(dto);
 
       expect(verification.id.toValue()).toBe(dto.id);
@@ -187,6 +170,8 @@ describe('EmailVerification Entity', () => {
       expect(verification.email.toValue()).toBe(dto.email);
       expect(verification.expiration.toValue()).toEqual(dto.expiration);
       expect(verification.verification.toValue()).toEqual(dto.verification);
+      expect(verification.timestamps.createdAt.toValue()).toEqual(dto.createdAt);
+      expect(verification.timestamps.updatedAt.toValue()).toEqual(dto.updatedAt);
     });
   });
 });
