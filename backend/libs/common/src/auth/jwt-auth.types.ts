@@ -1,20 +1,20 @@
 import type { Request } from 'express';
 
-export interface JwtAccessTokenPayload {
+export class TokenPayload {
   userId: string;
   email: string;
   username: string;
   role: string;
-  iat?: number;
-  exp?: number;
 }
 
-export interface JwtRefreshTokenPayload {
-  userId: string;
-  iat?: number;
-  exp?: number;
+class JwtPayload {
+  uniqueId: string;
+  iat: number;
+  exp: number;
 }
+
+export type JwtTokenPayload = JwtPayload & TokenPayload;
 
 export interface AuthenticatedRequest extends Request {
-  user: JwtAccessTokenPayload;
+  token: JwtTokenPayload;
 }

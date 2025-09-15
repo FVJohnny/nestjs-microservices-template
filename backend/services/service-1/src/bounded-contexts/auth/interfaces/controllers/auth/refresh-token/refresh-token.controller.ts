@@ -13,7 +13,7 @@ import { RefreshTokenResponseDto } from './refresh-token.response';
 export class RefreshTokenController {
   constructor(private readonly queryBus: QueryBus) {}
 
-  @Post('refresh')
+  @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiResponse({

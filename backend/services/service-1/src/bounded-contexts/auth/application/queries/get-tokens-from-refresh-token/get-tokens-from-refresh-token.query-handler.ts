@@ -5,7 +5,7 @@ import {
   USER_REPOSITORY,
   type UserRepository,
 } from '@bc/auth/domain/repositories/user/user.repository';
-import { UnauthorizedException, JwtTokenService, Id } from '@libs/nestjs-common';
+import { UnauthorizedException, JwtTokenService, Id, TokenPayload } from '@libs/nestjs-common';
 import { GetTokensFromRefreshTokenQueryResponse } from './get-tokens-from-refresh-token.response';
 
 @QueryHandler(GetTokensFromRefreshTokenQuery)
@@ -46,7 +46,7 @@ export class GetTokensFromRefreshTokenQueryHandler
     }
 
     // Generate new JWT tokens
-    const payload = {
+    const payload: TokenPayload = {
       userId: user.id.toValue(),
       email: user.email.toValue(),
       username: user.username.toValue(),

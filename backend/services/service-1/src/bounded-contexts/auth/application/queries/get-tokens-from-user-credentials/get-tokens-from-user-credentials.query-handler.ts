@@ -7,7 +7,12 @@ import {
   type UserRepository,
 } from '@bc/auth/domain/repositories/user/user.repository';
 import { Email } from '@bc/auth/domain/value-objects';
-import { BaseQueryHandler, UnauthorizedException, JwtTokenService } from '@libs/nestjs-common';
+import {
+  BaseQueryHandler,
+  UnauthorizedException,
+  JwtTokenService,
+  TokenPayload,
+} from '@libs/nestjs-common';
 
 @QueryHandler(GetTokensFromUserCredentialsQuery)
 export class GetTokensFromUserCredentialsQueryHandler extends BaseQueryHandler<
@@ -44,7 +49,7 @@ export class GetTokensFromUserCredentialsQueryHandler extends BaseQueryHandler<
     }
 
     // Generate JWT tokens
-    const payload = {
+    const payload: TokenPayload = {
       userId: user.id.toValue(),
       email: user.email.toValue(),
       username: user.username.toValue(),

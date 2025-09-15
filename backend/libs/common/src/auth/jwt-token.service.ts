@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { JwtAccessTokenPayload, JwtRefreshTokenPayload } from './jwt-auth.types';
+import { JwtTokenPayload, TokenPayload } from './jwt-auth.types';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class JwtTokenService {
@@ -16,28 +17,34 @@ export class JwtTokenService {
     this.refreshTokenExpiry = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
   }
 
-  generateAccessToken(payload: JwtAccessTokenPayload): string {
-    return this.jwtService.sign(payload, {
+  generateAccessToken(payload: TokenPayload): string {
+    return this.jwtService.sign(
+      { ...payload, uniqueId: uuid() },
+      {
+        secret: this.accessTokenSecret,
+        expiresIn: this.accessTokenExpiry,
+      },
+    );
+  }
+
+  generateRefreshToken(payload: TokenPayload): string {
+    return this.jwtService.sign(
+      { ...payload, uniqueId: uuid() },
+      {
+        secret: this.refreshTokenSecret,
+        expiresIn: this.refreshTokenExpiry,
+      },
+    );
+  }
+
+  verifyAccessToken(token: string): JwtTokenPayload {
+    return this.jwtService.verify<JwtTokenPayload>(token, {
       secret: this.accessTokenSecret,
-      expiresIn: this.accessTokenExpiry,
     });
   }
 
-  generateRefreshToken(payload: JwtRefreshTokenPayload): string {
-    return this.jwtService.sign(payload, {
-      secret: this.refreshTokenSecret,
-      expiresIn: this.refreshTokenExpiry,
-    });
-  }
-
-  verifyAccessToken(token: string): JwtAccessTokenPayload {
-    return this.jwtService.verify<JwtAccessTokenPayload>(token, {
-      secret: this.accessTokenSecret,
-    });
-  }
-
-  verifyRefreshToken(token: string): JwtRefreshTokenPayload {
-    return this.jwtService.verify<JwtRefreshTokenPayload>(token, {
+  verifyRefreshToken(token: string): JwtTokenPayload {
+    return this.jwtService.verify<JwtTokenPayload>(token, {
       secret: this.refreshTokenSecret,
     });
   }

@@ -2,50 +2,34 @@ import { GetTokensFromRefreshTokenQueryHandler } from './get-tokens-from-refresh
 import { GetTokensFromRefreshTokenQuery } from './get-tokens-from-refresh-token.query';
 import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { UserStatus } from '@bc/auth/domain/value-objects';
-import { 
+import { Email, Username, UserRole, UserStatus } from '@bc/auth/domain/value-objects';
+import {
   Id,
   JwtTokenService,
-  JwtTokenServiceMockOptions,
-  UnauthorizedException, 
-  createJwtTokenServiceMock
+  TokenPayload,
+  UnauthorizedException,
 } from '@libs/nestjs-common';
+import { JwtService } from '@nestjs/jwt';
 
 describe('GetTokensFromRefreshTokenQueryHandler', () => {
-  const createQuery = (refreshToken: string = 'valid-refresh-token') =>
-    new GetTokensFromRefreshTokenQuery(refreshToken);
-
   const setup = async (
-    params: { 
+    params: {
       withUser?: boolean;
       userStatus?: 'active' | 'inactive';
-      shouldFailRepository?: boolean; 
-      jwtMockOptions?: JwtTokenServiceMockOptions;
-    } = {}
+      shouldFailRepository?: boolean;
+    } = {},
   ) => {
-    const { 
-      withUser = false,
-      userStatus = 'active',
-      shouldFailRepository = false, 
-      jwtMockOptions = {} 
-    } = params;
+    const { withUser = false, userStatus = 'active', shouldFailRepository = false } = params;
 
     const repository = new UserInMemoryRepository(shouldFailRepository);
-    const jwtTokenService = createJwtTokenServiceMock(jwtMockOptions);
-    const handler = new GetTokensFromRefreshTokenQueryHandler(
-      repository,
-      jwtTokenService as unknown as JwtTokenService,
-    );
+    const jwtTokenService = new JwtTokenService(new JwtService());
+    const handler = new GetTokensFromRefreshTokenQueryHandler(repository, jwtTokenService);
 
     let user: User | null = null;
     if (withUser) {
-      const userId = jwtMockOptions.mockVerifyRefreshToken?.userId 
-        ? new Id(jwtMockOptions.mockVerifyRefreshToken.userId)
-        : Id.random();
-      
-      user = User.random({ 
-        id: userId,
-        status: userStatus === 'active' ? UserStatus.active() : UserStatus.inactive() 
+      user = User.random({
+        id: Id.random(),
+        status: userStatus === 'active' ? UserStatus.active() : UserStatus.inactive(),
       });
       await repository.save(user);
     }
@@ -55,32 +39,43 @@ describe('GetTokensFromRefreshTokenQueryHandler', () => {
 
   it('should successfully refresh tokens for valid refresh token', async () => {
     // Arrange
-    const { handler } = await setup({
+    const { handler, user, jwtTokenService } = await setup({
       withUser: true,
       userStatus: 'active',
-      jwtMockOptions: {
-        mockVerifyRefreshToken: {
-          userId: Id.random().toValue(),
-        },
-      }
     });
 
-    const query = createQuery('mock-refresh-token');
-
+    const payload: TokenPayload = {
+      userId: user!.id.toValue(),
+      email: user!.email.toValue(),
+      username: user!.username.toValue(),
+      role: user!.role.toValue(),
+    };
+    const refreshToken = jwtTokenService.generateRefreshToken(payload);
+    const query = new GetTokensFromRefreshTokenQuery(refreshToken);
     // Act
     const result = await handler.execute(query);
 
     // Assert
-    expect(result).toEqual({
-      accessToken: 'mock-access-token',
-      refreshToken: 'mock-refresh-token',
-    });
+    expect(result.accessToken).toBeDefined();
+    expect(result.refreshToken).toBeDefined();
+
+    const decodedAccessToken = jwtTokenService.verifyAccessToken(result.accessToken);
+    expect(decodedAccessToken.userId).toBe(payload.userId);
+    expect(decodedAccessToken.email).toBe(payload.email);
+    expect(decodedAccessToken.username).toBe(payload.username);
+    expect(decodedAccessToken.role).toBe(payload.role);
+
+    const decodedRefreshToken = jwtTokenService.verifyRefreshToken(result.refreshToken);
+    expect(decodedRefreshToken.userId).toBe(payload.userId);
+    expect(decodedRefreshToken.email).toBe(payload.email);
+    expect(decodedRefreshToken.username).toBe(payload.username);
+    expect(decodedRefreshToken.role).toBe(payload.role);
   });
 
   it('should throw UnauthorizedException for empty refresh token', async () => {
     // Arrange
     const { handler } = await setup();
-    const query = createQuery('');
+    const query = new GetTokensFromRefreshTokenQuery('');
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);
@@ -88,10 +83,8 @@ describe('GetTokensFromRefreshTokenQueryHandler', () => {
 
   it('should throw UnauthorizedException for invalid refresh token', async () => {
     // Arrange
-    const { handler } = await setup({ 
-      jwtMockOptions: { shouldFail: true } 
-    });
-    const query = createQuery();
+    const { handler } = await setup({});
+    const query = new GetTokensFromRefreshTokenQuery('invalid-refresh-token');
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);
@@ -99,14 +92,15 @@ describe('GetTokensFromRefreshTokenQueryHandler', () => {
 
   it('should throw UnauthorizedException if user not found', async () => {
     // Arrange
-    const { handler } = await setup({
-      jwtMockOptions: {
-        mockVerifyRefreshToken: {
-          userId: Id.random().toValue(),
-        },
-      }
-    });
-    const query = createQuery('valid-refresh-token');
+    const { handler, jwtTokenService } = await setup({});
+    const payload: TokenPayload = {
+      userId: Id.random().toValue(),
+      email: Email.random().toValue(),
+      username: Username.random().toValue(),
+      role: UserRole.random().toValue(),
+    };
+    const refreshToken = jwtTokenService.generateRefreshToken(payload);
+    const query = new GetTokensFromRefreshTokenQuery(refreshToken);
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);
@@ -114,17 +108,19 @@ describe('GetTokensFromRefreshTokenQueryHandler', () => {
 
   it('should throw UnauthorizedException if user is inactive', async () => {
     // Arrange
-    const { handler } = await setup({
+    const { handler, user, jwtTokenService } = await setup({
       withUser: true,
       userStatus: 'inactive',
-      jwtMockOptions: {
-        mockVerifyRefreshToken: {
-          userId: Id.random().toValue(),
-        }
-      }
     });
 
-    const query = createQuery('valid-refresh-token');
+    const payload: TokenPayload = {
+      userId: user!.id.toValue(),
+      email: user!.email.toValue(),
+      username: user!.username.toValue(),
+      role: user!.role.toValue(),
+    };
+    const refreshToken = jwtTokenService.generateRefreshToken(payload);
+    const query = new GetTokensFromRefreshTokenQuery(refreshToken);
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);

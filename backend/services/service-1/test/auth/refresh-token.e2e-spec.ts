@@ -125,7 +125,7 @@ describe('Refresh Token Flow (E2E)', () => {
     (userRepository as any).users.clear();
   });
 
-  describe('POST /auth/refresh', () => {
+  describe('POST /auth/refresh-token', () => {
     const setupVerifiedUser = async () => {
       const userData = {
         email: 'test@example.com',
@@ -175,7 +175,7 @@ describe('Refresh Token Flow (E2E)', () => {
 
       // Act
       const refreshRes = await request(server)
-        .post('/auth/refresh')
+        .post('/auth/refresh-token')
         .send({ refreshToken })
         .expect(200);
 
@@ -205,7 +205,7 @@ describe('Refresh Token Flow (E2E)', () => {
     it('should return 401 for invalid refresh token', async () => {
       // Act & Assert
       await request(server)
-        .post('/auth/refresh')
+        .post('/auth/refresh-token')
         .send({ refreshToken: 'invalid-token' })
         .expect(401);
     });
@@ -231,24 +231,29 @@ describe('Refresh Token Flow (E2E)', () => {
       const userId = getUsersRes.body.data[0].id;
 
       // Create a refresh token for unverified user using the real service
-      const refreshToken = jwtTokenService.generateRefreshToken({ userId });
+      const refreshToken = jwtTokenService.generateRefreshToken({
+        userId,
+        email: userData.email,
+        username: userData.username,
+        role: userData.role,
+      });
 
       // Act & Assert
-      await request(server).post('/auth/refresh').send({ refreshToken }).expect(401);
+      await request(server).post('/auth/refresh-token').send({ refreshToken }).expect(401);
     });
 
     it('should validate request body properly', async () => {
       // Missing refresh token
-      await request(server).post('/auth/refresh').send({}).expect(400);
+      await request(server).post('/auth/refresh-token').send({}).expect(400);
 
       // Empty refresh token
-      await request(server).post('/auth/refresh').send({ refreshToken: '' }).expect(400);
+      await request(server).post('/auth/refresh-token').send({ refreshToken: '' }).expect(400);
 
       // Wrong field name
-      await request(server).post('/auth/refresh').send({ token: 'some-token' }).expect(400);
+      await request(server).post('/auth/refresh-token').send({ token: 'some-token' }).expect(400);
 
       // Non-string refresh token
-      await request(server).post('/auth/refresh').send({ refreshToken: 123 }).expect(400);
+      await request(server).post('/auth/refresh-token').send({ refreshToken: 123 }).expect(400);
     });
 
     it('should allow multiple refresh operations with same refresh token', async () => {
@@ -257,12 +262,12 @@ describe('Refresh Token Flow (E2E)', () => {
 
       // Act - Refresh multiple times
       const refreshRes1 = await request(server)
-        .post('/auth/refresh')
+        .post('/auth/refresh-token')
         .send({ refreshToken })
         .expect(200);
 
       const refreshRes2 = await request(server)
-        .post('/auth/refresh')
+        .post('/auth/refresh-token')
         .send({ refreshToken })
         .expect(200);
 
@@ -279,13 +284,13 @@ describe('Refresh Token Flow (E2E)', () => {
 
       // Act - First refresh
       const firstRefreshRes = await request(server)
-        .post('/auth/refresh')
+        .post('/auth/refresh-token')
         .send({ refreshToken: initialRefreshToken })
         .expect(200);
 
       // Act - Second refresh using new refresh token
       const secondRefreshRes = await request(server)
-        .post('/auth/refresh')
+        .post('/auth/refresh-token')
         .send({ refreshToken: firstRefreshRes.body.refreshToken })
         .expect(200);
 
@@ -306,7 +311,7 @@ describe('Refresh Token Flow (E2E)', () => {
 
       // Act
       const refreshRes = await request(server)
-        .post('/auth/refresh')
+        .post('/auth/refresh-token')
         .send({ refreshToken })
         .expect(200);
 
@@ -324,9 +329,9 @@ describe('Refresh Token Flow (E2E)', () => {
 
       // Act - Make concurrent refresh requests
       const [res1, res2, res3] = await Promise.all([
-        request(server).post('/auth/refresh').send({ refreshToken }),
-        request(server).post('/auth/refresh').send({ refreshToken }),
-        request(server).post('/auth/refresh').send({ refreshToken }),
+        request(server).post('/auth/refresh-token').send({ refreshToken }),
+        request(server).post('/auth/refresh-token').send({ refreshToken }),
+        request(server).post('/auth/refresh-token').send({ refreshToken }),
       ]);
 
       // Assert - All requests should succeed
