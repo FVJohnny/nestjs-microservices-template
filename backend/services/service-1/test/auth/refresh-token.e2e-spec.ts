@@ -10,7 +10,7 @@ import { ErrorHandlingModule, JwtAuthModule, JwtTokenService, Id } from '@libs/n
 // Controllers
 import { RegisterUserController } from '@bc/auth/interfaces/controllers/users/register-user/register-user.controller';
 import { VerifyEmailController } from '@bc/auth/interfaces/controllers/auth/email-verification/verify-email.controller';
-import { LoginUserController } from '@bc/auth/interfaces/controllers/users/login-user/login-user.controller';
+import { LoginUserController } from '@bc/auth/interfaces/controllers/auth/login-user/login-user.controller';
 import { RefreshTokenController } from '@bc/auth/interfaces/controllers/auth/refresh-token/refresh-token.controller';
 import { GetUsersController } from '@bc/auth/interfaces/controllers/users/get-users/get-users.controller';
 
@@ -19,13 +19,14 @@ import {
   RegisterUserCommandHandler,
   CreateEmailVerificationCommandHandler,
   VerifyEmailCommandHandler,
-  LoginUserCommandHandler,
+  RecordUserLoginCommandHandler,
 } from '@bc/auth/application/commands';
 
 // Query Handlers
 import {
-  GetNewTokensFromRefreshTokenQueryHandler,
+  GetTokensFromRefreshTokenQueryHandler,
   GetUsersQueryHandler,
+  GetTokensFromUserCredentialsQueryHandler,
 } from '@bc/auth/application/queries';
 
 // Domain Event Handlers
@@ -68,11 +69,12 @@ describe('Refresh Token Flow (E2E)', () => {
         RegisterUserCommandHandler,
         CreateEmailVerificationCommandHandler,
         VerifyEmailCommandHandler,
-        LoginUserCommandHandler,
+        RecordUserLoginCommandHandler,
 
         // Query Handlers
-        GetNewTokensFromRefreshTokenQueryHandler,
+        GetTokensFromRefreshTokenQueryHandler,
         GetUsersQueryHandler,
+        GetTokensFromUserCredentialsQueryHandler,
 
         // Domain Event Handlers
         UserRegistered_SendIntegrationEvent_DomainEventHandler,

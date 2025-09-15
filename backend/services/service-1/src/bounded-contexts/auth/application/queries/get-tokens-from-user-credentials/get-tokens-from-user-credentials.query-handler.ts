@@ -1,30 +1,31 @@
-import { CommandHandler, EventBus } from '@nestjs/cqrs';
+import { QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { LoginUserCommand, LoginUserCommandResponse } from './login-user.command';
+import { GetTokensFromUserCredentialsQuery } from './get-tokens-from-user-credentials.query';
+import { GetTokensFromUserCredentialsQueryResponse } from './get-tokens-from-user-credentials.response';
 import {
   USER_REPOSITORY,
   type UserRepository,
 } from '@bc/auth/domain/repositories/user/user.repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { Email } from '@bc/auth/domain/value-objects';
-import { BaseCommandHandler, UnauthorizedException, JwtTokenService } from '@libs/nestjs-common';
+import { BaseQueryHandler, UnauthorizedException, JwtTokenService } from '@libs/nestjs-common';
 
-@CommandHandler(LoginUserCommand)
-export class LoginUserCommandHandler extends BaseCommandHandler<
-  LoginUserCommand,
-  LoginUserCommandResponse
+@QueryHandler(GetTokensFromUserCredentialsQuery)
+export class GetTokensFromUserCredentialsQueryHandler extends BaseQueryHandler<
+  GetTokensFromUserCredentialsQuery,
+  GetTokensFromUserCredentialsQueryResponse
 > {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
     private readonly jwtTokenService: JwtTokenService,
-    eventBus: EventBus,
   ) {
-    super(eventBus);
+    super();
   }
 
-  protected async handle(command: LoginUserCommand): Promise<LoginUserCommandResponse> {
-    const email = new Email(command.email);
+  protected async handle(
+    query: GetTokensFromUserCredentialsQuery,
+  ): Promise<GetTokensFromUserCredentialsQueryResponse> {
+    const email = new Email(query.email);
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
@@ -32,7 +33,7 @@ export class LoginUserCommandHandler extends BaseCommandHandler<
     }
 
     // Verify password
-    const isPasswordValid = await user.password.verify(command.password);
+    const isPasswordValid = await user.password.verify(query.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException();
     }
@@ -41,13 +42,6 @@ export class LoginUserCommandHandler extends BaseCommandHandler<
     if (!user.isActive()) {
       throw new UnauthorizedException();
     }
-
-    // Record login
-    user.recordLogin();
-    await this.userRepository.save(user);
-
-    // Send domain events if any
-    await this.sendDomainEvents<User>(user);
 
     // Generate JWT tokens
     const payload = {
@@ -62,25 +56,22 @@ export class LoginUserCommandHandler extends BaseCommandHandler<
 
     return {
       userId: user.id.toValue(),
-      email: user.email.toValue(),
-      username: user.username.toValue(),
-      role: user.role.toValue(),
       accessToken,
       refreshToken,
     };
   }
 
-  protected authorize(_command: LoginUserCommand): Promise<boolean> {
+  protected authorize(_query: GetTokensFromUserCredentialsQuery): Promise<boolean> {
     // Login doesn't require additional authorization - authentication is done in handle()
     return Promise.resolve(true);
   }
 
-  protected async validate(command: LoginUserCommand): Promise<void> {
+  protected async validate(query: GetTokensFromUserCredentialsQuery): Promise<void> {
     // Validate email format
-    new Email(command.email);
+    new Email(query.email);
 
     // Basic password validation
-    if (!command.password || command.password.trim().length === 0) {
+    if (!query.password || query.password.trim().length === 0) {
       throw new UnauthorizedException();
     }
   }

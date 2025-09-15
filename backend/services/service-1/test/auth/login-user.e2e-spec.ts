@@ -10,7 +10,7 @@ import { ErrorHandlingModule, JwtAuthModule, JwtTokenService, Id } from '@libs/n
 // Controllers
 import { RegisterUserController } from '@bc/auth/interfaces/controllers/users/register-user/register-user.controller';
 import { VerifyEmailController } from '@bc/auth/interfaces/controllers/auth/email-verification/verify-email.controller';
-import { LoginUserController } from '@bc/auth/interfaces/controllers/users/login-user/login-user.controller';
+import { LoginUserController } from '@bc/auth/interfaces/controllers/auth/login-user/login-user.controller';
 import { GetUsersController } from '@bc/auth/interfaces/controllers/users/get-users/get-users.controller';
 
 // Command Handlers
@@ -18,11 +18,14 @@ import {
   RegisterUserCommandHandler,
   CreateEmailVerificationCommandHandler,
   VerifyEmailCommandHandler,
-  LoginUserCommandHandler,
+  RecordUserLoginCommandHandler,
 } from '@bc/auth/application/commands';
 
 // Query Handlers
-import { GetUsersQueryHandler } from '@bc/auth/application/queries';
+import {
+  GetUsersQueryHandler,
+  GetTokensFromUserCredentialsQueryHandler,
+} from '@bc/auth/application/queries';
 
 // Domain Event Handlers
 import {
@@ -63,10 +66,11 @@ describe('Complete User Authentication Flow (E2E)', () => {
         RegisterUserCommandHandler,
         CreateEmailVerificationCommandHandler,
         VerifyEmailCommandHandler,
-        LoginUserCommandHandler,
+        RecordUserLoginCommandHandler,
 
         // Query Handlers
         GetUsersQueryHandler,
+        GetTokensFromUserCredentialsQueryHandler,
 
         // Domain Event Handlers
         UserRegistered_SendIntegrationEvent_DomainEventHandler,
@@ -154,11 +158,7 @@ describe('Complete User Authentication Flow (E2E)', () => {
         })
         .expect(200);
 
-      // Verify login response structure
-      expect(loginRes.body.userId).toBe(user.id);
-      expect(loginRes.body.email).toBe(user.email);
-      expect(loginRes.body.username).toBe(user.username);
-      expect(loginRes.body.role).toBe(user.role);
+      // Verify login response structure - only tokens
       expect(typeof loginRes.body.accessToken).toBe('string');
       expect(typeof loginRes.body.refreshToken).toBe('string');
 
@@ -168,9 +168,9 @@ describe('Complete User Authentication Flow (E2E)', () => {
       // Verify token can be decoded
       const decodedToken = jwtTokenService.verifyAccessToken(token);
       expect(decodedToken.userId).toBe(user.id);
-      expect(decodedToken.email).toBe(user.email);
-      expect(decodedToken.username).toBe(user.username);
-      expect(decodedToken.role).toBe(user.role);
+      expect(decodedToken.email).toBe(userData.email);
+      expect(decodedToken.username).toBe(userData.username);
+      expect(decodedToken.role).toBe(userData.role);
       expect(decodedToken.iat).toBeDefined();
       expect(decodedToken.exp).toBeDefined();
 

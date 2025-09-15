@@ -2,8 +2,8 @@ import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import {
-  GetNewTokensFromRefreshTokenQuery,
-  GetNewTokensFromRefreshTokenQueryResponse,
+  GetTokensFromRefreshTokenQuery,
+  GetTokensFromRefreshTokenQueryResponse,
 } from '@bc/auth/application/queries';
 import { RefreshTokenControllerParams } from './refresh-token.params';
 import { RefreshTokenResponseDto } from './refresh-token.response';
@@ -27,8 +27,8 @@ export class RefreshTokenController {
   })
   async refreshToken(
     @Body() body: RefreshTokenControllerParams,
-  ): Promise<GetNewTokensFromRefreshTokenQueryResponse> {
-    const query = new GetNewTokensFromRefreshTokenQuery(body.refreshToken);
+  ): Promise<GetTokensFromRefreshTokenQueryResponse> {
+    const query = new GetTokensFromRefreshTokenQuery(body.refreshToken);
 
     return await this.queryBus.execute(query);
   }
