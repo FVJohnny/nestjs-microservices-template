@@ -2,8 +2,6 @@ export * from './register-user/register-user.command';
 export * from './register-user/register-user.command-handler';
 export * from './login-user/login-user.command';
 export * from './login-user/login-user.command-handler';
-export * from './refresh-token/refresh-token.command';
-export * from './refresh-token/refresh-token.command-handler';
 export * from './verify-email/verify-email.command';
 export * from './verify-email/verify-email.command-handler';
 export * from './create-email-verification/create-email-verification.command';

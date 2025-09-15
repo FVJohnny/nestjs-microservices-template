@@ -1,14 +1,14 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { RefreshTokenCommand, RefreshTokenCommandResponse } from '@bc/auth/application/commands';
+import { GetNewTokensFromRefreshTokenQuery, GetNewTokensFromRefreshTokenQueryResponse } from '@bc/auth/application/queries';
 import { RefreshTokenControllerParams } from './refresh-token.params';
 import { RefreshTokenResponseDto } from './refresh-token.response';
 
 @ApiTags('auth')
 @Controller('auth')
 export class RefreshTokenController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(private readonly queryBus: QueryBus) {}
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
@@ -24,9 +24,9 @@ export class RefreshTokenController {
   })
   async refreshToken(
     @Body() body: RefreshTokenControllerParams,
-  ): Promise<RefreshTokenCommandResponse> {
-    const command = new RefreshTokenCommand(body.refreshToken);
+  ): Promise<GetNewTokensFromRefreshTokenQueryResponse> {
+    const query = new GetNewTokensFromRefreshTokenQuery(body.refreshToken);
 
-    return await this.commandBus.execute(command);
+    return await this.queryBus.execute(query);
   }
 }

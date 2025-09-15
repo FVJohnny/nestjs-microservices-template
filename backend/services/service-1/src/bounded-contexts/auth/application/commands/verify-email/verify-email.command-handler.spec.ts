@@ -2,7 +2,7 @@ import { VerifyEmailCommandHandler } from './verify-email.command-handler';
 import { VerifyEmailCommand } from './verify-email.command';
 import { EmailVerificationInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
-import { Email, Expiration } from '@bc/auth/domain/value-objects';
+import { Expiration } from '@bc/auth/domain/value-objects';
 import { EventBus } from '@nestjs/cqrs';
 import {
   createEventBusMock,

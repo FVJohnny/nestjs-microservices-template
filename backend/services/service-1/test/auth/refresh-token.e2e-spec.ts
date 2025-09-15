@@ -19,8 +19,12 @@ import {
   CreateEmailVerificationCommandHandler,
   VerifyEmailCommandHandler,
   LoginUserCommandHandler,
-  RefreshTokenCommandHandler,
 } from '@bc/auth/application/commands';
+
+// Query Handlers
+import {
+  GetNewTokensFromRefreshTokenQueryHandler,
+} from '@bc/auth/application/queries';
 
 // Domain Event Handlers
 import {
@@ -62,7 +66,9 @@ describe('Refresh Token Flow (E2E)', () => {
         CreateEmailVerificationCommandHandler,
         VerifyEmailCommandHandler,
         LoginUserCommandHandler,
-        RefreshTokenCommandHandler,
+
+        // Query Handlers
+        GetNewTokensFromRefreshTokenQueryHandler,
 
         // Domain Event Handlers
         UserRegistered_SendIntegrationEvent_DomainEventHandler,
@@ -156,21 +162,18 @@ describe('Refresh Token Flow (E2E)', () => {
         .send({ refreshToken })
         .expect(200);
 
-      // Assert
-      expect(refreshRes.body).toHaveProperty('userId', userId);
-      expect(refreshRes.body).toHaveProperty('email', userData.email);
-      expect(refreshRes.body).toHaveProperty('username', userData.username);
-      expect(refreshRes.body).toHaveProperty('role', userData.role);
+      // Assert - Only tokens should be returned
       expect(refreshRes.body).toHaveProperty('accessToken');
       expect(refreshRes.body).toHaveProperty('refreshToken');
+      expect(Object.keys(refreshRes.body)).toHaveLength(2); // Only 2 properties: accessToken and refreshToken
 
-      // Verify new tokens are different from original
+      // Verify tokens are valid strings
       expect(refreshRes.body.accessToken).toBeDefined();
       expect(refreshRes.body.refreshToken).toBeDefined();
       expect(typeof refreshRes.body.accessToken).toBe('string');
       expect(typeof refreshRes.body.refreshToken).toBe('string');
 
-      // Verify new access token is valid
+      // Verify new access token is valid and contains correct user data
       const decodedAccessToken = jwtTokenService.verifyAccessToken(refreshRes.body.accessToken);
       expect(decodedAccessToken.userId).toBe(userId);
       expect(decodedAccessToken.email).toBe(userData.email);
@@ -239,7 +242,7 @@ describe('Refresh Token Flow (E2E)', () => {
         .send({ refreshToken })
         .expect(200);
 
-      // Assert - Both refreshes should work
+      // Assert - Both refreshes should work, new refresh tokens generated
       expect(jwtTokenService.verifyAccessToken(refreshRes1.body.accessToken)).toBeDefined();
       expect(jwtTokenService.verifyAccessToken(refreshRes2.body.accessToken)).toBeDefined();
       expect(jwtTokenService.verifyRefreshToken(refreshRes1.body.refreshToken)).toBeDefined();
@@ -265,10 +268,13 @@ describe('Refresh Token Flow (E2E)', () => {
       // Assert
       expect(jwtTokenService.verifyAccessToken(secondRefreshRes.body.accessToken)).toBeDefined();
       expect(jwtTokenService.verifyRefreshToken(secondRefreshRes.body.refreshToken)).toBeDefined();
-      expect(secondRefreshRes.body.userId).toBe(userId);
+      
+      // Verify the user data is correct in the tokens
+      const decodedAccessToken = jwtTokenService.verifyAccessToken(secondRefreshRes.body.accessToken);
+      expect(decodedAccessToken.userId).toBe(userId);
     });
 
-    it('should return consistent user data across refresh operations', async () => {
+    it('should return consistent user data in tokens across refresh operations', async () => {
       // Arrange
       const { userId, userData, refreshToken } = await setupVerifiedUser();
 
@@ -278,11 +284,12 @@ describe('Refresh Token Flow (E2E)', () => {
         .send({ refreshToken })
         .expect(200);
 
-      // Assert - User data should remain consistent
-      expect(refreshRes.body.userId).toBe(userId);
-      expect(refreshRes.body.email).toBe(userData.email);
-      expect(refreshRes.body.username).toBe(userData.username);
-      expect(refreshRes.body.role).toBe(userData.role);
+      // Assert - User data should be consistent in the decoded tokens
+      const decodedAccessToken = jwtTokenService.verifyAccessToken(refreshRes.body.accessToken);
+      expect(decodedAccessToken.userId).toBe(userId);
+      expect(decodedAccessToken.email).toBe(userData.email);
+      expect(decodedAccessToken.username).toBe(userData.username);
+      expect(decodedAccessToken.role).toBe(userData.role);
     });
 
     it('should handle concurrent refresh requests', async () => {

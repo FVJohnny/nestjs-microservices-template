@@ -9,3 +9,6 @@ export * from './get-users/get-users.response';
 export * from './get-users-cursor/get-users-cursor.query';
 export * from './get-users-cursor/get-users-cursor.query-handler';
 export * from './get-users-cursor/get-users-cursor.response';
+
+export * from './get-new-tokens-from-refresh-token/get-new-tokens-from-refresh-token.query';
+export * from './get-new-tokens-from-refresh-token/get-new-tokens-from-refresh-token.query-handler';
