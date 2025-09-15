@@ -4,13 +4,20 @@ import {
   CreateEmailVerificationCommand,
   CreateEmailVerificationCommandResponse,
 } from './create-email-verification.command';
-import { BaseCommandHandler, Id } from '@libs/nestjs-common';
+import {
+  AlreadyExistsException,
+  BaseCommandHandler,
+  Id,
+  NotFoundException,
+} from '@libs/nestjs-common';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { Email } from '@bc/auth/domain/value-objects';
 import {
   EMAIL_VERIFICATION_REPOSITORY,
   type EmailVerificationRepository,
 } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
+import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
+import type { UserRepository } from '@bc/auth/domain/repositories/user/user.repository';
 
 @CommandHandler(CreateEmailVerificationCommand)
 export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
@@ -20,6 +27,8 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
   constructor(
     @Inject(EMAIL_VERIFICATION_REPOSITORY)
     private readonly emailVerificationRepository: EmailVerificationRepository,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: UserRepository,
     eventBus: EventBus,
   ) {
     super(eventBus);
@@ -30,8 +39,6 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
   ): Promise<CreateEmailVerificationCommandResponse> {
     const userId = new Id(command.userId);
     const email = new Email(command.email);
-    // Delete any existing verifications before creating new one
-    await this.removeExistingVerifications(userId, email);
 
     const emailVerification = EmailVerification.create({
       userId,
@@ -52,24 +59,24 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
     return Promise.resolve(true);
   }
 
-  protected async validate(_command: CreateEmailVerificationCommand): Promise<void> {
+  protected async validate(command: CreateEmailVerificationCommand): Promise<void> {
+    const user = await this.userRepository.findById(new Id(command.userId));
+    if (!user) {
+      throw new NotFoundException('user');
+    }
     // No validation needed - we'll remove existing verifications if they exist
-  }
-
-  /**
-   * Remove any existing email verifications for the same user or email
-   */
-  private async removeExistingVerifications(userId: Id, email: Email): Promise<void> {
-    const existingVerificationByUserId =
-      await this.emailVerificationRepository.findByUserId(userId);
-    if (existingVerificationByUserId) {
-      await this.emailVerificationRepository.remove(existingVerificationByUserId.id);
+    const existingVerificationByEmail = await this.emailVerificationRepository.findByEmail(
+      new Email(command.email),
+    );
+    if (existingVerificationByEmail) {
+      throw new AlreadyExistsException('email', command.email);
     }
 
-    // Remove existing verification for this email (if different from user's verification)
-    const existingVerificationByEmail = await this.emailVerificationRepository.findByEmail(email);
-    if (existingVerificationByEmail) {
-      await this.emailVerificationRepository.remove(existingVerificationByEmail.id);
+    const existingVerificationByUserId = await this.emailVerificationRepository.findByUserId(
+      new Id(command.userId),
+    );
+    if (existingVerificationByUserId) {
+      throw new AlreadyExistsException('userId', command.userId);
     }
   }
 }
