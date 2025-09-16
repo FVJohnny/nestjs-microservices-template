@@ -3,8 +3,6 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { INTEGRATION_EVENT_PUBLISHER } from './event-publisher.interface';
 import type { IntegrationEventPublisher } from './event-publisher.interface';
-import { INTEGRATION_EVENT_LISTENER } from './integration-event-listener.base';
-import type { IntegrationEventListener } from './integration-event-listener.base';
 import { TracingMetadata } from '../../tracing';
 
 /**
@@ -17,8 +15,6 @@ export class IntegrationEventsController {
   constructor(
     @Inject(INTEGRATION_EVENT_PUBLISHER)
     private readonly integrationEventPublisher: IntegrationEventPublisher,
-    @Inject(INTEGRATION_EVENT_LISTENER)
-    private readonly integrationEventListener: IntegrationEventListener,
   ) {}
 
   @Post('publish')
