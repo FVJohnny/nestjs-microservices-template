@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AuthBoundedContextModule } from '../../src/bounded-contexts/auth/auth.module';
-import { JwtAuthModule, OutboxModule } from '@libs/nestjs-common';
+import { JwtAuthModule, OutboxModule, ErrorHandlingModule } from '@libs/nestjs-common';
 import { configureApp } from '../../src/app-config';
 import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import type { UserRepository } from '@bc/auth/domain/repositories/user/user.repository';
@@ -25,9 +25,14 @@ export interface E2ETestSetup {
 }
 
 export async function createE2ETestApp(): Promise<E2ETestSetup> {
+  // Create fresh repository instances for each test suite
+  const userRepository = new UserInMemoryRepository(false);
+  const emailVerificationRepository = new EmailVerificationInMemoryRepository(false);
+
   const moduleFixture: TestingModule = await Test.createTestingModule({
     imports: [
       CqrsModule.forRoot(),
+      ErrorHandlingModule,
       JwtAuthModule,
       RedisIntegrationEventsModule,
       OutboxModule.forRoot({ repository: InMemoryOutboxRepository }),
@@ -35,29 +40,18 @@ export async function createE2ETestApp(): Promise<E2ETestSetup> {
     ],
   })
     .overrideProvider(USER_REPOSITORY)
-    .useFactory({
-      factory: () => new UserInMemoryRepository(false),
-    })
+    .useValue(userRepository)
     .overrideProvider(EMAIL_VERIFICATION_REPOSITORY)
-    .useFactory({
-      factory: () => new EmailVerificationInMemoryRepository(false),
-    })
+    .useValue(emailVerificationRepository)
     .compile();
 
   const app = moduleFixture.createNestApplication();
 
   // Apply shared configuration but disable production-only features for tests
-  configureApp(app, {
-    enableCors: false, // Not needed for supertest
-    enableHelmet: false, // Can interfere with test requests
-    enableSwagger: false, // Not needed in tests
-    enableShutdownHooks: false, // Tests handle cleanup differently
-  });
+  configureApp(app);
 
   await app.init();
 
-  const userRepository = app.get(USER_REPOSITORY);
-  const emailVerificationRepository = app.get(EMAIL_VERIFICATION_REPOSITORY);
   const server = app.getHttpServer();
 
   const clearRepositories = async () => {
