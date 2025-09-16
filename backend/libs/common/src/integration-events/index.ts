@@ -1,6 +1,5 @@
 // Interfaces
 export * from './module/event-publisher.interface';
-export * from './module/integration-event-handler.base';
 export * from './module/in-memory.integration-event-publisher';
 
 // Types

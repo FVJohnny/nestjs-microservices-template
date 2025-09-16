@@ -1,12 +1,12 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { RegisterUserCommand } from '@bc/auth/application/commands';
-import { RegisterUserControllerParams } from './register-user.params';
+import { RegisterUser_Command } from '@bc/auth/application/commands';
+import { RegisterUser_ControllerParams } from './register-user.params';
 
 @ApiTags('users')
 @Controller('users')
-export class RegisterUserController {
+export class RegisterUser_Controller {
   constructor(private readonly commandBus: CommandBus) {}
 
   @Post()
@@ -20,8 +20,8 @@ export class RegisterUserController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid input or user already exists',
   })
-  async registerUser(@Body() body: RegisterUserControllerParams): Promise<void> {
-    const command = new RegisterUserCommand(body);
+  async registerUser(@Body() body: RegisterUser_ControllerParams): Promise<void> {
+    const command = new RegisterUser_Command(body);
 
     await this.commandBus.execute(command);
   }

@@ -2,22 +2,17 @@ import { randomUUID } from 'crypto';
 
 import { TracingService } from './tracing.service';
 
-export interface TracingMetadataParams {
-  causationId: string;
-}
-export class TracingMetadata implements TracingMetadataParams {
+export class TracingMetadata {
   public readonly causationId: string;
   public readonly id: string;
   public readonly correlationId: string;
   public readonly userId: string;
 
-  constructor(params?: TracingMetadataParams) {
+  constructor(params?: Partial<TracingMetadata>) {
     this.id = randomUUID();
     this.causationId = params?.causationId ?? 'none';
-
-    const context = TracingService.getContext();
-    this.correlationId = context?.correlationId ?? 'none';
-    this.userId = context?.userId ?? 'anonymous';
+    this.correlationId = params?.correlationId ?? TracingService.getCorrelationId() ?? 'none';
+    this.userId = params?.userId ?? 'anonymous';
   }
 
   toJSON(): Record<string, string> {

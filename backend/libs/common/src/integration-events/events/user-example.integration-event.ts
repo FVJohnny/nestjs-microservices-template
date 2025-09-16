@@ -1,4 +1,4 @@
-import type { TracingMetadataParams } from '../../tracing/tracing-metadata';
+import { TracingMetadata } from '../../tracing/tracing-metadata';
 import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './base-integration-event';
 import { Topics } from './topics';
 
@@ -12,7 +12,7 @@ export class UserExampleIntegrationEvent extends BaseIntegrationEvent {
   readonly name = Topics.USERS.events.USER_EXAMPLE;
   readonly topic = Topics.USERS.topic;
 
-  constructor(props: UserExampleIntegrationEventProps, metadata?: TracingMetadataParams) {
+  constructor(props: UserExampleIntegrationEventProps, metadata?: TracingMetadata) {
     super(props, metadata);
   }
 
@@ -25,7 +25,7 @@ export class UserExampleIntegrationEvent extends BaseIntegrationEvent {
       {
         occurredOn: json.occurredOn ? new Date(json.occurredOn as string) : undefined,
       },
-      json.metadata as TracingMetadataParams | undefined,
+      new TracingMetadata(json.metadata as TracingMetadata),
     );
     event.validate();
     return event;

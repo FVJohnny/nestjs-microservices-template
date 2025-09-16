@@ -22,10 +22,9 @@ import { PostgresDBModule } from '@libs/nestjs-postgresql';
     PostgresDBModule,
 
     // INTEGRATION EVENT MODULES
+    OutboxModule.forRoot({ repository: MongoOutboxRepository }),
     RedisIntegrationEventsModule,
     // KafkaIntegrationEventsModule,
-    OutboxModule.forRoot({ repository: MongoOutboxRepository }),
-    EventTrackerModule,
 
     // COMMON MODULES
     CqrsModule.forRoot(),
@@ -34,6 +33,7 @@ import { PostgresDBModule } from '@libs/nestjs-postgresql';
     ErrorHandlingModule,
     MetricsModule,
     JwtAuthModule,
+    EventTrackerModule,
 
     // BOUNDED CONTEXTS
     AuthBoundedContextModule,

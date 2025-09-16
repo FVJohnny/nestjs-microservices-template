@@ -1,12 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { EventTrackerService } from './event-tracker.service';
 import {
+  IIntegrationEventHandler,
   INTEGRATION_EVENT_LISTENER,
   type IntegrationEventListener,
 } from '../integration-events/module/integration-event-listener.base';
-import type { IIntegrationEventHandler } from '../integration-events/module/integration-event-handler.base';
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
 import { CorrelationLogger } from '../logger';
+import { TracingService } from '../tracing/tracing.service';
 
 /**
  * Universal Integration Event Tracker that intercepts Integration Event Listener methods
@@ -52,13 +53,16 @@ export class IntegrationEventTrackerInterceptor {
 
     // Wrap handleMessage
     listener.handleMessage = async (topicName: string, message: ParsedIntegrationMessage) => {
-      try {
-        await originalHandleMessage(topicName, message);
-        this.eventTracker.trackEvent(topicName, message, true);
-      } catch (error) {
-        this.eventTracker.trackEvent(topicName, message, false);
-        throw error;
-      }
+      // Run the entire message handling within the tracing context
+      return TracingService.runWithContext(message.metadata, async () => {
+        try {
+          await originalHandleMessage(topicName, message);
+          this.eventTracker.trackEvent(topicName, message, true);
+        } catch (error) {
+          this.eventTracker.trackEvent(topicName, message, false);
+          throw error;
+        }
+      });
     };
   }
 

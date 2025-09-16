@@ -1,6 +1,6 @@
-import { VerifyEmailCommandHandler } from './verify-email.command-handler';
-import { VerifyEmailCommand } from './verify-email.command';
-import { EmailVerificationInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
+import { VerifyEmail_CommandHandler } from './verify-email.command-handler';
+import { VerifyEmail_Command } from './verify-email.command';
+import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { Expiration } from '@bc/auth/domain/value-objects';
 import { EventBus } from '@nestjs/cqrs';
@@ -13,12 +13,12 @@ import {
   InvalidOperationException,
   ApplicationException,
 } from '@libs/nestjs-common';
-import { EmailVerificationVerifiedDomainEvent } from 'src/bounded-contexts/auth/domain/events/email-verified.domain-event';
+import { EmailVerificationVerified_DomainEvent } from 'src/bounded-contexts/auth/domain/events/email-verified.domain-event';
 
 describe('VerifyEmailCommandHandler', () => {
   // Test data factory
   const createCommand = (props?: { emailVerificationId?: string }) => {
-    return new VerifyEmailCommand({
+    return new VerifyEmail_Command({
       emailVerificationId: props?.emailVerificationId || Id.random().toValue(),
     });
   };
@@ -39,9 +39,9 @@ describe('VerifyEmailCommandHandler', () => {
       shouldFailEventBus = false,
     } = params;
 
-    const repository = new EmailVerificationInMemoryRepository(shouldFailRepository);
+    const repository = new EmailVerification_InMemory_Repository(shouldFailRepository);
     const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
-    const commandHandler = new VerifyEmailCommandHandler(
+    const commandHandler = new VerifyEmail_CommandHandler(
       repository,
       eventBus as unknown as EventBus,
     );
@@ -100,7 +100,7 @@ describe('VerifyEmailCommandHandler', () => {
 
       // Assert
       expect(eventBus.events).toHaveLength(1);
-      const event = eventBus.events[0] as EmailVerificationVerifiedDomainEvent;
+      const event = eventBus.events[0] as EmailVerificationVerified_DomainEvent;
 
       expect(event.aggregateId.toValue()).toBe(emailVerification!.id.toValue());
       expect(event.userId.toValue()).toBe(emailVerification!.userId.toValue());

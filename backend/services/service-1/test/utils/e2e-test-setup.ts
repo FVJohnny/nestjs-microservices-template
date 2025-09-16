@@ -2,11 +2,11 @@ import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import { configureApp } from '../../src/app-config';
-import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
-import type { UserRepository } from '@bc/auth/domain/repositories/user/user.repository';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import type { User_Repository } from '@bc/auth/domain/repositories/user/user.repository';
 import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
-import { EmailVerificationInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
-import type { EmailVerificationRepository } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
+import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
+import type { EmailVerification_Repository } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { EMAIL_VERIFICATION_REPOSITORY } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { InMemoryOutboxRepository, OUTBOX_REPOSITORY } from '@libs/nestjs-common';
 import type { Server } from 'http';
@@ -15,16 +15,16 @@ import { AppModule } from 'src/app.module';
 export interface E2ETestSetup {
   app: INestApplication;
   server: Server;
-  userRepository: UserRepository;
-  emailVerificationRepository: EmailVerificationRepository;
+  userRepository: User_Repository;
+  emailVerificationRepository: EmailVerification_Repository;
   clearRepositories: () => Promise<void>;
   cleanup: () => Promise<void>;
 }
 
 export async function createE2ETestApp(): Promise<E2ETestSetup> {
   // Create fresh repository instances for each test suite
-  const userRepository = new UserInMemoryRepository(false);
-  const emailVerificationRepository = new EmailVerificationInMemoryRepository(false);
+  const userRepository = new User_InMemory_Repository(false);
+  const emailVerificationRepository = new EmailVerification_InMemory_Repository(false);
   const outboxRepository = new InMemoryOutboxRepository();
 
   const moduleFixture: TestingModule = await Test.createTestingModule({

@@ -1,14 +1,25 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { UserRegisteredDomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
-import { UserCreatedIntegrationEvent, OutboxService } from '@libs/nestjs-common';
+import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
+import {
+  UserCreatedIntegrationEvent,
+  OutboxService,
+  TracingMetadata,
+  CorrelationLogger,
+} from '@libs/nestjs-common';
 
-@EventsHandler(UserRegisteredDomainEvent)
+@EventsHandler(UserRegistered_DomainEvent)
 export class UserRegistered_SendIntegrationEvent_DomainEventHandler
-  implements IEventHandler<UserRegisteredDomainEvent>
+  implements IEventHandler<UserRegistered_DomainEvent>
 {
+  private readonly logger = new CorrelationLogger(
+    UserRegistered_SendIntegrationEvent_DomainEventHandler.name,
+  );
   constructor(private readonly outboxService: OutboxService) {}
 
-  async handle(event: UserRegisteredDomainEvent): Promise<void> {
+  async handle(event: UserRegistered_DomainEvent): Promise<void> {
+    this.logger.log(
+      `Sending UserCreated integration event for user ${event.aggregateId.toValue()}`,
+    );
     const integrationEvent = new UserCreatedIntegrationEvent(
       {
         userId: event.aggregateId.toValue(),
@@ -16,7 +27,7 @@ export class UserRegistered_SendIntegrationEvent_DomainEventHandler
         username: event.username.toValue(),
         role: event.role.toValue(),
       },
-      { causationId: event.metadata.id },
+      new TracingMetadata(event.metadata),
     );
 
     await this.outboxService.storeEvent(

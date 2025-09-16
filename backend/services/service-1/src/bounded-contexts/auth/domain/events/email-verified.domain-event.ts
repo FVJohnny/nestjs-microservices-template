@@ -8,7 +8,7 @@ export interface EmailVerificationVerifiedDomainEventProps {
   email: Email;
 }
 
-export class EmailVerificationVerifiedDomainEvent extends DomainEvent {
+export class EmailVerificationVerified_DomainEvent extends DomainEvent {
   constructor(
     public readonly emailVerificationId: Id,
     public readonly userId: Id,

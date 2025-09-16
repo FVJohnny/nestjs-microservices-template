@@ -1,6 +1,6 @@
-import { GetTokensFromUserCredentialsQueryHandler } from './get-tokens-from-user-credentials.query-handler';
-import { GetTokensFromUserCredentialsQuery } from './get-tokens-from-user-credentials.query';
-import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { GetTokensFromUserCredentials_QueryHandler } from './get-tokens-from-user-credentials.query-handler';
+import { GetTokensFromUserCredentials_Query } from './get-tokens-from-user-credentials.query';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { Email, Password, UserStatus } from '@bc/auth/domain/value-objects';
 import { JwtService } from '@nestjs/jwt';
@@ -11,33 +11,30 @@ import {
   JwtTokenService,
 } from '@libs/nestjs-common';
 
-describe('GetTokensFromUserCredentialsQueryHandler', () => {
-  const createQuery = (overrides: Partial<GetTokensFromUserCredentialsQuery> = {}) =>
-    new GetTokensFromUserCredentialsQuery({
+describe('GetTokensFromUserCredentials_QueryHandler', () => {
+  const createQuery = (overrides: Partial<GetTokensFromUserCredentials_Query> = {}) =>
+    new GetTokensFromUserCredentials_Query({
       email: overrides.email || Email.random().toValue(),
       password: overrides.password || Password.random().toValue(),
     });
 
   const setup = async (
-    params: { 
-      withUser?: boolean; 
+    params: {
+      withUser?: boolean;
       userStatus?: UserStatus;
       shouldFailRepository?: boolean;
-    } = {}
+    } = {},
   ) => {
-    const { 
-      withUser = false, 
+    const {
+      withUser = false,
       userStatus = UserStatus.active(),
       shouldFailRepository = false,
     } = params;
 
     // Create real JWT service
     const jwtTokenService = new JwtTokenService(new JwtService());
-    const repository = new UserInMemoryRepository(shouldFailRepository);
-    const handler = new GetTokensFromUserCredentialsQueryHandler(
-      repository,
-      jwtTokenService,
-    );
+    const repository = new User_InMemory_Repository(shouldFailRepository);
+    const handler = new GetTokensFromUserCredentials_QueryHandler(repository, jwtTokenService);
 
     let user: User | null = null;
     if (withUser) {
@@ -69,14 +66,14 @@ describe('GetTokensFromUserCredentialsQueryHandler', () => {
       expect(result.userId).toBe(user!.id.toValue());
       expect(typeof result.accessToken).toBe('string');
       expect(typeof result.refreshToken).toBe('string');
-      
+
       // Verify access token contains correct payload
       const decodedAccessToken = jwtTokenService.verifyAccessToken(result.accessToken);
       expect(decodedAccessToken.userId).toBe(user!.id.toValue());
       expect(decodedAccessToken.email).toBe(user!.email.toValue());
       expect(decodedAccessToken.username).toBe(user!.username.toValue());
       expect(decodedAccessToken.role).toBe(user!.role.toValue());
-      
+
       // Verify refresh token contains correct payload
       const decodedRefreshToken = jwtTokenService.verifyRefreshToken(result.refreshToken);
       expect(decodedRefreshToken.userId).toBe(user!.id.toValue());
@@ -107,9 +104,9 @@ describe('GetTokensFromUserCredentialsQueryHandler', () => {
 
     it('should throw UnauthorizedException when user is inactive', async () => {
       // Arrange
-      const { handler, user } = await setup({ 
-        withUser: true, 
-        userStatus: UserStatus.inactive() 
+      const { handler, user } = await setup({
+        withUser: true,
+        userStatus: UserStatus.inactive(),
       });
       const query = createQuery({
         email: user!.email.toValue(),
@@ -122,9 +119,9 @@ describe('GetTokensFromUserCredentialsQueryHandler', () => {
 
     it('should throw UnauthorizedException when user is email verification pending', async () => {
       // Arrange
-      const { handler, user } = await setup({ 
-        withUser: true, 
-        userStatus: UserStatus.emailVerificationPending() 
+      const { handler, user } = await setup({
+        withUser: true,
+        userStatus: UserStatus.emailVerificationPending(),
       });
       const query = createQuery({
         email: user!.email.toValue(),

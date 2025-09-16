@@ -1,15 +1,19 @@
 import { UserRegistered_SendIntegrationEvent_DomainEventHandler } from './user-registered_send-integration-event.domain-event-handler';
-import {
-  UserRegisteredDomainEvent,
-} from '@bc/auth/domain/events/user-registered.domain-event';
+import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 import { Email } from '@bc/auth/domain/value-objects';
-import { InfrastructureException, InMemoryIntegrationEventPublisher, InMemoryOutboxRepository, OutboxService, Topics, UserCreatedIntegrationEvent } from '@libs/nestjs-common';
+import {
+  InfrastructureException,
+  InMemoryIntegrationEventPublisher,
+  InMemoryOutboxRepository,
+  OutboxService,
+  Topics,
+  UserCreatedIntegrationEvent,
+} from '@libs/nestjs-common';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 
 describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
-
   const createEventFromUser = (user: User) =>
-    new UserRegisteredDomainEvent(user.id, user.email, user.username, user.role);
+    new UserRegistered_DomainEvent(user.id, user.email, user.username, user.role);
 
   // Setup factory
   const setup = (params: { shouldFailOutbox?: boolean } = {}) => {

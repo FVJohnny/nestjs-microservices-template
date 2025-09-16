@@ -1,10 +1,10 @@
 import { QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { GetTokensFromUserCredentialsQuery } from './get-tokens-from-user-credentials.query';
-import { GetTokensFromUserCredentialsQueryResponse } from './get-tokens-from-user-credentials.response';
+import { GetTokensFromUserCredentials_Query } from './get-tokens-from-user-credentials.query';
+import { GetTokensFromUserCredentials_QueryResponse } from './get-tokens-from-user-credentials.response';
 import {
   USER_REPOSITORY,
-  type UserRepository,
+  type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
 import { Email } from '@bc/auth/domain/value-objects';
 import {
@@ -14,22 +14,22 @@ import {
   TokenPayload,
 } from '@libs/nestjs-common';
 
-@QueryHandler(GetTokensFromUserCredentialsQuery)
-export class GetTokensFromUserCredentialsQueryHandler extends BaseQueryHandler<
-  GetTokensFromUserCredentialsQuery,
-  GetTokensFromUserCredentialsQueryResponse
+@QueryHandler(GetTokensFromUserCredentials_Query)
+export class GetTokensFromUserCredentials_QueryHandler extends BaseQueryHandler<
+  GetTokensFromUserCredentials_Query,
+  GetTokensFromUserCredentials_QueryResponse
 > {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: User_Repository,
     private readonly jwtTokenService: JwtTokenService,
   ) {
     super();
   }
 
   protected async handle(
-    query: GetTokensFromUserCredentialsQuery,
-  ): Promise<GetTokensFromUserCredentialsQueryResponse> {
+    query: GetTokensFromUserCredentials_Query,
+  ): Promise<GetTokensFromUserCredentials_QueryResponse> {
     const email = new Email(query.email);
     const user = await this.userRepository.findByEmail(email);
 
@@ -66,12 +66,12 @@ export class GetTokensFromUserCredentialsQueryHandler extends BaseQueryHandler<
     };
   }
 
-  protected authorize(_query: GetTokensFromUserCredentialsQuery): Promise<boolean> {
+  protected authorize(_query: GetTokensFromUserCredentials_Query): Promise<boolean> {
     // Login doesn't require additional authorization - authentication is done in handle()
     return Promise.resolve(true);
   }
 
-  protected async validate(query: GetTokensFromUserCredentialsQuery): Promise<void> {
+  protected async validate(query: GetTokensFromUserCredentials_Query): Promise<void> {
     // Validate email format
     new Email(query.email);
 

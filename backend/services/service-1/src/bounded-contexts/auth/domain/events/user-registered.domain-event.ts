@@ -2,7 +2,7 @@ import { DomainEvent } from '@libs/nestjs-common';
 import type { UserRole, Email, Username } from '@bc/auth/domain/value-objects';
 import type { Id } from '@libs/nestjs-common';
 
-export class UserRegisteredDomainEvent extends DomainEvent {
+export class UserRegistered_DomainEvent extends DomainEvent {
   constructor(
     public readonly userId: Id,
     public readonly email: Email,

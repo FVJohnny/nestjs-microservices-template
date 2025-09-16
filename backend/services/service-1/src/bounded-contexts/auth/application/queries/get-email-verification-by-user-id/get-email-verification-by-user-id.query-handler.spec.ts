@@ -1,14 +1,14 @@
-import { GetEmailVerificationByUserIdQueryHandler } from './get-email-verification-by-user-id.query-handler';
-import { GetEmailVerificationByUserIdQuery } from './get-email-verification-by-user-id.query';
-import { EmailVerificationInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
+import { GetEmailVerificationByUserId_QueryHandler } from './get-email-verification-by-user-id.query-handler';
+import { GetEmailVerificationByUserId_Query } from './get-email-verification-by-user-id.query';
+import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { Email } from '@bc/auth/domain/value-objects';
 import { NotFoundException, InfrastructureException, Id } from '@libs/nestjs-common';
 
-describe('GetEmailVerificationByUserIdQueryHandler', () => {
+describe('GetEmailVerificationByUserId_QueryHandler', () => {
   // Test data factory
-  const createQuery = (overrides: Partial<GetEmailVerificationByUserIdQuery> = {}) =>
-    new GetEmailVerificationByUserIdQuery({
+  const createQuery = (overrides: Partial<GetEmailVerificationByUserId_Query> = {}) =>
+    new GetEmailVerificationByUserId_Query({
       userId: Id.random().toValue(),
       ...overrides,
     });
@@ -17,8 +17,8 @@ describe('GetEmailVerificationByUserIdQueryHandler', () => {
   const setup = (params: { shouldFailRepository?: boolean } = {}) => {
     const { shouldFailRepository = false } = params;
 
-    const repository = new EmailVerificationInMemoryRepository(shouldFailRepository);
-    const handler = new GetEmailVerificationByUserIdQueryHandler(repository);
+    const repository = new EmailVerification_InMemory_Repository(shouldFailRepository);
+    const handler = new GetEmailVerificationByUserId_QueryHandler(repository);
 
     return { repository, handler };
   };
@@ -60,12 +60,12 @@ describe('GetEmailVerificationByUserIdQueryHandler', () => {
   it('should return the correct email verification for a specific user ID', async () => {
     // Arrange
     const { handler, repository } = setup();
-    
+
     // Create multiple email verifications
     const emailVerification1 = EmailVerification.random();
     const emailVerification2 = EmailVerification.random();
     const emailVerification3 = EmailVerification.random();
-    
+
     await repository.save(emailVerification1);
     await repository.save(emailVerification2);
     await repository.save(emailVerification3);

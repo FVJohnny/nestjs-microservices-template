@@ -1,6 +1,6 @@
-import { RegisterUserCommandHandler } from './register-user.command-handler';
-import { RegisterUserCommand } from './register-user.command';
-import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { RegisterUser_CommandHandler } from './register-user.command-handler';
+import { RegisterUser_Command } from './register-user.command';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
 import { Email, Username, Password, UserRoleEnum, UserRole } from '@bc/auth/domain/value-objects';
 import {
@@ -13,12 +13,12 @@ import {
   wait,
   ApplicationException,
 } from '@libs/nestjs-common';
-import { UserRegisteredDomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
+import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 
 describe('RegisterUserCommandHandler', () => {
   // Test data factory
-  const createCommand = (props?: Partial<RegisterUserCommand>) =>
-    new RegisterUserCommand({
+  const createCommand = (props?: Partial<RegisterUser_Command>) =>
+    new RegisterUser_Command({
       email: props?.email || Email.random().toValue(),
       username: props?.username || Username.random().toValue(),
       password: props?.password || Password.random().toValue(),
@@ -29,9 +29,9 @@ describe('RegisterUserCommandHandler', () => {
   const setup = (params: { shouldFailRepository?: boolean; shouldFailEventBus?: boolean } = {}) => {
     const { shouldFailRepository = false, shouldFailEventBus = false } = params;
 
-    const repository = new UserInMemoryRepository(shouldFailRepository);
+    const repository = new User_InMemory_Repository(shouldFailRepository);
     const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
-    const commandHandler = new RegisterUserCommandHandler(
+    const commandHandler = new RegisterUser_CommandHandler(
       repository,
       eventBus as unknown as EventBus,
     );
@@ -69,8 +69,8 @@ describe('RegisterUserCommandHandler', () => {
       expect(eventBus.events).toBeDefined();
       expect(eventBus.events).toHaveLength(1);
 
-      const publishedEvent = eventBus.events[0] as UserRegisteredDomainEvent;
-      expect(publishedEvent).toBeInstanceOf(UserRegisteredDomainEvent);
+      const publishedEvent = eventBus.events[0] as UserRegistered_DomainEvent;
+      expect(publishedEvent).toBeInstanceOf(UserRegistered_DomainEvent);
       expect(publishedEvent.email.toValue()).toBe(command.email);
       expect(publishedEvent.username.toValue()).toBe(command.username);
       expect(publishedEvent.role.toValue()).toBe(command.role);

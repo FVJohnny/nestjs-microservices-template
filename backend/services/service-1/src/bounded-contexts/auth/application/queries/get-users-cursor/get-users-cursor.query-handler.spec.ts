@@ -1,22 +1,23 @@
-import { GetUsersCursorQueryHandler } from './get-users-cursor.query-handler';
-import { GetUsersCursorQuery } from './get-users-cursor.query';
-import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { GetUsersCursor_QueryHandler } from './get-users-cursor.query-handler';
+import { GetUsersCursor_Query } from './get-users-cursor.query';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { UserRoleEnum } from '@bc/auth/domain/value-objects';
 import { PaginationCursor, InfrastructureException } from '@libs/nestjs-common';
 
-describe('GetUsersCursorQueryHandler', () => {
+describe('GetUsersCursor_QueryHandler', () => {
   // Test data factory
-  const createQuery = (overrides: Partial<GetUsersCursorQuery> = {}) => new GetUsersCursorQuery({
-    ...overrides,
-  });
+  const createQuery = (overrides: Partial<GetUsersCursor_Query> = {}) =>
+    new GetUsersCursor_Query({
+      ...overrides,
+    });
 
   // Setup factory
   const setup = async (numUsers: number, params: { shouldFailRepository?: boolean } = {}) => {
     const { shouldFailRepository = false } = params;
 
-    const repository = new UserInMemoryRepository(shouldFailRepository);
-    const handler = new GetUsersCursorQueryHandler(repository);
+    const repository = new User_InMemory_Repository(shouldFailRepository);
+    const handler = new GetUsersCursor_QueryHandler(repository);
 
     const users = Array.from({ length: numUsers }).map(() => User.random());
     for (const user of users) {
@@ -79,10 +80,10 @@ describe('GetUsersCursorQueryHandler', () => {
       expect(resultsById.data[0]).toEqual(users[0].toValue());
 
       expect(resultsByEmail.data.length).toBeGreaterThanOrEqual(1);
-      expect(resultsByEmail.data.some(u => u.email.includes(emailSubstring))).toBe(true);
+      expect(resultsByEmail.data.some((u) => u.email.includes(emailSubstring))).toBe(true);
 
       expect(resultsByUsername.data.length).toBeGreaterThanOrEqual(1);
-      expect(resultsByUsername.data.some(u => u.username.includes(usernameSubstring))).toBe(true);
+      expect(resultsByUsername.data.some((u) => u.username.includes(usernameSubstring))).toBe(true);
     });
   });
 
@@ -113,11 +114,15 @@ describe('GetUsersCursorQueryHandler', () => {
       const query = createQuery({
         pagination: { sort: { field: 'username', order: 'asc' } },
       });
-      const usersSorted = users.sort((a, b) => a.username.toValue().localeCompare(b.username.toValue()));
+      const usersSorted = users.sort((a, b) =>
+        a.username.toValue().localeCompare(b.username.toValue()),
+      );
       const result = await handler.execute(query);
 
       // Assert
-      expect(result.data.map((u) => u.username)).toEqual(usersSorted.map((u) => u.username.toValue()));
+      expect(result.data.map((u) => u.username)).toEqual(
+        usersSorted.map((u) => u.username.toValue()),
+      );
       expect(result.pagination.hasNext).toBe(false);
     });
 
@@ -135,11 +140,15 @@ describe('GetUsersCursorQueryHandler', () => {
           },
         }),
       );
-      const usersSorted = users.sort((a, b) => a.username.toValue().localeCompare(b.username.toValue()));
+      const usersSorted = users.sort((a, b) =>
+        a.username.toValue().localeCompare(b.username.toValue()),
+      );
 
       // Assert
       expect(page1.data).toHaveLength(pageSize);
-      expect(page1.data.map((u) => u.username)).toEqual(usersSorted.slice(0, pageSize).map((u) => u.username.toValue()));
+      expect(page1.data.map((u) => u.username)).toEqual(
+        usersSorted.slice(0, pageSize).map((u) => u.username.toValue()),
+      );
       expect(page1.pagination.hasNext).toBe(true);
       expect(page1.pagination.cursor).toBeDefined();
     });
@@ -179,19 +188,27 @@ describe('GetUsersCursorQueryHandler', () => {
         }),
       );
 
-      const usersSorted = users.sort((a, b) => a.username.toValue().localeCompare(b.username.toValue()));
+      const usersSorted = users.sort((a, b) =>
+        a.username.toValue().localeCompare(b.username.toValue()),
+      );
 
       // Assert
       expect(page1.data).toHaveLength(pageSize);
-      expect(page1.data.map((u) => u.username)).toEqual(usersSorted.slice(0, pageSize).map((u) => u.username.toValue()));
+      expect(page1.data.map((u) => u.username)).toEqual(
+        usersSorted.slice(0, pageSize).map((u) => u.username.toValue()),
+      );
       expect(page1.pagination.hasNext).toBe(true);
 
       expect(page2.data).toHaveLength(pageSize);
-      expect(page2.data.map((u) => u.username)).toEqual(usersSorted.slice(pageSize, pageSize * 2).map((u) => u.username.toValue()));
+      expect(page2.data.map((u) => u.username)).toEqual(
+        usersSorted.slice(pageSize, pageSize * 2).map((u) => u.username.toValue()),
+      );
       expect(page2.pagination.hasNext).toBe(true);
 
       expect(page3.data).toHaveLength(1);
-      expect(page3.data.map((u) => u.username)).toEqual(usersSorted.slice(pageSize * 2, pageSize * 3).map((u) => u.username.toValue()));
+      expect(page3.data.map((u) => u.username)).toEqual(
+        usersSorted.slice(pageSize * 2, pageSize * 3).map((u) => u.username.toValue()),
+      );
       expect(page3.pagination.hasNext).toBe(false);
     });
 
@@ -227,13 +244,12 @@ describe('GetUsersCursorQueryHandler', () => {
       expect(result2.data).toHaveLength(0);
       expect(result2.pagination.hasNext).toBe(false);
       expect(result2.pagination.cursor).toBeUndefined();
-
     });
 
     it('should handle cursor pagination with filters', async () => {
       // Arrange
       const { handler, users } = await setup(30);
-      const usersWithRole = users.filter(u => u.role.toValue() === UserRoleEnum.USER);
+      const usersWithRole = users.filter((u) => u.role.toValue() === UserRoleEnum.USER);
       const pageSize = 1;
       // Act - Get users with role USER, paginated
       const page1 = await handler.execute(
@@ -256,16 +272,22 @@ describe('GetUsersCursorQueryHandler', () => {
           },
         }),
       );
-      const sortedUsersWithRole = usersWithRole.sort((a, b) => a.username.toValue().localeCompare(b.username.toValue()));
+      const sortedUsersWithRole = usersWithRole.sort((a, b) =>
+        a.username.toValue().localeCompare(b.username.toValue()),
+      );
 
       // Assert
       expect(page1.data).toHaveLength(pageSize);
 
-      expect(page1.data.map((u) => u.username)).toEqual(sortedUsersWithRole.slice(0, pageSize).map((u) => u.username.toValue()));
+      expect(page1.data.map((u) => u.username)).toEqual(
+        sortedUsersWithRole.slice(0, pageSize).map((u) => u.username.toValue()),
+      );
       expect(page1.pagination.hasNext).toBe(usersWithRole.length > pageSize);
 
       expect(page2.data).toHaveLength(pageSize);
-      expect(page2.data.map((u) => u.username)).toEqual(sortedUsersWithRole.slice(pageSize, pageSize * 2).map((u) => u.username.toValue()));
+      expect(page2.data.map((u) => u.username)).toEqual(
+        sortedUsersWithRole.slice(pageSize, pageSize * 2).map((u) => u.username.toValue()),
+      );
     });
 
     it('should use tiebreaker when provided', async () => {
@@ -293,7 +315,7 @@ describe('GetUsersCursorQueryHandler', () => {
     it('should handle empty repository', async () => {
       // Arrange
       const { handler } = await setup(0);
-      
+
       // Act
       const query = createQuery();
       const result = await handler.execute(query);
@@ -355,7 +377,7 @@ describe('GetUsersCursorQueryHandler', () => {
     });
 
     it('should handle multiple pages traversal consistently', async () => {
-      // Arrange 
+      // Arrange
       const { handler, users } = await setup(6);
       const pageSize = 2;
 
@@ -379,7 +401,9 @@ describe('GetUsersCursorQueryHandler', () => {
         cursor = page.pagination.cursor;
         hasNext = page.pagination.hasNext || false;
       }
-      const expectedUsernames = users.sort((a, b) => a.username.toValue().localeCompare(b.username.toValue())).map(u => u.username.toValue());
+      const expectedUsernames = users
+        .sort((a, b) => a.username.toValue().localeCompare(b.username.toValue()))
+        .map((u) => u.username.toValue());
 
       // Assert - Should get all users in correct order
       expect(allUsernames).toEqual(expectedUsernames);

@@ -1,6 +1,6 @@
-import { CreateEmailVerificationCommandHandler } from './create-email-verification.command-handler';
-import { CreateEmailVerificationCommand } from './create-email-verification.command';
-import { EmailVerificationInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
+import { CreateEmailVerification_CommandHandler } from './create-email-verification.command-handler';
+import { CreateEmailVerification_Command } from './create-email-verification.command';
+import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
 import {
   ApplicationException,
@@ -8,17 +8,17 @@ import {
   createEventBusMock,
   InfrastructureException,
 } from '@libs/nestjs-common';
-import { EmailVerificationCreatedDomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
+import { EmailVerificationCreated_DomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
 import { Id } from '@libs/nestjs-common';
 import { Email, Expiration } from '@bc/auth/domain/value-objects';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
-import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 
 describe('CreateEmailVerificationCommandHandler', () => {
   // Test data factory
   const createCommand = ({ userId, email }: { userId?: string; email?: string }) =>
-    new CreateEmailVerificationCommand({
+    new CreateEmailVerification_Command({
       userId: userId || Id.random().toValue(),
       email: email || Email.random().toValue(),
     });
@@ -39,12 +39,12 @@ describe('CreateEmailVerificationCommandHandler', () => {
       shouldFailEventBus = false,
     } = params;
 
-    const emailVerificationRepository = new EmailVerificationInMemoryRepository(
+    const emailVerificationRepository = new EmailVerification_InMemory_Repository(
       shouldFailRepository,
     );
-    const userRepository = new UserInMemoryRepository(shouldFailRepository);
+    const userRepository = new User_InMemory_Repository(shouldFailRepository);
     const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
-    const commandHandler = new CreateEmailVerificationCommandHandler(
+    const commandHandler = new CreateEmailVerification_CommandHandler(
       emailVerificationRepository,
       userRepository,
       eventBus as unknown as EventBus,
@@ -124,8 +124,8 @@ describe('CreateEmailVerificationCommandHandler', () => {
 
       // Assert
       expect(eventBus.events).toHaveLength(1);
-      const event = eventBus.events[0] as EmailVerificationCreatedDomainEvent;
-      expect(event).toBeInstanceOf(EmailVerificationCreatedDomainEvent);
+      const event = eventBus.events[0] as EmailVerificationCreated_DomainEvent;
+      expect(event).toBeInstanceOf(EmailVerificationCreated_DomainEvent);
       expect(event.aggregateId.toValue()).toBeDefined();
       expect(event.userId.toValue()).toBe(command.userId);
       expect(event.email.toValue()).toBe(command.email);
@@ -137,7 +137,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
   describe('Error Cases', () => {
     it('should throw AlreadyExistsException when EmailVerification already exists with the same email', async () => {
       // Arrange
-      const { commandHandler, userRepository, emailVerification } = await setup({ 
+      const { commandHandler, userRepository, emailVerification } = await setup({
         withExistingUser: true,
         withExistingVerification: true,
       });
@@ -145,7 +145,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
       const user = User.random();
       await userRepository.save(user);
 
-      const command = createCommand({ 
+      const command = createCommand({
         email: emailVerification!.email.toValue(),
         userId: user.id.toValue(),
       });
@@ -156,8 +156,11 @@ describe('CreateEmailVerificationCommandHandler', () => {
 
     it('should throw AlreadyExistsException when EmailVerification already exists with the same userId', async () => {
       // Arrange
-      const { commandHandler, emailVerification } = await setup({  withExistingUser: true, withExistingVerification: true });
-      const command = createCommand({ 
+      const { commandHandler, emailVerification } = await setup({
+        withExistingUser: true,
+        withExistingVerification: true,
+      });
+      const command = createCommand({
         userId: emailVerification!.userId.toValue(),
       });
 
@@ -176,7 +179,10 @@ describe('CreateEmailVerificationCommandHandler', () => {
 
     it('should propagate event bus exceptions', async () => {
       // Arrange
-      const { commandHandler, user } = await setup({ withExistingUser: true, shouldFailEventBus: true });
+      const { commandHandler, user } = await setup({
+        withExistingUser: true,
+        shouldFailEventBus: true,
+      });
       const command = createCommand({ userId: user!.id.toValue(), email: user!.email.toValue() });
 
       // Act & Assert

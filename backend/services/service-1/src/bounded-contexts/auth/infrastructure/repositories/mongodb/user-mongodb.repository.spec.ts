@@ -1,4 +1,4 @@
-import { UserMongodbRepository } from './user-mongodb.repository';
+import { User_Mongodb_Repository } from './user-mongodb.repository';
 import { testUserRepositoryContract } from '@bc/auth/domain/repositories/user/user.repository.spec';
 import { MongodbTestService } from '@libs/nestjs-mongodb';
 
@@ -7,7 +7,7 @@ describe('UserMongodbRepository (Integration)', () => {
 
   testUserRepositoryContract(
     'MongoDB Implementation',
-    async () => new UserMongodbRepository(mongoTestService.mongoClient),
+    async () => new User_Mongodb_Repository(mongoTestService.mongoClient),
     {
       beforeAll: () => mongoTestService.setupDatabase(),
       afterAll: () => mongoTestService.cleanupDatabase(),

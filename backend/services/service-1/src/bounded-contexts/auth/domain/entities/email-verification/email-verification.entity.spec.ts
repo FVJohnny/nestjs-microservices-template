@@ -1,7 +1,7 @@
 import { EmailVerification } from './email-verification.entity';
 import { Email, Verification, Expiration } from '@bc/auth/domain/value-objects';
-import { EmailVerificationVerifiedDomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
-import { EmailVerificationCreatedDomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
+import { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
+import { EmailVerificationCreated_DomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
 import { InvalidOperationException, Id, Timestamps, wait, DateVO } from '@libs/nestjs-common';
 import { EmailVerificationDTO } from './email-verification.dto';
 
@@ -64,8 +64,8 @@ describe('EmailVerification Entity', () => {
       const events = emailVerification.getUncommittedEvents();
 
       expect(events).toHaveLength(1);
-      const event = events[0] as EmailVerificationCreatedDomainEvent;
-      expect(event).toBeInstanceOf(EmailVerificationCreatedDomainEvent);
+      const event = events[0] as EmailVerificationCreated_DomainEvent;
+      expect(event).toBeInstanceOf(EmailVerificationCreated_DomainEvent);
       expect(event.userId).toBe(emailVerification.userId);
       expect(event.email).toBe(emailVerification.email);
       expect(event.expiration).toBe(emailVerification.expiration);
@@ -87,9 +87,9 @@ describe('EmailVerification Entity', () => {
       const verification = createTestVerification();
       verification.verify();
       const events = verification.getUncommittedEvents();
-      const verifiedEvent = events[0] as EmailVerificationVerifiedDomainEvent;
+      const verifiedEvent = events[0] as EmailVerificationVerified_DomainEvent;
 
-      expect(verifiedEvent).toBeInstanceOf(EmailVerificationVerifiedDomainEvent);
+      expect(verifiedEvent).toBeInstanceOf(EmailVerificationVerified_DomainEvent);
       expect(verifiedEvent.userId).toBe(verification.userId);
       expect(verifiedEvent.email).toBe(verification.email);
     });

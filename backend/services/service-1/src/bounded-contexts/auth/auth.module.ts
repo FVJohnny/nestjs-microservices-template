@@ -3,9 +3,9 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { RuntimeAutoDiscovery } from '@libs/nestjs-common';
 
 // Infrastructure - Repositories
-import { UserMongodbRepository } from './infrastructure/repositories/mongodb/user-mongodb.repository';
+import { User_Mongodb_Repository } from './infrastructure/repositories/mongodb/user-mongodb.repository';
 import { USER_REPOSITORY } from './domain/repositories/user/user.repository';
-import { EmailVerificationMongodbRepository } from './infrastructure/repositories/mongodb/email-verification-mongodb.repository';
+import { EmailVerification_Mongodb_Repository } from './infrastructure/repositories/mongodb/email-verification-mongodb.repository';
 import { EMAIL_VERIFICATION_REPOSITORY } from './domain/repositories/email-verification/email-verification.repository';
 
 // 🚀 RUNTIME AUTO-DISCOVERY
@@ -18,11 +18,11 @@ const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__d
     ...handlers,
     {
       provide: USER_REPOSITORY,
-      useClass: UserMongodbRepository,
+      useClass: User_Mongodb_Repository,
     },
     {
       provide: EMAIL_VERIFICATION_REPOSITORY,
-      useClass: EmailVerificationMongodbRepository,
+      useClass: EmailVerification_Mongodb_Repository,
     },
   ],
 })

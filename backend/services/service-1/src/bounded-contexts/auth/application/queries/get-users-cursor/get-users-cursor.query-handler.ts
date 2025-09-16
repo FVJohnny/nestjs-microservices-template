@@ -1,10 +1,10 @@
 import { QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { GetUsersCursorQuery } from './get-users-cursor.query';
+import { GetUsersCursor_Query } from './get-users-cursor.query';
 import { GetUsersCursorQueryResponse } from './get-users-cursor.response';
 import {
   USER_REPOSITORY,
-  type UserRepository,
+  type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
 import {
   Criteria,
@@ -20,19 +20,19 @@ import {
   PaginationCursor,
 } from '@libs/nestjs-common';
 
-@QueryHandler(GetUsersCursorQuery)
-export class GetUsersCursorQueryHandler extends BaseQueryHandler<
-  GetUsersCursorQuery,
+@QueryHandler(GetUsersCursor_Query)
+export class GetUsersCursor_QueryHandler extends BaseQueryHandler<
+  GetUsersCursor_Query,
   GetUsersCursorQueryResponse
 > {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: User_Repository,
   ) {
     super();
   }
 
-  protected async handle(query: GetUsersCursorQuery): Promise<GetUsersCursorQueryResponse> {
+  protected async handle(query: GetUsersCursor_Query): Promise<GetUsersCursorQueryResponse> {
     const filterList: Filter[] = [];
 
     // Handle specific id filter
@@ -113,12 +113,12 @@ export class GetUsersCursorQueryHandler extends BaseQueryHandler<
     };
   }
 
-  protected authorize(_query: GetUsersCursorQuery): Promise<boolean> {
+  protected authorize(_query: GetUsersCursor_Query): Promise<boolean> {
     // TODO: Implement authorization logic
     return Promise.resolve(true);
   }
 
-  protected validate(_query: GetUsersCursorQuery): Promise<void> {
+  protected validate(_query: GetUsersCursor_Query): Promise<void> {
     // TODO: Implement validation logic
     // For example: validate limit ranges, cursor format, orderBy field names, etc.
     return Promise.resolve();

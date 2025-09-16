@@ -1,22 +1,22 @@
 import { CommandBus } from '@nestjs/cqrs';
 import { IntegrationEventHandler, UserExampleIntegrationEvent } from '@libs/nestjs-common';
-import { RegisterUserCommand } from '@bc/auth/application/commands';
+import { RegisterUser_Command } from '@bc/auth/application/commands';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 
 @IntegrationEventHandler(UserExampleIntegrationEvent)
-export class UserExampleIntegrationEventHandler {
-  private readonly logger = new CorrelationLogger(UserExampleIntegrationEventHandler.name);
+export class UserExample_IntegrationEventHandler {
+  private readonly logger = new CorrelationLogger(UserExample_IntegrationEventHandler.name);
 
   constructor(private readonly commandBus: CommandBus) {}
 
   async handleEvent(event: UserExampleIntegrationEvent): Promise<void> {
-    this.logger.log(`Handling UserExample integration event: ${JSON.stringify(event.toJSON())}`);
+    this.logger.log(`Handling UserExample integration event id: ${event.metadata.id}`);
 
     try {
       // Generate random user data
       const user = User.random();
-      const command = new RegisterUserCommand({
+      const command = new RegisterUser_Command({
         email: user.email.toValue(),
         username: user.username.toValue(),
         password: 'password',
@@ -32,7 +32,6 @@ export class UserExampleIntegrationEventHandler {
       this.logger.error(
         `❌ Failed to create example user via UserExample integration event: ${errorMessage}`,
       );
-      throw error;
     }
   }
 }

@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
 import type { ParsedIntegrationMessage } from '../types/integration-event.types';
-import { IIntegrationEventHandler } from './integration-event-handler.base';
 import { CorrelationLogger } from '../../logger';
 
+export interface IIntegrationEventHandler {
+  readonly topicName: string;
+  handle(message: ParsedIntegrationMessage): Promise<void>;
+}
 interface HandlerInfo {
   handler: IIntegrationEventHandler;
   eventName: string;

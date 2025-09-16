@@ -1,14 +1,14 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { GetUsersQuery, GetUsersQueryResponse } from '@bc/auth/application/queries';
-import { GetUsersControllerParams } from './get-users.params';
+import { GetUsers_Query, GetUsersQueryResponse } from '@bc/auth/application/queries';
+import { GetUsers_ControllerParams } from './get-users.params';
 
 @ApiTags('users')
 // @ApiBearerAuth()
 // @UseGuards(JwtAuthGuard)
 @Controller('users')
-export class GetUsersController {
+export class GetUsers_Controller {
   constructor(private readonly queryBus: QueryBus) {}
 
   @Get()
@@ -18,8 +18,8 @@ export class GetUsersController {
     description: 'User IDs retrieved successfully',
     type: Object,
   })
-  async getUsers(@Query() params: GetUsersControllerParams): Promise<GetUsersQueryResponse> {
-    const query = new GetUsersQuery({
+  async getUsers(@Query() params: GetUsers_ControllerParams): Promise<GetUsersQueryResponse> {
+    const query = new GetUsers_Query({
       userId: params.userId,
       status: params.status,
       role: params.role,

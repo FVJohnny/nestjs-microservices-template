@@ -1,4 +1,4 @@
-import { TracingMetadata, type TracingMetadataParams } from '../../tracing';
+import { TracingMetadata } from '../../tracing';
 
 /**
  * Base interface for all integration event props.
@@ -19,9 +19,9 @@ export abstract class BaseIntegrationEvent {
   readonly occurredOn: Date;
   readonly metadata: TracingMetadata;
 
-  constructor(props: BaseIntegrationEventProps, metadata?: TracingMetadataParams) {
+  constructor(props: BaseIntegrationEventProps, metadata?: TracingMetadata) {
     this.occurredOn = props.occurredOn || new Date();
-    this.metadata = new TracingMetadata(metadata);
+    this.metadata = metadata ?? new TracingMetadata();
   }
 
   /**

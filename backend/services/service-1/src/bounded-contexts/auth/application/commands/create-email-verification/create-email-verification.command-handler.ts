@@ -1,6 +1,6 @@
 import { CommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { CreateEmailVerificationCommand } from './create-email-verification.command';
+import { CreateEmailVerification_Command } from './create-email-verification.command';
 import {
   AlreadyExistsException,
   BaseCommandHandler,
@@ -11,27 +11,27 @@ import { EmailVerification } from '@bc/auth/domain/entities/email-verification/e
 import { Email } from '@bc/auth/domain/value-objects';
 import {
   EMAIL_VERIFICATION_REPOSITORY,
-  type EmailVerificationRepository,
+  type EmailVerification_Repository,
 } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
-import type { UserRepository } from '@bc/auth/domain/repositories/user/user.repository';
+import type { User_Repository } from '@bc/auth/domain/repositories/user/user.repository';
 
-@CommandHandler(CreateEmailVerificationCommand)
-export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
-  CreateEmailVerificationCommand,
+@CommandHandler(CreateEmailVerification_Command)
+export class CreateEmailVerification_CommandHandler extends BaseCommandHandler<
+  CreateEmailVerification_Command,
   void
 > {
   constructor(
     @Inject(EMAIL_VERIFICATION_REPOSITORY)
-    private readonly emailVerificationRepository: EmailVerificationRepository,
+    private readonly emailVerificationRepository: EmailVerification_Repository,
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: User_Repository,
     eventBus: EventBus,
   ) {
     super(eventBus);
   }
 
-  protected async handle(command: CreateEmailVerificationCommand): Promise<void> {
+  protected async handle(command: CreateEmailVerification_Command): Promise<void> {
     const userId = new Id(command.userId);
     const email = new Email(command.email);
 
@@ -45,12 +45,12 @@ export class CreateEmailVerificationCommandHandler extends BaseCommandHandler<
     await this.sendDomainEvents<EmailVerification>(emailVerification);
   }
 
-  protected authorize(_command: CreateEmailVerificationCommand): Promise<boolean> {
+  protected authorize(_command: CreateEmailVerification_Command): Promise<boolean> {
     // TODO: Implement authorization logic if needed
     return Promise.resolve(true);
   }
 
-  protected async validate(command: CreateEmailVerificationCommand): Promise<void> {
+  protected async validate(command: CreateEmailVerification_Command): Promise<void> {
     const user = await this.userRepository.findById(new Id(command.userId));
     if (!user) {
       throw new NotFoundException('user');

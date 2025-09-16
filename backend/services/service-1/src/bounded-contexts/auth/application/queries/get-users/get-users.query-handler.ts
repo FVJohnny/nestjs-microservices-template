@@ -1,10 +1,10 @@
 import { QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { GetUsersQuery } from './get-users.query';
+import { GetUsers_Query } from './get-users.query';
 import { GetUsersQueryResponse } from './get-users.response';
 import {
   USER_REPOSITORY,
-  type UserRepository,
+  type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
 import {
   Criteria,
@@ -20,16 +20,16 @@ import {
   PaginationOffset,
 } from '@libs/nestjs-common';
 
-@QueryHandler(GetUsersQuery)
-export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUsersQueryResponse> {
+@QueryHandler(GetUsers_Query)
+export class GetUsers_QueryHandler extends BaseQueryHandler<GetUsers_Query, GetUsersQueryResponse> {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: User_Repository,
   ) {
     super();
   }
 
-  protected async handle(query: GetUsersQuery): Promise<GetUsersQueryResponse> {
+  protected async handle(query: GetUsers_Query): Promise<GetUsersQueryResponse> {
     const filterList: Filter[] = [];
 
     // Handle specific id filter
@@ -113,12 +113,12 @@ export class GetUsersQueryHandler extends BaseQueryHandler<GetUsersQuery, GetUse
     };
   }
 
-  protected authorize(_query: GetUsersQuery): Promise<boolean> {
+  protected authorize(_query: GetUsers_Query): Promise<boolean> {
     // TODO: Implement authorization logic
     return Promise.resolve(true);
   }
 
-  protected validate(_query: GetUsersQuery): Promise<void> {
+  protected validate(_query: GetUsers_Query): Promise<void> {
     // TODO: Implement validation logic
     // For example: validate limit/offset ranges, orderBy field names, etc.
     return Promise.resolve();

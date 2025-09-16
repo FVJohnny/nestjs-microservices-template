@@ -9,7 +9,7 @@ import {
   Password,
   LastLogin,
 } from '@bc/auth/domain/value-objects';
-import { UserRegisteredDomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
+import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 import { InvalidOperationException, Timestamps, Id, wait, DateVO } from '@libs/nestjs-common';
 import { UserDTO } from './user.dto';
 
@@ -56,9 +56,9 @@ describe('User Entity', () => {
       // Assert
       const events = user.getUncommittedEvents();
       expect(events).toHaveLength(1);
-      expect(events[0]).toBeInstanceOf(UserRegisteredDomainEvent);
+      expect(events[0]).toBeInstanceOf(UserRegistered_DomainEvent);
 
-      const event = events[0] as UserRegisteredDomainEvent;
+      const event = events[0] as UserRegistered_DomainEvent;
       expect(event.aggregateId).toBe(user.id);
       expect(event.email).toBe(email);
       expect(event.username).toBe(username);
@@ -486,7 +486,7 @@ describe('User Entity', () => {
       // Assert - UserRegisteredDomainEvent should be emitted
       const events = user.getUncommittedEvents();
       expect(events).toHaveLength(1);
-      expect(events[0]).toBeInstanceOf(UserRegisteredDomainEvent);
+      expect(events[0]).toBeInstanceOf(UserRegistered_DomainEvent);
     });
   });
 });

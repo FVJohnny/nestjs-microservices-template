@@ -5,6 +5,7 @@ import { INTEGRATION_EVENT_PUBLISHER } from './event-publisher.interface';
 import type { IntegrationEventPublisher } from './event-publisher.interface';
 import { INTEGRATION_EVENT_LISTENER } from './integration-event-listener.base';
 import type { IntegrationEventListener } from './integration-event-listener.base';
+import { TracingMetadata } from '../../tracing';
 
 /**
  * Generic messaging controller that works with any event source implementation
@@ -58,7 +59,7 @@ export class IntegrationEventsController {
         success: { type: 'boolean', example: true },
         topic: { type: 'string', example: 'trading-signals' },
         message: {
-          type: 'string',
+          type: 'object',
           example: 'Integration event published successfully',
         },
         backend: { type: 'string', example: 'Redis' },
@@ -81,9 +82,14 @@ export class IntegrationEventsController {
       },
     },
   })
-  async publishEvent(@Body() body: { topic: string; message: unknown }) {
+  async publishEvent(@Body() body: { topic: string; message: object }) {
     try {
-      await this.integrationEventPublisher.publish(body.topic, JSON.stringify(body.message));
+      const metadata = new TracingMetadata();
+      const message = {
+        ...body.message,
+        metadata: metadata.toJSON(),
+      };
+      await this.integrationEventPublisher.publish(body.topic, JSON.stringify(message));
 
       // Get backend type from the implementation class name
       const backend = this.integrationEventPublisher.constructor.name.replace(

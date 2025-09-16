@@ -1,7 +1,7 @@
 import { EmailVerificationVerified_UpdateUserStatus_DomainEventHandler } from './email-verification-verified_update-user-status.domain-event-handler';
-import { EmailVerificationVerifiedDomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
+import { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
 import { Email, UserStatus } from '@bc/auth/domain/value-objects';
-import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import {
   NotFoundException,
@@ -13,17 +13,19 @@ import {
 describe('EmailVerificationVerified_UpdateUserStatus_DomainEventHandler', () => {
   // Test data factory
   const createEvent = () =>
-    new EmailVerificationVerifiedDomainEvent(Id.random(), Id.random(), Email.random());
+    new EmailVerificationVerified_DomainEvent(Id.random(), Id.random(), Email.random());
 
   const createEventFromUser = (user: User) =>
-    new EmailVerificationVerifiedDomainEvent(user.id, user.id, user.email);
+    new EmailVerificationVerified_DomainEvent(user.id, user.id, user.email);
 
   // Setup factory
   const setup = (params: { shouldFailRepository?: boolean } = {}) => {
     const { shouldFailRepository = false } = params;
 
-    const userRepository = new UserInMemoryRepository(shouldFailRepository);
-    const eventHandler = new EmailVerificationVerified_UpdateUserStatus_DomainEventHandler(userRepository);
+    const userRepository = new User_InMemory_Repository(shouldFailRepository);
+    const eventHandler = new EmailVerificationVerified_UpdateUserStatus_DomainEventHandler(
+      userRepository,
+    );
 
     return { userRepository, eventHandler };
   };

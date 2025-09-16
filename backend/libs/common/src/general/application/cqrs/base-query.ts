@@ -1,9 +1,9 @@
-import { TracingMetadata, type TracingMetadataParams } from '../../../tracing';
+import type { TracingMetadata } from '../../../tracing';
 
 export abstract class BaseQuery {
   public metadata?: TracingMetadata;
 
-  constructor(metadataParams?: TracingMetadataParams) {
-    this.metadata = new TracingMetadata(metadataParams);
+  constructor(metadata?: TracingMetadata) {
+    this.metadata = metadata;
   }
 }

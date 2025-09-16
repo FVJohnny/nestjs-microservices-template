@@ -2,15 +2,15 @@ import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import {
-  GetTokensFromRefreshTokenQuery,
+  GetTokensFromRefreshToken_Query,
   GetTokensFromRefreshTokenQueryResponse,
 } from '@bc/auth/application/queries';
-import { RefreshTokenControllerParams } from './refresh-token.params';
+import { RefreshToken_ControllerParams } from './refresh-token.params';
 import { RefreshTokenResponseDto } from './refresh-token.response';
 
 @ApiTags('auth')
 @Controller('auth')
-export class RefreshTokenController {
+export class RefreshToken_Controller {
   constructor(private readonly queryBus: QueryBus) {}
 
   @Post('refresh-token')
@@ -26,9 +26,9 @@ export class RefreshTokenController {
     description: 'Invalid or expired refresh token',
   })
   async refreshToken(
-    @Body() body: RefreshTokenControllerParams,
+    @Body() body: RefreshToken_ControllerParams,
   ): Promise<GetTokensFromRefreshTokenQueryResponse> {
-    const query = new GetTokensFromRefreshTokenQuery(body.refreshToken);
+    const query = new GetTokensFromRefreshToken_Query(body.refreshToken);
 
     return await this.queryBus.execute(query);
   }

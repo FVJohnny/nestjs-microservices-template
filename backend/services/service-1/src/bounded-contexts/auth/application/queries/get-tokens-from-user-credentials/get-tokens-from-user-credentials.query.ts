@@ -2,7 +2,7 @@ import type { IQuery } from '@nestjs/cqrs';
 import type { TracingMetadata } from '@libs/nestjs-common';
 import { BaseQuery } from '@libs/nestjs-common';
 
-export class GetTokensFromUserCredentialsQuery extends BaseQuery implements IQuery {
+export class GetTokensFromUserCredentials_Query extends BaseQuery implements IQuery {
   public readonly email: string;
   public readonly password: string;
 

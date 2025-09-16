@@ -1,8 +1,8 @@
 import { DateVO, Id, Timestamps } from '@libs/nestjs-common';
 import { SharedAggregateRoot, InvalidOperationException } from '@libs/nestjs-common';
 import { Email, Verification, Expiration } from '@bc/auth/domain/value-objects';
-import { EmailVerificationVerifiedDomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
-import { EmailVerificationCreatedDomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
+import { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
+import { EmailVerificationCreated_DomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
 import type { EmailVerificationDTO } from './email-verification.dto';
 
 export interface EmailVerificationAttributes {
@@ -42,7 +42,7 @@ export class EmailVerification extends SharedAggregateRoot {
     });
 
     emailVerification.apply(
-      new EmailVerificationCreatedDomainEvent(
+      new EmailVerificationCreated_DomainEvent(
         emailVerification.id,
         emailVerification.userId,
         emailVerification.email,
@@ -75,7 +75,7 @@ export class EmailVerification extends SharedAggregateRoot {
     this.verification = Verification.verified();
     this.timestamps.update();
 
-    this.apply(new EmailVerificationVerifiedDomainEvent(this.id, this.userId, this.email));
+    this.apply(new EmailVerificationVerified_DomainEvent(this.id, this.userId, this.email));
   }
 
   isVerified(): boolean {

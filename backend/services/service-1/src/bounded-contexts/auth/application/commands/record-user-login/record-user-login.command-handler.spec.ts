@@ -1,6 +1,6 @@
-import { RecordUserLoginCommandHandler } from './record-user-login.command-handler';
-import { RecordUserLoginCommand } from './record-user-login.command';
-import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { RecordUserLogin_CommandHandler } from './record-user-login.command-handler';
+import { RecordUserLogin_Command } from './record-user-login.command';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { UserStatus, LastLogin } from '@bc/auth/domain/value-objects';
 import { EventBus } from '@nestjs/cqrs';
@@ -16,27 +16,20 @@ import {
 
 describe('RecordUserLoginCommandHandler', () => {
   const createCommand = (overrides: { userId?: string } = {}) =>
-    new RecordUserLoginCommand(overrides.userId || Id.random().toValue());
+    new RecordUserLogin_Command({ userId: overrides.userId || Id.random().toValue() });
 
   const setup = async (
     params: {
       withUser?: boolean;
       shouldFailRepository?: boolean;
       shouldFailEventBus?: boolean;
-    } = {}
+    } = {},
   ) => {
-    const {
-      withUser = false,
-      shouldFailRepository = false,
-      shouldFailEventBus = false,
-    } = params;
+    const { withUser = false, shouldFailRepository = false, shouldFailEventBus = false } = params;
 
-    const repository = new UserInMemoryRepository(shouldFailRepository);
+    const repository = new User_InMemory_Repository(shouldFailRepository);
     const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
-    const handler = new RecordUserLoginCommandHandler(
-      repository,
-      eventBus as unknown as EventBus
-    );
+    const handler = new RecordUserLogin_CommandHandler(repository, eventBus as unknown as EventBus);
 
     let user: User | null = null;
     if (withUser) {
@@ -78,9 +71,9 @@ describe('RecordUserLoginCommandHandler', () => {
       await handler.execute(command);
       const firstLoginUser = await repository.findById(user!.id);
       const firstLoginTime = firstLoginUser!.lastLogin;
-      
+
       await wait(10);
-      
+
       // Act - Second login
       await handler.execute(command);
       const secondLoginUser = await repository.findById(user!.id);
@@ -105,9 +98,9 @@ describe('RecordUserLoginCommandHandler', () => {
 
     it('should throw InfrastructureException when repository fails', async () => {
       // Arrange
-      const { handler } = await setup({ 
+      const { handler } = await setup({
         withUser: false,
-        shouldFailRepository: true 
+        shouldFailRepository: true,
       });
       const userId = Id.random().toValue();
       const command = createCommand({ userId });
@@ -118,9 +111,9 @@ describe('RecordUserLoginCommandHandler', () => {
 
     it('should throw ApplicationException when event bus fails', async () => {
       // Arrange
-      const { handler, user } = await setup({ 
+      const { handler, user } = await setup({
         withUser: true,
-        shouldFailEventBus: true 
+        shouldFailEventBus: true,
       });
       const command = createCommand({ userId: user!.id.toValue() });
 
@@ -145,9 +138,9 @@ describe('RecordUserLoginCommandHandler', () => {
 
     it('should not throw when eventBus is successful', async () => {
       // Arrange
-      const { handler, user } = await setup({ 
+      const { handler, user } = await setup({
         withUser: true,
-        shouldFailEventBus: false 
+        shouldFailEventBus: false,
       });
       const command = createCommand({ userId: user!.id.toValue() });
 
@@ -160,7 +153,7 @@ describe('RecordUserLoginCommandHandler', () => {
     it('should handle empty userId', async () => {
       // Arrange
       const { handler } = await setup();
-      const command = new RecordUserLoginCommand('');
+      const command = new RecordUserLogin_Command({ userId: ''});
 
       // Act & Assert
       await expect(handler.execute(command)).rejects.toThrow();
@@ -169,7 +162,7 @@ describe('RecordUserLoginCommandHandler', () => {
     it('should handle invalid userId format', async () => {
       // Arrange
       const { handler } = await setup();
-      const command = new RecordUserLoginCommand('invalid-id');
+      const command = new RecordUserLogin_Command({ userId: 'invalid-id' });
 
       // Act & Assert
       await expect(handler.execute(command)).rejects.toThrow();
@@ -178,7 +171,7 @@ describe('RecordUserLoginCommandHandler', () => {
     it('should handle null userId', async () => {
       // Arrange
       const { handler } = await setup();
-      const command = new RecordUserLoginCommand(null as any);
+      const command = new RecordUserLogin_Command(null as any);
 
       // Act & Assert
       await expect(handler.execute(command)).rejects.toThrow();
@@ -187,7 +180,7 @@ describe('RecordUserLoginCommandHandler', () => {
     it('should handle undefined userId', async () => {
       // Arrange
       const { handler } = await setup();
-      const command = new RecordUserLoginCommand(undefined as any);
+      const command = new RecordUserLogin_Command(undefined as any);
 
       // Act & Assert
       await expect(handler.execute(command)).rejects.toThrow();
@@ -208,7 +201,7 @@ describe('RecordUserLoginCommandHandler', () => {
       ]);
 
       // Assert - All should succeed
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.status).toBe('fulfilled');
       });
     });

@@ -1,17 +1,17 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { RecordUserLoginCommand } from '@bc/auth/application/commands';
+import { RecordUserLogin_Command } from '@bc/auth/application/commands';
 import {
-  GetTokensFromUserCredentialsQuery,
-  GetTokensFromUserCredentialsQueryResponse,
+  GetTokensFromUserCredentials_Query,
+  GetTokensFromUserCredentials_QueryResponse,
 } from '@bc/auth/application/queries';
 import { LoginUserControllerParams } from './login-user.params';
 import { LoginUserResponseDto } from './login-user.response';
 
 @ApiTags('auth')
 @Controller('auth')
-export class LoginUserController {
+export class LoginUser_Controller {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
@@ -31,16 +31,18 @@ export class LoginUserController {
   })
   async loginUser(
     @Body() body: LoginUserControllerParams,
-  ): Promise<GetTokensFromUserCredentialsQueryResponse> {
+  ): Promise<GetTokensFromUserCredentials_QueryResponse> {
     // Get tokens using query
-    const tokensQuery = new GetTokensFromUserCredentialsQuery({
+    const tokensQuery = new GetTokensFromUserCredentials_Query({
       email: body.email,
       password: body.password,
     });
     const { accessToken, refreshToken, userId } = await this.queryBus.execute(tokensQuery);
 
+    console.log('USER IS ', userId);
+
     // Record login using command (async)
-    const recordLoginCommand = new RecordUserLoginCommand(userId);
+    const recordLoginCommand = new RecordUserLogin_Command({ userId });
     this.commandBus.execute(recordLoginCommand);
 
     return {

@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { MongoClient } from 'mongodb';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { UserRepository } from '@bc/auth/domain/repositories/user/user.repository';
+import { User_Repository } from '@bc/auth/domain/repositories/user/user.repository';
 import { Email, Username } from '@bc/auth/domain/value-objects';
 import { UserDTO } from '@bc/auth/domain/entities/user/user.dto';
 import { Criteria, PaginatedRepoResult, Id } from '@libs/nestjs-common';
@@ -13,7 +13,10 @@ import {
 } from '@libs/nestjs-mongodb';
 
 @Injectable()
-export class UserMongodbRepository extends BaseMongoRepository<UserDTO> implements UserRepository {
+export class User_Mongodb_Repository
+  extends BaseMongoRepository<UserDTO>
+  implements User_Repository
+{
   constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
     super(mongoClient, 'users');
   }

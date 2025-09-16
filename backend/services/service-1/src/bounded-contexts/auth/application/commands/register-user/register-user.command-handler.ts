@@ -1,25 +1,29 @@
 import { CommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { RegisterUserCommand } from './register-user.command';
+import { RegisterUser_Command } from './register-user.command';
 import {
   USER_REPOSITORY,
-  type UserRepository,
+  type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { Email, Username, Password, UserRole, UserRoleEnum } from '@bc/auth/domain/value-objects';
 import { AlreadyExistsException, BaseCommandHandler } from '@libs/nestjs-common';
+import { CorrelationLogger } from '@libs/nestjs-common';
 
-@CommandHandler(RegisterUserCommand)
-export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserCommand, void> {
+@CommandHandler(RegisterUser_Command)
+export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser_Command, void> {
+  private readonly logger = new CorrelationLogger(RegisterUser_CommandHandler.name);
+
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: User_Repository,
     eventBus: EventBus,
   ) {
     super(eventBus);
   }
 
-  protected async handle(command: RegisterUserCommand): Promise<void> {
+  protected async handle(command: RegisterUser_Command): Promise<void> {
+    this.logger.log(`Registering user: ${command.email} (${command.username})`);
     const user = User.create({
       email: new Email(command.email),
       username: new Username(command.username),
@@ -30,14 +34,16 @@ export class RegisterUserCommandHandler extends BaseCommandHandler<RegisterUserC
     await this.userRepository.save(user);
 
     await this.sendDomainEvents<User>(user);
+
+    this.logger.log(`Registered user: ${command.email} (${command.username})`);
   }
 
-  protected authorize(_command: RegisterUserCommand): Promise<boolean> {
+  protected authorize(_command: RegisterUser_Command): Promise<boolean> {
     // TODO: Implement authorization logic
     return Promise.resolve(true);
   }
 
-  protected async validate(command: RegisterUserCommand): Promise<void> {
+  protected async validate(command: RegisterUser_Command): Promise<void> {
     const email = new Email(command.email);
     const username = new Username(command.username);
 

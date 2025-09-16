@@ -1,7 +1,7 @@
 import { IsString, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class RefreshTokenControllerParams {
+export class RefreshToken_ControllerParams {
   @ApiProperty({
     description: 'The refresh token to exchange for new tokens',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',

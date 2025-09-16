@@ -1,17 +1,12 @@
-import { GetTokensFromRefreshTokenQueryHandler } from './get-tokens-from-refresh-token.query-handler';
-import { GetTokensFromRefreshTokenQuery } from './get-tokens-from-refresh-token.query';
-import { UserInMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { GetTokensFromRefreshToken_QueryHandler } from './get-tokens-from-refresh-token.query-handler';
+import { GetTokensFromRefreshToken_Query } from './get-tokens-from-refresh-token.query';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { Email, Username, UserRole, UserStatus } from '@bc/auth/domain/value-objects';
-import {
-  Id,
-  JwtTokenService,
-  TokenPayload,
-  UnauthorizedException,
-} from '@libs/nestjs-common';
+import { Id, JwtTokenService, TokenPayload, UnauthorizedException } from '@libs/nestjs-common';
 import { JwtService } from '@nestjs/jwt';
 
-describe('GetTokensFromRefreshTokenQueryHandler', () => {
+describe('GetTokensFromRefreshToken_QueryHandler', () => {
   const setup = async (
     params: {
       withUser?: boolean;
@@ -21,9 +16,9 @@ describe('GetTokensFromRefreshTokenQueryHandler', () => {
   ) => {
     const { withUser = false, userStatus = 'active', shouldFailRepository = false } = params;
 
-    const repository = new UserInMemoryRepository(shouldFailRepository);
+    const repository = new User_InMemory_Repository(shouldFailRepository);
     const jwtTokenService = new JwtTokenService(new JwtService());
-    const handler = new GetTokensFromRefreshTokenQueryHandler(repository, jwtTokenService);
+    const handler = new GetTokensFromRefreshToken_QueryHandler(repository, jwtTokenService);
 
     let user: User | null = null;
     if (withUser) {
@@ -51,7 +46,7 @@ describe('GetTokensFromRefreshTokenQueryHandler', () => {
       role: user!.role.toValue(),
     };
     const refreshToken = jwtTokenService.generateRefreshToken(payload);
-    const query = new GetTokensFromRefreshTokenQuery(refreshToken);
+    const query = new GetTokensFromRefreshToken_Query(refreshToken);
     // Act
     const result = await handler.execute(query);
 
@@ -75,7 +70,7 @@ describe('GetTokensFromRefreshTokenQueryHandler', () => {
   it('should throw UnauthorizedException for empty refresh token', async () => {
     // Arrange
     const { handler } = await setup();
-    const query = new GetTokensFromRefreshTokenQuery('');
+    const query = new GetTokensFromRefreshToken_Query('');
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);
@@ -84,7 +79,7 @@ describe('GetTokensFromRefreshTokenQueryHandler', () => {
   it('should throw UnauthorizedException for invalid refresh token', async () => {
     // Arrange
     const { handler } = await setup({});
-    const query = new GetTokensFromRefreshTokenQuery('invalid-refresh-token');
+    const query = new GetTokensFromRefreshToken_Query('invalid-refresh-token');
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);
@@ -100,7 +95,7 @@ describe('GetTokensFromRefreshTokenQueryHandler', () => {
       role: UserRole.random().toValue(),
     };
     const refreshToken = jwtTokenService.generateRefreshToken(payload);
-    const query = new GetTokensFromRefreshTokenQuery(refreshToken);
+    const query = new GetTokensFromRefreshToken_Query(refreshToken);
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);
@@ -120,7 +115,7 @@ describe('GetTokensFromRefreshTokenQueryHandler', () => {
       role: user!.role.toValue(),
     };
     const refreshToken = jwtTokenService.generateRefreshToken(payload);
-    const query = new GetTokensFromRefreshTokenQuery(refreshToken);
+    const query = new GetTokensFromRefreshToken_Query(refreshToken);
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);

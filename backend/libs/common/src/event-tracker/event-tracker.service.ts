@@ -51,15 +51,17 @@ export class EventTrackerService {
       {
         id: event.metadata.id,
         name: eventName,
+        metadata: event.metadata,
       },
       success,
     );
   }
 
   initializeStats(topic: string, eventName: string): void {
-    this.logger.debug(`Initializing stats for topic '${topic}' and event '${eventName}'`);
     const key = this.integrationKey(eventName, topic);
     if (!this.stats.has(key)) {
+      this.logger.debug(`Initializing stats for topic '${topic}' and event '${eventName}'`);
+
       this.stats.set(key, {
         eventName,
         topic,

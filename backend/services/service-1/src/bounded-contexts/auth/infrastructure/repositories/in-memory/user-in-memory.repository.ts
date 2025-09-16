@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { UserRepository } from '@bc/auth/domain/repositories/user/user.repository';
+import { User_Repository } from '@bc/auth/domain/repositories/user/user.repository';
 import { Email, Username } from '@bc/auth/domain/value-objects';
 import {
   AlreadyExistsException,
@@ -13,7 +13,7 @@ import { InfrastructureException } from '@libs/nestjs-common';
 import { Id } from '@libs/nestjs-common';
 
 @Injectable()
-export class UserInMemoryRepository implements UserRepository {
+export class User_InMemory_Repository implements User_Repository {
   private users: Map<string, UserDTO> = new Map();
 
   constructor(private shouldFail: boolean = false) {}

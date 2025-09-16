@@ -1,4 +1,4 @@
-import type { UserRepository } from './user.repository';
+import type { User_Repository } from './user.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import {
   Email,
@@ -39,7 +39,7 @@ describe('UserRepository Contract Test Suite', () => {
 
 export function testUserRepositoryContract(
   description: string,
-  createRepository: () => Promise<UserRepository>,
+  createRepository: () => Promise<User_Repository>,
   setupTeardown?: {
     beforeAll?: () => Promise<void>;
     afterAll?: () => Promise<void>;

@@ -1,4 +1,4 @@
-import type { EmailVerificationRepository } from './email-verification.repository';
+import type { EmailVerification_Repository } from './email-verification.repository';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { Email, Verification, Expiration } from '@bc/auth/domain/value-objects';
 import { AlreadyExistsException, Id } from '@libs/nestjs-common';
@@ -12,17 +12,9 @@ describe('EmailVerificationRepository Contract Test Suite', () => {
   });
 });
 
-/**
- * Shared test suite for EmailVerificationRepository implementations.
- * This ensures all implementations behave consistently and meet the interface contract.
- *
- * @param description Name of the implementation being tested
- * @param createRepository Factory function to create a repository with optional test data
- * @param setupTeardown Optional setup and teardown functions for the repository
- */
 export function testEmailVerificationRepositoryContract(
   description: string,
-  createRepository: (verifications?: EmailVerification[]) => Promise<EmailVerificationRepository>,
+  createRepository: (verifications?: EmailVerification[]) => Promise<EmailVerification_Repository>,
   setupTeardown?: {
     beforeAll?: () => Promise<void>;
     afterAll?: () => Promise<void>;
@@ -31,7 +23,7 @@ export function testEmailVerificationRepositoryContract(
   },
 ) {
   describe(`EmailVerificationRepository Contract: ${description}`, () => {
-    let repository: EmailVerificationRepository;
+    let repository: EmailVerification_Repository;
 
     if (setupTeardown?.beforeAll) {
       beforeAll(setupTeardown.beforeAll);

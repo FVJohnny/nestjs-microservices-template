@@ -42,7 +42,8 @@ describe('Complete Authentication Flow (E2E)', () => {
 
       // Step 2: Get Email Verification via API
       const emailVerificationRes = await request(testSetup.server)
-        .get(`/auth/email-verification/user/${user.id}`)
+        .get(`/auth/email-verification`)
+        .query({ userId: user.id })
         .expect(200);
       const emailVerificationId = emailVerificationRes.body.id;
       expect(emailVerificationId).toBeDefined();
@@ -51,7 +52,7 @@ describe('Complete Authentication Flow (E2E)', () => {
 
       // Step 3: Verify Email
       await request(testSetup.server)
-        .post('/auth/verify-email')
+        .post('/auth/email-verification/verify')
         .send({ emailVerificationId })
         .expect(200);
 
@@ -145,7 +146,7 @@ describe('Complete Authentication Flow (E2E)', () => {
     it('should return 404 for non-existent verification ID', async () => {
       const nonExistentId = '123e4567-e89b-12d3-a456-426614174999';
       await request(testSetup.server)
-        .post('/auth/verify-email')
+        .post('/auth/email-verification/verify')
         .send({ emailVerificationId: nonExistentId })
         .expect(404);
     });
@@ -177,17 +178,18 @@ describe('Complete Authentication Flow (E2E)', () => {
 
       // Get verification
       const verificationRes = await request(testSetup.server)
-        .get(`/auth/email-verification/user/${userId}`)
+        .get(`/auth/email-verification`)
+        .query({ userId })
         .expect(200);
       const emailVerificationId = verificationRes.body.id;
 
       // First verification should succeed. Second verification should fail.
       await request(testSetup.server)
-        .post('/auth/verify-email')
+        .post('/auth/email-verification/verify')
         .send({ emailVerificationId })
         .expect(200);
       await request(testSetup.server)
-        .post('/auth/verify-email')
+        .post('/auth/email-verification/verify')
         .send({ emailVerificationId })
         .expect(400);
     });
@@ -233,12 +235,13 @@ describe('Complete Authentication Flow (E2E)', () => {
       const userId = getUsersRes.body.data[0].id;
 
       const verificationRes = await request(testSetup.server)
-        .get(`/auth/email-verification/user/${userId}`)
+        .get(`/auth/email-verification`)
+        .query({ userId })
         .expect(200);
       const emailVerificationId = verificationRes.body.id;
 
       await request(testSetup.server)
-        .post('/auth/verify-email')
+        .post('/auth/email-verification/verify')
         .send({ emailVerificationId })
         .expect(200);
 

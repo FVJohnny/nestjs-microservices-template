@@ -8,6 +8,7 @@ import {
   INTEGRATION_EVENT_LISTENER,
 } from './integration-event-listener.base';
 import { CorrelationLogger } from '../../logger';
+import { TracingService } from '../../tracing';
 
 // Interface for the handler instance that the decorator expects
 interface IntegrationEventHandlerInstance {
@@ -35,31 +36,7 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
 
     // Extract topic from event class by creating a temporary instance
     // We need to handle the case where constructor requires specific props
-    let topicName: string;
-    try {
-      // Try to create instance with empty payload first
-      const tempInstance = new eventClass({});
-      topicName = tempInstance.getTopic();
-    } catch {
-      // If that fails, try with channel-specific props for backward compatibility
-      try {
-        const tempInstance = new eventClass({
-          channelType: 'temp',
-          name: 'temp',
-          userId: 'temp',
-          connectionConfig: {},
-        });
-        topicName = tempInstance.getTopic();
-      } catch {
-        // If both fail, try to access the topic property from a prototype instance
-        try {
-          const prototype = eventClass.prototype;
-          topicName = prototype.topic || '';
-        } catch {
-          topicName = '';
-        }
-      }
-    }
+    const topicName = new eventClass({}).getTopic();
 
     // Create a new class that extends the original and adds all the base functionality
     class IntegrationEventHandlerClass extends constructor implements OnModuleInit {
@@ -82,8 +59,11 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
       async handle(message: ParsedIntegrationMessage): Promise<void> {
         const event = eventClass.fromJSON(message);
         const instance = this as unknown as IntegrationEventHandlerInstance;
-        this.logger.log(`Processing ${this.topicName} event [${message.id}] - ${event.name}`);
-        await instance.handleEvent(event);
+
+        await TracingService.runWithContext(message.metadata, async () => {
+          this.logger.log(`Processing ${this.topicName} event [${message.id}] - ${event.name}`);
+          await instance.handleEvent(event);
+        });
       }
     }
 

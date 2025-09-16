@@ -2,15 +2,15 @@ import { Injectable, Inject } from '@nestjs/common';
 import { MongoClient } from 'mongodb';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { EmailVerificationDTO } from '@bc/auth/domain/entities/email-verification/email-verification.dto';
-import { EmailVerificationRepository } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
+import { EmailVerification_Repository } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { Email, Expiration, Verification } from '@bc/auth/domain/value-objects';
 import { Id } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN, BaseMongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
 
 @Injectable()
-export class EmailVerificationMongodbRepository
+export class EmailVerification_Mongodb_Repository
   extends BaseMongoRepository<EmailVerificationDTO>
-  implements EmailVerificationRepository
+  implements EmailVerification_Repository
 {
   constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
     super(mongoClient, 'email_verifications');

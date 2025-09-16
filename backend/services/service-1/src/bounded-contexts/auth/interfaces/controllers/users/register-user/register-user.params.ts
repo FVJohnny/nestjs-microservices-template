@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty } from 'class-validator';
 import { UserRoleEnum } from '@bc/auth/domain/value-objects';
 
-export class RegisterUserControllerParams {
+export class RegisterUser_ControllerParams {
   @ApiProperty({
     example: 'john.doe@example.com',
     description: 'User email address',

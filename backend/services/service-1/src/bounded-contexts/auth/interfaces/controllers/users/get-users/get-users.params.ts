@@ -2,7 +2,7 @@ import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ControllerPaginationParams } from '@libs/nestjs-common';
 
-export class GetUsersControllerParams extends ControllerPaginationParams {
+export class GetUsers_ControllerParams extends ControllerPaginationParams {
   @ApiProperty({ required: false, description: 'Filter by user ID' })
   @IsOptional()
   @IsString()
