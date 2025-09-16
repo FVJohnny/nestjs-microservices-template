@@ -180,7 +180,6 @@ describe('GET /users (E2E)', () => {
       limit: 2,
       offset: 1,
     };
-    console.log('asking for data', pageParams);
     const page = await request(testSetup.server).get('/users').query(pageParams).expect(200);
     expect(page.body.data.map((u: any) => u.username)).toEqual(['user1', 'user2']);
   });

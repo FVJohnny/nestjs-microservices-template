@@ -9,7 +9,6 @@ import {
 import { CorrelationLogger } from '../logger';
 import { Request, Response } from 'express';
 
-import { TracingService } from '../tracing/tracing.service';
 import type { Metadata } from '../utils/metadata';
 import { BaseException } from './base.exception';
 /**
@@ -23,7 +22,6 @@ export interface ErrorResponse {
     cause?: string;
     timestamp: string;
     path: string;
-    correlationId?: string;
     metadata?: Metadata;
     stack?: string;
   };
@@ -43,7 +41,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const correlationId = TracingService.getCorrelationId();
     const path = request.url;
     const timestamp = new Date().toISOString();
 
@@ -51,16 +48,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof BaseException) {
       // Handle custom domain/application exceptions
-      errorResponse = this.handleBaseException(exception, path, correlationId, timestamp);
-      this.logException(exception, correlationId, false);
+      errorResponse = this.handleBaseException(exception, path, timestamp);
+      this.logException(exception, false);
     } else if (exception instanceof HttpException) {
       // Handle NestJS HTTP exceptions
-      errorResponse = this.handleHttpException(exception, path, correlationId, timestamp);
-      this.logException(exception, correlationId, false);
+      errorResponse = this.handleHttpException(exception, path, timestamp);
+      this.logException(exception, false);
     } else {
       // Handle unexpected errors
-      errorResponse = this.handleUnexpectedException(exception, path, correlationId, timestamp);
-      this.logException(exception, correlationId, true);
+      errorResponse = this.handleUnexpectedException(exception, path, timestamp);
+      this.logException(exception, true);
     }
 
     response.status(this.getHttpStatus(exception)).json(errorResponse);
@@ -69,15 +66,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   private handleBaseException(
     exception: BaseException,
     path: string,
-    correlationId: string | undefined,
     timestamp: string,
   ): ErrorResponse {
     // Set context on exception if not already set
     if (!exception.path) {
       exception.setPath(path);
-    }
-    if (correlationId && !exception.correlationId) {
-      exception.setCorrelationId(correlationId);
     }
 
     return {
@@ -88,7 +81,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         cause: exception.cause?.message,
         timestamp,
         path,
-        ...(correlationId && { correlationId }),
         ...(exception.metadata && { metadata: exception.metadata }),
       },
     };
@@ -97,7 +89,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   private handleHttpException(
     exception: HttpException,
     path: string,
-    correlationId: string | undefined,
     timestamp: string,
   ): ErrorResponse {
     const status = exception.getStatus();
@@ -114,7 +105,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message: Array.isArray(message) ? message.join(', ') : message,
         timestamp,
         path,
-        ...(correlationId && { correlationId }),
       },
     };
   }
@@ -122,7 +112,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   private handleUnexpectedException(
     exception: unknown,
     path: string,
-    correlationId: string | undefined,
     timestamp: string,
   ): ErrorResponse {
     const error = exception instanceof Error ? exception : new Error('Unknown error');
@@ -134,7 +123,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message: this.isProduction() ? 'An unexpected error occurred' : error.message,
         timestamp,
         path,
-        ...(correlationId && { correlationId }),
       },
     };
   }
@@ -149,14 +137,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     return HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
-  private logException(exception: unknown, correlationId?: string, isUnexpected = false): void {
+  private logException(exception: unknown, isUnexpected = false): void {
     const error = exception instanceof Error ? exception : new Error('Unknown error');
     const logLevel = isUnexpected ? 'error' : 'warn';
 
     // Build a readable log message
     const logParts = [
       `${error.name}: ${error.message}`,
-      ...(correlationId ? [`[correlationId: ${correlationId}]`] : []),
       ...(exception instanceof BaseException ? [`[code: ${exception.code}]`] : []),
       ...(exception instanceof BaseException && exception.metadata
         ? [`[metadata: ${JSON.stringify(exception.metadata)}]`]
