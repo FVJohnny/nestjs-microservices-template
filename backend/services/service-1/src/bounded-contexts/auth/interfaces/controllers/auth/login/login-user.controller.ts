@@ -39,8 +39,6 @@ export class LoginUser_Controller {
     });
     const { accessToken, refreshToken, userId } = await this.queryBus.execute(tokensQuery);
 
-    console.log('USER IS ', userId);
-
     // Record login using command (async)
     const recordLoginCommand = new RecordUserLogin_Command({ userId });
     this.commandBus.execute(recordLoginCommand);
