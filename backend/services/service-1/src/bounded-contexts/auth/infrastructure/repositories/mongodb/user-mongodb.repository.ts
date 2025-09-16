@@ -155,6 +155,14 @@ export class UserMongodbRepository extends BaseMongoRepository<UserDTO> implemen
     }
   }
 
+  async clear(): Promise<void> {
+    try {
+      await this.collection.deleteMany({});
+    } catch (error: unknown) {
+      this.handleDatabaseError('clear', '', error);
+    }
+  }
+
   protected defineIndexes(): IndexSpec[] {
     return [
       {

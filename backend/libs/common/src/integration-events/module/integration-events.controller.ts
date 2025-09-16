@@ -1,9 +1,9 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { INTEGRATION_EVENT_PUBLISHER_TOKEN } from './event-publisher.interface';
+import { INTEGRATION_EVENT_PUBLISHER } from './event-publisher.interface';
 import type { IntegrationEventPublisher } from './event-publisher.interface';
-import { INTEGRATION_EVENT_LISTENER_TOKEN } from './integration-event-listener.base';
+import { INTEGRATION_EVENT_LISTENER } from './integration-event-listener.base';
 import type { IntegrationEventListener } from './integration-event-listener.base';
 
 /**
@@ -14,9 +14,9 @@ import type { IntegrationEventListener } from './integration-event-listener.base
 @Controller('integration-events')
 export class IntegrationEventsController {
   constructor(
-    @Inject(INTEGRATION_EVENT_PUBLISHER_TOKEN)
+    @Inject(INTEGRATION_EVENT_PUBLISHER)
     private readonly integrationEventPublisher: IntegrationEventPublisher,
-    @Inject(INTEGRATION_EVENT_LISTENER_TOKEN)
+    @Inject(INTEGRATION_EVENT_LISTENER)
     private readonly integrationEventListener: IntegrationEventListener,
   ) {}
 

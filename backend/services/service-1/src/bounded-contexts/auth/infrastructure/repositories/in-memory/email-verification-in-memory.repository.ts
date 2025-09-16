@@ -96,6 +96,10 @@ export class EmailVerificationInMemoryRepository implements EmailVerificationRep
     return this.emailVerifications.has(id.toValue());
   }
 
+  async clear(): Promise<void> {
+    this.emailVerifications.clear();
+  }
+
   private isDtoPending(dto: EmailVerificationDTO): boolean {
     const verification = new Verification(dto.verification);
     const expiration = new Expiration(dto.expiration);

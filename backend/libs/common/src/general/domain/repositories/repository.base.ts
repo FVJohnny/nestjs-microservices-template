@@ -24,4 +24,9 @@ export interface Repository<T, ID = Id> {
    * Checks if an entity exists by its ID
    */
   exists(id: ID): Promise<boolean>;
+
+  /**
+   * Clears the repository
+   */
+  clear(): Promise<void>;
 }

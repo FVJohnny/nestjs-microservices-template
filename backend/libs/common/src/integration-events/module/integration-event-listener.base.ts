@@ -10,7 +10,7 @@ interface HandlerInfo {
   handlerName: string;
 }
 
-export const INTEGRATION_EVENT_LISTENER_TOKEN = 'IntegrationEventListener';
+export const INTEGRATION_EVENT_LISTENER = 'IntegrationEventListener';
 export interface IntegrationEventListener {
   registerEventHandler(topicName: string, handler: IIntegrationEventHandler): Promise<void>;
 }

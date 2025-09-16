@@ -147,4 +147,8 @@ export class UserInMemoryRepository implements UserRepository {
     }
     return this.users.has(id.toValue());
   }
+
+  async clear(): Promise<void> {
+    this.users.clear();
+  }
 }

@@ -5,7 +5,7 @@ import { BaseIntegrationEvent } from '../events';
 import { ParsedIntegrationMessage } from '../types/integration-event.types';
 import {
   type BaseIntegrationEventListener,
-  INTEGRATION_EVENT_LISTENER_TOKEN,
+  INTEGRATION_EVENT_LISTENER,
 } from './integration-event-listener.base';
 import { CorrelationLogger } from '../../logger';
 
@@ -67,7 +67,7 @@ export function IntegrationEventHandler<T extends BaseIntegrationEvent>(
       eventClass = eventClass;
       readonly topicName = topicName;
 
-      @Inject(INTEGRATION_EVENT_LISTENER_TOKEN)
+      @Inject(INTEGRATION_EVENT_LISTENER)
       private readonly integrationEventListener!: BaseIntegrationEventListener;
 
       constructor(...args: any[]) {

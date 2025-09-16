@@ -2,7 +2,7 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 
 import { BaseIntegrationEvent } from '../events';
 import { ParsedIntegrationMessage } from '../types/integration-event.types';
-import { INTEGRATION_EVENT_LISTENER_TOKEN } from './integration-event-listener.base';
+import { INTEGRATION_EVENT_LISTENER } from './integration-event-listener.base';
 import type { IntegrationEventListener } from './integration-event-listener.base';
 import { CorrelationLogger } from '../../logger';
 
@@ -22,7 +22,7 @@ export abstract class BaseIntegrationEventHandler<T extends BaseIntegrationEvent
   eventClass!: { fromJSON(json: unknown): T };
 
   constructor(
-    @Inject(INTEGRATION_EVENT_LISTENER_TOKEN)
+    @Inject(INTEGRATION_EVENT_LISTENER)
     private readonly integrationEventListener: IntegrationEventListener,
   ) {}
 

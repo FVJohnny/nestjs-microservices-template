@@ -25,27 +25,32 @@ export class RuntimeAutoDiscovery {
     try {
       this.logger.log(`🔍 Starting runtime auto-discovery from: ${boundedContextPath}`);
 
+      // Determine file extension based on environment
+      const isTestEnv = process.env.NODE_ENV === 'test' || __filename.endsWith('.ts');
+      const fileExtension = isTestEnv ? '.ts' : '.js';
+      const controllerSuffix = `.controller${fileExtension}`;
+
       // Discover handlers
       result.handlers = [
-        ...this.discoverHandlers(boundedContextPath, 'application/commands', '.command-handler.js'),
-        ...this.discoverHandlers(boundedContextPath, 'application/queries', '.query-handler.js'),
+        ...this.discoverHandlers(boundedContextPath, 'application/commands', `.command-handler${fileExtension}`),
+        ...this.discoverHandlers(boundedContextPath, 'application/queries', `.query-handler${fileExtension}`),
         ...this.discoverHandlers(
           boundedContextPath,
           'application/domain-event-handlers',
-          '.domain-event-handler.js',
+          `.domain-event-handler${fileExtension}`,
         ),
         ...this.discoverHandlers(
           boundedContextPath,
           'interfaces/integration-events',
-          '.integration-event-handler.js',
+          `.integration-event-handler${fileExtension}`,
         ),
       ];
 
       // Discover controllers
       result.controllers = this.discoverControllers(
         boundedContextPath,
-        'interfaces/http/controllers',
-        '.controller.js',
+        'interfaces/controllers',
+        controllerSuffix,
       );
 
       this.logger.log(
@@ -91,6 +96,7 @@ export class RuntimeAutoDiscovery {
           // Clear require cache to ensure fresh load
           delete require.cache[require.resolve(filePath)];
 
+          // Use require for both .js and .ts files (ts-node handles .ts in test env)
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           const module = require(filePath);
           this.logger.debug(`📦 Module exports: ${Object.keys(module).join(', ')}`);
@@ -135,6 +141,7 @@ export class RuntimeAutoDiscovery {
           // Clear require cache to ensure fresh load
           delete require.cache[require.resolve(filePath)];
 
+          // Use require for both .js and .ts files (ts-node handles .ts in test env)
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           const module = require(filePath);
           const controllerClass = this.extractComponentFromModule(module, 'Controller');

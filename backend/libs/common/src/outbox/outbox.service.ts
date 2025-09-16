@@ -1,14 +1,11 @@
 import { Injectable, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { OutboxRepository } from './outbox.repository';
-import {
-  INTEGRATION_EVENT_PUBLISHER_TOKEN,
-  type IntegrationEventPublisher,
-} from '../integration-events';
+import { INTEGRATION_EVENT_PUBLISHER, type IntegrationEventPublisher } from '../integration-events';
 import { randomUUID } from 'crypto';
 import { OutboxEvent } from './outbox-event.entity';
 import { CorrelationLogger } from '../logger';
 
-export const OUTBOX_REPOSITORY_TOKEN = 'OutboxRepository';
+export const OUTBOX_REPOSITORY = 'OutboxRepository';
 
 @Injectable()
 export class OutboxService implements OnModuleInit, OnModuleDestroy {
@@ -17,9 +14,9 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   private processingInterval?: NodeJS.Timeout;
 
   constructor(
-    @Inject(OUTBOX_REPOSITORY_TOKEN)
+    @Inject(OUTBOX_REPOSITORY)
     private readonly repository: OutboxRepository,
-    @Inject(INTEGRATION_EVENT_PUBLISHER_TOKEN)
+    @Inject(INTEGRATION_EVENT_PUBLISHER)
     private readonly publisher: IntegrationEventPublisher,
   ) {}
 

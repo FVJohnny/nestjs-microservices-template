@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { EventTrackerService } from './event-tracker.service';
 import {
-  INTEGRATION_EVENT_LISTENER_TOKEN,
+  INTEGRATION_EVENT_LISTENER,
   type IntegrationEventListener,
 } from '../integration-events/module/integration-event-listener.base';
 import type { IIntegrationEventHandler } from '../integration-events/module/integration-event-handler.base';
@@ -17,7 +17,7 @@ export class IntegrationEventTrackerInterceptor {
 
   constructor(
     private readonly eventTracker: EventTrackerService,
-    @Inject(INTEGRATION_EVENT_LISTENER_TOKEN)
+    @Inject(INTEGRATION_EVENT_LISTENER)
     private readonly integrationEventListener: IntegrationEventListener,
   ) {
     this.wrapIntegrationEventListener();
