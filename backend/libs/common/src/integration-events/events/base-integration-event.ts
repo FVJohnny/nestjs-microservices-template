@@ -30,9 +30,6 @@ export abstract class BaseIntegrationEvent {
    */
   toJSON(): Record<string, unknown> {
     return {
-      name: BaseIntegrationEvent.name,
-      version: BaseIntegrationEvent.version,
-      topic: BaseIntegrationEvent.topic,
       occurredOn: this.occurredOn.toISOString(),
       metadata: this.metadata.toJSON(),
       ...this.toEventJSON(),

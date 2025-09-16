@@ -6,16 +6,13 @@ import {
   type IntegrationEventListener,
 } from '../integration-events/listener/integration-event-listener.base';
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
-import { CorrelationLogger } from '../logger';
 import { TracingService } from '../tracing/tracing.service';
 
 /**
- * Universal Integration Event Tracker that intercepts Integration Event Listener methods
+ * Universal Integration Event Tracker that intercepts Integration Event Listener
  */
 @Injectable()
 export class IntegrationEventTrackerInterceptor {
-  private readonly logger = new CorrelationLogger(IntegrationEventTrackerInterceptor.name);
-
   constructor(
     private readonly eventTracker: EventTrackerService,
     @Inject(INTEGRATION_EVENT_LISTENER)
@@ -28,21 +25,16 @@ export class IntegrationEventTrackerInterceptor {
    * Wraps the integration event listener methods to add tracking
    */
   private wrapIntegrationEventListener(): void {
-    const listener = this.integrationEventListener as IntegrationEventListener & {
-      registerEventHandler: (
-        topicName: string,
-        eventName: string,
-        handler: IIntegrationEventHandler,
-      ) => Promise<void>;
-      handleMessage: (topicName: string, message: ParsedIntegrationMessage) => Promise<void>;
-    };
-
     // Store original methods
-    const originalRegisterEventHandler = listener.registerEventHandler.bind(listener);
-    const originalHandleMessage = listener.handleMessage.bind(listener);
+    const originalRegisterEventHandler = this.integrationEventListener.registerEventHandler.bind(
+      this.integrationEventListener,
+    );
+    const originalHandleMessage = this.integrationEventListener.handleMessage.bind(
+      this.integrationEventListener,
+    );
 
     // Wrap registerEventHandler
-    listener.registerEventHandler = async (
+    this.integrationEventListener.registerEventHandler = async (
       topicName: string,
       eventName: string,
       handler: IIntegrationEventHandler,
@@ -56,12 +48,22 @@ export class IntegrationEventTrackerInterceptor {
     };
 
     // Wrap handleMessage
-    listener.handleMessage = async (topicName: string, message: ParsedIntegrationMessage) => {
+    this.integrationEventListener.handleMessage = async (
+      topicName: string,
+      message: ParsedIntegrationMessage,
+    ) => {
       // Run the entire message handling within the tracing context
-      return TracingService.runWithContext(message.metadata, async () => {
+      const context = {
+        ...message.metadata,
+        causationId: message.metadata.id,
+      };
+      return TracingService.runWithContext(context, async () => {
         try {
-          await originalHandleMessage(topicName, message);
-          this.eventTracker.trackEvent(topicName, message, true);
+          const result = await originalHandleMessage(topicName, message);
+          if (result) {
+            this.eventTracker.trackEvent(topicName, message, true);
+          }
+          return result;
         } catch (error) {
           this.eventTracker.trackEvent(topicName, message, false);
           throw error;

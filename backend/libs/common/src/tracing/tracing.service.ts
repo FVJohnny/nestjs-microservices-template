@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 
 export interface CorrelationContext {
   correlationId: string;
+  causationId?: string;
   userId?: string;
   requestId?: string;
 }
@@ -15,6 +16,11 @@ export class TracingService {
   static getCorrelationId(): string | undefined {
     const context = this.asyncLocalStorage.getStore();
     return context?.correlationId;
+  }
+
+  static getCausationId(): string | undefined {
+    const context = this.asyncLocalStorage.getStore();
+    return context?.causationId;
   }
 
   static getContext(): CorrelationContext | undefined {

@@ -34,8 +34,6 @@ export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser
     await this.userRepository.save(user);
 
     await this.sendDomainEvents<User>(user);
-
-    this.logger.log(`Registered user: ${command.email} (${command.username})`);
   }
 
   protected authorize(_command: RegisterUser_Command): Promise<boolean> {

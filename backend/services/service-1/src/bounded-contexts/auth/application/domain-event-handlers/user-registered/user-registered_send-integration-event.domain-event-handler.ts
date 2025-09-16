@@ -4,6 +4,7 @@ import {
   UserCreated_IntegrationEvent,
   OutboxService,
   CorrelationLogger,
+  TracingMetadata,
 } from '@libs/nestjs-common';
 
 @EventsHandler(UserRegistered_DomainEvent)
@@ -26,12 +27,12 @@ export class UserRegistered_SendIntegrationEvent_DomainEventHandler
         username: event.username.toValue(),
         role: event.role.toValue(),
       },
-      event.metadata,
+      new TracingMetadata({ ...event.metadata, causationId: event.metadata.id }),
     );
 
     await this.outboxService.storeEvent(
-      integrationEvent.name,
-      integrationEvent.topic,
+      UserCreated_IntegrationEvent.name,
+      UserCreated_IntegrationEvent.topic,
       integrationEvent.toJSONString(),
     );
   }

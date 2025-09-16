@@ -19,6 +19,7 @@ export interface IntegrationEventListener {
     eventName: string,
     handler: IIntegrationEventHandler,
   ): Promise<void>;
+  handleMessage(topicName: string, message: ParsedIntegrationMessage): Promise<boolean>;
 }
 
 /**
@@ -86,10 +87,11 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
         this.logger.debug(
           `No handler registered for topic '${topicName}' and event name '${message.name}', skipping message [${message.id}]`,
         );
-        return;
+        return false;
       }
 
       await eventHandler.handler.handle(message);
+      return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : '';

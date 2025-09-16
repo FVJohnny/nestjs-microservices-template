@@ -60,7 +60,8 @@ export class CorrelationLogger extends NestLogger implements LoggerService {
 
   private prefix(): string {
     const correlationId = TracingService.getCorrelationId() ?? 'none';
-    return `[${correlationId}]`;
+    const causationId = TracingService.getCausationId() ?? 'none';
+    return `[CorrelationID: ${correlationId}][CausationID: ${causationId}]`;
   }
 
   private toString(message: LogMessage): string {

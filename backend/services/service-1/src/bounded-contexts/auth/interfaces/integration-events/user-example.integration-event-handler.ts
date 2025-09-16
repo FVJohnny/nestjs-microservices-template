@@ -23,10 +23,6 @@ export class UserExample_IntegrationEventHandler {
         role: user.role.toValue(),
       });
       await this.commandBus.execute(command);
-
-      this.logger.log(
-        `✅ Created example user: ${command.email} (${command.username}) via UserExample integration event`,
-      );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.logger.error(

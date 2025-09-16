@@ -53,7 +53,7 @@ export class FileSystemDomainEventDiscoveryService {
           this.toPascalCase(file.replace('.domain-event.ts', '').replace('.domain-event.js', '')),
         )
         .filter(Boolean)
-        .map((name) => `${name}DomainEvent`);
+        .map((name) => `${name}_DomainEvent`);
 
       files.forEach((eventName) => eventNames.add(eventName));
     } catch (error) {

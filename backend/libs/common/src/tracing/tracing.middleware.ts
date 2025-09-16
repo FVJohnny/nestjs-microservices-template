@@ -11,6 +11,8 @@ export class TracingMiddleware implements NestMiddleware {
       (req.headers['x-correlation-id'] as string) ||
       (req.headers['correlation-id'] as string) ||
       TracingService.generateCorrelationId();
+    const causationId =
+      (req.headers['x-causation-id'] as string) || (req.headers['causation-id'] as string);
 
     // Set correlation ID in response header
     res.setHeader('x-correlation-id', correlationId);
@@ -19,6 +21,7 @@ export class TracingMiddleware implements NestMiddleware {
     TracingService.runWithContext(
       {
         correlationId,
+        causationId,
         requestId: req.headers['x-request-id'] as string,
         userId: req.headers['x-user-id'] as string,
       },

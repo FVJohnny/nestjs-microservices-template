@@ -10,9 +10,9 @@ interface UserCreated_IntegrationEventProps extends BaseIntegrationEventProps {
 }
 
 export class UserCreated_IntegrationEvent extends BaseIntegrationEvent {
-  readonly version = '1.0';
-  readonly name = Topics.USERS.events.USER_CREATED;
-  readonly topic = Topics.USERS.topic;
+  static readonly version = '1.0';
+  static readonly name = Topics.USERS.events.USER_CREATED;
+  static readonly topic = Topics.USERS.topic;
 
   public readonly userId: string;
   public readonly email: string;
@@ -32,6 +32,10 @@ export class UserCreated_IntegrationEvent extends BaseIntegrationEvent {
 
   protected toEventJSON(): Record<string, unknown> {
     return {
+      topic: UserCreated_IntegrationEvent.topic,
+      name: UserCreated_IntegrationEvent.name,
+      version: UserCreated_IntegrationEvent.version,
+
       userId: this.userId,
       email: this.email,
       username: this.username,
