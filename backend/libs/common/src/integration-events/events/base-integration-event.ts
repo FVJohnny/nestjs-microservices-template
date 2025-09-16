@@ -13,9 +13,10 @@ export interface BaseIntegrationEventProps {
  * Enforces common properties and provides standard serialization/deserialization.
  */
 export abstract class BaseIntegrationEvent {
-  abstract readonly version: string;
-  abstract readonly name: string;
-  abstract readonly topic: string;
+  static readonly version: string;
+  static readonly name: string;
+  static readonly topic: string;
+
   readonly occurredOn: Date;
   readonly metadata: TracingMetadata;
 
@@ -25,20 +26,13 @@ export abstract class BaseIntegrationEvent {
   }
 
   /**
-   * Gets the topic for this event type
-   */
-  getTopic(): string {
-    return this.topic;
-  }
-
-  /**
    * Converts the event to a JSON message payload.
    */
   toJSON(): Record<string, unknown> {
     return {
-      name: this.name,
-      version: this.version,
-      topic: this.topic,
+      name: BaseIntegrationEvent.name,
+      version: BaseIntegrationEvent.version,
+      topic: BaseIntegrationEvent.topic,
       occurredOn: this.occurredOn.toISOString(),
       metadata: this.metadata.toJSON(),
       ...this.toEventJSON(),
@@ -64,15 +58,6 @@ export abstract class BaseIntegrationEvent {
    * Subclasses can override to add specific validation.
    */
   validate(): void {
-    if (!this.name) {
-      throw new Error('name is required');
-    }
-    if (!this.version) {
-      throw new Error('version is required');
-    }
-    if (!this.topic) {
-      throw new Error('topic is required');
-    }
     if (!this.occurredOn) {
       throw new Error('occurredOn is required');
     }

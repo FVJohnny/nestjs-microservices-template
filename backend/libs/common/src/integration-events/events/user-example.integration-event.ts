@@ -8,9 +8,9 @@ export interface UserExample_IntegrationEventProps extends BaseIntegrationEventP
 }
 
 export class UserExample_IntegrationEvent extends BaseIntegrationEvent {
-  readonly version = '1.0';
-  readonly name = Topics.USERS.events.USER_EXAMPLE;
-  readonly topic = Topics.USERS.topic;
+  static readonly version = '1.0';
+  static readonly name = Topics.USERS.events.USER_EXAMPLE;
+  static readonly topic = Topics.USERS.topic;
 
   constructor(props: UserExample_IntegrationEventProps, metadata?: TracingMetadata) {
     super(props, metadata);

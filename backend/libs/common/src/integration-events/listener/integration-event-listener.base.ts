@@ -4,7 +4,6 @@ import type { ParsedIntegrationMessage } from '../types/integration-event.types'
 import { CorrelationLogger } from '../../logger';
 
 export interface IIntegrationEventHandler {
-  readonly topicName: string;
   handle(message: ParsedIntegrationMessage): Promise<void>;
 }
 interface HandlerInfo {
@@ -15,7 +14,11 @@ interface HandlerInfo {
 
 export const INTEGRATION_EVENT_LISTENER = 'IntegrationEventListener';
 export interface IntegrationEventListener {
-  registerEventHandler(topicName: string, handler: IIntegrationEventHandler): Promise<void>;
+  registerEventHandler(
+    topicName: string,
+    eventName: string,
+    handler: IIntegrationEventHandler,
+  ): Promise<void>;
 }
 
 /**
@@ -27,41 +30,12 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
   protected readonly logger = new CorrelationLogger(this.constructor.name);
   protected readonly eventHandlers = new Map<string, HandlerInfo[]>(); // topic -> array of handlers
 
-  async registerEventHandler(topicName: string, handler: IIntegrationEventHandler): Promise<void> {
-    // Extract event type from handler's event class
-    let eventName = 'Unknown';
-    try {
-      const eventClass = (
-        handler as IIntegrationEventHandler & {
-          eventClass?: new (...args: unknown[]) => { name: string };
-        }
-      ).eventClass;
-      if (eventClass) {
-        try {
-          let tempInstance;
-          try {
-            tempInstance = new eventClass({});
-          } catch {
-            tempInstance = new eventClass({}, new Date());
-          }
-          eventName = tempInstance.name;
-        } catch {
-          this.logger.warn(`Could not extract event type for handler ${handler.constructor.name}`);
-        }
-      }
-    } catch (error) {
-      this.logger.warn(`Failed to extract event type: ${error}`);
-    }
-
-    // Get existing handlers for this topic or create new array
-    let topicHandlers = this.eventHandlers.get(topicName);
-    if (!topicHandlers) {
-      topicHandlers = [];
-      this.eventHandlers.set(topicName, topicHandlers);
-    }
-
-    // Check if handler for this specific event type already exists
-    const existingHandler = topicHandlers.find((info) => info.eventName === eventName);
+  async registerEventHandler(
+    topicName: string,
+    eventName: string,
+    handler: IIntegrationEventHandler,
+  ): Promise<void> {
+    const existingHandler = this.getEventHandler(topicName, eventName);
     if (existingHandler) {
       this.logger.warn(
         `Tried to register handler '${handler.constructor.name}' for topic '${topicName}' and event type '${eventName}' ` +
@@ -71,11 +45,7 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
     }
 
     // Add handler to the topic's handler list
-    topicHandlers.push({
-      handler,
-      eventName: eventName,
-      handlerName: handler.constructor.name,
-    });
+    const topicHandlers = this.addEventHandler(topicName, eventName, handler);
 
     // Subscribe to topic if this is the first handler for this topic
     if (topicHandlers.length === 1) {
@@ -87,6 +57,23 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
     );
   }
 
+  private getEventHandler(topicName: string, eventName: string): HandlerInfo | undefined {
+    const topicHandlers = this.eventHandlers.get(topicName) || [];
+    return topicHandlers.find((info) => info.eventName === eventName);
+  }
+
+  private addEventHandler(topicName: string, eventName: string, handler: IIntegrationEventHandler) {
+    const topicHandlers = this.eventHandlers.get(topicName) || [];
+    topicHandlers.push({
+      handler,
+      eventName,
+      handlerName: handler.constructor.name,
+    });
+    this.eventHandlers.set(topicName, topicHandlers);
+
+    return topicHandlers;
+  }
+
   /**
    * Handle incoming messages from the event source
    * Parses the message and delegates to the appropriate event handler
@@ -94,28 +81,15 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
   public async handleMessage(topicName: string, message: ParsedIntegrationMessage) {
     try {
       // Find the appropriate event handler based on event type
-      const topicHandlers = this.eventHandlers.get(topicName);
-      if (!topicHandlers || topicHandlers.length === 0) {
+      const eventHandler = this.getEventHandler(topicName, message.name);
+      if (!eventHandler) {
         this.logger.debug(
-          `No handlers registered for topic '${topicName}', skipping message [${message.id}]`,
+          `No handler registered for topic '${topicName}' and event name '${message.name}', skipping message [${message.id}]`,
         );
         return;
       }
 
-      const eventName = message.name || 'Unknown';
-      const handlerInfo = topicHandlers.find((info) => info.eventName === eventName);
-
-      if (!handlerInfo) {
-        this.logger.debug(
-          `No handler registered for topic '${topicName}' and event name '${eventName}', skipping message [${message.id}]`,
-        );
-        this.logger.debug(
-          `Available handlers for topic: ${topicHandlers.map((h) => h.eventName).join(', ')}`,
-        );
-        return;
-      }
-
-      await handlerInfo.handler.handle(message);
+      await eventHandler.handler.handle(message);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : '';

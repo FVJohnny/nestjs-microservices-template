@@ -3,7 +3,6 @@ import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-register
 import {
   UserCreated_IntegrationEvent,
   OutboxService,
-  TracingMetadata,
   CorrelationLogger,
 } from '@libs/nestjs-common';
 
@@ -27,12 +26,12 @@ export class UserRegistered_SendIntegrationEvent_DomainEventHandler
         username: event.username.toValue(),
         role: event.role.toValue(),
       },
-      new TracingMetadata(event.metadata),
+      event.metadata,
     );
 
     await this.outboxService.storeEvent(
       integrationEvent.name,
-      integrationEvent.getTopic(),
+      integrationEvent.topic,
       integrationEvent.toJSONString(),
     );
   }

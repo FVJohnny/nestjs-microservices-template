@@ -29,7 +29,11 @@ export class IntegrationEventTrackerInterceptor {
    */
   private wrapIntegrationEventListener(): void {
     const listener = this.integrationEventListener as IntegrationEventListener & {
-      registerEventHandler: (topicName: string, handler: IIntegrationEventHandler) => Promise<void>;
+      registerEventHandler: (
+        topicName: string,
+        eventName: string,
+        handler: IIntegrationEventHandler,
+      ) => Promise<void>;
       handleMessage: (topicName: string, message: ParsedIntegrationMessage) => Promise<void>;
     };
 
@@ -40,12 +44,12 @@ export class IntegrationEventTrackerInterceptor {
     // Wrap registerEventHandler
     listener.registerEventHandler = async (
       topicName: string,
+      eventName: string,
       handler: IIntegrationEventHandler,
     ) => {
-      await originalRegisterEventHandler(topicName, handler);
+      await originalRegisterEventHandler(topicName, eventName, handler);
 
       // Extract event name for tracking initialization
-      const eventName = this.extractEventName(handler);
       if (eventName) {
         this.eventTracker.initializeStats(topicName, eventName);
       }
@@ -64,31 +68,5 @@ export class IntegrationEventTrackerInterceptor {
         }
       });
     };
-  }
-
-  private extractEventName(handler: IIntegrationEventHandler): string | null {
-    try {
-      const eventClass = (
-        handler as IIntegrationEventHandler & {
-          eventClass?: { fromJSON: (json: unknown) => { name: string } };
-        }
-      ).eventClass;
-      if (eventClass) {
-        try {
-          let tempInstance;
-          try {
-            tempInstance = eventClass.fromJSON({});
-          } catch {
-            tempInstance = eventClass.fromJSON({ timestamp: new Date() });
-          }
-          return tempInstance.name;
-        } catch {
-          this.logger.warn(`Could not extract event type for handler ${handler.constructor.name}`);
-        }
-      }
-    } catch (error) {
-      this.logger.debug(`Failed to extract event type: ${error}`);
-    }
-    return null;
   }
 }
