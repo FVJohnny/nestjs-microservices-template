@@ -32,8 +32,16 @@ export class RuntimeAutoDiscovery {
 
       // Discover handlers
       result.handlers = [
-        ...this.discoverHandlers(boundedContextPath, 'application/commands', `.command-handler${fileExtension}`),
-        ...this.discoverHandlers(boundedContextPath, 'application/queries', `.query-handler${fileExtension}`),
+        ...this.discoverHandlers(
+          boundedContextPath,
+          'application/commands',
+          `.command-handler${fileExtension}`,
+        ),
+        ...this.discoverHandlers(
+          boundedContextPath,
+          'application/queries',
+          `.query-handler${fileExtension}`,
+        ),
         ...this.discoverHandlers(
           boundedContextPath,
           'application/domain-event-handlers',
