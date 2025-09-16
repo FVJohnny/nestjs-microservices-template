@@ -12,7 +12,6 @@ export interface OutboxEventValue extends SharedAggregateRootDTO {
 }
 
 export class OutboxEvent extends SharedAggregateRoot {
-  // Sentinel date representing "never processed" - Unix epoch (January 1, 1970)
   static readonly NEVER_PROCESSED = new Date(0);
 
   eventName: string;
