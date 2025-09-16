@@ -2,14 +2,14 @@ import type { TracingMetadata } from '../../tracing/tracing-metadata';
 import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './base-integration-event';
 import { Topics } from './topics';
 
-interface UserCreatedIntegrationEventProps extends BaseIntegrationEventProps {
+interface UserCreated_IntegrationEventProps extends BaseIntegrationEventProps {
   userId: string;
   email: string;
   username: string;
   role: string;
 }
 
-export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
+export class UserCreated_IntegrationEvent extends BaseIntegrationEvent {
   readonly version = '1.0';
   readonly name = Topics.USERS.events.USER_CREATED;
   readonly topic = Topics.USERS.topic;
@@ -19,7 +19,7 @@ export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
   public readonly username: string;
   public readonly role: string;
 
-  constructor(props: UserCreatedIntegrationEventProps, metadata?: TracingMetadata) {
+  constructor(props: UserCreated_IntegrationEventProps, metadata?: TracingMetadata) {
     super(props, metadata);
 
     this.userId = props.userId;
@@ -39,8 +39,8 @@ export class UserCreatedIntegrationEvent extends BaseIntegrationEvent {
     };
   }
 
-  static fromJSON(json: Record<string, unknown>): UserCreatedIntegrationEvent {
-    const event = new UserCreatedIntegrationEvent(
+  static fromJSON(json: Record<string, unknown>): UserCreated_IntegrationEvent {
+    const event = new UserCreated_IntegrationEvent(
       {
         userId: json.userId as string,
         email: json.email as string,

@@ -1,16 +1,16 @@
 import { CommandBus } from '@nestjs/cqrs';
-import { IntegrationEventHandler, UserExampleIntegrationEvent } from '@libs/nestjs-common';
+import { IntegrationEventHandler, UserExample_IntegrationEvent } from '@libs/nestjs-common';
 import { RegisterUser_Command } from '@bc/auth/application/commands';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 
-@IntegrationEventHandler(UserExampleIntegrationEvent)
+@IntegrationEventHandler(UserExample_IntegrationEvent)
 export class UserExample_IntegrationEventHandler {
   private readonly logger = new CorrelationLogger(UserExample_IntegrationEventHandler.name);
 
   constructor(private readonly commandBus: CommandBus) {}
 
-  async handleEvent(event: UserExampleIntegrationEvent): Promise<void> {
+  async handleEvent(event: UserExample_IntegrationEvent): Promise<void> {
     this.logger.log(`Handling UserExample integration event id: ${event.metadata.id}`);
 
     try {

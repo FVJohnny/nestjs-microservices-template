@@ -1,7 +1,7 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 import {
-  UserCreatedIntegrationEvent,
+  UserCreated_IntegrationEvent,
   OutboxService,
   TracingMetadata,
   CorrelationLogger,
@@ -20,7 +20,7 @@ export class UserRegistered_SendIntegrationEvent_DomainEventHandler
     this.logger.log(
       `Sending UserCreated integration event for user ${event.aggregateId.toValue()}`,
     );
-    const integrationEvent = new UserCreatedIntegrationEvent(
+    const integrationEvent = new UserCreated_IntegrationEvent(
       {
         userId: event.aggregateId.toValue(),
         email: event.email.toValue(),
