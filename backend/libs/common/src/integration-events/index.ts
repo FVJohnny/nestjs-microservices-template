@@ -1,7 +1,7 @@
 // Interfaces
 export * from './module/event-publisher.interface';
-export * from './module/integration-event-publisher.mock';
 export * from './module/integration-event-handler.base';
+export * from './module/in-memory.integration-event-publisher';
 
 // Types
 export * from './types/integration-event.types';

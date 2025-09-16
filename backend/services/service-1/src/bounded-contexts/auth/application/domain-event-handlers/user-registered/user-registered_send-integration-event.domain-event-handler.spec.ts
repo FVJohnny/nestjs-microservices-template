@@ -3,7 +3,7 @@ import {
   UserRegisteredDomainEvent,
 } from '@bc/auth/domain/events/user-registered.domain-event';
 import { Email } from '@bc/auth/domain/value-objects';
-import { Topics, UserCreatedIntegrationEvent, createOutboxServiceMock } from '@libs/nestjs-common';
+import { InfrastructureException, InMemoryIntegrationEventPublisher, InMemoryOutboxRepository, OutboxService, Topics, UserCreatedIntegrationEvent } from '@libs/nestjs-common';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 
 describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
@@ -15,18 +15,18 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
   const setup = (params: { shouldFailOutbox?: boolean } = {}) => {
     const { shouldFailOutbox = false } = params;
 
-    const mockOutboxService = createOutboxServiceMock({ shouldFail: shouldFailOutbox });
-    const eventHandler = new UserRegistered_SendIntegrationEvent_DomainEventHandler(
-      mockOutboxService as any,
-    );
+    const integrationEventPublisher = new InMemoryIntegrationEventPublisher(shouldFailOutbox);
+    const outboxRepository = new InMemoryOutboxRepository(shouldFailOutbox);
+    const outboxService = new OutboxService(outboxRepository, integrationEventPublisher);
+    const eventHandler = new UserRegistered_SendIntegrationEvent_DomainEventHandler(outboxService);
 
-    return { mockOutboxService, eventHandler };
+    return { eventHandler, outboxRepository };
   };
 
   describe('Happy Path', () => {
     it('should publish integration event', async () => {
       // Arrange
-      const { eventHandler, mockOutboxService } = setup();
+      const { eventHandler, outboxRepository } = setup();
       const user = User.random();
       const event = createEventFromUser(user);
 
@@ -34,9 +34,7 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
       await eventHandler.handle(event);
 
       // Assert
-      expect(mockOutboxService.storedEvents).toHaveLength(1);
-
-      const outboxEvent = mockOutboxService.storedEvents[0];
+      const [outboxEvent] = await outboxRepository.findAll();
       expect(outboxEvent.eventName).toBe(Topics.USERS.events.USER_CREATED);
       expect(outboxEvent.topic).toBe(Topics.USERS.topic);
 
@@ -49,7 +47,7 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
 
     it('should handle special characters in email and username', async () => {
       // Arrange
-      const { eventHandler, mockOutboxService } = setup();
+      const { eventHandler, outboxRepository } = setup();
       const user = User.random({
         email: new Email('test.user+tag@example-domain.com'),
       });
@@ -59,7 +57,7 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
       await eventHandler.handle(event);
 
       // Assert
-      const outboxEvent = mockOutboxService.storedEvents[0];
+      const [outboxEvent] = await outboxRepository.findAll();
       expect(outboxEvent.eventName).toBe(Topics.USERS.events.USER_CREATED);
       expect(outboxEvent.topic).toBe(Topics.USERS.topic);
       const payload = JSON.parse(outboxEvent.payload) as UserCreatedIntegrationEvent;
@@ -72,7 +70,7 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
 
     it('should handle multiple events sequentially', async () => {
       // Arrange
-      const { eventHandler, mockOutboxService } = setup();
+      const { eventHandler, outboxRepository } = setup();
       const users = [User.random(), User.random()];
       const events = users.map((user) => createEventFromUser(user));
 
@@ -82,27 +80,28 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
       }
 
       // Assert
-      expect(mockOutboxService.storedEvents).toHaveLength(2);
+      const outboxEvents = await outboxRepository.findAll();
+      expect(outboxEvents).toHaveLength(2);
 
-      const firstPayload = JSON.parse(mockOutboxService.storedEvents[0].payload) as UserCreatedIntegrationEvent;
+      const firstPayload = JSON.parse(outboxEvents[0].payload) as UserCreatedIntegrationEvent;
       expect(firstPayload.userId).toBe(users[0].id.toValue());
       expect(firstPayload.role).toBe(users[0].role.toValue());
 
-      const secondPayload = JSON.parse(mockOutboxService.storedEvents[1].payload) as UserCreatedIntegrationEvent;
+      const secondPayload = JSON.parse(outboxEvents[1].payload) as UserCreatedIntegrationEvent;
       expect(secondPayload.userId).toBe(users[1].id.toValue());
       expect(secondPayload.role).toBe(users[1].role.toValue());
     });
   });
 
   describe('Error Cases', () => {
-    it('should handle outbox service failures and rethrow error', async () => {
+    it('should throw InfrastructureException when outbox fails', async () => {
       // Arrange
       const { eventHandler } = setup({ shouldFailOutbox: true });
       const user = User.random();
       const event = createEventFromUser(user);
 
       // Act & Assert
-      await expect(eventHandler.handle(event)).rejects.toThrow('OutboxService storeEvent failed');
+      await expect(eventHandler.handle(event)).rejects.toThrow(InfrastructureException);
     });
   });
 });
