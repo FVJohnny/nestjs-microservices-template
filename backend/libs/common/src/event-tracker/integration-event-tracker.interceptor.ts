@@ -4,7 +4,7 @@ import {
   IIntegrationEventHandler,
   INTEGRATION_EVENT_LISTENER,
   type IntegrationEventListener,
-} from '../integration-events/module/integration-event-listener.base';
+} from '../integration-events/listener/integration-event-listener.base';
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
 import { CorrelationLogger } from '../logger';
 import { TracingService } from '../tracing/tracing.service';

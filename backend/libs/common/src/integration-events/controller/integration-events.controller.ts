@@ -1,8 +1,8 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { INTEGRATION_EVENT_PUBLISHER } from './event-publisher.interface';
-import type { IntegrationEventPublisher } from './event-publisher.interface';
+import { INTEGRATION_EVENT_PUBLISHER } from '../publisher/event-publisher.interface';
+import type { IntegrationEventPublisher } from '../publisher/event-publisher.interface';
 import { TracingMetadata } from '../../tracing';
 
 /**
