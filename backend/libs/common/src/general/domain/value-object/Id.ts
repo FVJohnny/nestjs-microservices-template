@@ -19,7 +19,7 @@ export class Id extends ValueObject<string> {
       throw new DomainValidationException(
         `${this.constructor.name}`,
         id,
-        `${this.constructor.name} does not allow the value <${id}>`,
+        `${this.constructor.name} does not allow the value ${id}`,
       );
     }
   }

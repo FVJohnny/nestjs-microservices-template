@@ -1,38 +1,47 @@
-import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
-import type { Collection, MongoClient } from 'mongodb';
+import { Injectable, Inject } from '@nestjs/common';
+import type { MongoClient } from 'mongodb';
 
-import { OutboxEvent, OutboxRepository, type OutboxEventValue } from '@libs/nestjs-common';
+import { Id, OutboxEvent, OutboxRepository, type OutboxEventValue } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from '../mongodb.module';
-import { MongoDBConfigService } from '../mongodb-config.service';
+import { BaseMongoRepository, IndexSpec } from '../base-mongo.repository';
 
 @Injectable()
-export class MongoOutboxRepository extends OutboxRepository implements OnModuleInit {
-  private readonly collectionName = 'outbox_events';
-
-  constructor(
-    @Inject(MONGO_CLIENT_TOKEN) private readonly client: MongoClient,
-    private readonly config: MongoDBConfigService,
-  ) {
-    super();
-  }
-
-  async onModuleInit(): Promise<void> {
-    await this.ensureIndexes();
-  }
-
-  private getCollection(): Collection<OutboxEventValue> {
-    const dbName = this.config.getDatabaseName() || 'default';
-    return this.client.db(dbName).collection<OutboxEventValue>(this.collectionName);
+export class MongoOutboxRepository
+  extends BaseMongoRepository<OutboxEventValue>
+  implements OutboxRepository
+{
+  constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
+    super(mongoClient, 'outbox_events');
   }
 
   async save(event: OutboxEvent): Promise<void> {
-    const col = this.getCollection();
-    await col.updateOne({ id: event.id }, { $set: event.toValue() }, { upsert: true });
+    await this.collection.updateOne(
+      { id: event.id.toValue() },
+      { $set: event.toValue() },
+      { upsert: true },
+    );
+  }
+
+  async findById(id: Id): Promise<OutboxEvent | null> {
+    const dto = await this.collection.findOne({ id: id.toValue() });
+    return dto ? OutboxEvent.fromValue(dto) : null;
+  }
+
+  async exists(id: Id): Promise<boolean> {
+    const dto = await this.collection.findOne({ id: id.toValue() });
+    return !!dto;
+  }
+
+  async remove(id: Id): Promise<void> {
+    await this.collection.deleteOne({ id: id.toValue() });
+  }
+
+  async clear(): Promise<void> {
+    await this.collection.deleteMany({});
   }
 
   async findUnprocessed(limit = 100): Promise<OutboxEvent[]> {
-    const col = this.getCollection();
-    const cursor = col
+    const cursor = this.collection
       .find({ processedAt: OutboxEvent.NEVER_PROCESSED })
       .sort({ createdAt: 1 })
       .limit(limit);
@@ -42,8 +51,7 @@ export class MongoOutboxRepository extends OutboxRepository implements OnModuleI
   }
 
   async deleteProcessed(before: Date): Promise<void> {
-    const col = this.getCollection();
-    await col.deleteMany({
+    await this.collection.deleteMany({
       processedAt: {
         $lt: before,
         $ne: OutboxEvent.NEVER_PROCESSED,
@@ -51,17 +59,23 @@ export class MongoOutboxRepository extends OutboxRepository implements OnModuleI
     });
   }
 
-  private async ensureIndexes(): Promise<void> {
-    const col = this.getCollection();
-    await col.createIndexes([
-      { key: { id: 1 }, unique: true, name: 'ux_outbox_id' },
-      // For cleanup queries
-      { key: { processedAt: 1 }, name: 'idx_outbox_processedAt' },
-      // For fetching unprocessed ordered by createdAt
+  protected defineIndexes(): IndexSpec[] {
+    return [
       {
-        key: { createdAt: 1 },
-        name: 'idx_outbox_createdAt',
+        fields: { id: 1 },
+        options: {
+          unique: true,
+          name: 'ux_outbox_id',
+        },
       },
-    ]);
+      {
+        fields: { processedAt: 1 },
+        options: { name: 'idx_outbox_processedAt' },
+      },
+      {
+        fields: { createdAt: 1 },
+        options: { name: 'idx_outbox_createdAt' },
+      },
+    ];
   }
 }

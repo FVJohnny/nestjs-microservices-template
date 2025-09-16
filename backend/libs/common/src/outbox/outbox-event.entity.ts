@@ -1,4 +1,6 @@
-export interface OutboxEventValue {
+import { type SharedAggregateRootDTO, Id, SharedAggregateRoot } from '../general';
+
+export interface OutboxEventValue extends SharedAggregateRootDTO {
   id: string;
   eventName: string;
   topic: string;
@@ -9,11 +11,10 @@ export interface OutboxEventValue {
   maxRetries: number;
 }
 
-export class OutboxEvent {
+export class OutboxEvent extends SharedAggregateRoot {
   // Sentinel date representing "never processed" - Unix epoch (January 1, 1970)
   static readonly NEVER_PROCESSED = new Date(0);
 
-  id: string;
   eventName: string;
   topic: string;
   payload: string;
@@ -23,7 +24,7 @@ export class OutboxEvent {
   maxRetries: number;
 
   constructor(props: OutboxEventValue) {
-    this.id = props.id;
+    super(new Id(props.id));
     this.eventName = props.eventName;
     this.topic = props.topic;
     this.payload = props.payload;
@@ -51,7 +52,7 @@ export class OutboxEvent {
 
   toValue(): OutboxEventValue {
     return {
-      id: this.id,
+      id: this.id.toValue(),
       eventName: this.eventName,
       topic: this.topic,
       payload: this.payload,

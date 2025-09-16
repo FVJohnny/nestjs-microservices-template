@@ -4,3 +4,4 @@ export * from './redis.service';
 export * from './outbox';
 export * from './redis-database.module';
 export * from './redis-events.module';
+export * from './testing/redis-test.service';

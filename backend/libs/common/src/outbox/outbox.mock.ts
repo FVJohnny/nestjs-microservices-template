@@ -1,3 +1,4 @@
+import { Id } from '../general';
 import { OutboxEvent } from './outbox-event.entity';
 
 export interface MockOutboxService {
@@ -19,7 +20,6 @@ export interface CreateOutboxServiceMockOptions {
  * @param options.shouldFail If true, storeEvent method will throw errors
  * @returns MockOutboxService instance with captured events and configurable failure behavior
  */
-let _seq = 0;
 
 export function createOutboxServiceMock(
   options: CreateOutboxServiceMockOptions = {},
@@ -34,7 +34,7 @@ export function createOutboxServiceMock(
     }
     storedEvents.push(
       new OutboxEvent({
-        id: `event_id_${_seq++}`,
+        id: Id.random().toValue(),
         eventName: eventType,
         topic,
         payload,

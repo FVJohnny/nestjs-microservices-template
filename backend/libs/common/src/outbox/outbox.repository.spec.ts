@@ -1,3 +1,4 @@
+import { Id } from '../general';
 import { OutboxEvent, type OutboxEventValue } from './outbox-event.entity';
 import type { OutboxRepository } from './outbox.repository';
 
@@ -14,24 +15,39 @@ describe('OutboxRepository Contract Test Suite', () => {
 
 export function testOutboxRepositoryContract(
   description: string,
-  createRepo: () => Promise<OutboxRepository>,
-  cleanup?: () => Promise<void>,
+  createRepository: () => Promise<OutboxRepository>,
+  setupTeardown?: {
+    beforeAll?: () => Promise<void>;
+    afterAll?: () => Promise<void>;
+    beforeEach?: () => Promise<void>;
+    afterEach?: () => Promise<void>;
+  },
 ) {
   describe(`OutboxRepository Contract: ${description}`, () => {
     let repo: OutboxRepository;
     let createRealisticEvent: ReturnType<typeof createRealisticEventFactory>;
     let generateEvents: ReturnType<typeof generateEventsFactory>;
 
+    if (setupTeardown?.beforeAll) {
+      beforeAll(setupTeardown.beforeAll, 30000);
+    }
+
+    if (setupTeardown?.afterAll) {
+      afterAll(setupTeardown.afterAll, 30000);
+    }
+
+    if (setupTeardown?.beforeEach) {
+      beforeEach(setupTeardown.beforeEach);
+    }
+
+    if (setupTeardown?.afterEach) {
+      afterEach(setupTeardown.afterEach);
+    }
+
     beforeEach(async () => {
-      repo = await createRepo();
+      repo = await createRepository();
       createRealisticEvent = createRealisticEventFactory();
       generateEvents = generateEventsFactory();
-    });
-
-    afterEach(async () => {
-      if (cleanup) {
-        await cleanup();
-      }
     });
 
     describe('save and findUnprocessed', () => {
@@ -39,19 +55,16 @@ export function testOutboxRepositoryContract(
         const now = Date.now();
         const events = [
           createRealisticEvent({
-            id: 'evt-oldest',
             eventName: 'UserRegistered',
             createdAt: new Date(now - 3000),
             payload: JSON.stringify({ userId: 'usr-001', email: 'oldest@test.com' }),
           }),
           createRealisticEvent({
-            id: 'evt-middle',
             eventName: 'OrderPlaced',
             createdAt: new Date(now - 2000),
             payload: JSON.stringify({ orderId: 'ord-001', amount: 99.99 }),
           }),
           createRealisticEvent({
-            id: 'evt-newest',
             eventName: 'PaymentReceived',
             createdAt: new Date(now - 1000),
             payload: JSON.stringify({ paymentId: 'pay-001', status: 'completed' }),
@@ -66,7 +79,11 @@ export function testOutboxRepositoryContract(
         const results = await repo.findUnprocessed(10);
         expect(results).toHaveLength(3);
         // Should be ordered by createdAt ASC (oldest first)
-        expect(results.map((e) => e.id)).toEqual(['evt-oldest', 'evt-middle', 'evt-newest']);
+        expect(results.map((e) => e.id.toValue())).toEqual([
+          events[0].id.toValue(),
+          events[1].id.toValue(),
+          events[2].id.toValue(),
+        ]);
       });
 
       it('handles empty repository gracefully', async () => {
@@ -85,9 +102,9 @@ export function testOutboxRepositoryContract(
         expect(unprocessed.length).toBeLessThan(5);
         expect(unprocessed.every((e) => e.isUnprocessed())).toBe(true);
         // The last events should be unprocessed (based on processedRatio logic)
-        const unprocessedIds = unprocessed.map((e) => e.id);
-        expect(unprocessedIds.some((id) => id.includes('evt-3'))).toBe(true);
-        expect(unprocessedIds.some((id) => id.includes('evt-4'))).toBe(true);
+        const unprocessedIds = unprocessed.map((e) => e.id.toValue());
+        expect(unprocessedIds.some((id) => id.includes(events[4].id.toValue()))).toBe(true);
+        expect(unprocessedIds.some((id) => id.includes(events[3].id.toValue()))).toBe(true);
       });
 
       it('handles large payloads correctly', async () => {
@@ -104,14 +121,13 @@ export function testOutboxRepositoryContract(
         };
 
         const event = createRealisticEvent({
-          id: 'evt-large',
           payload: JSON.stringify(largePayload),
         });
 
         await repo.save(event);
         const found = await repo.findUnprocessed(1);
         expect(found).toHaveLength(1);
-        expect(found[0].id).toBe('evt-large');
+        expect(found[0].id.toValue()).toBe(event.id.toValue());
 
         const retrievedPayload = JSON.parse(found[0].payload);
         expect(retrievedPayload.data).toHaveLength(1000);
@@ -122,7 +138,6 @@ export function testOutboxRepositoryContract(
     describe('processing state transitions', () => {
       it('moves events between unprocessed and processed indexes on save', async () => {
         const event = createRealisticEvent({
-          id: 'evt-transition',
           eventName: 'StateTransitionTest',
           payload: JSON.stringify({ state: 'initial' }),
         });
@@ -130,7 +145,7 @@ export function testOutboxRepositoryContract(
         // Initially unprocessed
         await repo.save(event);
         let unprocessed = await repo.findUnprocessed(10);
-        expect(unprocessed.map((x) => x.id)).toEqual(['evt-transition']);
+        expect(unprocessed.map((x) => x.id.toValue())).toEqual([event.id.toValue()]);
 
         // Mark as processed
         event.processedAt = new Date();
@@ -138,19 +153,17 @@ export function testOutboxRepositoryContract(
 
         // Should no longer be in unprocessed
         unprocessed = await repo.findUnprocessed(10);
-        expect(unprocessed.map((x) => x.id)).toEqual([]);
+        expect(unprocessed.map((x) => x.id.toValue())).toEqual([]);
       });
 
       it('handles retry count increments correctly', async () => {
         const event = createRealisticEvent({
-          id: 'evt-retry',
           retryCount: 2,
           maxRetries: 3,
         });
 
         await repo.save(event);
         const [found] = await repo.findUnprocessed(1);
-
         expect(found.retryCount).toBe(2);
         expect(found.maxRetries).toBe(3);
         expect(found.canRetry()).toBe(true);
@@ -159,13 +172,13 @@ export function testOutboxRepositoryContract(
         found.retryCount = 3;
         await repo.save(found);
 
-        const [updated] = await repo.findUnprocessed(1);
-        expect(updated.canRetry()).toBe(false);
+        const results = await repo.findUnprocessed(1);
+        expect(results).toHaveLength(1);
+        expect(results[0].canRetry()).toBe(false);
       });
 
       it('preserves all event properties through save/load cycle', async () => {
         const originalEvent = createRealisticEvent({
-          id: 'evt-preserve',
           eventName: 'CompleteEventTest',
           topic: 'preservation-test',
           payload: JSON.stringify({ nested: { deep: { value: 'test' } } }),
@@ -177,7 +190,7 @@ export function testOutboxRepositoryContract(
         await repo.save(originalEvent);
         const [retrieved] = await repo.findUnprocessed(1);
 
-        expect(retrieved.id).toBe(originalEvent.id);
+        expect(retrieved.id.toValue()).toBe(originalEvent.id.toValue());
         expect(retrieved.eventName).toBe(originalEvent.eventName);
         expect(retrieved.topic).toBe(originalEvent.topic);
         expect(retrieved.payload).toBe(originalEvent.payload);
@@ -206,7 +219,8 @@ export function testOutboxRepositoryContract(
 
         // Verify ordering is consistent
         expect(batch1[0].createdAt.getTime()).toBeLessThanOrEqual(batch1[1].createdAt.getTime());
-        expect(batch2[0].id).toBe(batch1[0].id); // Same first item
+        expect(batch2[0].id.toValue()).toBe(batch1[0].id.toValue()); // Same first item
+        expect(batch3[0].id.toValue()).toBe(batch2[0].id.toValue()); // Same first item
       });
 
       it('returns consistent results for repeated queries', async () => {
@@ -219,7 +233,7 @@ export function testOutboxRepositoryContract(
         const result2 = await repo.findUnprocessed(10);
 
         expect(result1).toHaveLength(result2.length);
-        expect(result1.map((e) => e.id)).toEqual(result2.map((e) => e.id));
+        expect(result1.map((e) => e.id.toValue())).toEqual(result2.map((e) => e.id.toValue()));
         expect(result1.map((e) => e.createdAt.getTime())).toEqual(
           result2.map((e) => e.createdAt.getTime()),
         );
@@ -264,7 +278,7 @@ export function testOutboxRepositoryContract(
       it('handles edge case with exact cutoff time', async () => {
         const exactTime = new Date(Date.now() - 1000);
         const event = createRealisticEvent({
-          id: 'evt-exact',
+          id: Id.random().toValue(),
           processedAt: exactTime,
         });
 
@@ -287,13 +301,13 @@ export function testOutboxRepositoryContract(
 
     describe('edge cases and error scenarios', () => {
       it('handles concurrent saves correctly', async () => {
-        const eventId = 'evt-concurrent';
+        const eventId = Id.random();
         const event1 = createRealisticEvent({
-          id: eventId,
+          id: eventId.toValue(),
           payload: JSON.stringify({ version: 1 }),
         });
         const event2 = createRealisticEvent({
-          id: eventId,
+          id: eventId.toValue(),
           payload: JSON.stringify({ version: 2 }),
           processedAt: new Date(),
         });
@@ -303,7 +317,7 @@ export function testOutboxRepositoryContract(
 
         // The last write should win - verify by checking if it's processed
         const unprocessed = await repo.findUnprocessed(10);
-        const hasEvent = unprocessed.some((e) => e.id === eventId);
+        const hasEvent = unprocessed.some((e) => e.id.toValue() === eventId.toValue());
 
         // If event2 (processed) won, it shouldn't be in unprocessed
         // If event1 (unprocessed) won, it should be in unprocessed
@@ -322,7 +336,7 @@ export function testOutboxRepositoryContract(
         };
 
         const event = createRealisticEvent({
-          id: 'evt-special',
+          id: Id.random().toValue(),
           payload: JSON.stringify(specialPayload),
         });
 
@@ -336,9 +350,9 @@ export function testOutboxRepositoryContract(
       });
 
       it('maintains data integrity across multiple operations', async () => {
-        const eventId = 'evt-integrity';
+        const eventId = Id.random();
         const event = createRealisticEvent({
-          id: eventId,
+          id: eventId.toValue(),
           retryCount: 0,
         });
 
@@ -356,7 +370,7 @@ export function testOutboxRepositoryContract(
         await repo.save(event);
 
         const [final] = await repo.findUnprocessed(1);
-        expect(final.id).toBe(eventId);
+        expect(final.id.toValue()).toBe(eventId.toValue());
         expect(final.retryCount).toBe(2);
         expect(final.isUnprocessed()).toBe(true);
       });
@@ -375,7 +389,7 @@ function createRealisticEventFactory() {
     };
 
     return new OutboxEvent({
-      id: props.id ?? `evt-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      id: props.id ?? Id.random().toValue(),
       eventName: props.eventName ?? 'UserCreated',
       topic: props.topic ?? 'user-events',
       payload: props.payload ?? JSON.stringify(defaultPayload),
@@ -411,14 +425,14 @@ function generateEventsFactory() {
       const createdAt = new Date(now - startMsAgo + i * stepMs);
       const eventName = eventNames[i % eventNames.length];
       const payload = {
-        id: `entity-${i}`,
+        id: Id.random(),
         eventType: eventName,
         timestamp: createdAt.toISOString(),
         data: { index: i, test: true },
       };
 
       const e = new OutboxEvent({
-        id: `evt-${i}-${createdAt.getTime()}`,
+        id: payload.id.toValue(),
         eventName,
         topic,
         payload: JSON.stringify(payload),

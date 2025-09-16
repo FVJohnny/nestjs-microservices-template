@@ -16,7 +16,13 @@ export class MongoDBModule {
   static mongoProvider(): Provider {
     return {
       provide: MONGO_CLIENT_TOKEN,
-      useFactory: async (configService: MongoDBConfigService): Promise<MongoClient> => {
+      useFactory: async (configService: MongoDBConfigService): Promise<MongoClient | null> => {
+        // Skip MongoDB connection in test environment
+        if (process.env.NODE_ENV === 'test') {
+          console.log('Skipping MongoDB initialization in test environment');
+          return null;
+        }
+
         const client = new MongoClient(configService.getConnectionString());
         await client.connect();
         return client;

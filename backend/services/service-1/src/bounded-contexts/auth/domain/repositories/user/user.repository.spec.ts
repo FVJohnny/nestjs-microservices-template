@@ -39,7 +39,7 @@ describe('UserRepository Contract Test Suite', () => {
 
 export function testUserRepositoryContract(
   description: string,
-  createRepository: (users?: User[]) => Promise<UserRepository>,
+  createRepository: () => Promise<UserRepository>,
   setupTeardown?: {
     beforeAll?: () => Promise<void>;
     afterAll?: () => Promise<void>;

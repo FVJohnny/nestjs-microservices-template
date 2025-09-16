@@ -12,6 +12,12 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   constructor() {}
 
   async onModuleInit(): Promise<void> {
+    // Skip Redis initialization in test environment
+    if (process.env.NODE_ENV === 'test') {
+      this.logger.log('Skipping Redis initialization in test environment');
+      return;
+    }
+
     // Check if Redis should be disabled
     const redisHost = process.env.REDIS_HOST;
 
