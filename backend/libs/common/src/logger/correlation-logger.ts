@@ -13,13 +13,13 @@ export class CorrelationLogger extends NestLogger implements LoggerService {
     this.logLevel = process.env.LOG_LEVEL || 'debug';
   }
 
-  log(message: LogMessage, ...optionalParams: any[]) {
+  log = (message: LogMessage, ...optionalParams: any[]) => {
     if (this.shouldLog('log')) {
       super.log(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
     }
-  }
+  };
 
-  error(message: LogMessage, traceOrError?: string | Error, ...optionalParams: any[]) {
+  error = (message: LogMessage, traceOrError?: string | Error, ...optionalParams: any[]) => {
     if (this.shouldLog('error')) {
       if (traceOrError instanceof Error) {
         super.error(
@@ -31,25 +31,25 @@ export class CorrelationLogger extends NestLogger implements LoggerService {
         super.error(`${this.prefix()} ${this.toString(message)}`, traceOrError, ...optionalParams);
       }
     }
-  }
+  };
 
-  warn(message: LogMessage, ...optionalParams: any[]) {
+  warn = (message: LogMessage, ...optionalParams: any[]) => {
     if (this.shouldLog('warn')) {
       super.warn(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
     }
-  }
+  };
 
-  debug(message: LogMessage, ...optionalParams: any[]) {
+  debug = (message: LogMessage, ...optionalParams: any[]) => {
     if (this.shouldLog('debug')) {
       super.debug(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
     }
-  }
+  };
 
-  verbose(message: LogMessage, ...optionalParams: any[]) {
+  verbose = (message: LogMessage, ...optionalParams: any[]) => {
     if (this.shouldLog('verbose')) {
       super.verbose(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
     }
-  }
+  };
 
   private shouldLog(level: string): boolean {
     const levels = ['error', 'warn', 'log', 'debug', 'verbose'];
