@@ -7,15 +7,15 @@ import { TracingService } from './tracing.service';
 export class TracingMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const correlationId = req.headers['x-correlation-id'] as string;
-    const id = req.headers['x-id'] as string;
+    const id = req.headers['x-tracing-id'] as string;
 
     const tracingMetadata = TracingService.createTracingMetadata({ id, correlationId });
     // Set correlation ID in response header
 
     res.setHeader('x-correlation-id', tracingMetadata.correlationId);
-    res.setHeader('x-id', tracingMetadata.id);
+    res.setHeader('x-tracing-id', tracingMetadata.id);
 
     // Run the request within the correlation context
-    TracingService.runWithContext(tracingMetadata, () => next());
+    TracingService.runWithMetadata(tracingMetadata, () => next());
   }
 }

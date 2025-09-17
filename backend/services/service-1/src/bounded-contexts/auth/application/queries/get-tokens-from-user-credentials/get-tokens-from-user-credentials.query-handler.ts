@@ -66,12 +66,12 @@ export class GetTokensFromUserCredentials_QueryHandler extends BaseQueryHandler<
     };
   }
 
-  protected authorize(_query: GetTokensFromUserCredentials_Query): Promise<boolean> {
+  protected async authorize(_query: GetTokensFromUserCredentials_Query) {
     // Login doesn't require additional authorization - authentication is done in handle()
-    return Promise.resolve(true);
+    return true;
   }
 
-  protected async validate(query: GetTokensFromUserCredentials_Query): Promise<void> {
+  protected async validate(query: GetTokensFromUserCredentials_Query) {
     // Validate email format
     new Email(query.email);
 

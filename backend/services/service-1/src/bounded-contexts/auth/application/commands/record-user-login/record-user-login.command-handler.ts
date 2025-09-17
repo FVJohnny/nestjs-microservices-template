@@ -18,7 +18,7 @@ export class RecordUserLogin_CommandHandler extends BaseCommandHandler<RecordUse
     super(eventBus);
   }
 
-  protected async handle(command: RecordUserLogin_Command): Promise<void> {
+  protected async handle(command: RecordUserLogin_Command) {
     const user = await this.userRepository.findById(new Id(command.userId));
 
     if (!user) {
@@ -33,10 +33,9 @@ export class RecordUserLogin_CommandHandler extends BaseCommandHandler<RecordUse
     await this.sendDomainEvents<User>(user);
   }
 
-  protected authorize(_command: RecordUserLogin_Command): Promise<boolean> {
-    // Login doesn't require additional authorization - authentication is done in handle()
-    return Promise.resolve(true);
+  protected async authorize(_command: RecordUserLogin_Command) {
+    return true;
   }
 
-  protected async validate(_command: RecordUserLogin_Command): Promise<void> {}
+  protected async validate(_command: RecordUserLogin_Command) {}
 }

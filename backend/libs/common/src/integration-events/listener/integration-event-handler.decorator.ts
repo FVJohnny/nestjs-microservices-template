@@ -20,7 +20,6 @@ export type IntegrationEventCtor<TEvent extends BaseIntegrationEvent> = Type<TEv
 
 /**
  * Decorator.
- * The decorated class only needs to implement `handleEvent(event: TEvent): Promise<void>`.
  */
 export function IntegrationEventHandler<TEvent extends BaseIntegrationEvent>(
   eventCtor: IntegrationEventCtor<TEvent>,
@@ -34,7 +33,7 @@ export function IntegrationEventHandler<TEvent extends BaseIntegrationEvent>(
       @Inject(INTEGRATION_EVENT_LISTENER)
       public readonly integrationEventListener: BaseIntegrationEventListener;
 
-      async onModuleInit(): Promise<void> {
+      async onModuleInit() {
         await this.integrationEventListener.registerEventHandler(
           this.eventClass.topic,
           this.eventClass.name,
@@ -42,10 +41,9 @@ export function IntegrationEventHandler<TEvent extends BaseIntegrationEvent>(
         );
       }
 
-      async handle(message: ParsedIntegrationMessage): Promise<void> {
+      async handle(message: ParsedIntegrationMessage) {
         const event = this.eventClass.fromJSON(message) as TEvent;
-        const metadata = TracingService.createTracingMetadata(message.metadata);
-        await TracingService.runWithContext(metadata, async () => {
+        await TracingService.runWithNewMetadataFrom(message.metadata, async () => {
           this.logger.log(
             `Processing ${this.eventClass.topic} event [${event.id}] - ${this.eventClass.name}`,
           );

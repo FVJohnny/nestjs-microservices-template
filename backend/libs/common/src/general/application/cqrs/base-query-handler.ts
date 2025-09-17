@@ -24,10 +24,7 @@ export abstract class BaseQueryHandler<TQuery extends IQuery, TResult extends ob
     await this.authorize(query);
     await this.validate(query);
 
-    const metadata = TracingService.getTracingMetadata();
-    const newMetadata = TracingService.createTracingMetadata(metadata);
-
-    return await TracingService.runWithContext(newMetadata, () => {
+    return await TracingService.runWithNewMetadata(() => {
       this.logger.log(`Executing query: ${query.constructor.name}`);
       return this.handle(query);
     });

@@ -2,12 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { User_Repository } from '@bc/auth/domain/repositories/user/user.repository';
 import { Email, Username } from '@bc/auth/domain/value-objects';
-import {
-  AlreadyExistsException,
-  Criteria,
-  InMemoryCriteriaConverter,
-  PaginatedRepoResult,
-} from '@libs/nestjs-common';
+import { AlreadyExistsException, Criteria, InMemoryCriteriaConverter } from '@libs/nestjs-common';
 import { UserDTO } from '@bc/auth/domain/entities/user/user.dto';
 import { InfrastructureException } from '@libs/nestjs-common';
 import { Id } from '@libs/nestjs-common';
@@ -18,7 +13,7 @@ export class User_InMemory_Repository implements User_Repository {
 
   constructor(private shouldFail: boolean = false) {}
 
-  async save(user: User): Promise<void> {
+  async save(user: User) {
     if (this.shouldFail) {
       throw new InfrastructureException('save', 'Repository operation failed', new Error());
     }
@@ -34,7 +29,7 @@ export class User_InMemory_Repository implements User_Repository {
     this.users.set(user.id.toValue(), user.toValue());
   }
 
-  async findById(id: Id): Promise<User | null> {
+  async findById(id: Id) {
     if (this.shouldFail) {
       throw new InfrastructureException('findById', 'Repository operation failed', new Error());
     }
@@ -42,7 +37,7 @@ export class User_InMemory_Repository implements User_Repository {
     return userDTO ? User.fromValue(userDTO) : null;
   }
 
-  async findByEmail(email: Email): Promise<User | null> {
+  async findByEmail(email: Email) {
     if (this.shouldFail) {
       throw new InfrastructureException('findByEmail', 'Repository operation failed', new Error());
     }
@@ -54,7 +49,7 @@ export class User_InMemory_Repository implements User_Repository {
     return Promise.resolve(null);
   }
 
-  async findByUsername(username: Username): Promise<User | null> {
+  async findByUsername(username: Username) {
     if (this.shouldFail) {
       throw new InfrastructureException(
         'findByUsername',
@@ -70,7 +65,7 @@ export class User_InMemory_Repository implements User_Repository {
     return null;
   }
 
-  async existsByEmail(email: Email): Promise<boolean> {
+  async existsByEmail(email: Email) {
     if (this.shouldFail) {
       throw new InfrastructureException(
         'existsByEmail',
@@ -82,7 +77,7 @@ export class User_InMemory_Repository implements User_Repository {
     return userDTO !== null;
   }
 
-  async existsByUsername(username: Username): Promise<boolean> {
+  async existsByUsername(username: Username) {
     if (this.shouldFail) {
       throw new InfrastructureException(
         'existsByUsername',
@@ -94,14 +89,14 @@ export class User_InMemory_Repository implements User_Repository {
     return userDTO !== null;
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll() {
     if (this.shouldFail) {
       throw new InfrastructureException('findAll', 'Repository operation failed', new Error());
     }
     return Array.from(this.users.values()).map((u) => User.fromValue(u));
   }
 
-  async findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<User>> {
+  async findByCriteria(criteria: Criteria) {
     if (this.shouldFail) {
       throw new InfrastructureException(
         'findByCriteria',
@@ -121,7 +116,7 @@ export class User_InMemory_Repository implements User_Repository {
     });
   }
 
-  async countByCriteria(criteria: Criteria): Promise<number> {
+  async countByCriteria(criteria: Criteria) {
     if (this.shouldFail) {
       throw new InfrastructureException(
         'countByCriteria',
@@ -134,21 +129,21 @@ export class User_InMemory_Repository implements User_Repository {
     return count;
   }
 
-  async remove(id: Id): Promise<void> {
+  async remove(id: Id) {
     if (this.shouldFail) {
       throw new InfrastructureException('remove', 'Repository operation failed', new Error());
     }
     this.users.delete(id.toValue());
   }
 
-  async exists(id: Id): Promise<boolean> {
+  async exists(id: Id) {
     if (this.shouldFail) {
       throw new InfrastructureException('exists', 'Repository operation failed', new Error());
     }
     return this.users.has(id.toValue());
   }
 
-  async clear(): Promise<void> {
+  async clear() {
     this.users.clear();
   }
 }

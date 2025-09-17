@@ -13,17 +13,17 @@ export class InMemoryOutboxRepository implements OutboxRepository {
     this.byId = new Map();
   }
 
-  async save(event: OutboxEvent): Promise<void> {
+  async save(event: OutboxEvent) {
     this.validate('save');
     this.byId.set(event.id.toValue(), event.toValue());
   }
 
-  async findAll(): Promise<OutboxEvent[]> {
+  async findAll() {
     this.validate('findAll');
     return Array.from(this.byId.values()).map((e) => OutboxEvent.fromValue(e));
   }
 
-  async findUnprocessed(limit = 10): Promise<OutboxEvent[]> {
+  async findUnprocessed(limit = 10) {
     this.validate('findUnprocessed');
     const result = Array.from(this.byId.values())
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
@@ -34,7 +34,7 @@ export class InMemoryOutboxRepository implements OutboxRepository {
     return result;
   }
 
-  async deleteProcessed(before: Date): Promise<void> {
+  async deleteProcessed(before: Date) {
     this.validate('deleteProcessed');
     for (const [id, e] of this.byId.entries()) {
       const event = OutboxEvent.fromValue(e);
@@ -44,23 +44,23 @@ export class InMemoryOutboxRepository implements OutboxRepository {
     }
   }
 
-  async findById(id: Id): Promise<OutboxEvent | null> {
+  async findById(id: Id) {
     this.validate('findById');
     const dto = this.byId.get(id.toValue());
     return dto ? OutboxEvent.fromValue(dto) : null;
   }
 
-  async exists(id: Id): Promise<boolean> {
+  async exists(id: Id) {
     this.validate('exists');
     return this.byId.has(id.toValue());
   }
 
-  async remove(id: Id): Promise<void> {
+  async remove(id: Id) {
     this.validate('remove');
     this.byId.delete(id.toValue());
   }
 
-  async clear(): Promise<void> {
+  async clear() {
     this.validate('clear');
     this.byId.clear();
   }

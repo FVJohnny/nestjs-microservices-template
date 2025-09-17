@@ -6,14 +6,11 @@ import { CorrelationLogger } from './../../../logger';
 export abstract class DomainEventHandlerBase<T extends DomainEvent> implements IEventHandler<T> {
   protected readonly logger: CorrelationLogger;
   constructor() {
-    this.logger = new CorrelationLogger(DomainEventHandlerBase.name);
+    this.logger = new CorrelationLogger(this.constructor.name);
   }
 
-  async handle(event: T): Promise<void> {
-    const metadata = TracingService.getTracingMetadata();
-    const newMetadata = TracingService.createTracingMetadata(metadata);
-
-    return await TracingService.runWithContext(newMetadata, () => {
+  async handle(event: T) {
+    await TracingService.runWithNewMetadata(() => {
       this.logger.log(`Handling domain event: ${event.constructor.name}`);
       return this.handleEvent(event);
     });

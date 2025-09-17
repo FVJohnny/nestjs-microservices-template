@@ -16,7 +16,7 @@ export class EmailVerification_Mongodb_Repository
     super(mongoClient, 'email_verifications');
   }
 
-  async save(emailVerification: EmailVerification): Promise<void> {
+  async save(emailVerification: EmailVerification) {
     try {
       await this.collection.updateOne(
         { id: emailVerification.id.toValue() },
@@ -28,7 +28,7 @@ export class EmailVerification_Mongodb_Repository
     }
   }
 
-  async findById(id: Id): Promise<EmailVerification | null> {
+  async findById(id: Id) {
     try {
       const document = await this.collection.findOne({ id: id.toValue() });
 
@@ -42,7 +42,7 @@ export class EmailVerification_Mongodb_Repository
     }
   }
 
-  async findByUserId(userId: Id): Promise<EmailVerification | null> {
+  async findByUserId(userId: Id) {
     try {
       const document = await this.collection.findOne({ userId: userId.toValue() });
 
@@ -56,7 +56,7 @@ export class EmailVerification_Mongodb_Repository
     }
   }
 
-  async findByEmail(email: Email): Promise<EmailVerification | null> {
+  async findByEmail(email: Email) {
     try {
       const document = await this.collection.findOne({
         email: email.toValue(),
@@ -72,7 +72,7 @@ export class EmailVerification_Mongodb_Repository
     }
   }
 
-  async findPendingByUserId(userId: Id): Promise<EmailVerification | null> {
+  async findPendingByUserId(userId: Id) {
     try {
       const document = await this.collection.findOne({
         userId: userId.toValue(),
@@ -90,7 +90,7 @@ export class EmailVerification_Mongodb_Repository
     }
   }
 
-  async remove(id: Id): Promise<void> {
+  async remove(id: Id) {
     try {
       await this.collection.deleteOne({ id: id.toValue() });
     } catch (error: unknown) {
@@ -98,7 +98,7 @@ export class EmailVerification_Mongodb_Repository
     }
   }
 
-  async exists(id: Id): Promise<boolean> {
+  async exists(id: Id) {
     try {
       const count = await this.collection.countDocuments({ id: id.toValue() });
       return count > 0;
@@ -107,7 +107,7 @@ export class EmailVerification_Mongodb_Repository
     }
   }
 
-  async clear(): Promise<void> {
+  async clear() {
     try {
       await this.collection.deleteMany({});
     } catch (error: unknown) {

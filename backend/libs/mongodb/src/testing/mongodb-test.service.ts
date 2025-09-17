@@ -12,7 +12,7 @@ export class MongodbTestService {
     this.mongoClient = new MongoClient(uri);
   }
 
-  async setupDatabase(): Promise<void> {
+  async setupDatabase() {
     try {
       this.logger.debug('Connecting to existing MongoDB instance...');
 
@@ -28,7 +28,7 @@ export class MongodbTestService {
     }
   }
 
-  async cleanupDatabase(): Promise<void> {
+  async cleanupDatabase() {
     try {
       await this.mongoClient.db(this.dbName).dropDatabase();
       this.logger.debug('Cleaned up test database');
@@ -38,7 +38,7 @@ export class MongodbTestService {
     await this.mongoClient.close();
   }
 
-  async clearCollection(collectionName: string): Promise<void> {
+  async clearCollection(collectionName: string) {
     const db = this.mongoClient.db(this.dbName);
     await db.collection(collectionName).deleteMany({});
   }

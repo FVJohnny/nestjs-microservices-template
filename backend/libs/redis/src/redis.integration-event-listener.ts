@@ -13,7 +13,7 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
     super();
   }
 
-  protected async subscribeToTopic(topicName: string): Promise<void> {
+  protected async subscribeToTopic(topicName: string) {
     const client = this.redisService.getSubscriberClient();
     if (!client) {
       this.logger.warn(`No Redis subscriber client available, cannot subscribe to ${topicName}`);
@@ -38,7 +38,7 @@ export class RedisIntegrationEventListener extends BaseIntegrationEventListener 
     }
   }
 
-  protected async unsubscribeFromTopic(topicName: string): Promise<void> {
+  protected async unsubscribeFromTopic(topicName: string) {
     const client = this.redisService.getSubscriberClient();
     if (!client) {
       this.logger.warn(

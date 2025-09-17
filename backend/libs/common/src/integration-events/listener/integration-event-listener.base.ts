@@ -35,7 +35,7 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
     topicName: string,
     eventName: string,
     handler: IIntegrationEventHandler,
-  ): Promise<void> {
+  ) {
     const existingHandler = this.getEventHandler(topicName, eventName);
     if (existingHandler) {
       this.logger.warn(

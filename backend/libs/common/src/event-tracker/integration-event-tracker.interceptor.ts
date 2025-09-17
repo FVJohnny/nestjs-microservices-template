@@ -52,7 +52,7 @@ export class IntegrationEventTrackerInterceptor {
       topicName: string,
       message: ParsedIntegrationMessage,
     ) => {
-      return TracingService.runWithContext(message.metadata, async () => {
+      return TracingService.runWithNewMetadataFrom(message.metadata, async () => {
         try {
           const result = await originalHandleMessage(topicName, message);
           if (result) {

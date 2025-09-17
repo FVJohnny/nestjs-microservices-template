@@ -11,7 +11,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   constructor() {}
 
-  async onModuleInit(): Promise<void> {
+  async onModuleInit() {
     // Skip Redis initialization in test environment
     if (process.env.NODE_ENV === 'test') {
       this.logger.log('Skipping Redis initialization in test environment');
@@ -89,7 +89,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async onModuleDestroy(): Promise<void> {
+  async onModuleDestroy() {
     if (this.databaseClient) {
       await this.databaseClient.quit();
     }
@@ -102,15 +102,15 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('👋 Disconnected from Redis');
   }
 
-  getDatabaseClient(): Redis | null {
+  getDatabaseClient() {
     return this.databaseClient;
   }
 
-  getPublisherClient(): Redis | null {
+  getPublisherClient() {
     return this.publisherClient;
   }
 
-  getSubscriberClient(): Redis | null {
+  getSubscriberClient() {
     return this.subscriberClient;
   }
 }

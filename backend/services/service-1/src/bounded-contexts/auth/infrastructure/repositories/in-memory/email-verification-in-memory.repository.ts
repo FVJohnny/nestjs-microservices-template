@@ -11,7 +11,7 @@ export class EmailVerification_InMemory_Repository implements EmailVerification_
 
   constructor(private readonly shouldFail: boolean = false) {}
 
-  async save(emailVerification: EmailVerification): Promise<void> {
+  async save(emailVerification: EmailVerification) {
     if (this.shouldFail)
       throw new InfrastructureException('save', 'Repository operation failed', new Error());
 
@@ -30,7 +30,7 @@ export class EmailVerification_InMemory_Repository implements EmailVerification_
     this.emailVerifications.set(emailVerification.id.toValue(), emailVerification.toValue());
   }
 
-  async findById(id: Id): Promise<EmailVerification | null> {
+  async findById(id: Id) {
     if (this.shouldFail)
       throw new InfrastructureException('findById', 'Repository operation failed', new Error());
 
@@ -42,7 +42,7 @@ export class EmailVerification_InMemory_Repository implements EmailVerification_
     return null;
   }
 
-  async findByUserId(userId: Id): Promise<EmailVerification | null> {
+  async findByUserId(userId: Id) {
     if (this.shouldFail)
       throw new InfrastructureException('findByUserId', 'Repository operation failed', new Error());
 
@@ -54,7 +54,7 @@ export class EmailVerification_InMemory_Repository implements EmailVerification_
     return null;
   }
 
-  async findByEmail(email: Email): Promise<EmailVerification | null> {
+  async findByEmail(email: Email) {
     if (this.shouldFail)
       throw new InfrastructureException('findByEmail', 'Repository operation failed', new Error());
 
@@ -66,7 +66,7 @@ export class EmailVerification_InMemory_Repository implements EmailVerification_
     return null;
   }
 
-  async findPendingByUserId(userId: Id): Promise<EmailVerification | null> {
+  async findPendingByUserId(userId: Id) {
     if (this.shouldFail)
       throw new InfrastructureException(
         'findPendingByUserId',
@@ -82,25 +82,25 @@ export class EmailVerification_InMemory_Repository implements EmailVerification_
     return null;
   }
 
-  async remove(id: Id): Promise<void> {
+  async remove(id: Id) {
     if (this.shouldFail)
       throw new InfrastructureException('remove', 'Repository operation failed', new Error());
 
     this.emailVerifications.delete(id.toValue());
   }
 
-  async exists(id: Id): Promise<boolean> {
+  async exists(id: Id) {
     if (this.shouldFail)
       throw new InfrastructureException('exists', 'Repository operation failed', new Error());
 
     return this.emailVerifications.has(id.toValue());
   }
 
-  async clear(): Promise<void> {
+  async clear() {
     this.emailVerifications.clear();
   }
 
-  private isDtoPending(dto: EmailVerificationDTO): boolean {
+  private isDtoPending(dto: EmailVerificationDTO) {
     const verification = new Verification(dto.verification);
     const expiration = new Expiration(dto.expiration);
     return !verification.isVerified() && !expiration.isExpired();

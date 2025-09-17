@@ -10,7 +10,7 @@ export class KafkaIntegrationEventListener extends BaseIntegrationEventListener 
     super();
   }
 
-  protected async subscribeToTopic(topicName: string): Promise<void> {
+  protected async subscribeToTopic(topicName: string) {
     this.logger.log(`Subscribing to Kafka topic: ${topicName}`);
     const consumer = this.kafkaService.getConsumer();
     await consumer.subscribe({ topic: topicName });
@@ -22,7 +22,7 @@ export class KafkaIntegrationEventListener extends BaseIntegrationEventListener 
     this.logger.log(`Subscribed to Kafka topic: ${topicName}`);
   }
 
-  protected async unsubscribeFromTopic(topicName: string): Promise<void> {
+  protected async unsubscribeFromTopic(topicName: string) {
     // Note: KafkaService doesn't currently support unregistering handlers
     this.logger.log(`Unsubscribed from Kafka topic: ${topicName}`);
   }

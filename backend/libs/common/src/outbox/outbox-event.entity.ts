@@ -62,7 +62,7 @@ export class OutboxEvent extends SharedAggregateRoot {
     };
   }
 
-  static fromValue(value: OutboxEventValue): OutboxEvent {
+  static fromValue(value: OutboxEventValue) {
     return new OutboxEvent({
       id: value.id,
       eventName: value.eventName,
@@ -75,11 +75,11 @@ export class OutboxEvent extends SharedAggregateRoot {
     });
   }
 
-  async markAsProcessed(): Promise<void> {
+  markAsProcessed() {
     this.processedAt = new Date();
   }
 
-  async incrementRetry(): Promise<void> {
+  incrementRetry() {
     this.retryCount += 1;
   }
 }

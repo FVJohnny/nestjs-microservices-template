@@ -11,7 +11,7 @@ export class InMemoryIntegrationEventPublisher implements IntegrationEventPublis
 
   constructor(private readonly shouldFail: boolean) {}
 
-  async publish(topic: string, message: string): Promise<void> {
+  async publish(topic: string, message: string) {
     if (this.shouldFail) {
       throw new ApplicationException('IntegrationEventPublisher publish failed');
     }

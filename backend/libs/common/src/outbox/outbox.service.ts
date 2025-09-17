@@ -4,6 +4,7 @@ import { INTEGRATION_EVENT_PUBLISHER, type IntegrationEventPublisher } from '../
 import { randomUUID } from 'crypto';
 import { OutboxEvent } from './outbox-event.entity';
 import { CorrelationLogger } from '../logger';
+import { TracingService } from '../tracing';
 
 export const OUTBOX_REPOSITORY = 'OutboxRepository';
 
@@ -23,13 +24,12 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     this.logger.log('Starting outbox processor...');
 
-    this.processingInterval = setInterval(
-      () =>
-        this.processOutboxEvents().catch((error) =>
-          this.logger.error('Error in outbox processing interval:', error),
-        ),
-      this.PROCESSING_INTERVAL_MS,
-    );
+    TracingService.runWithNewMetadata(() => {
+      this.processingInterval = setInterval(
+        () => this.processOutboxEvents(),
+        this.PROCESSING_INTERVAL_MS,
+      );
+    });
 
     this.logger.log(`Outbox processor started with ${this.PROCESSING_INTERVAL_MS}ms interval`);
   }

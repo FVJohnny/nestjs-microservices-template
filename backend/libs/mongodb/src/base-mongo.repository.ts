@@ -35,7 +35,7 @@ export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
 
   protected abstract defineIndexes(): IndexSpec[];
 
-  private async initializeIndexes(): Promise<void> {
+  private async initializeIndexes() {
     try {
       const collections = await this.mongoClient
         .db()

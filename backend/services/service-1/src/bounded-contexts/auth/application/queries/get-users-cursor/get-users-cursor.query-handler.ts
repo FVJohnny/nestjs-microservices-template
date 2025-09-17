@@ -113,14 +113,12 @@ export class GetUsersCursor_QueryHandler extends BaseQueryHandler<
     };
   }
 
-  protected authorize(_query: GetUsersCursor_Query): Promise<boolean> {
+  protected async authorize(_query: GetUsersCursor_Query) {
     // TODO: Implement authorization logic
-    return Promise.resolve(true);
+    return true;
   }
 
-  protected validate(_query: GetUsersCursor_Query): Promise<void> {
+  protected async validate(_query: GetUsersCursor_Query) {
     // TODO: Implement validation logic
-    // For example: validate limit ranges, cursor format, orderBy field names, etc.
-    return Promise.resolve();
   }
 }

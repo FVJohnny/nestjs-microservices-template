@@ -19,7 +19,7 @@ export class RedisOutboxRepository implements OutboxRepository {
 
   constructor(private readonly redisClient: Redis) {}
 
-  async save(event: OutboxEvent): Promise<void> {
+  async save(event: OutboxEvent) {
     if (!this.redisClient) {
       this.logger.warn('Redis client not available. Skipping save().');
       return;
@@ -42,7 +42,7 @@ export class RedisOutboxRepository implements OutboxRepository {
     }
   }
 
-  async findById(id: Id): Promise<OutboxEvent | null> {
+  async findById(id: Id) {
     if (!this.redisClient) {
       this.logger.warn('Redis client not available. Returning null.');
       return null;
@@ -60,7 +60,7 @@ export class RedisOutboxRepository implements OutboxRepository {
     }
   }
 
-  async exists(id: Id): Promise<boolean> {
+  async exists(id: Id) {
     if (!this.redisClient) {
       this.logger.warn('Redis client not available. Returning false.');
       return false;
@@ -71,7 +71,7 @@ export class RedisOutboxRepository implements OutboxRepository {
     return exists === 1;
   }
 
-  async remove(id: Id): Promise<void> {
+  async remove(id: Id) {
     if (!this.redisClient) {
       this.logger.warn('Redis client not available. Skipping remove().');
       return;
@@ -81,7 +81,7 @@ export class RedisOutboxRepository implements OutboxRepository {
     await this.redisClient.del(key);
   }
 
-  async clear(): Promise<void> {
+  async clear() {
     if (!this.redisClient) {
       this.logger.warn('Redis client not available. Skipping clear().');
       return;
@@ -90,7 +90,7 @@ export class RedisOutboxRepository implements OutboxRepository {
     await this.redisClient.del(this.zUnprocessed, this.zProcessed);
   }
 
-  async findUnprocessed(limit = 100): Promise<OutboxEvent[]> {
+  async findUnprocessed(limit = 100) {
     if (!this.redisClient) {
       this.logger.warn('Redis client not available. Returning empty list.');
       return [];
@@ -120,7 +120,7 @@ export class RedisOutboxRepository implements OutboxRepository {
       .map((v) => OutboxEvent.fromValue(v));
   }
 
-  async deleteProcessed(olderThan: Date): Promise<void> {
+  async deleteProcessed(olderThan: Date) {
     if (!this.redisClient) {
       this.logger.warn('Redis client not available. Skipping deleteProcessed().');
       return;

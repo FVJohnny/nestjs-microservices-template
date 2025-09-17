@@ -18,7 +18,7 @@ export class VerifyEmail_CommandHandler extends BaseCommandHandler<VerifyEmail_C
     super(eventBus);
   }
 
-  protected async handle(command: VerifyEmail_Command): Promise<void> {
+  protected async handle(command: VerifyEmail_Command) {
     const emailVerification = await this.emailVerificationRepository.findById(
       new Id(command.emailVerificationId),
     );
@@ -34,12 +34,9 @@ export class VerifyEmail_CommandHandler extends BaseCommandHandler<VerifyEmail_C
     await this.sendDomainEvents(emailVerification);
   }
 
-  protected authorize(_command: VerifyEmail_Command): Promise<boolean> {
-    // No special authorization needed - anyone with a valid email verification ID can verify
-    return Promise.resolve(true);
+  protected async authorize(_command: VerifyEmail_Command) {
+    return true;
   }
 
-  protected async validate(_command: VerifyEmail_Command): Promise<void> {
-    // Email verification validation is done in the handle method
-  }
+  protected async validate(_command: VerifyEmail_Command) {}
 }

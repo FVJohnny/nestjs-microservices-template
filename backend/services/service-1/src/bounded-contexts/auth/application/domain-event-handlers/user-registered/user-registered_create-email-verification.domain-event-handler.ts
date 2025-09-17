@@ -9,7 +9,7 @@ export class UserRegistered_CreateEmailVerification_DomainEventHandler extends D
     super();
   }
 
-  async handleEvent(event: UserRegistered_DomainEvent): Promise<void> {
+  async handleEvent(event: UserRegistered_DomainEvent) {
     const createEmailVerificationCommand = new CreateEmailVerification_Command({
       userId: event.aggregateId.toValue(),
       email: event.email.toValue(),

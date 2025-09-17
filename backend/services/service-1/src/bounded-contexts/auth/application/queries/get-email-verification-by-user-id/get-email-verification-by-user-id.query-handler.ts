@@ -34,11 +34,9 @@ export class GetEmailVerificationByUserId_QueryHandler extends BaseQueryHandler<
     return emailVerification.toValue();
   }
 
-  protected authorize(_query: GetEmailVerificationByUserId_Query): Promise<boolean> {
-    return Promise.resolve(true);
+  protected async authorize(_query: GetEmailVerificationByUserId_Query) {
+    return true;
   }
 
-  protected validate(_query: GetEmailVerificationByUserId_Query): Promise<void> {
-    return Promise.resolve();
-  }
+  protected async validate(_query: GetEmailVerificationByUserId_Query) {}
 }

@@ -10,7 +10,7 @@ export class KafkaIntegrationEventPublisher implements IntegrationEventPublisher
 
   constructor(private readonly kafkaService: KafkaService) {}
 
-  async publish(topic: string, message: string): Promise<void> {
+  async publish(topic: string, message: string) {
     try {
       const producer = this.kafkaService.getProducer();
       await producer.send({

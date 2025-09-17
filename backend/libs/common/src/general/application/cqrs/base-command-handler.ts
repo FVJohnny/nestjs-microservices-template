@@ -17,14 +17,11 @@ export abstract class BaseCommandHandler<TCommand extends ICommand> {
    * 2. Validate business rules
    * 3. Handle the command (implemented by subclasses)
    */
-  async execute(command: TCommand): Promise<void> {
+  async execute(command: TCommand) {
     await this.authorize(command);
     await this.validate(command);
 
-    const metadata = TracingService.getTracingMetadata();
-    const newMetadata = TracingService.createTracingMetadata(metadata);
-
-    await TracingService.runWithContext(newMetadata, () => {
+    await TracingService.runWithNewMetadata(() => {
       this.logger.log(`Executing command: ${command.constructor.name}`);
       return this.handle(command);
     });

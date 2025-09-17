@@ -29,7 +29,18 @@ export class TracingService {
     };
   }
 
-  static runWithContext<T>(context: TracingMetadata, callback: () => T): T {
+  static runWithMetadata<T>(context: TracingMetadata, callback: () => T): T {
     return this.asyncLocalStorage.run(context, callback);
+  }
+
+  static runWithNewMetadataFrom<T>(metadata: TracingMetadata, callback: () => T): T {
+    const newMetadata = this.createTracingMetadata(metadata);
+    return this.runWithMetadata(newMetadata, callback);
+  }
+
+  static runWithNewMetadata<T>(callback: () => T): T {
+    const oldMetadata = this.getTracingMetadata();
+    const metadata = this.createTracingMetadata(oldMetadata);
+    return this.runWithMetadata(metadata, callback);
   }
 }

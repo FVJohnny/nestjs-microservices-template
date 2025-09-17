@@ -14,7 +14,7 @@ export class MongoOutboxRepository
     super(mongoClient, 'outbox_events');
   }
 
-  async save(event: OutboxEvent): Promise<void> {
+  async save(event: OutboxEvent) {
     await this.collection.updateOne(
       { id: event.id.toValue() },
       { $set: event.toValue() },
@@ -22,25 +22,25 @@ export class MongoOutboxRepository
     );
   }
 
-  async findById(id: Id): Promise<OutboxEvent | null> {
+  async findById(id: Id) {
     const dto = await this.collection.findOne({ id: id.toValue() });
     return dto ? OutboxEvent.fromValue(dto) : null;
   }
 
-  async exists(id: Id): Promise<boolean> {
+  async exists(id: Id) {
     const dto = await this.collection.findOne({ id: id.toValue() });
     return !!dto;
   }
 
-  async remove(id: Id): Promise<void> {
+  async remove(id: Id) {
     await this.collection.deleteOne({ id: id.toValue() });
   }
 
-  async clear(): Promise<void> {
+  async clear() {
     await this.collection.deleteMany({});
   }
 
-  async findUnprocessed(limit = 100): Promise<OutboxEvent[]> {
+  async findUnprocessed(limit = 100) {
     const cursor = this.collection
       .find({ processedAt: OutboxEvent.NEVER_PROCESSED })
       .sort({ createdAt: 1 })
@@ -50,7 +50,7 @@ export class MongoOutboxRepository
     return docs.map((d) => OutboxEvent.fromValue(d));
   }
 
-  async deleteProcessed(before: Date): Promise<void> {
+  async deleteProcessed(before: Date) {
     await this.collection.deleteMany({
       processedAt: {
         $lt: before,

@@ -18,7 +18,7 @@ export class RedisTestService {
     this.redisClient = new Redis(config);
   }
 
-  async setupDatabase(): Promise<void> {
+  async setupDatabase() {
     try {
       this.logger.debug('Connecting to existing Redis instance...');
 
@@ -35,7 +35,7 @@ export class RedisTestService {
     }
   }
 
-  async cleanupDatabase(): Promise<void> {
+  async cleanupDatabase() {
     try {
       await this.redisClient.flushdb();
       this.logger.debug('Cleaned up test database');
@@ -45,14 +45,14 @@ export class RedisTestService {
     await this.redisClient.quit();
   }
 
-  async clearKeys(pattern: string = '*'): Promise<void> {
+  async clearKeys(pattern: string = '*') {
     const keys = await this.redisClient.keys(pattern);
     if (keys.length > 0) {
       await this.redisClient.del(keys);
     }
   }
 
-  async clearOutboxKeys(): Promise<void> {
+  async clearOutboxKeys() {
     await this.clearKeys('outbox:*');
   }
 }

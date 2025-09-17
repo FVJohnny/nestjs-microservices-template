@@ -28,7 +28,7 @@ export class CreateEmailVerification_CommandHandler extends BaseCommandHandler<C
     super(eventBus);
   }
 
-  protected async handle(command: CreateEmailVerification_Command): Promise<void> {
+  protected async handle(command: CreateEmailVerification_Command) {
     const userId = new Id(command.userId);
     const email = new Email(command.email);
 
@@ -42,12 +42,11 @@ export class CreateEmailVerification_CommandHandler extends BaseCommandHandler<C
     await this.sendDomainEvents<EmailVerification>(emailVerification);
   }
 
-  protected authorize(_command: CreateEmailVerification_Command): Promise<boolean> {
-    // TODO: Implement authorization logic if needed
-    return Promise.resolve(true);
+  protected async authorize(_command: CreateEmailVerification_Command) {
+    return true;
   }
 
-  protected async validate(command: CreateEmailVerification_Command): Promise<void> {
+  protected async validate(command: CreateEmailVerification_Command) {
     const user = await this.userRepository.findById(new Id(command.userId));
     if (!user) {
       throw new NotFoundException('user');

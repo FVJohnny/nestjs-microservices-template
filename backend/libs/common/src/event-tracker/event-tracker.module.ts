@@ -22,7 +22,7 @@ export class EventTrackerModule implements OnApplicationBootstrap {
     private readonly domainDiscoveryService: FileSystemDomainEventDiscoveryService,
   ) {}
 
-  async onApplicationBootstrap(): Promise<void> {
+  async onApplicationBootstrap() {
     const discoveredEvents = await this.domainDiscoveryService.discoverDomainEvents();
     this.domainEventTracker.initializeDomainEventStats(discoveredEvents);
   }

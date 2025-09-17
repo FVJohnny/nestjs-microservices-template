@@ -19,7 +19,7 @@ export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser
     super(eventBus);
   }
 
-  protected async handle(command: RegisterUser_Command): Promise<void> {
+  protected async handle(command: RegisterUser_Command) {
     const user = User.create({
       email: new Email(command.email),
       username: new Username(command.username),
@@ -32,12 +32,11 @@ export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser
     await this.sendDomainEvents<User>(user);
   }
 
-  protected authorize(_command: RegisterUser_Command): Promise<boolean> {
-    // TODO: Implement authorization logic
-    return Promise.resolve(true);
+  protected async authorize(_command: RegisterUser_Command) {
+    return true;
   }
 
-  protected async validate(command: RegisterUser_Command): Promise<void> {
+  protected async validate(command: RegisterUser_Command) {
     const email = new Email(command.email);
     const username = new Username(command.username);
 

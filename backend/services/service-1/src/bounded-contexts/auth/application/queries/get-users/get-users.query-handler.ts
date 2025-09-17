@@ -109,14 +109,12 @@ export class GetUsers_QueryHandler extends BaseQueryHandler<GetUsers_Query, GetU
     };
   }
 
-  protected authorize(_query: GetUsers_Query): Promise<boolean> {
+  protected async authorize(_query: GetUsers_Query) {
     // TODO: Implement authorization logic
-    return Promise.resolve(true);
+    return true;
   }
 
-  protected validate(_query: GetUsers_Query): Promise<void> {
+  protected async validate(_query: GetUsers_Query) {
     // TODO: Implement validation logic
-    // For example: validate limit/offset ranges, orderBy field names, etc.
-    return Promise.resolve();
   }
 }

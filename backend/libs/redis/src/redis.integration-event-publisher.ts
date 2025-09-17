@@ -10,7 +10,7 @@ export class RedisIntegrationEventPublisher implements IntegrationEventPublisher
 
   constructor(private readonly redisService: RedisService) {}
 
-  async publish(topic: string, message: string): Promise<void> {
+  async publish(topic: string, message: string) {
     const client = this.redisService.getPublisherClient();
     if (!client) {
       this.logger.warn(
