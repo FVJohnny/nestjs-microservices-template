@@ -20,9 +20,8 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     private readonly publisher: IntegrationEventPublisher,
   ) {}
 
-  async onModuleInit(): Promise<void> {
+  async onModuleInit() {
     this.logger.log('Starting outbox processor...');
-    await this.processOutboxEvents();
 
     this.processingInterval = setInterval(
       () =>
@@ -35,14 +34,14 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     this.logger.log(`Outbox processor started with ${this.PROCESSING_INTERVAL_MS}ms interval`);
   }
 
-  async onModuleDestroy(): Promise<void> {
+  async onModuleDestroy() {
     if (this.processingInterval) {
       clearInterval(this.processingInterval);
     }
     this.logger.log('Outbox processor stopped');
   }
 
-  async storeEvent(eventName: string, topic: string, payload: string): Promise<void> {
+  async storeEvent(eventName: string, topic: string, payload: string) {
     const event = new OutboxEvent({
       id: randomUUID(),
       eventName,
@@ -57,7 +56,7 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     this.logger.debug(`Stored outbox event: ${eventName} for topic: ${topic}`);
   }
 
-  async processOutboxEvents(): Promise<void> {
+  async processOutboxEvents() {
     const events = await this.repository.findUnprocessed(10);
     if (!events.length) return;
 
@@ -68,13 +67,13 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async cleanupProcessedEvents(): Promise<void> {
+  async cleanupProcessedEvents() {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     await this.repository.deleteProcessed(sevenDaysAgo);
     this.logger.debug('Cleaned up processed outbox events older than 7 days');
   }
 
-  private async processEvent(event: OutboxEvent): Promise<void> {
+  private async processEvent(event: OutboxEvent) {
     try {
       await this.publisher.publish(event.topic, event.payload);
       event.markAsProcessed();
@@ -85,7 +84,7 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private async handleEventError(event: OutboxEvent, error: unknown): Promise<void> {
+  private async handleEventError(event: OutboxEvent, error: unknown) {
     this.logger.error(`Failed to process outbox event ${event.id}:`, error as Error);
 
     if (event.retryCount < event.maxRetries) {

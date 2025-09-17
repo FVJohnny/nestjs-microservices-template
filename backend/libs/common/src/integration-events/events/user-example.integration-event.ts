@@ -1,10 +1,8 @@
-import type { TracingMetadata } from '../../tracing/tracing-metadata';
 import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './base-integration-event';
 import { Topics } from './topics';
 
 export interface UserExample_IntegrationEventProps extends BaseIntegrationEventProps {
-  userId?: string;
-  action?: string;
+  example: string;
 }
 
 export class UserExample_IntegrationEvent extends BaseIntegrationEvent {
@@ -12,8 +10,11 @@ export class UserExample_IntegrationEvent extends BaseIntegrationEvent {
   static readonly name = Topics.USERS.events.USER_EXAMPLE;
   static readonly topic = Topics.USERS.topic;
 
-  constructor(props: UserExample_IntegrationEventProps, metadata?: TracingMetadata) {
-    super(props, metadata);
+  public readonly example: string;
+
+  constructor(props: UserExample_IntegrationEventProps) {
+    super(props);
+    this.example = props.example;
   }
 
   protected toEventJSON(): Record<string, unknown> {
@@ -21,19 +22,16 @@ export class UserExample_IntegrationEvent extends BaseIntegrationEvent {
       topic: UserExample_IntegrationEvent.topic,
       name: UserExample_IntegrationEvent.name,
       version: UserExample_IntegrationEvent.version,
-
-      occurredOn: this.occurredOn.toISOString(),
-      metadata: this.metadata.toJSON(),
     };
   }
 
   static fromJSON(json: Record<string, unknown>): UserExample_IntegrationEvent {
-    const event = new UserExample_IntegrationEvent(
-      {
-        occurredOn: json.occurredOn ? new Date(json.occurredOn as string) : undefined,
-      },
-      json.metadata as TracingMetadata,
-    );
+    const event = new UserExample_IntegrationEvent({
+      id: json.id as string,
+      occurredOn: json.occurredOn ? new Date(json.occurredOn as string) : undefined,
+
+      example: json.example as string,
+    });
     event.validate();
     return event;
   }

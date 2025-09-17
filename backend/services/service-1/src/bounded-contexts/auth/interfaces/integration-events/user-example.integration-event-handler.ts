@@ -10,9 +10,7 @@ export class UserExample_IntegrationEventHandler {
 
   constructor(private readonly commandBus: CommandBus) {}
 
-  async handleEvent(event: UserExample_IntegrationEvent): Promise<void> {
-    this.logger.log(`Handling UserExample integration event id: ${event.metadata.id}`);
-
+  async handleEvent(_event: UserExample_IntegrationEvent) {
     try {
       // Generate random user data
       const user = User.random();

@@ -1,10 +1,13 @@
-import { TracingMetadata } from '../../tracing';
+import { ApplicationException } from '../../errors';
+import { Id } from '../../general';
+import { TracingService } from '../../tracing';
 
 /**
  * Base interface for all integration event props.
  * All integration events should extend this for their constructor props.
  */
 export interface BaseIntegrationEventProps {
+  id?: string;
   occurredOn?: Date;
 }
 
@@ -17,12 +20,12 @@ export abstract class BaseIntegrationEvent {
   static readonly name: string;
   static readonly topic: string;
 
+  readonly id: string;
   readonly occurredOn: Date;
-  readonly metadata: TracingMetadata;
 
-  constructor(props: BaseIntegrationEventProps, metadata?: TracingMetadata) {
+  constructor(props: BaseIntegrationEventProps) {
+    this.id = props.id || Id.random().toValue();
     this.occurredOn = props.occurredOn || new Date();
-    this.metadata = metadata ?? new TracingMetadata();
   }
 
   /**
@@ -30,8 +33,9 @@ export abstract class BaseIntegrationEvent {
    */
   toJSON(): Record<string, unknown> {
     return {
+      id: this.id,
       occurredOn: this.occurredOn.toISOString(),
-      metadata: this.metadata.toJSON(),
+      metadata: TracingService.getTracingMetadata(),
       ...this.toEventJSON(),
     };
   }
@@ -54,13 +58,9 @@ export abstract class BaseIntegrationEvent {
    * Validates the event before publishing.
    * Subclasses can override to add specific validation.
    */
-  validate(): void {
-    if (!this.occurredOn) {
-      throw new Error('occurredOn is required');
-    }
-    if (!this.metadata) {
-      throw new Error('metadata is required');
-    }
+  protected validate(): void {
+    if (!this.id) throw new ApplicationException('id is required');
+    if (!this.occurredOn) throw new ApplicationException('occurredOn is required');
   }
 
   /**

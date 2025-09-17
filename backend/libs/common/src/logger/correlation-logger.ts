@@ -15,7 +15,7 @@ export class CorrelationLogger extends NestLogger implements LoggerService {
 
   log = (message: LogMessage, ...optionalParams: any[]) => {
     if (this.shouldLog('log')) {
-      super.log(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
+      super.log(`${this.prefix()} ${this.formatMessage(message, optionalParams)}`);
     }
   };
 
@@ -23,25 +23,27 @@ export class CorrelationLogger extends NestLogger implements LoggerService {
     if (this.shouldLog('error')) {
       if (traceOrError instanceof Error) {
         super.error(
-          `${this.prefix()} ${this.toString(message)}`,
+          `${this.prefix()} ${this.formatMessage(message, optionalParams)}`,
           traceOrError.stack,
-          ...optionalParams,
         );
       } else {
-        super.error(`${this.prefix()} ${this.toString(message)}`, traceOrError, ...optionalParams);
+        super.error(
+          `${this.prefix()} ${this.formatMessage(message, optionalParams)}`,
+          traceOrError,
+        );
       }
     }
   };
 
   warn = (message: LogMessage, ...optionalParams: any[]) => {
     if (this.shouldLog('warn')) {
-      super.warn(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
+      super.warn(`${this.prefix()} ${this.formatMessage(message, optionalParams)}`);
     }
   };
 
   debug = (message: LogMessage, ...optionalParams: any[]) => {
     if (this.shouldLog('debug')) {
-      super.debug(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
+      super.debug(`${this.prefix()} ${this.formatMessage(message, optionalParams)}`);
     }
   };
 
@@ -59,9 +61,8 @@ export class CorrelationLogger extends NestLogger implements LoggerService {
   }
 
   private prefix(): string {
-    const correlationId = TracingService.getCorrelationId() ?? 'none';
-    const causationId = TracingService.getCausationId() ?? 'none';
-    return `[CorrelationID: ${correlationId}][CausationID: ${causationId}]`;
+    const metadata = TracingService.getTracingMetadata();
+    return `[ID: ${metadata?.id}] [CorrelationID: ${metadata?.correlationId}] [CausationID: ${metadata?.causationId}] `;
   }
 
   private toString(message: LogMessage): string {
@@ -72,5 +73,9 @@ export class CorrelationLogger extends NestLogger implements LoggerService {
     } catch {
       return String(message);
     }
+  }
+
+  private formatMessage(message: LogMessage, optionalParams: any[]): string {
+    return `${this.toString(message)} ${optionalParams.map((p) => this.toString(p)).join('\n')}`;
   }
 }

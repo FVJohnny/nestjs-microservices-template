@@ -4,13 +4,11 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
+      "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],
       "options": {
-        "outputPath": "backend/services/service-1/dist",
-        "main": "backend/services/service-1/src/main.ts",
-        "tsConfig": "backend/services/service-1/tsconfig.json",
-        "assets": []
+        "command": "nest build",
+        "cwd": "backend/services/service-1"
       }
     },
     "serve": {

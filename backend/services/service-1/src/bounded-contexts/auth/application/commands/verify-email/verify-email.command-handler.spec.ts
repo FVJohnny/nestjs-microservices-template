@@ -13,7 +13,7 @@ import {
   InvalidOperationException,
   ApplicationException,
 } from '@libs/nestjs-common';
-import { EmailVerificationVerified_DomainEvent } from 'src/bounded-contexts/auth/domain/events/email-verified.domain-event';
+import { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
 
 describe('VerifyEmailCommandHandler', () => {
   // Test data factory

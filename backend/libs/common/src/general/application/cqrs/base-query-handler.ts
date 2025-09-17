@@ -1,4 +1,6 @@
 import type { IQuery } from '@nestjs/cqrs';
+import { TracingService } from '../../../tracing';
+import { CorrelationLogger } from '../../../logger';
 
 /**
  * Base class for all query handlers
@@ -7,6 +9,11 @@ import type { IQuery } from '@nestjs/cqrs';
  * Implements the template method pattern with: authorize → validate → handle
  */
 export abstract class BaseQueryHandler<TQuery extends IQuery, TResult extends object> {
+  protected readonly logger: CorrelationLogger;
+
+  constructor() {
+    this.logger = new CorrelationLogger(this.constructor.name);
+  }
   /**
    * Executes the query following the template method pattern:
    * 1. Authorize the query
@@ -16,7 +23,14 @@ export abstract class BaseQueryHandler<TQuery extends IQuery, TResult extends ob
   async execute(query: TQuery): Promise<TResult> {
     await this.authorize(query);
     await this.validate(query);
-    return await this.handle(query);
+
+    const metadata = TracingService.getTracingMetadata();
+    const newMetadata = TracingService.createTracingMetadata(metadata);
+
+    return await TracingService.runWithContext(newMetadata, () => {
+      this.logger.log(`Executing query: ${query.constructor.name}`);
+      return this.handle(query);
+    });
   }
 
   /**

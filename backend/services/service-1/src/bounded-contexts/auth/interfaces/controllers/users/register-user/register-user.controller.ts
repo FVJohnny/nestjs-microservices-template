@@ -20,7 +20,7 @@ export class RegisterUser_Controller {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid input or user already exists',
   })
-  async registerUser(@Body() body: RegisterUser_ControllerParams): Promise<void> {
+  async registerUser(@Body() body: RegisterUser_ControllerParams) {
     const command = new RegisterUser_Command(body);
 
     await this.commandBus.execute(command);

@@ -9,10 +9,7 @@ import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { BaseCommandHandler, Id, NotFoundException } from '@libs/nestjs-common';
 
 @CommandHandler(RecordUserLogin_Command)
-export class RecordUserLogin_CommandHandler extends BaseCommandHandler<
-  RecordUserLogin_Command,
-  void
-> {
+export class RecordUserLogin_CommandHandler extends BaseCommandHandler<RecordUserLogin_Command> {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,

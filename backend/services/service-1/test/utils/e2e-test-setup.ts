@@ -10,7 +10,7 @@ import type { EmailVerification_Repository } from '@bc/auth/domain/repositories/
 import { EMAIL_VERIFICATION_REPOSITORY } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { InMemoryOutboxRepository, OUTBOX_REPOSITORY } from '@libs/nestjs-common';
 import type { Server } from 'http';
-import { AppModule } from 'src/app.module';
+import { AppModule } from '../../src/app.module';
 
 export interface E2ETestSetup {
   app: INestApplication;

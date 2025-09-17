@@ -52,12 +52,7 @@ export class IntegrationEventTrackerInterceptor {
       topicName: string,
       message: ParsedIntegrationMessage,
     ) => {
-      // Run the entire message handling within the tracing context
-      const context = {
-        ...message.metadata,
-        causationId: message.metadata.id,
-      };
-      return TracingService.runWithContext(context, async () => {
+      return TracingService.runWithContext(message.metadata, async () => {
         try {
           const result = await originalHandleMessage(topicName, message);
           if (result) {

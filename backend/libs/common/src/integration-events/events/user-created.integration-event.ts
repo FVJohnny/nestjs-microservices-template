@@ -1,4 +1,4 @@
-import type { TracingMetadata } from '../../tracing/tracing-metadata';
+import { ApplicationException } from '../../errors';
 import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './base-integration-event';
 import { Topics } from './topics';
 
@@ -19,8 +19,8 @@ export class UserCreated_IntegrationEvent extends BaseIntegrationEvent {
   public readonly username: string;
   public readonly role: string;
 
-  constructor(props: UserCreated_IntegrationEventProps, metadata?: TracingMetadata) {
-    super(props, metadata);
+  constructor(props: UserCreated_IntegrationEventProps) {
+    super(props);
 
     this.userId = props.userId;
     this.email = props.email;
@@ -44,17 +44,24 @@ export class UserCreated_IntegrationEvent extends BaseIntegrationEvent {
   }
 
   static fromJSON(json: Record<string, unknown>): UserCreated_IntegrationEvent {
-    const event = new UserCreated_IntegrationEvent(
-      {
-        userId: json.userId as string,
-        email: json.email as string,
-        username: json.username as string,
-        role: json.role as string,
-        occurredOn: json.occurredOn ? new Date(json.occurredOn as string) : undefined,
-      },
-      json.metadata as TracingMetadata,
-    );
+    const event = new UserCreated_IntegrationEvent({
+      id: json.id as string,
+      occurredOn: json.occurredOn ? new Date(json.occurredOn as string) : undefined,
+
+      userId: json.userId as string,
+      email: json.email as string,
+      username: json.username as string,
+      role: json.role as string,
+    });
 
     return event;
+  }
+
+  protected validate(): void {
+    super.validate();
+    if (!this.userId) throw new ApplicationException('userId is required');
+    if (!this.email) throw new ApplicationException('email is required');
+    if (!this.username) throw new ApplicationException('username is required');
+    if (!this.role) throw new ApplicationException('role is required');
   }
 }

@@ -1,9 +1,16 @@
 {
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": ".",
     "outDir": "./dist",
-    "baseUrl": "./"
+    "baseUrl": "../../../",
+    "paths": {
+      "@libs/nestjs-common": ["backend/libs/common/src"],
+      "@libs/nestjs-kafka": ["backend/libs/kafka/src"],
+      "@libs/nestjs-mongodb": ["backend/libs/mongodb/src"],
+      "@libs/nestjs-redis": ["backend/libs/redis/src"],
+      "@libs/nestjs-postgresql": ["backend/libs/postgresql/src"],
+      "@bc/*": ["backend/services/service-1/src/bounded-contexts/*"]
+    }
   },
   "include": [
     "src/**/*",

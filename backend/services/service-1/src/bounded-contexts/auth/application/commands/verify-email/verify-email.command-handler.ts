@@ -9,7 +9,7 @@ import { BaseCommandHandler, NotFoundException } from '@libs/nestjs-common';
 import { Id } from '@libs/nestjs-common';
 
 @CommandHandler(VerifyEmail_Command)
-export class VerifyEmail_CommandHandler extends BaseCommandHandler<VerifyEmail_Command, void> {
+export class VerifyEmail_CommandHandler extends BaseCommandHandler<VerifyEmail_Command> {
   constructor(
     @Inject(EMAIL_VERIFICATION_REPOSITORY)
     private readonly emailVerificationRepository: EmailVerification_Repository,

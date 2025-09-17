@@ -68,4 +68,4 @@ WORKDIR /app/backend/services/service-1
 
 EXPOSE 3000
 # Use node directly for fast startup
-CMD ["node", "dist/src/main.js"]
+CMD ["node", "dist/backend/services/service-1/src/main.js"]

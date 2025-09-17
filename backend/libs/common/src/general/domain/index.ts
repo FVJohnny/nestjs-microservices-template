@@ -1,5 +1,6 @@
 // Domain Events
 export * from './events/domain-event.base';
+export * from './events/domain-event-handler.base';
 
 // Aggregate Root
 export * from './entities/AggregateRoot';

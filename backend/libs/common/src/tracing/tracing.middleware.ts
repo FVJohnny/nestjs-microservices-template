@@ -6,26 +6,16 @@ import { TracingService } from './tracing.service';
 @Injectable()
 export class TracingMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    // Get correlation ID from header or generate a new one
-    const correlationId =
-      (req.headers['x-correlation-id'] as string) ||
-      (req.headers['correlation-id'] as string) ||
-      TracingService.generateCorrelationId();
-    const causationId =
-      (req.headers['x-causation-id'] as string) || (req.headers['causation-id'] as string);
+    const correlationId = req.headers['x-correlation-id'] as string;
+    const id = req.headers['x-id'] as string;
 
+    const tracingMetadata = TracingService.createTracingMetadata({ id, correlationId });
     // Set correlation ID in response header
-    res.setHeader('x-correlation-id', correlationId);
+
+    res.setHeader('x-correlation-id', tracingMetadata.correlationId);
+    res.setHeader('x-id', tracingMetadata.id);
 
     // Run the request within the correlation context
-    TracingService.runWithContext(
-      {
-        correlationId,
-        causationId,
-        requestId: req.headers['x-request-id'] as string,
-        userId: req.headers['x-user-id'] as string,
-      },
-      () => next(),
-    );
+    TracingService.runWithContext(tracingMetadata, () => next());
   }
 }

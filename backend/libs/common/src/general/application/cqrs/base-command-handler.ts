@@ -1,9 +1,15 @@
 import type { EventBus, ICommand } from '@nestjs/cqrs';
 
 import type { SharedAggregateRoot } from '../../domain/entities/AggregateRoot';
+import { TracingService } from '../../../tracing';
+import { CorrelationLogger } from '../../../logger';
 
-export abstract class BaseCommandHandler<TCommand extends ICommand, TResult extends object | void> {
-  constructor(protected readonly eventBus: EventBus) {}
+export abstract class BaseCommandHandler<TCommand extends ICommand> {
+  protected readonly logger: CorrelationLogger;
+
+  constructor(protected readonly eventBus: EventBus) {
+    this.logger = new CorrelationLogger(this.constructor.name);
+  }
 
   /**
    * Executes the command following the template method pattern:
@@ -11,22 +17,28 @@ export abstract class BaseCommandHandler<TCommand extends ICommand, TResult exte
    * 2. Validate business rules
    * 3. Handle the command (implemented by subclasses)
    */
-  async execute(command: TCommand): Promise<TResult> {
+  async execute(command: TCommand): Promise<void> {
     await this.authorize(command);
     await this.validate(command);
-    return await this.handle(command);
+
+    const metadata = TracingService.getTracingMetadata();
+    const newMetadata = TracingService.createTracingMetadata(metadata);
+
+    await TracingService.runWithContext(newMetadata, () => {
+      this.logger.log(`Executing command: ${command.constructor.name}`);
+      return this.handle(command);
+    });
   }
 
   /**
    * Handles the command business logic
    *
    * This method must be implemented by all command handlers
-   * to define the specific business logic for the command
+   * to define the specific business logic for the command.
    *
    * @param command - The command to handle
-   * @returns The result of handling the command
    */
-  protected abstract handle(command: TCommand): Promise<TResult>;
+  protected abstract handle(command: TCommand): Promise<void>;
 
   /**
    * Authorization check that must be implemented by all command handlers

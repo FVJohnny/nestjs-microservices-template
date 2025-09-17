@@ -17,10 +17,7 @@ import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.reposito
 import type { User_Repository } from '@bc/auth/domain/repositories/user/user.repository';
 
 @CommandHandler(CreateEmailVerification_Command)
-export class CreateEmailVerification_CommandHandler extends BaseCommandHandler<
-  CreateEmailVerification_Command,
-  void
-> {
+export class CreateEmailVerification_CommandHandler extends BaseCommandHandler<CreateEmailVerification_Command> {
   constructor(
     @Inject(EMAIL_VERIFICATION_REPOSITORY)
     private readonly emailVerificationRepository: EmailVerification_Repository,

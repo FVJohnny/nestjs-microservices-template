@@ -8,12 +8,9 @@ import {
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { Email, Username, Password, UserRole, UserRoleEnum } from '@bc/auth/domain/value-objects';
 import { AlreadyExistsException, BaseCommandHandler } from '@libs/nestjs-common';
-import { CorrelationLogger } from '@libs/nestjs-common';
 
 @CommandHandler(RegisterUser_Command)
-export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser_Command, void> {
-  private readonly logger = new CorrelationLogger(RegisterUser_CommandHandler.name);
-
+export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser_Command> {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
@@ -23,7 +20,6 @@ export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser
   }
 
   protected async handle(command: RegisterUser_Command): Promise<void> {
-    this.logger.log(`Registering user: ${command.email} (${command.username})`);
     const user = User.create({
       email: new Email(command.email),
       username: new Username(command.username),

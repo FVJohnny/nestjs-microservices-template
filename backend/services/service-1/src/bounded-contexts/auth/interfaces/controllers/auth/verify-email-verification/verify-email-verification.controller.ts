@@ -31,7 +31,7 @@ export class VerifyEmailVerification_Controller {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid request parameters',
   })
-  async verifyEmail(@Body() body: VerifyEmailRequestDto): Promise<void> {
+  async verifyEmail(@Body() body: VerifyEmailRequestDto) {
     const command = new VerifyEmail_Command({
       emailVerificationId: body.emailVerificationId,
     });

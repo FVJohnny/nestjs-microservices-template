@@ -21,7 +21,7 @@ export class User_Mongodb_Repository
     super(mongoClient, 'users');
   }
 
-  async save(user: User): Promise<void> {
+  async save(user: User) {
     try {
       const primitives = user.toValue();
 
@@ -35,7 +35,7 @@ export class User_Mongodb_Repository
     }
   }
 
-  async findById(id: Id): Promise<User | null> {
+  async findById(id: Id) {
     try {
       const document = await this.collection.findOne({ id: id.toValue() });
 
@@ -49,7 +49,7 @@ export class User_Mongodb_Repository
     }
   }
 
-  async findByEmail(email: Email): Promise<User | null> {
+  async findByEmail(email: Email) {
     try {
       const document = await this.collection.findOne({
         email: email.toValue(),
@@ -65,7 +65,7 @@ export class User_Mongodb_Repository
     }
   }
 
-  async findByUsername(username: Username): Promise<User | null> {
+  async findByUsername(username: Username) {
     try {
       const document = await this.collection.findOne({
         username: username.toValue(),
@@ -81,7 +81,7 @@ export class User_Mongodb_Repository
     }
   }
 
-  async existsByEmail(email: Email): Promise<boolean> {
+  async existsByEmail(email: Email) {
     try {
       const count = await this.collection.countDocuments({
         email: email.toValue(),
@@ -92,7 +92,7 @@ export class User_Mongodb_Repository
     }
   }
 
-  async existsByUsername(username: Username): Promise<boolean> {
+  async existsByUsername(username: Username) {
     try {
       const count = await this.collection.countDocuments({
         username: username.toValue(),
@@ -103,7 +103,7 @@ export class User_Mongodb_Repository
     }
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll() {
     try {
       const documents = await this.collection.find().toArray();
       return documents.map((doc) => User.fromValue(doc));
@@ -128,11 +128,11 @@ export class User_Mongodb_Repository
     }
   }
 
-  async count(criteria: Criteria): Promise<number> {
+  async count(criteria: Criteria) {
     return this.countByCriteria(criteria);
   }
 
-  async countByCriteria(criteria: Criteria): Promise<number> {
+  async countByCriteria(criteria: Criteria) {
     try {
       const converter = new MongoCriteriaConverter<UserDTO>(this.collection);
       return await converter.count(criteria);
@@ -141,7 +141,7 @@ export class User_Mongodb_Repository
     }
   }
 
-  async remove(id: Id): Promise<void> {
+  async remove(id: Id) {
     try {
       await this.collection.deleteOne({ id: id.toValue() });
     } catch (error: unknown) {
@@ -149,7 +149,7 @@ export class User_Mongodb_Repository
     }
   }
 
-  async exists(id: Id): Promise<boolean> {
+  async exists(id: Id) {
     try {
       const count = await this.collection.countDocuments({ id: id.toValue() });
       return count > 0;
@@ -158,7 +158,7 @@ export class User_Mongodb_Repository
     }
   }
 
-  async clear(): Promise<void> {
+  async clear() {
     try {
       await this.collection.deleteMany({});
     } catch (error: unknown) {

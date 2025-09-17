@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { AsyncLocalStorage } from 'async_hooks';
 import { randomUUID } from 'crypto';
 
-export interface CorrelationContext {
+export interface TracingMetadata {
+  id: string;
   correlationId: string;
   causationId?: string;
   userId?: string;
@@ -11,34 +12,24 @@ export interface CorrelationContext {
 
 @Injectable()
 export class TracingService {
-  private static asyncLocalStorage = new AsyncLocalStorage<CorrelationContext>();
+  private static asyncLocalStorage = new AsyncLocalStorage<TracingMetadata>();
 
-  static getCorrelationId(): string | undefined {
-    const context = this.asyncLocalStorage.getStore();
-    return context?.correlationId;
-  }
-
-  static getCausationId(): string | undefined {
-    const context = this.asyncLocalStorage.getStore();
-    return context?.causationId;
-  }
-
-  static getContext(): CorrelationContext | undefined {
+  static getTracingMetadata(): TracingMetadata | undefined {
     return this.asyncLocalStorage.getStore();
   }
 
-  static generateCorrelationId(): string {
-    return randomUUID();
+  static createTracingMetadata(otherMetadata?: TracingMetadata): TracingMetadata {
+    const id = randomUUID();
+    const correlationId = otherMetadata?.correlationId || id;
+    const causationId = correlationId !== id ? otherMetadata?.id : undefined;
+    return {
+      id,
+      correlationId,
+      causationId,
+    };
   }
 
-  static runWithContext<T>(context: CorrelationContext, callback: () => T): T {
+  static runWithContext<T>(context: TracingMetadata, callback: () => T): T {
     return this.asyncLocalStorage.run(context, callback);
-  }
-
-  static setContext(context: Partial<CorrelationContext>): void {
-    const currentContext = this.asyncLocalStorage.getStore();
-    if (currentContext) {
-      Object.assign(currentContext, context);
-    }
   }
 }

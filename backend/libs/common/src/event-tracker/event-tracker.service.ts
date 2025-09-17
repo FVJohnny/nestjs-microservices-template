@@ -49,7 +49,7 @@ export class EventTrackerService {
     this.trackEvent(
       EventTrackerService.DomainEventTopic,
       {
-        id: event.metadata.id,
+        id: event.id,
         name: eventName,
         metadata: event.metadata,
       },

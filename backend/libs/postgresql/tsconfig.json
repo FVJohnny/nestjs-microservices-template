@@ -3,7 +3,10 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolvePackageJsonExports": false
   },
   "include": [
     "src/**/*",

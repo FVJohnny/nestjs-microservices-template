@@ -44,13 +44,10 @@ export function IntegrationEventHandler<TEvent extends BaseIntegrationEvent>(
 
       async handle(message: ParsedIntegrationMessage): Promise<void> {
         const event = this.eventClass.fromJSON(message) as TEvent;
-        const context = {
-          ...message.metadata,
-          causationId: message.metadata.id,
-        };
-        await TracingService.runWithContext(context, async () => {
+        const metadata = TracingService.createTracingMetadata(message.metadata);
+        await TracingService.runWithContext(metadata, async () => {
           this.logger.log(
-            `Processing ${this.eventClass.topic} event [${message.id}] - ${this.eventClass.name}`,
+            `Processing ${this.eventClass.topic} event [${event.id}] - ${this.eventClass.name}`,
           );
           await this.handleEvent(event);
         });

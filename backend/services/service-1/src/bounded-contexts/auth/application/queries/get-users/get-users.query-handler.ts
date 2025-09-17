@@ -22,16 +22,12 @@ import {
 
 @QueryHandler(GetUsers_Query)
 export class GetUsers_QueryHandler extends BaseQueryHandler<GetUsers_Query, GetUsersQueryResponse> {
-  constructor(
-    @Inject(USER_REPOSITORY)
-    private readonly userRepository: User_Repository,
-  ) {
+  constructor(@Inject(USER_REPOSITORY) private readonly userRepository: User_Repository) {
     super();
   }
 
   protected async handle(query: GetUsers_Query): Promise<GetUsersQueryResponse> {
     const filterList: Filter[] = [];
-
     // Handle specific id filter
     if (query.userId) {
       const idFilter = new Filter(

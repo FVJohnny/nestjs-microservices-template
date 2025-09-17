@@ -1,7 +1,7 @@
 import type { IEvent } from '@nestjs/cqrs';
 
-import { TracingMetadata } from '../../../tracing/tracing-metadata';
-import type { Id } from '../value-object/Id';
+import { Id } from '../value-object/Id';
+import { TracingService } from '../../../tracing';
 
 /**
  * Base class for all domain events in the system.
@@ -9,14 +9,15 @@ import type { Id } from '../value-object/Id';
  */
 export abstract class DomainEvent implements IEvent {
   public readonly occurredOn: Date;
-  public readonly metadata: TracingMetadata;
+  public readonly id: string;
 
-  constructor(
-    public readonly aggregateId: Id,
-    metadata?: TracingMetadata,
-  ) {
+  constructor(public readonly aggregateId: Id) {
     this.occurredOn = new Date();
-    this.metadata = metadata ?? new TracingMetadata();
+    this.id = Id.random().toValue();
+  }
+
+  get metadata() {
+    return TracingService.getTracingMetadata()!;
   }
 
   /**

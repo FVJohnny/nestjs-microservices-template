@@ -3,12 +3,15 @@ import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GetUsers_Query, GetUsersQueryResponse } from '@bc/auth/application/queries';
 import { GetUsers_ControllerParams } from './get-users.params';
+import { CorrelationLogger } from '@libs/nestjs-common';
 
 @ApiTags('users')
 // @ApiBearerAuth()
 // @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class GetUsers_Controller {
+  private readonly logger = new CorrelationLogger(this.constructor.name);
+
   constructor(private readonly queryBus: QueryBus) {}
 
   @Get()
@@ -19,6 +22,7 @@ export class GetUsers_Controller {
     type: Object,
   })
   async getUsers(@Query() params: GetUsers_ControllerParams): Promise<GetUsersQueryResponse> {
+    this.logger.debug(`Get users with params:`, params);
     const query = new GetUsers_Query({
       userId: params.userId,
       status: params.status,

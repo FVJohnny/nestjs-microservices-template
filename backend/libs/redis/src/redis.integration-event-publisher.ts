@@ -20,7 +20,6 @@ export class RedisIntegrationEventPublisher implements IntegrationEventPublisher
     }
 
     try {
-      this.logger.debug(`[Redis] Publishing event to channel: ${topic}. Message: ${message}`);
       await client.publish(topic, message);
       this.logger.debug(`[Redis] Event published to ${topic}. Message: ${message}`);
     } catch (error) {
