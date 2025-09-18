@@ -1,13 +1,15 @@
 import request from 'supertest';
 import { v4 as uuid } from 'uuid';
 import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
-import { deleteAllUsers } from './utils';
+import { createTestAccessToken, deleteAllUsers } from './utils';
 
 describe('GET /users/:id (E2E)', () => {
   let testSetup: E2ETestSetup;
+  let accessToken: string;
 
   beforeAll(async () => {
     testSetup = await createE2ETestApp();
+    accessToken = createTestAccessToken(testSetup.jwtTokenService);
   });
 
   afterAll(async () => {
@@ -15,13 +17,14 @@ describe('GET /users/:id (E2E)', () => {
   });
 
   beforeEach(async () => {
-    await deleteAllUsers(testSetup.server);
+    await deleteAllUsers(testSetup.server, accessToken);
   });
 
   it('returns a user when found', async () => {
     // Create user via endpoint
     await request(testSetup.server)
       .post('/users')
+      .set('Authorization', `Bearer ${accessToken}`)
       .send({
         email: 'test@example.com',
         username: 'testuser',
@@ -33,22 +36,32 @@ describe('GET /users/:id (E2E)', () => {
     // Find the user to get its ID
     const getUsersRes = await request(testSetup.server)
       .get('/users')
+      .set('Authorization', `Bearer ${accessToken}`)
       .query({ email: 'test@example.com' })
       .expect(200);
 
     const userId = getUsersRes.body.data[0].id;
 
-    const res = await request(testSetup.server).get(`/users/${userId}`).expect(200);
+    const res = await request(testSetup.server)
+      .get(`/users/${userId}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
     expect(res.body.id).toBe(userId);
     expect(res.body.username).toBe('testuser');
     expect(res.body.email).toBe('test@example.com');
   });
 
   it('returns 404 Not Found when not found', async () => {
-    await request(testSetup.server).get(`/users/${uuid()}`).expect(404);
+    await request(testSetup.server)
+      .get(`/users/${uuid()}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(404);
   });
 
   it('returns 422 Unprocessable Entity when invalid id', async () => {
-    await request(testSetup.server).get(`/users/invalid-id`).expect(422);
+    await request(testSetup.server)
+      .get(`/users/invalid-id`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(422);
   });
 });

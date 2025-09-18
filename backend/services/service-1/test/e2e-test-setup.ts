@@ -6,29 +6,26 @@ import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/i
 import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
 import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EMAIL_VERIFICATION_REPOSITORY } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
-import { InMemoryOutboxRepository, OUTBOX_REPOSITORY } from '@libs/nestjs-common';
+import { InMemoryOutboxRepository, JwtTokenService, OUTBOX_REPOSITORY } from '@libs/nestjs-common';
 import type { Server } from 'http';
 import { AppModule } from '../src/app.module';
 
 export interface E2ETestSetup {
   app: INestApplication;
   server: Server;
+  jwtTokenService: JwtTokenService;
 }
 
 export async function createE2ETestApp(): Promise<E2ETestSetup> {
-  const userRepository = new User_InMemory_Repository(false);
-  const emailVerificationRepository = new EmailVerification_InMemory_Repository(false);
-  const outboxRepository = new InMemoryOutboxRepository();
-
   const moduleFixture: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
   })
     .overrideProvider(USER_REPOSITORY)
-    .useValue(userRepository)
+    .useValue(new User_InMemory_Repository(false))
     .overrideProvider(EMAIL_VERIFICATION_REPOSITORY)
-    .useValue(emailVerificationRepository)
+    .useValue(new EmailVerification_InMemory_Repository(false))
     .overrideProvider(OUTBOX_REPOSITORY)
-    .useValue(outboxRepository)
+    .useValue(new InMemoryOutboxRepository())
     .compile();
 
   const app = moduleFixture.createNestApplication();
@@ -39,5 +36,7 @@ export async function createE2ETestApp(): Promise<E2ETestSetup> {
 
   const server = app.getHttpServer();
 
-  return { app, server };
+  const jwtTokenService = app.get(JwtTokenService);
+
+  return { app, server, jwtTokenService };
 }

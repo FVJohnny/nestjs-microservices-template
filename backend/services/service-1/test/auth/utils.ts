@@ -1,17 +1,41 @@
 import request from 'supertest';
 import type { Server } from 'http';
+import type { JwtTokenService, TokenPayload } from '@libs/nestjs-common';
+import { randomUUID } from 'crypto';
 
-export async function deleteAllUsers(server: Server): Promise<void> {
-  const response = await request(server).get('/users');
+export function createTestAccessToken(
+  jwtTokenService: JwtTokenService,
+  overrides: Partial<TokenPayload> = {},
+): string {
+  const payload: TokenPayload = {
+    userId: overrides.userId ?? randomUUID(),
+    email: overrides.email ?? 'test-user@example.com',
+    username: overrides.username ?? 'test-user',
+    role: overrides.role ?? 'admin',
+  };
 
-  const userIds: string[] = Array.isArray(response.body?.data)
-    ? response.body.data.map((user: { id: string }) => user.id)
+  return jwtTokenService.generateAccessToken(payload);
+}
+
+export async function deleteAllUsers(server: Server, accessToken: string): Promise<void> {
+  const usersResponse = await request(server)
+    .get('/users')
+    .set('Authorization', `Bearer ${accessToken}`)
+    .expect(200);
+
+  const users: Array<{ id: string }> = Array.isArray(usersResponse.body?.data)
+    ? usersResponse.body.data
     : [];
 
-  for (const userId of userIds) {
-    const res = await request(server).delete(`/users/${userId}`);
-    if (res.status !== 204 && res.status !== 404) {
-      throw new Error(`Failed to delete user ${userId}: ${res.status}`);
-    }
-  }
+  await Promise.all(
+    users.map(async (user) => {
+      const res = await request(server)
+        .delete(`/users/${user.id}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      if (![204, 404].includes(res.status)) {
+        throw new Error(`Failed to delete user ${user.id}: ${res.status}`);
+      }
+    }),
+  );
 }

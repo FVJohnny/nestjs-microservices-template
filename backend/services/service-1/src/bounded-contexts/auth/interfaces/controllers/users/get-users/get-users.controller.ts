@@ -1,14 +1,16 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { GetUsers_Query, GetUsersQueryResponse } from '@bc/auth/application/queries';
 import { GetUsers_ControllerParams } from './get-users.params';
 import { CorrelationLogger } from '@libs/nestjs-common';
+import { JwtAuthGuard } from '@libs/nestjs-common';
+import { UseGuards } from '@nestjs/common';
 
 @ApiTags('users')
-// @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard)
 @Controller('users')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class GetUsers_Controller {
   private readonly logger = new CorrelationLogger(this.constructor.name);
 

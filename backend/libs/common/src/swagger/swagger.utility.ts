@@ -20,7 +20,17 @@ export class SwaggerUtility {
     const builder = new DocumentBuilder()
       .setTitle(config.title)
       .setDescription(config.description)
-      .setVersion(config.version || '1.0');
+      .setVersion(config.version || '1.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Provide the JWT token obtained from the auth endpoints.',
+        },
+        'Bearer',
+      )
+      .addSecurityRequirements('Bearer');
 
     // Add server configuration for reverse proxy
     if (basePath) {

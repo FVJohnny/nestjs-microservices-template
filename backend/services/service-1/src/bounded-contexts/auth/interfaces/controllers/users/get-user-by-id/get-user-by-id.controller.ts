@@ -1,12 +1,14 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { GetUserById_Query, GetUserByIdQueryResponse } from '@bc/auth/application/queries';
+import { JwtAuthGuard } from '@libs/nestjs-common';
+import { UseGuards } from '@nestjs/common';
 
 @ApiTags('users')
-// @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard)
 @Controller('users')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class GetUser_Controller {
   constructor(private readonly queryBus: QueryBus) {}
 

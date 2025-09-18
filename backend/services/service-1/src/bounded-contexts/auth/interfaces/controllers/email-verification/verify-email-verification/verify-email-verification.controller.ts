@@ -4,12 +4,12 @@ import { VerifyEmail_Command } from '@bc/auth/application/commands';
 import { VerifyEmailRequestDto } from './verify-email-verification.params';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 
-@ApiTags('auth')
-@Controller('auth')
+@ApiTags('email-verification')
+@Controller('email-verification')
 export class VerifyEmailVerification_Controller {
   constructor(private readonly commandBus: CommandBus) {}
 
-  @Post('email-verification/verify')
+  @Post('verify')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Verify user email address',
