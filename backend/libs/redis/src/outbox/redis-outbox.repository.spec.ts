@@ -1,5 +1,5 @@
 import { RedisOutboxRepository } from './redis-outbox.repository';
-import { testOutboxRepositoryContract } from '@libs/nestjs-common/test-exports';
+import { testOutboxRepositoryContract } from '@libs/nestjs-common';
 import { RedisTestService } from '../testing/redis-test.service';
 
 describe('RedisOutboxRepository', () => {
@@ -8,7 +8,7 @@ describe('RedisOutboxRepository', () => {
   // Run the shared contract tests
   testOutboxRepositoryContract(
     'Redis Implementation',
-    async () => new RedisOutboxRepository(redisTestService.redisClient) as any,
+    async () => new RedisOutboxRepository(redisTestService.redisClient),
     {
       beforeAll: () => redisTestService.clearOutboxKeys(),
       afterAll: () => redisTestService.clearOutboxKeys(),

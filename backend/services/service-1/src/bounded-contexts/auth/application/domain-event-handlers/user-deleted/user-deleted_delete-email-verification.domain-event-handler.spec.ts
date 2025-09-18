@@ -1,8 +1,7 @@
 import { UserDeleted_DeleteEmailVerification_DomainEventHandler } from './user-deleted_delete-email-verification.domain-event-handler';
 import { UserDeleted_DomainEvent } from '@bc/auth/domain/events/user-deleted.domain-event';
 import { createCommandBusMock, Id, NotFoundException } from '@libs/nestjs-common';
-import { CommandBus } from '@nestjs/cqrs';
-
+import type { CommandBus } from '@nestjs/cqrs';
 
 describe('UserDeleted_DeleteEmailVerification_DomainEventHandler', () => {
   const createEvent = () => new UserDeleted_DomainEvent(Id.random());

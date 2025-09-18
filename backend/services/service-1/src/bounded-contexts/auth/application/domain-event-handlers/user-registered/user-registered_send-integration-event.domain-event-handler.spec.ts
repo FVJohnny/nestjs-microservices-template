@@ -1,13 +1,13 @@
 import { UserRegistered_SendIntegrationEvent_DomainEventHandler } from './user-registered_send-integration-event.domain-event-handler';
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 import { Email } from '@bc/auth/domain/value-objects';
+import type { UserCreated_IntegrationEvent } from '@libs/nestjs-common';
 import {
   InfrastructureException,
   InMemoryIntegrationEventPublisher,
   InMemoryOutboxRepository,
   OutboxService,
   Topics,
-  UserCreated_IntegrationEvent,
 } from '@libs/nestjs-common';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 

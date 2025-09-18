@@ -1,10 +1,7 @@
 import type { Collection } from 'mongodb';
 import { MongoCriteriaConverter } from './mongo-criteria-converter';
 import { MongodbTestService } from '../testing/mongodb-test.service';
-import {
-  testCriteriaConverterContract,
-  type TestEntityDTO,
-} from '@libs/nestjs-common/test-exports';
+import { testCriteriaConverterContract, type TestEntityDTO } from '@libs/nestjs-common';
 
 describe('MongoCriteriaConverter', () => {
   const mongoTestService = new MongodbTestService('criteria_converter_test_db');
@@ -13,7 +10,6 @@ describe('MongoCriteriaConverter', () => {
   const TEST_COLLECTION_NAME = 'test_entities';
 
   beforeAll(async () => {
-    await mongoTestService.setupDatabase();
     const db = mongoTestService.mongoClient.db('criteria_converter_test_db');
     collection = db.collection<TestEntityDTO>(TEST_COLLECTION_NAME);
   });
@@ -32,6 +28,6 @@ describe('MongoCriteriaConverter', () => {
     if (entities.length > 0) {
       await collection.insertMany(entities);
     }
-    return new MongoCriteriaConverter(collection) as any;
+    return new MongoCriteriaConverter(collection);
   });
 });

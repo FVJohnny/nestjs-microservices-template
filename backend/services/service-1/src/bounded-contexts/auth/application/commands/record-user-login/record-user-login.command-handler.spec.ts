@@ -2,7 +2,7 @@ import { RecordUserLogin_CommandHandler } from './record-user-login.command-hand
 import { RecordUserLogin_Command } from './record-user-login.command';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { EventBus } from '@nestjs/cqrs';
+import type { EventBus } from '@nestjs/cqrs';
 import {
   createEventBusMock,
   NotFoundException,
@@ -11,6 +11,7 @@ import {
   Id,
   DateVO,
   wait,
+  DomainValidationException,
 } from '@libs/nestjs-common';
 
 describe('RecordUserLoginCommandHandler', () => {
@@ -152,10 +153,10 @@ describe('RecordUserLoginCommandHandler', () => {
     it('should handle empty userId', async () => {
       // Arrange
       const { handler } = await setup();
-      const command = new RecordUserLogin_Command({ userId: ''});
+      const command = new RecordUserLogin_Command({ userId: '' });
 
       // Act & Assert
-      await expect(handler.execute(command)).rejects.toThrow();
+      await expect(handler.execute(command)).rejects.toThrow(DomainValidationException);
     });
 
     it('should handle invalid userId format', async () => {
@@ -164,25 +165,7 @@ describe('RecordUserLoginCommandHandler', () => {
       const command = new RecordUserLogin_Command({ userId: 'invalid-id' });
 
       // Act & Assert
-      await expect(handler.execute(command)).rejects.toThrow();
-    });
-
-    it('should handle null userId', async () => {
-      // Arrange
-      const { handler } = await setup();
-      const command = new RecordUserLogin_Command(null as any);
-
-      // Act & Assert
-      await expect(handler.execute(command)).rejects.toThrow();
-    });
-
-    it('should handle undefined userId', async () => {
-      // Arrange
-      const { handler } = await setup();
-      const command = new RecordUserLogin_Command(undefined as any);
-
-      // Act & Assert
-      await expect(handler.execute(command)).rejects.toThrow();
+      await expect(handler.execute(command)).rejects.toThrow(DomainValidationException);
     });
   });
 

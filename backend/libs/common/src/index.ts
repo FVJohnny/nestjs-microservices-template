@@ -11,3 +11,4 @@ export * from './outbox';
 export * from './utils';
 export * from './tracing';
 export * from './logger';
+export * from './test-exports';

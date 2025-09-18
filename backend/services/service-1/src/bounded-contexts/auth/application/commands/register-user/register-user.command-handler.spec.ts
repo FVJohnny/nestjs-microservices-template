@@ -1,7 +1,7 @@
 import { RegisterUser_CommandHandler } from './register-user.command-handler';
 import { RegisterUser_Command } from './register-user.command';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
-import { EventBus } from '@nestjs/cqrs';
+import type { EventBus } from '@nestjs/cqrs';
 import { Email, Username, Password, UserRoleEnum } from '@bc/auth/domain/value-objects';
 import {
   AlreadyExistsException,

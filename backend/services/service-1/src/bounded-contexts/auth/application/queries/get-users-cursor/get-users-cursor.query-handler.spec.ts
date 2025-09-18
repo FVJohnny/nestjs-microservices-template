@@ -3,7 +3,7 @@ import { GetUsersCursor_Query } from './get-users-cursor.query';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { UserRoleEnum } from '@bc/auth/domain/value-objects';
-import { PaginationCursor, InfrastructureException } from '@libs/nestjs-common';
+import { InfrastructureException } from '@libs/nestjs-common';
 
 describe('GetUsersCursor_QueryHandler', () => {
   // Test data factory
@@ -358,7 +358,7 @@ describe('GetUsersCursor_QueryHandler', () => {
 
     it('should maintain consistent cursors across identical queries', async () => {
       // Arrange
-      const { handler, users } = await setup(5);
+      const { handler } = await setup(5);
       const pageSize = 2;
 
       // Act - Run same query twice

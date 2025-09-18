@@ -10,7 +10,7 @@ describe('InMemoryOutboxRepository', () => {
     async () => {
       return repository;
     },
-    {beforeEach: () => repository.clear()}
+    { beforeEach: () => repository.clear() },
     // No cleanup needed for in-memory implementation
   );
 });

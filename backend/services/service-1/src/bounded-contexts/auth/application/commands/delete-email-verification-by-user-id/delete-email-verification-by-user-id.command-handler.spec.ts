@@ -2,9 +2,13 @@ import { DeleteEmailVerificationByUserId_CommandHandler } from './delete-email-v
 import { DeleteEmailVerificationByUserId_Command } from './delete-email-verification-by-user-id.command';
 import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
-import { EventBus } from '@nestjs/cqrs';
-import { createEventBusMock, InfrastructureException, NotFoundException, Id } from '@libs/nestjs-common';
-
+import type { EventBus } from '@nestjs/cqrs';
+import {
+  createEventBusMock,
+  InfrastructureException,
+  NotFoundException,
+  Id,
+} from '@libs/nestjs-common';
 
 describe('DeleteEmailVerificationByUserId_CommandHandler', () => {
   const createCommand = ({ userId }: { userId?: string } = {}) =>
@@ -17,7 +21,11 @@ describe('DeleteEmailVerificationByUserId_CommandHandler', () => {
       shouldFailEventBus?: boolean; // currently not used but keeps parity
     } = {},
   ) => {
-    const { withVerification = false, shouldFailRepository = false, shouldFailEventBus = false } = params;
+    const {
+      withVerification = false,
+      shouldFailRepository = false,
+      shouldFailEventBus = false,
+    } = params;
 
     const repository = new EmailVerification_InMemory_Repository(shouldFailRepository);
     const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });

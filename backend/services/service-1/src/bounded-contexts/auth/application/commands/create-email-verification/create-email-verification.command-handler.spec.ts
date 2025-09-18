@@ -1,7 +1,7 @@
 import { CreateEmailVerification_CommandHandler } from './create-email-verification.command-handler';
 import { CreateEmailVerification_Command } from './create-email-verification.command';
 import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
-import { EventBus } from '@nestjs/cqrs';
+import type { EventBus } from '@nestjs/cqrs';
 import {
   ApplicationException,
   AlreadyExistsException,

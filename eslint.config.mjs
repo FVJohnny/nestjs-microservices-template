@@ -3,6 +3,8 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 
+import noDirectEntityMutationRule from './eslint/rules/no-direct-entity-mutation.mjs';
+
 export default [
   {
     ignores: [
@@ -12,7 +14,6 @@ export default [
       '**/*.d.ts',
       '**/jest.config.js',
       '**/*.config.js',
-      '**/*.spec.ts',
       '**/*.test.ts',
     ],
   },
@@ -35,11 +36,19 @@ export default [
         tsconfigRootDir: import.meta.dirname,
       },
     },
+    plugins: {
+      'entity-domain': {
+        rules: {
+          'no-direct-entity-mutation': noDirectEntityMutationRule,
+        },
+      },
+    },
     rules: {
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       'prefer-const': 'error',
       eqeqeq: 'error',
+      'entity-domain/no-direct-entity-mutation': 'error',
     },
   },
 ];

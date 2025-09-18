@@ -2,7 +2,7 @@ import { DeleteUser_CommandHandler } from './delete-user.command-handler';
 import { DeleteUser_Command } from './delete-user.command';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { EventBus } from '@nestjs/cqrs';
+import type { EventBus } from '@nestjs/cqrs';
 import {
   createEventBusMock,
   InfrastructureException,
@@ -22,11 +22,7 @@ describe('DeleteUser_CommandHandler', () => {
       shouldFailEventBus?: boolean;
     } = {},
   ) => {
-    const {
-      withUser = false,
-      shouldFailRepository = false,
-      shouldFailEventBus = false,
-    } = params;
+    const { withUser = false, shouldFailRepository = false, shouldFailEventBus = false } = params;
 
     const repository = new User_InMemory_Repository(shouldFailRepository);
     const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });

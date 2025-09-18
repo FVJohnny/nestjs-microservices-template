@@ -1,11 +1,6 @@
 import type { User_Repository } from './user.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import {
-  Email,
-  LastLogin,
-  Username,
-  UserRole,
-} from '@bc/auth/domain/value-objects';
+import { Email, LastLogin, Username, UserRole } from '@bc/auth/domain/value-objects';
 import {
   Criteria,
   Filters,

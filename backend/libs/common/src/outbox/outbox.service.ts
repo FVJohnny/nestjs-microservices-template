@@ -22,16 +22,14 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit() {
-    this.logger.log('Starting outbox processor...');
-
     TracingService.runWithNewMetadata(() => {
       this.processingInterval = setInterval(
         () => this.processOutboxEvents(),
         this.PROCESSING_INTERVAL_MS,
       );
-    });
 
-    this.logger.log(`Outbox processor started with ${this.PROCESSING_INTERVAL_MS}ms interval`);
+      this.logger.log(`Outbox processor started with ${this.PROCESSING_INTERVAL_MS}ms interval`);
+    });
   }
 
   async onModuleDestroy() {
@@ -67,12 +65,6 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async cleanupProcessedEvents() {
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    await this.repository.deleteProcessed(sevenDaysAgo);
-    this.logger.debug('Cleaned up processed outbox events older than 7 days');
-  }
-
   private async processEvent(event: OutboxEvent) {
     try {
       await this.publisher.publish(event.topic, event.payload);
@@ -82,6 +74,12 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     } catch (error) {
       await this.handleEventError(event, error);
     }
+  }
+
+  async cleanupProcessedEvents() {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    await this.repository.deleteProcessed(sevenDaysAgo);
+    this.logger.debug('Cleaned up processed outbox events older than 7 days');
   }
 
   private async handleEventError(event: OutboxEvent, error: unknown) {
