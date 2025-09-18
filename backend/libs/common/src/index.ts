@@ -9,7 +9,6 @@ export * from './logger';
 export * from './metrics';
 export * from './outbox';
 export * from './swagger';
-export * from './test-exports';
 export * from './testing';
 export * from './tracing';
 export * from './utils';

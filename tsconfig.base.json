@@ -32,6 +32,9 @@
       "@libs/nestjs-common": [
         "../../libs/common/dist"
       ],
+      "@libs/nestjs-common/test-exports": [
+        "../../libs/common/dist/test-exports/index"
+      ],
       "@libs/nestjs-kafka": [
         "../../libs/kafka/dist"
       ],

@@ -1,7 +1,10 @@
 import type { Collection } from 'mongodb';
 import { MongoCriteriaConverter } from './mongo-criteria-converter';
 import { MongodbTestService } from '../testing/mongodb-test.service';
-import { testCriteriaConverterContract, type TestEntityDTO } from '@libs/nestjs-common';
+import {
+  testCriteriaConverterContract,
+  type TestEntityDTO,
+} from '@libs/nestjs-common/test-exports';
 
 describe('MongoCriteriaConverter', () => {
   const mongoTestService = new MongodbTestService('criteria_converter_test_db');
