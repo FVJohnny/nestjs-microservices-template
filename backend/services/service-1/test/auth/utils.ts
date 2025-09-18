@@ -23,18 +23,18 @@ export async function deleteAllUsers(server: Server, accessToken: string): Promi
     .set('Authorization', `Bearer ${accessToken}`)
     .expect(200);
 
-  const users: Array<{ id: string }> = Array.isArray(usersResponse.body?.data)
-    ? usersResponse.body.data
+  const userIds = Array.isArray(usersResponse.body?.data)
+    ? usersResponse.body.data.map((user: { id: string }) => user.id)
     : [];
 
   await Promise.all(
-    users.map(async (user) => {
+    userIds.map(async (userId) => {
       const res = await request(server)
-        .delete(`/users/${user.id}`)
+        .delete(`/users/${userId}`)
         .set('Authorization', `Bearer ${accessToken}`);
 
       if (![204, 404].includes(res.status)) {
-        throw new Error(`Failed to delete user ${user.id}: ${res.status}`);
+        throw new Error(`Failed to delete user ${userId}: ${res.status}`);
       }
     }),
   );
