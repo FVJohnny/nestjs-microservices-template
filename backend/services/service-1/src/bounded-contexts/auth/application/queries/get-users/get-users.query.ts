@@ -1,5 +1,5 @@
 import type { IQuery } from '@nestjs/cqrs';
-import type { PaginationOffsetParams, TracingMetadata } from '@libs/nestjs-common';
+import type { PaginationOffsetParams } from '@libs/nestjs-common';
 import { BaseQuery } from '@libs/nestjs-common';
 
 export class GetUsers_Query extends BaseQuery implements IQuery {
@@ -12,8 +12,8 @@ export class GetUsers_Query extends BaseQuery implements IQuery {
   // pagination
   public readonly pagination?: PaginationOffsetParams;
 
-  constructor(props: GetUsers_Query, metadata?: TracingMetadata) {
-    super(metadata);
+  constructor(props: GetUsers_Query) {
+    super();
     Object.assign(this, props);
   }
 }

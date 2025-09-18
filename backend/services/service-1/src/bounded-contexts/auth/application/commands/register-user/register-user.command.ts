@@ -1,5 +1,4 @@
 import type { ICommand } from '@nestjs/cqrs';
-import type { TracingMetadata } from '@libs/nestjs-common';
 import { BaseCommand } from '@libs/nestjs-common';
 
 export class RegisterUser_Command extends BaseCommand implements ICommand {
@@ -8,8 +7,8 @@ export class RegisterUser_Command extends BaseCommand implements ICommand {
   public readonly password: string;
   public readonly role: string;
 
-  constructor(props: RegisterUser_Command, metadata?: TracingMetadata) {
-    super(metadata);
+  constructor(props: RegisterUser_Command) {
+    super();
     this.email = props.email;
     this.username = props.username;
     this.password = props.password;

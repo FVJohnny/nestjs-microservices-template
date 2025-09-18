@@ -1,5 +1,5 @@
 import type { IQuery } from '@nestjs/cqrs';
-import type { TracingMetadata, PaginationCursorParams } from '@libs/nestjs-common';
+import type { PaginationCursorParams } from '@libs/nestjs-common';
 import { BaseQuery } from '@libs/nestjs-common';
 
 export class GetUsersCursor_Query extends BaseQuery implements IQuery {
@@ -12,8 +12,8 @@ export class GetUsersCursor_Query extends BaseQuery implements IQuery {
   // cursor pagination
   public readonly pagination?: PaginationCursorParams;
 
-  constructor(props: GetUsersCursor_Query, metadata?: TracingMetadata) {
-    super(metadata);
+  constructor(props: GetUsersCursor_Query) {
+    super();
     Object.assign(this, props);
   }
 }
