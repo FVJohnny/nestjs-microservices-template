@@ -222,39 +222,39 @@ export function testOutboxRepositoryContract(
     });
 
     describe('cleanup operations', () => {
-      // it('deletes only processed events older than cutoff date', async () => {
-      //   const cutoffTime = new Date(Date.now() - 5000);
-      //   const events = generateEvents(5, {
-      //     startMsAgo: 10_000,
-      //     stepMs: 1000,
-      //     processedRatio: 0.8, // 80% processed
-      //   });
+      it('deletes only processed events older than cutoff date', async () => {
+        const processedOlder = OutboxEvent.random({
+          processedAt: new OutboxProcessedAt(DateVO.dateVOAtDaysFromNow(-5).toValue()),
+        });
 
-      //   // Set specific processed times relative to cutoff
-      //   events.forEach((event, i) => {
-      //     if (event.isProcessed()) {
-      //       if (i < 2) {
-      //         // These should be deleted (older than cutoff)
-      //         event.processedAt = new Date(cutoffTime.getTime() - 1000);
-      //       } else {
-      //         // These should remain (newer than cutoff)
-      //         event.processedAt = new Date(cutoffTime.getTime() + 1000);
-      //       }
-      //     }
-      //   });
+        const processedNewer = OutboxEvent.random({
+          processedAt: new OutboxProcessedAt(DateVO.dateVOAtDaysFromNow(-1).toValue()),
+        });
 
-      //   for (const event of events) {
-      //     await repo.save(event);
-      //   }
+        const processedNever = OutboxEvent.random({
+          processedAt: OutboxProcessedAt.never(),
+        });
 
-      //   const beforeCleanup = await repo.findUnprocessed(10);
-      //   await repo.deleteProcessed(cutoffTime);
-      //   const afterCleanup = await repo.findUnprocessed(10);
+        await repo.save(processedOlder);
+        await repo.save(processedNewer);
+        await repo.save(processedNever);
 
-      //   // Should have same unprocessed events
-      //   expect(afterCleanup.length).toBe(beforeCleanup.length);
-      //   expect(afterCleanup.map((e) => e.id).sort()).toEqual(beforeCleanup.map((e) => e.id).sort());
-      // });
+        const cutoffDate = DateVO.dateVOAtDaysFromNow(-3).toValue();
+        await repo.deleteProcessed(cutoffDate);
+
+        const processedEvent = await repo.findById(processedOlder.id);
+        expect(processedEvent).toBeNull();
+
+        const newerProcessedEvent = await repo.findById(processedNewer.id);
+        expect(newerProcessedEvent).toBeDefined();
+
+        const neverProcessedEvent = await repo.findById(processedNever.id);
+        expect(neverProcessedEvent).toBeDefined();
+
+        const [unprocessedEvent] = await repo.findUnprocessed(10);
+        expect(unprocessedEvent).toBeDefined();
+        expect(unprocessedEvent.id.toValue()).toBe(processedNever.id.toValue());
+      });
 
       it('deleteProcessed should delete processed events event at the exact same date', async () => {
         const event = OutboxEvent.random({
