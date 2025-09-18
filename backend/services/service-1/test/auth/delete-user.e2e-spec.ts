@@ -24,14 +24,9 @@ describe('DELETE /users/:userId (E2E)', () => {
       email: 'delete-me@example.com',
       username: 'delete-me',
       password: 'Password123!',
-      role: 'user',
     };
 
-    await request(testSetup.server)
-      .post('/users')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send(userPayload)
-      .expect(201);
+    await request(testSetup.server).post('/users').send(userPayload).expect(201);
 
     const lookup = await request(testSetup.server)
       .get('/users')

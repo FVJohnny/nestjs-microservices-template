@@ -6,7 +6,7 @@ import {
   type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { Email, Username, Password, UserRole, UserRoleEnum } from '@bc/auth/domain/value-objects';
+import { Email, Username, Password } from '@bc/auth/domain/value-objects';
 import { AlreadyExistsException, BaseCommandHandler } from '@libs/nestjs-common';
 
 @CommandHandler(RegisterUser_Command)
@@ -24,7 +24,6 @@ export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser
       email: new Email(command.email),
       username: new Username(command.username),
       password: await Password.createFromPlainText(command.password),
-      role: new UserRole(command.role as UserRoleEnum),
     });
 
     await this.userRepository.save(user);

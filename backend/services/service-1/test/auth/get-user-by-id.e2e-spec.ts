@@ -24,12 +24,10 @@ describe('GET /users/:id (E2E)', () => {
     // Create user via endpoint
     await request(testSetup.server)
       .post('/users')
-      .set('Authorization', `Bearer ${accessToken}`)
       .send({
         email: 'test@example.com',
         username: 'testuser',
         password: 'Password123!',
-        role: 'user',
       })
       .expect(201);
 

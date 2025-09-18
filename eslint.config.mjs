@@ -42,12 +42,4 @@ export default [
       eqeqeq: 'error',
     },
   },
-
-  // Test files
-  {
-    files: ['**/*.{test,spec}.{js,ts}', '**/*.e2e-spec.ts'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-    },
-  },
 ];

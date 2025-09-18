@@ -25,15 +25,10 @@ describe('Complete Authentication Flow (E2E)', () => {
         email: 'complete@example.com',
         username: 'completeuser',
         password: 'CompletePassword123!',
-        role: 'user',
       };
 
       // Step 1: Register User
-      await request(testSetup.server)
-        .post('/users')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(userData)
-        .expect(201);
+      await request(testSetup.server).post('/users').send(userData).expect(201);
 
       // Get the created user
       const getUsersRes = await request(testSetup.server)
@@ -105,20 +100,14 @@ describe('Complete Authentication Flow (E2E)', () => {
         email: 'duplicate@example.com',
         username: 'user1',
         password: 'Password123!',
-        role: 'user',
       };
 
       // First registration should succeed
-      await request(testSetup.server)
-        .post('/users')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(userData)
-        .expect(201);
+      await request(testSetup.server).post('/users').send(userData).expect(201);
 
       // Second registration with same email should fail
       await request(testSetup.server)
         .post('/users')
-        .set('Authorization', `Bearer ${accessToken}`)
         .send({ ...userData, username: 'user2' })
         .expect(409);
     });
@@ -127,21 +116,15 @@ describe('Complete Authentication Flow (E2E)', () => {
       // Invalid email format
       await request(testSetup.server)
         .post('/users')
-        .set('Authorization', `Bearer ${accessToken}`)
         .send({
           email: 'invalid-email',
           username: 'testuser',
           password: 'ValidPassword123!',
-          role: 'user',
         })
         .expect(422);
 
       // Missing required fields
-      await request(testSetup.server)
-        .post('/users')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({})
-        .expect(400);
+      await request(testSetup.server).post('/users').send({}).expect(400);
     });
   });
 
@@ -167,15 +150,10 @@ describe('Complete Authentication Flow (E2E)', () => {
         email: 'double@example.com',
         username: 'doubleuser',
         password: 'Password123!',
-        role: 'user',
       };
 
       // Register user
-      await request(testSetup.server)
-        .post('/users')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(userData)
-        .expect(201);
+      await request(testSetup.server).post('/users').send(userData).expect(201);
 
       // Get user
       const getUsersRes = await request(testSetup.server)
@@ -211,15 +189,10 @@ describe('Complete Authentication Flow (E2E)', () => {
         email: 'unverified@example.com',
         username: 'unverifieduser',
         password: 'Password123!',
-        role: 'user',
       };
 
       // Register user but don't verify email
-      await request(testSetup.server)
-        .post('/users')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(userData)
-        .expect(201);
+      await request(testSetup.server).post('/users').send(userData).expect(201);
 
       // Login should fail
       await request(testSetup.server)
@@ -236,15 +209,10 @@ describe('Complete Authentication Flow (E2E)', () => {
         email: 'wrongcreds@example.com',
         username: 'wrongcredsuser',
         password: 'CorrectPassword123!',
-        role: 'user',
       };
 
       // Complete registration and verification
-      await request(testSetup.server)
-        .post('/users')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(userData)
-        .expect(201);
+      await request(testSetup.server).post('/users').send(userData).expect(201);
 
       const getUsersRes = await request(testSetup.server)
         .get('/users')

@@ -2,7 +2,6 @@ import { RecordUserLogin_CommandHandler } from './record-user-login.command-hand
 import { RecordUserLogin_Command } from './record-user-login.command';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { UserStatus, LastLogin } from '@bc/auth/domain/value-objects';
 import { EventBus } from '@nestjs/cqrs';
 import {
   createEventBusMock,

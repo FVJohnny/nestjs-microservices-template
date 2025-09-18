@@ -65,6 +65,20 @@ describe('User Entity', () => {
       expect(event.username).toBe(username);
       expect(event.role).toBe(role);
     });
+
+    it('should default role to user when not provided', async () => {
+      const email = new Email('default-role@example.com');
+      const username = new Username('defaultrole');
+      const password = await Password.createFromPlainText('Password123!');
+
+      const user = User.create({ email, username, password });
+
+      expect(user.role.equals(UserRole.user())).toBe(true);
+      const events = user.getUncommittedEvents();
+      expect(events).toHaveLength(1);
+      const event = events[0] as UserRegistered_DomainEvent;
+      expect(event.role.equals(UserRole.user())).toBe(true);
+    });
   });
 
   describe('random()', () => {

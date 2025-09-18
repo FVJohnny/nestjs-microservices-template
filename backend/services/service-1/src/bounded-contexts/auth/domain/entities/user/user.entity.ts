@@ -23,7 +23,7 @@ export interface CreateUserProps {
   email: Email;
   username: Username;
   password: Password;
-  role: UserRole;
+  role?: UserRole;
 }
 export interface UserAttributes {
   id: Id;
@@ -50,13 +50,14 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   }
 
   static create(props: CreateUserProps): User {
+    const role = props.role ?? UserRole.user();
     const user = new User({
       id: Id.random(),
       email: props.email,
       username: props.username,
       password: props.password,
       status: new UserStatus(UserStatusEnum.EMAIL_VERIFICATION_PENDING),
-      role: props.role,
+      role,
       lastLogin: LastLogin.never(),
       timestamps: Timestamps.create(),
     });

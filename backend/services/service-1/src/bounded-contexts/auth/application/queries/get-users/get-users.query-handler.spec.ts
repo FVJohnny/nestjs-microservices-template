@@ -2,18 +2,9 @@ import { GetUsers_QueryHandler } from './get-users.query-handler';
 import { GetUsers_Query } from './get-users.query';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import {
-  Email,
-  Username,
-  UserStatus,
-  UserStatusEnum,
-  UserRoleEnum,
-} from '@bc/auth/domain/value-objects';
-import { UserTestFactory } from '@bc/auth/test-utils';
 import { InfrastructureException } from '@libs/nestjs-common';
 
 describe('GetUsers_QueryHandler', () => {
-  // Setup factory
   const setup = async (params: { shouldFailRepository?: boolean; withUsers?: number } = {}) => {
     const { shouldFailRepository = false, withUsers = 0 } = params;
 

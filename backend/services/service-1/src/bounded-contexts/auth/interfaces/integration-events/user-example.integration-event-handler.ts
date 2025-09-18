@@ -18,7 +18,6 @@ export class UserExample_IntegrationEventHandler {
         email: user.email.toValue(),
         username: user.username.toValue(),
         password: 'password',
-        role: user.role.toValue(),
       });
       await this.commandBus.execute(command);
     } catch (error) {

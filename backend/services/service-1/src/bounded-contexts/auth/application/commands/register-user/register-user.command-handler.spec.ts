@@ -2,13 +2,11 @@ import { RegisterUser_CommandHandler } from './register-user.command-handler';
 import { RegisterUser_Command } from './register-user.command';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { EventBus } from '@nestjs/cqrs';
-import { Email, Username, Password, UserRoleEnum, UserRole } from '@bc/auth/domain/value-objects';
+import { Email, Username, Password, UserRoleEnum } from '@bc/auth/domain/value-objects';
 import {
   AlreadyExistsException,
   createEventBusMock,
   InfrastructureException,
-  Id,
-  Timestamps,
   DateVO,
   wait,
   ApplicationException,
@@ -22,7 +20,6 @@ describe('RegisterUserCommandHandler', () => {
       email: props?.email || Email.random().toValue(),
       username: props?.username || Username.random().toValue(),
       password: props?.password || Password.random().toValue(),
-      role: props?.role || UserRole.random().toValue(),
     });
 
   // Setup factory
@@ -52,7 +49,7 @@ describe('RegisterUserCommandHandler', () => {
       expect(savedUser).not.toBeNull();
       expect(savedUser!.email.toValue()).toBe(command.email);
       expect(savedUser!.username.toValue()).toBe(command.username);
-      expect(savedUser!.role.toValue()).toBe(command.role);
+      expect(savedUser!.role.toValue()).toBe(UserRoleEnum.USER);
       expect(savedUser!.isEmailVerificationPending()).toBe(true);
       expect(savedUser!.id).toBeDefined();
     });
@@ -73,7 +70,7 @@ describe('RegisterUserCommandHandler', () => {
       expect(publishedEvent).toBeInstanceOf(UserRegistered_DomainEvent);
       expect(publishedEvent.email.toValue()).toBe(command.email);
       expect(publishedEvent.username.toValue()).toBe(command.username);
-      expect(publishedEvent.role.toValue()).toBe(command.role);
+      expect(publishedEvent.role.toValue()).toBe(UserRoleEnum.USER);
       expect(publishedEvent.occurredOn).toBeInstanceOf(Date);
 
       // Verify the event's aggregateId matches the created user

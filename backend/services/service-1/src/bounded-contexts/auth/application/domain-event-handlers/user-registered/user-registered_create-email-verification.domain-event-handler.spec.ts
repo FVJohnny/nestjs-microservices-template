@@ -1,6 +1,5 @@
 import { UserRegistered_CreateEmailVerification_DomainEventHandler } from './user-registered_create-email-verification.domain-event-handler';
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
-import { Email } from '@bc/auth/domain/value-objects';
 import { createCommandBusMock } from '@libs/nestjs-common';
 import { CreateEmailVerification_Command } from '@bc/auth/application/commands/create-email-verification/create-email-verification.command';
 import { User } from '@bc/auth/domain/entities/user/user.entity';

@@ -5,9 +5,6 @@ import {
   LastLogin,
   Username,
   UserRole,
-  UserRoleEnum,
-  UserStatus,
-  UserStatusEnum,
 } from '@bc/auth/domain/value-objects';
 import {
   Criteria,
@@ -26,7 +23,6 @@ import {
   DateVO,
   AlreadyExistsException,
 } from '@libs/nestjs-common';
-import { UserTestFactory } from '@bc/auth/test-utils';
 
 /**
  * Basic validation test to prevent Jest "no tests found" error

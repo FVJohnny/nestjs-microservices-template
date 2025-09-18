@@ -1,15 +1,11 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RegisterUser_Command } from '@bc/auth/application/commands';
 import { RegisterUser_ControllerParams } from './register-user.params';
-import { JwtAuthGuard } from '@libs/nestjs-common';
-import { UseGuards } from '@nestjs/common';
 
 @ApiTags('users')
 @Controller('users')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 export class RegisterUser_Controller {
   constructor(private readonly commandBus: CommandBus) {}
 

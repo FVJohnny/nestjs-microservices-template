@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty } from 'class-validator';
-import { UserRoleEnum } from '@bc/auth/domain/value-objects';
 
 export class RegisterUser_ControllerParams {
   @ApiProperty({
@@ -20,13 +19,4 @@ export class RegisterUser_ControllerParams {
   @IsString()
   @IsNotEmpty()
   password: string;
-
-  @ApiProperty({
-    example: 'user',
-    description: 'User role',
-    enum: UserRoleEnum,
-  })
-  @IsNotEmpty()
-  @IsString()
-  role: UserRoleEnum;
 }

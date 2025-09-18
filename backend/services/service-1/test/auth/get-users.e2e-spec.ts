@@ -21,17 +21,13 @@ describe('GET /users (E2E)', () => {
 
   it('returns all users when no filters provided', async () => {
     const userData = [
-      { email: 'admin@example.com', username: 'admin', password: 'Password123!', role: 'admin' },
-      { email: 'user1@example.com', username: 'user1', password: 'Password123!', role: 'user' },
-      { email: 'user2@example.com', username: 'user2', password: 'Password123!', role: 'user' },
+      { email: 'admin@example.com', username: 'admin', password: 'Password123!' },
+      { email: 'user1@example.com', username: 'user1', password: 'Password123!' },
+      { email: 'user2@example.com', username: 'user2', password: 'Password123!' },
     ];
 
     for (const data of userData) {
-      await request(testSetup.server)
-        .post('/users')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(data)
-        .expect(201);
+      await request(testSetup.server).post('/users').send(data).expect(201);
     }
 
     const res = await request(testSetup.server)
@@ -41,30 +37,26 @@ describe('GET /users (E2E)', () => {
 
     expect(Array.isArray(res.body.data)).toBe(true);
     expect(res.body.data).toHaveLength(3);
-    const usernames = res.body.data.map((u: any) => u.username).sort();
+    const usernames = res.body.data.map((u: { username: string }) => u.username).sort();
     expect(usernames).toEqual(['admin', 'user1', 'user2']);
   });
 
   it('filters by status', async () => {
     await request(testSetup.server)
       .post('/users')
-      .set('Authorization', `Bearer ${accessToken}`)
       .send({
         email: 'inactive@example.com',
         username: 'inactive',
         password: 'Password123!',
-        role: 'user',
       })
       .expect(201);
 
     await request(testSetup.server)
       .post('/users')
-      .set('Authorization', `Bearer ${accessToken}`)
       .send({
         email: 'active@example.com',
         username: 'active',
         password: 'Password123!',
-        role: 'user',
       })
       .expect(201);
 
@@ -85,17 +77,13 @@ describe('GET /users (E2E)', () => {
 
   it('supports contains filters: id, email, username', async () => {
     const userData = [
-      { email: 'admin@example.com', username: 'admin', password: 'Password123!', role: 'admin' },
-      { email: 'user1@example.com', username: 'user1', password: 'Password123!', role: 'user' },
-      { email: 'user2@example.com', username: 'user2', password: 'Password123!', role: 'user' },
+      { email: 'admin@example.com', username: 'admin', password: 'Password123!' },
+      { email: 'user1@example.com', username: 'user1', password: 'Password123!' },
+      { email: 'user2@example.com', username: 'user2', password: 'Password123!' },
     ];
 
     for (const data of userData) {
-      await request(testSetup.server)
-        .post('/users')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(data)
-        .expect(201);
+      await request(testSetup.server).post('/users').send(data).expect(201);
     }
 
     const adminLookup = await request(testSetup.server)
@@ -135,53 +123,44 @@ describe('GET /users (E2E)', () => {
 
   it('filters by role equality', async () => {
     const userData = [
-      { email: 'admin@example.com', username: 'admin', password: 'Password123!', role: 'admin' },
-      { email: 'user1@example.com', username: 'user1', password: 'Password123!', role: 'user' },
-      { email: 'user2@example.com', username: 'user2', password: 'Password123!', role: 'user' },
+      { email: 'admin@example.com', username: 'admin', password: 'Password123!' },
+      { email: 'user1@example.com', username: 'user1', password: 'Password123!' },
+      { email: 'user2@example.com', username: 'user2', password: 'Password123!' },
     ];
 
     for (const data of userData) {
-      await request(testSetup.server)
-        .post('/users')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(data)
-        .expect(201);
+      await request(testSetup.server).post('/users').send(data).expect(201);
     }
-
-    const onlyAdmins = await request(testSetup.server)
-      .get('/users')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .query({ role: 'admin' })
-      .expect(200);
-    expect(onlyAdmins.body.data).toHaveLength(1);
-    expect(onlyAdmins.body.data[0].username).toBe('admin');
-    expect(onlyAdmins.body.data[0].email).toBe('admin@example.com');
 
     const onlyUsers = await request(testSetup.server)
       .get('/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ role: 'user' })
       .expect(200);
-    expect(onlyUsers.body.data).toHaveLength(2);
-    expect(onlyUsers.body.data[0].username).toBe('user1');
-    expect(onlyUsers.body.data[0].email).toBe('user1@example.com');
-    expect(onlyUsers.body.data[1].username).toBe('user2');
-    expect(onlyUsers.body.data[1].email).toBe('user2@example.com');
+    expect(onlyUsers.body.data).toHaveLength(3);
+    expect(onlyUsers.body.data.map((u: { email: string }) => u.email).sort()).toEqual([
+      'admin@example.com',
+      'user1@example.com',
+      'user2@example.com',
+    ]);
+
+    const onlyAdmins = await request(testSetup.server)
+      .get('/users')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .query({ role: 'admin' })
+      .expect(200);
+    expect(onlyAdmins.body.data).toHaveLength(0);
   });
 
   it('orders by username asc and paginates with limit/offset', async () => {
     const userData = [
-      { email: 'admin@example.com', username: 'admin', password: 'Password123!', role: 'admin' },
-      { email: 'user1@example.com', username: 'user1', password: 'Password123!', role: 'user' },
-      { email: 'user2@example.com', username: 'user2', password: 'Password123!', role: 'user' },
+      { email: 'admin@example.com', username: 'admin', password: 'Password123!' },
+      { email: 'user1@example.com', username: 'user1', password: 'Password123!' },
+      { email: 'user2@example.com', username: 'user2', password: 'Password123!' },
     ];
 
     for (const data of userData) {
-      await request(testSetup.server)
-        .post('/users')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(data)
-        .expect(201);
+      await request(testSetup.server).post('/users').send(data).expect(201);
     }
 
     const orderedAsc = await request(testSetup.server)
@@ -189,28 +168,36 @@ describe('GET /users (E2E)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ orderBy: 'username', orderType: 'asc' })
       .expect(200);
-    expect(orderedAsc.body.data.map((u: any) => u.username)).toEqual(['admin', 'user1', 'user2']);
+    expect(orderedAsc.body.data.map((u: { username: string }) => u.username)).toEqual([
+      'admin',
+      'user1',
+      'user2',
+    ]);
 
     const orderedDesc = await request(testSetup.server)
       .get('/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ orderBy: 'username', orderType: 'desc' })
       .expect(200);
-    expect(orderedDesc.body.data.map((u: any) => u.username)).toEqual(['user2', 'user1', 'admin']);
+    expect(orderedDesc.body.data.map((u: { username: string }) => u.username)).toEqual([
+      'user2',
+      'user1',
+      'admin',
+    ]);
 
     const page = await request(testSetup.server)
       .get('/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 1 })
       .expect(200);
-    expect(page.body.data.map((u: any) => u.username)).toEqual(['user1', 'user2']);
+    expect(page.body.data.map((u: { username: string }) => u.username)).toEqual(['user1', 'user2']);
 
     const page2 = await request(testSetup.server)
       .get('/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 2 })
       .expect(200);
-    expect(page2.body.data.map((u: any) => u.username)).toEqual(['user2']);
+    expect(page2.body.data.map((u: { username: string }) => u.username)).toEqual(['user2']);
   });
 
   it('rejects invalid orderType with 422 (validation)', async () => {
