@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { createE2ETestApp, type E2ETestSetup } from '../utils/e2e-test-setup';
+import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
 import { deleteAllUsers } from './utils';
 
 describe('GET /users (E2E)', () => {

@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { JwtTokenService } from '@libs/nestjs-common';
-import { createE2ETestApp, type E2ETestSetup } from '../utils/e2e-test-setup';
+import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
 import { deleteAllUsers } from './utils';
 
 describe('Complete Authentication Flow (E2E)', () => {
