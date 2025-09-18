@@ -9,7 +9,6 @@ import {
 import { CorrelationLogger } from '../logger';
 import { Request, Response } from 'express';
 
-import type { Metadata } from '../utils/metadata';
 import { BaseException } from './base.exception';
 /**
  * Standard error response format
@@ -22,7 +21,6 @@ export interface ErrorResponse {
     cause?: string;
     timestamp: string;
     path: string;
-    metadata?: Metadata;
     stack?: string;
   };
 }
@@ -47,15 +45,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let errorResponse: ErrorResponse;
 
     if (exception instanceof BaseException) {
-      // Handle custom domain/application exceptions
       errorResponse = this.handleBaseException(exception, path, timestamp);
       this.logException(exception, false);
     } else if (exception instanceof HttpException) {
-      // Handle NestJS HTTP exceptions
       errorResponse = this.handleHttpException(exception, path, timestamp);
       this.logException(exception, false);
     } else {
-      // Handle unexpected errors
       errorResponse = this.handleUnexpectedException(exception, path, timestamp);
       this.logException(exception, true);
     }
@@ -68,7 +63,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     path: string,
     timestamp: string,
   ): ErrorResponse {
-    // Set context on exception if not already set
     if (!exception.path) {
       exception.setPath(path);
     }
@@ -81,7 +75,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         cause: exception.cause?.message,
         timestamp,
         path,
-        ...(exception.metadata && { metadata: exception.metadata }),
       },
     };
   }
@@ -142,20 +135,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const logLevel = isUnexpected ? 'error' : 'warn';
 
     // Build a readable log message
-    const logParts = [
-      `${error.name}: ${error.message}`,
-      ...(exception instanceof BaseException ? [`[code: ${exception.code}]`] : []),
-      ...(exception instanceof BaseException && exception.metadata
-        ? [`[metadata: ${JSON.stringify(exception.metadata)}]`]
-        : []),
-      ...(exception instanceof BaseException && exception.cause
-        ? [`[cause: ${exception.cause.name}: ${exception.cause.message}]`]
-        : []),
-      ...(error.stack ? [`[stack: ${error.stack}]`] : []),
-      ...(exception instanceof BaseException && exception.cause && exception.cause.stack
-        ? [`[causeStack: ${exception.cause.stack}]`]
-        : []),
-    ];
+    const logParts = [`${error.name}: ${error.message}`];
+    if (exception instanceof BaseException) {
+      logParts.push(`[code: ${exception.code}]`);
+      logParts.push(`[httpStatus: ${exception.httpStatus}]`);
+      logParts.push(`[stack: ${exception.stack}]`);
+      logParts.push(`[cause: ${exception.cause?.name}: ${exception.cause?.message}]`);
+      logParts.push(`[causeStack: ${exception.cause?.stack}]`);
+    }
 
     const logMessage = logParts.join('\n');
 
