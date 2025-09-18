@@ -1,8 +1,8 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { EventTrackerService } from './event-tracker.service';
-import { DomainEventTrackerInterceptor } from './domain-event-tracker.interceptor';
-import { IntegrationEventTrackerInterceptor } from './integration-event-tracker.interceptor';
+import { EventTrackerDomainInterceptor } from './event-tracker-domain.interceptor';
+import { EventTrackerIntegrationInterceptor } from './event-tracker-integration.interceptor';
 import { EventTrackerController } from './event-tracker.controller';
 import { FileSystemDomainEventDiscoveryService } from './file-system-domain-event-discovery.service';
 
@@ -11,14 +11,14 @@ import { FileSystemDomainEventDiscoveryService } from './file-system-domain-even
   controllers: [EventTrackerController],
   providers: [
     EventTrackerService,
-    DomainEventTrackerInterceptor,
-    IntegrationEventTrackerInterceptor,
+    EventTrackerDomainInterceptor,
+    EventTrackerIntegrationInterceptor,
     FileSystemDomainEventDiscoveryService,
   ],
 })
 export class EventTrackerModule implements OnApplicationBootstrap {
   constructor(
-    private readonly domainEventTracker: DomainEventTrackerInterceptor,
+    private readonly domainEventTracker: EventTrackerDomainInterceptor,
     private readonly domainDiscoveryService: FileSystemDomainEventDiscoveryService,
   ) {}
 

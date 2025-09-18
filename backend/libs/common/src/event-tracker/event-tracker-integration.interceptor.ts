@@ -12,7 +12,7 @@ import { TracingService } from '../tracing/tracing.service';
  * Universal Integration Event Tracker that intercepts Integration Event Listener
  */
 @Injectable()
-export class IntegrationEventTrackerInterceptor {
+export class EventTrackerIntegrationInterceptor {
   constructor(
     private readonly eventTracker: EventTrackerService,
     @Inject(INTEGRATION_EVENT_LISTENER)

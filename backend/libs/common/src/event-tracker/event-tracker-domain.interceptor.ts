@@ -2,13 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { DomainEvent } from '../general';
 import { EventTrackerService } from './event-tracker.service';
+import { CorrelationLogger } from '../logger';
 
 /**
  * Universal Domain Event Tracker that intercepts ALL domain events
  * Works regardless of whether events have handlers or not
  */
 @Injectable()
-export class DomainEventTrackerInterceptor {
+export class EventTrackerDomainInterceptor {
+  private readonly logger = new CorrelationLogger(EventTrackerDomainInterceptor.name);
+
   private originalPublish!: (event: unknown) => Promise<void>;
   private originalPublishAll!: (events: unknown[]) => Promise<void>;
   constructor(
@@ -57,7 +60,7 @@ export class DomainEventTrackerInterceptor {
     try {
       this.eventTracker.trackDomainEvent(event, success);
     } catch (error) {
-      console.error(`Failed to track domain event ${event.constructor.name}:`, error);
+      this.logger.error(`Failed to track domain event ${event.constructor.name}:`, error);
     }
   }
 }
