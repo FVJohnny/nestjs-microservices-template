@@ -16,7 +16,6 @@ export interface E2ETestSetup {
 }
 
 export async function createE2ETestApp(): Promise<E2ETestSetup> {
-  // Create fresh repository instances for each test suite
   const userRepository = new User_InMemory_Repository(false);
   const emailVerificationRepository = new EmailVerification_InMemory_Repository(false);
   const outboxRepository = new InMemoryOutboxRepository();
@@ -34,7 +33,6 @@ export async function createE2ETestApp(): Promise<E2ETestSetup> {
 
   const app = moduleFixture.createNestApplication();
 
-  // Apply shared configuration but disable production-only features for tests
   configureApp(app);
 
   await app.init();
