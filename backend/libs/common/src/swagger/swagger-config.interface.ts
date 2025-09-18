@@ -1,3 +1,4 @@
+import type { INestApplication } from '@nestjs/common';
 export interface SwaggerConfig {
   title: string;
   description: string;
@@ -6,8 +7,6 @@ export interface SwaggerConfig {
   enabled?: boolean;
   customSiteTitle?: string;
 }
-
-import type { INestApplication } from '@nestjs/common';
 
 export interface SwaggerSetupOptions {
   app: INestApplication;
