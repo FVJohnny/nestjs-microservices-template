@@ -1,10 +1,10 @@
 import { Injectable, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { type OutboxRepository } from './domain/outbox.repository';
 import { INTEGRATION_EVENT_PUBLISHER, type IntegrationEventPublisher } from '../integration-events';
-import { randomUUID } from 'crypto';
 import { OutboxEvent } from './domain/outbox-event.entity';
 import { CorrelationLogger } from '../logger';
 import { TracingService } from '../tracing';
+import { OutboxEventName, OutboxPayload, OutboxTopic } from './domain/value-objects';
 
 export const OUTBOX_REPOSITORY = 'OutboxRepository';
 
@@ -40,15 +40,10 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   }
 
   async storeEvent(eventName: string, topic: string, payload: string) {
-    const event = new OutboxEvent({
-      id: randomUUID(),
-      eventName,
-      topic,
-      payload,
-      createdAt: new Date(),
-      processedAt: OutboxEvent.NEVER_PROCESSED,
-      retryCount: 0,
-      maxRetries: 3,
+    const event = OutboxEvent.create({
+      eventName: new OutboxEventName(eventName),
+      topic: new OutboxTopic(topic),
+      payload: new OutboxPayload(payload),
     });
     await this.repository.save(event);
     this.logger.debug(`Stored outbox event: ${eventName} for topic: ${topic}`);
@@ -67,10 +62,10 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
 
   private async processEvent(event: OutboxEvent) {
     try {
-      await this.publisher.publish(event.topic, event.payload);
+      await this.publisher.publish(event.topic.toValue(), event.payload.toValue());
       event.markAsProcessed();
       await this.repository.save(event);
-      this.logger.debug(`Successfully processed outbox event: ${event.id}`);
+      this.logger.debug(`Successfully processed outbox event: ${event.id.toValue()}`);
     } catch (error) {
       await this.handleEventError(event, error);
     }
@@ -83,16 +78,16 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async handleEventError(event: OutboxEvent, error: unknown) {
-    this.logger.error(`Failed to process outbox event ${event.id}:`, error as Error);
+    this.logger.error(`Failed to process outbox event ${event.id.toValue()}:`, error as Error);
 
-    if (event.retryCount < event.maxRetries) {
+    if (event.canRetry()) {
       await event.incrementRetry();
       await this.repository.save(event);
       this.logger.warn(
-        `Incremented retry count for event ${event.id}: ${event.retryCount + 1}/${event.maxRetries}`,
+        `Incremented retry count for event ${event.id.toValue()}: ${event.retryCount.toValue()}/${event.maxRetries.toValue()}`,
       );
     } else {
-      this.logger.error(`Max retries exceeded for event ${event.id}, giving up`);
+      this.logger.error(`Max retries exceeded for event ${event.id.toValue()}, giving up`);
     }
   }
 }

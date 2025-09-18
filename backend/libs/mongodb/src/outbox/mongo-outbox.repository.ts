@@ -1,7 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
 import type { MongoClient } from 'mongodb';
 
-import { Id, OutboxEvent, OutboxRepository, type OutboxEventDTO } from '@libs/nestjs-common';
+import {
+  Id,
+  OutboxEvent,
+  OutboxProcessedAt,
+  OutboxRepository,
+  type OutboxEventDTO,
+} from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from '../mongodb.module';
 import { BaseMongoRepository, IndexSpec } from '../base-mongo.repository';
 
@@ -42,7 +48,7 @@ export class MongoOutboxRepository
 
   async findUnprocessed(limit = 100) {
     const cursor = this.collection
-      .find({ processedAt: OutboxEvent.NEVER_PROCESSED })
+      .find({ processedAt: OutboxProcessedAt.never().toValue() })
       .sort({ createdAt: 1 })
       .limit(limit);
 
@@ -54,7 +60,7 @@ export class MongoOutboxRepository
     await this.collection.deleteMany({
       processedAt: {
         $lt: before,
-        $ne: OutboxEvent.NEVER_PROCESSED,
+        $ne: OutboxProcessedAt.never().toValue(),
       },
     });
   }

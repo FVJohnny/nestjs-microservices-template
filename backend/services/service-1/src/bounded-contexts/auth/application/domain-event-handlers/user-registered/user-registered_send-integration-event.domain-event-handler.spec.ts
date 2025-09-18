@@ -39,10 +39,10 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
 
       // Assert
       const [outboxEvent] = await outboxRepository.findAll();
-      expect(outboxEvent.eventName).toBe(Topics.USERS.events.USER_CREATED);
-      expect(outboxEvent.topic).toBe(Topics.USERS.topic);
+      expect(outboxEvent.eventName.toValue()).toBe(Topics.USERS.events.USER_CREATED);
+      expect(outboxEvent.topic.toValue()).toBe(Topics.USERS.topic);
 
-      const payload = JSON.parse(outboxEvent.payload) as UserCreated_IntegrationEvent;
+      const payload = outboxEvent.payload.toObject() as unknown as UserCreated_IntegrationEvent;
       expect(payload.userId).toBe(user.id.toValue());
       expect(payload.email).toBe(user.email.toValue());
       expect(payload.username).toBe(user.username.toValue());
@@ -62,9 +62,9 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
 
       // Assert
       const [outboxEvent] = await outboxRepository.findAll();
-      expect(outboxEvent.eventName).toBe(Topics.USERS.events.USER_CREATED);
-      expect(outboxEvent.topic).toBe(Topics.USERS.topic);
-      const payload = JSON.parse(outboxEvent.payload) as UserCreated_IntegrationEvent;
+      expect(outboxEvent.eventName.toValue()).toBe(Topics.USERS.events.USER_CREATED);
+      expect(outboxEvent.topic.toValue()).toBe(Topics.USERS.topic);
+      const payload = outboxEvent.payload.toObject() as unknown as UserCreated_IntegrationEvent;
 
       expect(payload.userId).toBe(user.id.toValue());
       expect(payload.email).toBe(user.email.toValue());
@@ -87,11 +87,13 @@ describe('UserRegistered_SendIntegrationEvent_DomainEventHandler', () => {
       const outboxEvents = await outboxRepository.findAll();
       expect(outboxEvents).toHaveLength(2);
 
-      const firstPayload = JSON.parse(outboxEvents[0].payload) as UserCreated_IntegrationEvent;
+      const firstPayload =
+        outboxEvents[0].payload.toObject() as unknown as UserCreated_IntegrationEvent;
       expect(firstPayload.userId).toBe(users[0].id.toValue());
       expect(firstPayload.role).toBe(users[0].role.toValue());
 
-      const secondPayload = JSON.parse(outboxEvents[1].payload) as UserCreated_IntegrationEvent;
+      const secondPayload =
+        outboxEvents[1].payload.toObject() as unknown as UserCreated_IntegrationEvent;
       expect(secondPayload.userId).toBe(users[1].id.toValue());
       expect(secondPayload.role).toBe(users[1].role.toValue());
     });
