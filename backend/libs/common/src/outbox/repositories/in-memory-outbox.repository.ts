@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { OutboxEvent, OutboxEventValue } from '../outbox-event.entity';
-import { OutboxRepository } from '../outbox.repository';
+import { OutboxEvent, OutboxEventDTO } from '../domain/outbox-event.entity';
+import { OutboxRepository } from '../domain/outbox.repository';
 import { Id } from '../../general';
 import { InfrastructureException } from '../../errors';
 
 @Injectable()
 export class InMemoryOutboxRepository implements OutboxRepository {
   // Indexes
-  private byId: Map<string, OutboxEventValue> = new Map();
+  private byId: Map<string, OutboxEventDTO> = new Map();
 
   constructor(private shouldThrowError = false) {
     this.byId = new Map();

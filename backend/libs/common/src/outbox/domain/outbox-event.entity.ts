@@ -1,6 +1,6 @@
-import { type SharedAggregateRootDTO, Id, SharedAggregateRoot } from '../general';
+import { type SharedAggregateRootDTO, Id, SharedAggregateRoot } from '../../general';
 
-export interface OutboxEventValue extends SharedAggregateRootDTO {
+export interface OutboxEventDTO extends SharedAggregateRootDTO {
   id: string;
   eventName: string;
   topic: string;
@@ -22,7 +22,7 @@ export class OutboxEvent extends SharedAggregateRoot {
   retryCount: number;
   maxRetries: number;
 
-  constructor(props: OutboxEventValue) {
+  constructor(props: OutboxEventDTO) {
     super(new Id(props.id));
     this.eventName = props.eventName;
     this.topic = props.topic;
@@ -49,7 +49,7 @@ export class OutboxEvent extends SharedAggregateRoot {
     return this.processedAt.getTime() === OutboxEvent.NEVER_PROCESSED.getTime();
   }
 
-  toValue(): OutboxEventValue {
+  toValue(): OutboxEventDTO {
     return {
       id: this.id.toValue(),
       eventName: this.eventName,
@@ -62,7 +62,7 @@ export class OutboxEvent extends SharedAggregateRoot {
     };
   }
 
-  static fromValue(value: OutboxEventValue) {
+  static fromValue(value: OutboxEventDTO) {
     return new OutboxEvent({
       id: value.id,
       eventName: value.eventName,

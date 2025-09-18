@@ -1,4 +1,4 @@
-export { testOutboxRepositoryContract } from '../outbox/outbox.repository.spec';
+export { testOutboxRepositoryContract } from '../outbox/domain/outbox.repository.spec';
 export {
   testCriteriaConverterContract,
   type TestEntityDTO,

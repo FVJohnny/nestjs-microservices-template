@@ -6,7 +6,7 @@ import {
   Id,
   OutboxEvent,
   OutboxRepository,
-  type OutboxEventValue,
+  type OutboxEventDTO,
 } from '@libs/nestjs-common';
 
 @Injectable()
@@ -52,7 +52,7 @@ export class RedisOutboxRepository implements OutboxRepository {
     const json = await this.redisClient.get(key);
     if (!json) return null;
     try {
-      const parsed = JSON.parse(json) as unknown as OutboxEventValue;
+      const parsed = JSON.parse(json) as unknown as OutboxEventDTO;
       return OutboxEvent.fromValue(parsed);
     } catch {
       this.logger.warn('Failed to parse JSON for key: ' + key);
@@ -102,11 +102,11 @@ export class RedisOutboxRepository implements OutboxRepository {
     const keys = ids.map((id) => this.itemKey(id));
     const jsons = await this.redisClient.mget(keys);
 
-    const values: OutboxEventValue[] = [];
+    const values: OutboxEventDTO[] = [];
     for (const json of jsons) {
       if (!json) continue;
       try {
-        const parsed = JSON.parse(json) as unknown as OutboxEventValue;
+        const parsed = JSON.parse(json) as unknown as OutboxEventDTO;
         values.push(parsed);
       } catch {
         // skip malformed entries

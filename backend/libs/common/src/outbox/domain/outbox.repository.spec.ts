@@ -1,5 +1,5 @@
-import { Id } from '../general';
-import { OutboxEvent, type OutboxEventValue } from './outbox-event.entity';
+import { Id } from '../../general';
+import { OutboxEvent, type OutboxEventDTO } from './outbox-event.entity';
 import type { OutboxRepository } from './outbox.repository';
 
 /**
@@ -294,7 +294,7 @@ export function testOutboxRepositoryContract(
 }
 
 // Helper functions for creating test data
-function createRealisticEvent(props: Partial<OutboxEventValue> = {}): OutboxEvent {
+function createRealisticEvent(props: Partial<OutboxEventDTO> = {}): OutboxEvent {
   const defaultPayload = {
     userId: 'user-123',
     action: 'USER_CREATED',

@@ -1,6 +1,6 @@
 import { Module, DynamicModule, Global, Provider } from '@nestjs/common';
 import { OutboxService, OUTBOX_REPOSITORY } from './outbox.service';
-import { OutboxRepository } from './outbox.repository';
+import { OutboxRepository } from './domain/outbox.repository';
 import { InMemoryOutboxRepository } from './repositories/in-memory-outbox.repository';
 
 export interface OutboxModuleOptions {

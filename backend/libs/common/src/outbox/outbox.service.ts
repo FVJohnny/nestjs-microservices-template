@@ -1,8 +1,8 @@
 import { Injectable, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { type OutboxRepository } from './outbox.repository';
+import { type OutboxRepository } from './domain/outbox.repository';
 import { INTEGRATION_EVENT_PUBLISHER, type IntegrationEventPublisher } from '../integration-events';
 import { randomUUID } from 'crypto';
-import { OutboxEvent } from './outbox-event.entity';
+import { OutboxEvent } from './domain/outbox-event.entity';
 import { CorrelationLogger } from '../logger';
 import { TracingService } from '../tracing';
 

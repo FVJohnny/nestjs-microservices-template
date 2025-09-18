@@ -1,13 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
 import type { MongoClient } from 'mongodb';
 
-import { Id, OutboxEvent, OutboxRepository, type OutboxEventValue } from '@libs/nestjs-common';
+import { Id, OutboxEvent, OutboxRepository, type OutboxEventDTO } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from '../mongodb.module';
 import { BaseMongoRepository, IndexSpec } from '../base-mongo.repository';
 
 @Injectable()
 export class MongoOutboxRepository
-  extends BaseMongoRepository<OutboxEventValue>
+  extends BaseMongoRepository<OutboxEventDTO>
   implements OutboxRepository
 {
   constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {

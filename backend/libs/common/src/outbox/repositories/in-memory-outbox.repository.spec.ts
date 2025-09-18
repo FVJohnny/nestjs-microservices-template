@@ -1,5 +1,5 @@
 import { InMemoryOutboxRepository } from './in-memory-outbox.repository';
-import { testOutboxRepositoryContract } from '../outbox.repository.spec';
+import { testOutboxRepositoryContract } from '../domain/outbox.repository.spec';
 
 describe('InMemoryOutboxRepository', () => {
   // Run the shared contract tests
