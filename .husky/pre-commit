@@ -1,3 +1,6 @@
+echo "Removing NX Cache"
+npx nx reset
+
 echo "Building project..."
 npm run -s build || {
   echo "\n✖ Build failed. Fix issues before committing."
