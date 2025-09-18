@@ -1,0 +1,39 @@
+import { CommandHandler, EventBus } from '@nestjs/cqrs';
+import { Inject } from '@nestjs/common';
+import { DeleteUser_Command } from './delete-user.command';
+import {
+  USER_REPOSITORY,
+  type User_Repository,
+} from '@bc/auth/domain/repositories/user/user.repository';
+import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { BaseCommandHandler, Id, NotFoundException } from '@libs/nestjs-common';
+
+@CommandHandler(DeleteUser_Command)
+export class DeleteUser_CommandHandler extends BaseCommandHandler<DeleteUser_Command> {
+  constructor(
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: User_Repository,
+    eventBus: EventBus,
+  ) {
+    super(eventBus);
+  }
+
+  protected async handle(command: DeleteUser_Command) {
+    const userId = new Id(command.userId);
+
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundException('user');
+    }
+
+    user.delete();
+    await this.userRepository.remove(userId);
+    await this.sendDomainEvents<User>(user);
+  }
+
+  protected async authorize(_command: DeleteUser_Command) {
+    return true;
+  }
+
+  protected async validate(_command: DeleteUser_Command) {}
+}

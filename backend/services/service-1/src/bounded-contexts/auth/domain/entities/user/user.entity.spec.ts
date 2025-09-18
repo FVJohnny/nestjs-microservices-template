@@ -12,6 +12,7 @@ import {
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 import { InvalidOperationException, Timestamps, Id, wait, DateVO } from '@libs/nestjs-common';
 import { UserDTO } from './user.dto';
+import { UserDeleted_DomainEvent } from '../../events/user-deleted.domain-event';
 
 describe('User Entity', () => {
   describe('create()', () => {
@@ -403,6 +404,21 @@ describe('User Entity', () => {
       expect(dto.lastLogin).toEqual(new Date('2024-01-01T12:00:00Z'));
       expect(dto.createdAt).toBeInstanceOf(Date);
       expect(dto.updatedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  describe('delete()', () => {
+    it('should mark user as deleted and emit domain event', () => {
+      const user = User.random({ status: UserStatus.active() });
+
+      user.delete();
+
+      expect(user.status.toValue()).toBe(UserStatusEnum.DELETED);
+      const events = user.getUncommittedEvents();
+      expect(events).toHaveLength(1);
+      const event = events[0] as UserDeleted_DomainEvent;
+      expect(event.constructor.name).toBe('UserDeleted_DomainEvent');
+      expect(event.aggregateId.toValue()).toBe(user.id.toValue());
     });
   });
 

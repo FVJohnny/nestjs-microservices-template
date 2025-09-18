@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { JwtTokenService } from '@libs/nestjs-common';
 import { createE2ETestApp, type E2ETestSetup } from '../utils/e2e-test-setup';
+import { deleteAllUsers } from './utils';
 
 describe('Complete Authentication Flow (E2E)', () => {
   let testSetup: E2ETestSetup;
@@ -17,7 +18,7 @@ describe('Complete Authentication Flow (E2E)', () => {
   });
 
   beforeEach(async () => {
-    await testSetup.clearRepositories();
+    await deleteAllUsers(testSetup.server);
   });
 
   describe('Complete Happy Path Flow', () => {

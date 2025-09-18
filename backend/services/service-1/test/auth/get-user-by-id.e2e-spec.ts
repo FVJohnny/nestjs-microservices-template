@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { v4 as uuid } from 'uuid';
 import { createE2ETestApp, type E2ETestSetup } from '../utils/e2e-test-setup';
+import { deleteAllUsers } from './utils';
 
 describe('GET /users/:id (E2E)', () => {
   let testSetup: E2ETestSetup;
@@ -14,7 +15,7 @@ describe('GET /users/:id (E2E)', () => {
   });
 
   beforeEach(async () => {
-    await testSetup.clearRepositories();
+    await deleteAllUsers(testSetup.server);
   });
 
   it('returns a user when found', async () => {

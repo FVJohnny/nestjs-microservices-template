@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "build": "nx run-many -t build --exclude=nestjs-microservices-monorepo-template",
-    "test:unit": "nx run-many --target=test --all --exclude=nestjs-microservices-monorepo-template --passWithNoTests",
-    "test:e2e": "nx run-many --target=test:e2e --all --exclude=nestjs-microservices-monorepo-template --passWithNoTests",
+    "test:unit": "nx run-many --target=test --all --exclude=nestjs-microservices-monorepo-template",
+    "test:e2e": "nx run-many --target=test:e2e --all --exclude=nestjs-microservices-monorepo-template",
     "test": "sh -c 'npm run test:unit -- \"$@\" && npm run test:e2e -- \"$@\"' -- ",
     "test:nocache": "npm run test -- --skip-nx-cache",
     "test:silent": "LOG_LEVEL=error npm run test --",
