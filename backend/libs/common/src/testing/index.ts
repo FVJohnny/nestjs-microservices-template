@@ -1,2 +1,3 @@
-export * from './event-bus.mock';
-export * from './command-bus.mock';
+export * from './mock-command-bus';
+export * from './mock-event-bus';
+export * from './mock-query-bus';

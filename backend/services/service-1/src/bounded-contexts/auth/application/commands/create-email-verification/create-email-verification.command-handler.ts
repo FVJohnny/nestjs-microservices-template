@@ -1,9 +1,10 @@
-import { CommandHandler, EventBus } from '@nestjs/cqrs';
+import { CommandHandler, type IEventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { CreateEmailVerification_Command } from './create-email-verification.command';
 import {
   AlreadyExistsException,
   BaseCommandHandler,
+  EVENT_BUS,
   Id,
   NotFoundException,
 } from '@libs/nestjs-common';
@@ -23,7 +24,8 @@ export class CreateEmailVerification_CommandHandler extends BaseCommandHandler<C
     private readonly emailVerificationRepository: EmailVerification_Repository,
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
-    eventBus: EventBus,
+    @Inject(EVENT_BUS)
+    eventBus: IEventBus,
   ) {
     super(eventBus);
   }

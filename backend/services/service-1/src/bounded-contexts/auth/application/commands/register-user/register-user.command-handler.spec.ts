@@ -1,15 +1,14 @@
 import { RegisterUser_CommandHandler } from './register-user.command-handler';
 import { RegisterUser_Command } from './register-user.command';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
-import type { EventBus } from '@nestjs/cqrs';
 import { Email, Username, Password, UserRoleEnum } from '@bc/auth/domain/value-objects';
 import {
   AlreadyExistsException,
-  createEventBusMock,
-  InfrastructureException,
-  DateVO,
-  wait,
   ApplicationException,
+  DateVO,
+  InfrastructureException,
+  MockEventBus,
+  wait,
 } from '@libs/nestjs-common';
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 
@@ -27,11 +26,8 @@ describe('RegisterUserCommandHandler', () => {
     const { shouldFailRepository = false, shouldFailEventBus = false } = params;
 
     const repository = new User_InMemory_Repository(shouldFailRepository);
-    const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
-    const commandHandler = new RegisterUser_CommandHandler(
-      repository,
-      eventBus as unknown as EventBus,
-    );
+    const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
+    const commandHandler = new RegisterUser_CommandHandler(repository, eventBus);
 
     return { repository, eventBus, commandHandler };
   };

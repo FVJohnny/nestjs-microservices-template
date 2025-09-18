@@ -1,5 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { QueryBus } from '@nestjs/cqrs';
+import { Inject } from '@nestjs/common';
+import { type IQueryBus } from '@nestjs/cqrs';
+import { QUERY_BUS } from '@libs/nestjs-common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import {
   GetTokensFromRefreshToken_Query,
@@ -15,7 +17,7 @@ import { UseGuards } from '@nestjs/common';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 export class RefreshToken_Controller {
-  constructor(private readonly queryBus: QueryBus) {}
+  constructor(@Inject(QUERY_BUS) private readonly queryBus: IQueryBus) {}
 
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)

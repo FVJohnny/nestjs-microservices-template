@@ -1,5 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { QueryBus } from '@nestjs/cqrs';
+import { Inject } from '@nestjs/common';
+import { type IQueryBus } from '@nestjs/cqrs';
+import { QUERY_BUS } from '@libs/nestjs-common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { GetUsers_Query, GetUsersQueryResponse } from '@bc/auth/application/queries';
 import { GetUsers_ControllerParams } from './get-users.params';
@@ -14,7 +16,7 @@ import { UseGuards } from '@nestjs/common';
 export class GetUsers_Controller {
   private readonly logger = new CorrelationLogger(this.constructor.name);
 
-  constructor(private readonly queryBus: QueryBus) {}
+  constructor(@Inject(QUERY_BUS) private readonly queryBus: IQueryBus) {}
 
   @Get()
   @ApiOperation({ summary: 'Get users with criteria filtering' })

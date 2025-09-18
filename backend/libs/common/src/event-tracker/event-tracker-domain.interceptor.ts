@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
-import { DomainEvent } from '../general';
+import { DomainEvent } from '../cqrs';
 import { EventTrackerService } from './event-tracker.service';
 import { CorrelationLogger } from '../logger';
 

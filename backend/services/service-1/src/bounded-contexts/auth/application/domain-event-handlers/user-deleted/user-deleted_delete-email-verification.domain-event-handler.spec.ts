@@ -1,16 +1,13 @@
 import { UserDeleted_DeleteEmailVerification_DomainEventHandler } from './user-deleted_delete-email-verification.domain-event-handler';
 import { UserDeleted_DomainEvent } from '@bc/auth/domain/events/user-deleted.domain-event';
-import { createCommandBusMock, Id, NotFoundException } from '@libs/nestjs-common';
-import type { CommandBus } from '@nestjs/cqrs';
+import { Id, MockCommandBus } from '@libs/nestjs-common';
 
 describe('UserDeleted_DeleteEmailVerification_DomainEventHandler', () => {
   const createEvent = () => new UserDeleted_DomainEvent(Id.random());
 
   const setup = (params: { shouldFailCommandBus?: boolean } = {}) => {
-    const commandBus = createCommandBusMock({ shouldFail: params.shouldFailCommandBus });
-    const handler = new UserDeleted_DeleteEmailVerification_DomainEventHandler(
-      commandBus as unknown as CommandBus,
-    );
+    const commandBus = new MockCommandBus({ shouldFail: params.shouldFailCommandBus });
+    const handler = new UserDeleted_DeleteEmailVerification_DomainEventHandler(commandBus);
 
     return { handler, commandBus };
   };
@@ -26,13 +23,10 @@ describe('UserDeleted_DeleteEmailVerification_DomainEventHandler', () => {
     expect(command.userId).toBe(event.aggregateId.toValue());
   });
 
-  it('should swallow NotFoundException', async () => {
-    const notFoundCommandBus = {
-      execute: () => Promise.reject(new NotFoundException('email verification')),
-    } as unknown as CommandBus;
-    const handler = new UserDeleted_DeleteEmailVerification_DomainEventHandler(notFoundCommandBus);
+  it('errors thrown by the command bus are propagated', async () => {
+    const { handler } = setup({ shouldFailCommandBus: true });
     const event = createEvent();
 
-    await expect(handler.handle(event)).resolves.not.toThrow();
+    await expect(handler.handle(event)).rejects.toThrow();
   });
 });

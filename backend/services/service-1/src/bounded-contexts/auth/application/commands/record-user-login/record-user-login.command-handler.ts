@@ -1,4 +1,4 @@
-import { CommandHandler, EventBus } from '@nestjs/cqrs';
+import { CommandHandler, type IEventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { RecordUserLogin_Command } from './record-user-login.command';
 import {
@@ -6,14 +6,15 @@ import {
   type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { BaseCommandHandler, Id, NotFoundException } from '@libs/nestjs-common';
+import { BaseCommandHandler, EVENT_BUS, Id, NotFoundException } from '@libs/nestjs-common';
 
 @CommandHandler(RecordUserLogin_Command)
 export class RecordUserLogin_CommandHandler extends BaseCommandHandler<RecordUserLogin_Command> {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
-    eventBus: EventBus,
+    @Inject(EVENT_BUS)
+    eventBus: IEventBus,
   ) {
     super(eventBus);
   }

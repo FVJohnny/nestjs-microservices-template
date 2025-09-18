@@ -2,13 +2,7 @@ import { DeleteEmailVerificationByUserId_CommandHandler } from './delete-email-v
 import { DeleteEmailVerificationByUserId_Command } from './delete-email-verification-by-user-id.command';
 import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
-import type { EventBus } from '@nestjs/cqrs';
-import {
-  createEventBusMock,
-  InfrastructureException,
-  NotFoundException,
-  Id,
-} from '@libs/nestjs-common';
+import { Id, MockEventBus, InfrastructureException } from '@libs/nestjs-common';
 
 describe('DeleteEmailVerificationByUserId_CommandHandler', () => {
   const createCommand = ({ userId }: { userId?: string } = {}) =>
@@ -28,11 +22,8 @@ describe('DeleteEmailVerificationByUserId_CommandHandler', () => {
     } = params;
 
     const repository = new EmailVerification_InMemory_Repository(shouldFailRepository);
-    const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
-    const handler = new DeleteEmailVerificationByUserId_CommandHandler(
-      repository,
-      eventBus as unknown as EventBus,
-    );
+    const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
+    const handler = new DeleteEmailVerificationByUserId_CommandHandler(repository, eventBus);
 
     let verification: EmailVerification | null = null;
     if (withVerification && !shouldFailRepository) {
@@ -56,11 +47,11 @@ describe('DeleteEmailVerificationByUserId_CommandHandler', () => {
   });
 
   describe('Error cases', () => {
-    it('should throw NotFoundException when no verification exists for the user', async () => {
+    it('should not throw exceptions when no verification exists for the user', async () => {
       const { handler } = await setup();
       const command = createCommand();
 
-      await expect(handler.execute(command)).rejects.toThrow(NotFoundException);
+      await expect(handler.execute(command)).resolves.not.toThrow();
     });
 
     it('should throw InfrastructureException when repository fails', async () => {

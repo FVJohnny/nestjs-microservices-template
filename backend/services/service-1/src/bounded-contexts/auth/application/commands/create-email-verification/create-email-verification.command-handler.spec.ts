@@ -1,12 +1,11 @@
 import { CreateEmailVerification_CommandHandler } from './create-email-verification.command-handler';
 import { CreateEmailVerification_Command } from './create-email-verification.command';
 import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
-import type { EventBus } from '@nestjs/cqrs';
 import {
   ApplicationException,
   AlreadyExistsException,
-  createEventBusMock,
   InfrastructureException,
+  MockEventBus,
 } from '@libs/nestjs-common';
 import { EmailVerificationCreated_DomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
 import { Id } from '@libs/nestjs-common';
@@ -43,11 +42,11 @@ describe('CreateEmailVerificationCommandHandler', () => {
       shouldFailRepository,
     );
     const userRepository = new User_InMemory_Repository(shouldFailRepository);
-    const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
+    const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
     const commandHandler = new CreateEmailVerification_CommandHandler(
       emailVerificationRepository,
       userRepository,
-      eventBus as unknown as EventBus,
+      eventBus,
     );
 
     let user: User | null = null;

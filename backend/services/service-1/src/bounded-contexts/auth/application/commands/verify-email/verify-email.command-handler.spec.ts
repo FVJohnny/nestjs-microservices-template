@@ -3,15 +3,14 @@ import { VerifyEmail_Command } from './verify-email.command';
 import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { Expiration } from '@bc/auth/domain/value-objects';
-import type { EventBus } from '@nestjs/cqrs';
 import {
-  createEventBusMock,
-  NotFoundException,
-  InfrastructureException,
-  Id,
-  DomainValidationException,
-  InvalidOperationException,
   ApplicationException,
+  DomainValidationException,
+  Id,
+  MockEventBus,
+  InfrastructureException,
+  InvalidOperationException,
+  NotFoundException,
 } from '@libs/nestjs-common';
 import type { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
 
@@ -40,11 +39,8 @@ describe('VerifyEmailCommandHandler', () => {
     } = params;
 
     const repository = new EmailVerification_InMemory_Repository(shouldFailRepository);
-    const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
-    const commandHandler = new VerifyEmail_CommandHandler(
-      repository,
-      eventBus as unknown as EventBus,
-    );
+    const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
+    const commandHandler = new VerifyEmail_CommandHandler(repository, eventBus);
 
     let emailVerification: EmailVerification | null = null;
     if (withEmailVerification) {

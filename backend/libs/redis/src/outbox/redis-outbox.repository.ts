@@ -109,7 +109,7 @@ export class RedisOutboxRepository implements OutboxRepository {
         const parsed = JSON.parse(json) as unknown as OutboxEventDTO;
         values.push(parsed);
       } catch {
-        // skip malformed entries
+        this.logger.warn(`Failed to parse JSON: ${json}`);
       }
     }
 

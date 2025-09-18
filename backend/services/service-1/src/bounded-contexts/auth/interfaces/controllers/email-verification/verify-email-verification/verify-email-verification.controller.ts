@@ -1,13 +1,15 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
 import { VerifyEmail_Command } from '@bc/auth/application/commands';
 import { VerifyEmailRequestDto } from './verify-email-verification.params';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { Inject } from '@nestjs/common';
+import { type ICommandBus } from '@nestjs/cqrs';
+import { COMMAND_BUS } from '@libs/nestjs-common';
 
 @ApiTags('email-verification')
 @Controller('email-verification')
 export class VerifyEmailVerification_Controller {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(@Inject(COMMAND_BUS) private readonly commandBus: ICommandBus) {}
 
   @Post('verify')
   @HttpCode(HttpStatus.OK)

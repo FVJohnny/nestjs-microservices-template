@@ -2,16 +2,15 @@ import { RecordUserLogin_CommandHandler } from './record-user-login.command-hand
 import { RecordUserLogin_Command } from './record-user-login.command';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import type { EventBus } from '@nestjs/cqrs';
 import {
-  createEventBusMock,
-  NotFoundException,
-  InfrastructureException,
   ApplicationException,
-  Id,
   DateVO,
-  wait,
   DomainValidationException,
+  Id,
+  InfrastructureException,
+  MockEventBus,
+  NotFoundException,
+  wait,
 } from '@libs/nestjs-common';
 
 describe('RecordUserLoginCommandHandler', () => {
@@ -28,8 +27,8 @@ describe('RecordUserLoginCommandHandler', () => {
     const { withUser = false, shouldFailRepository = false, shouldFailEventBus = false } = params;
 
     const repository = new User_InMemory_Repository(shouldFailRepository);
-    const eventBus = createEventBusMock({ shouldFail: shouldFailEventBus });
-    const handler = new RecordUserLogin_CommandHandler(repository, eventBus as unknown as EventBus);
+    const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
+    const handler = new RecordUserLogin_CommandHandler(repository, eventBus);
 
     let user: User | null = null;
     if (withUser) {

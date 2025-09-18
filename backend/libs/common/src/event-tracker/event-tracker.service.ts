@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CorrelationLogger } from '../logger';
 
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
-import { DomainEvent } from '../general';
+import { DomainEvent } from '../cqrs';
 
 // Integration event stats
 export interface EventStats {

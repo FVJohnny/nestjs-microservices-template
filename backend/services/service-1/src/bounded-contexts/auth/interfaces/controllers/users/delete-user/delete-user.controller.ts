@@ -1,5 +1,7 @@
 import { Controller, Delete, Param, HttpCode, HttpStatus } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { Inject } from '@nestjs/common';
+import { type ICommandBus } from '@nestjs/cqrs';
+import { COMMAND_BUS } from '@libs/nestjs-common';
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { DeleteUser_Command } from '@bc/auth/application/commands';
 import { JwtAuthGuard } from '@libs/nestjs-common';
@@ -10,7 +12,7 @@ import { UseGuards } from '@nestjs/common';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 export class DeleteUser_Controller {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(@Inject(COMMAND_BUS) private readonly commandBus: ICommandBus) {}
 
   @Delete(':userId')
   @HttpCode(HttpStatus.NO_CONTENT)

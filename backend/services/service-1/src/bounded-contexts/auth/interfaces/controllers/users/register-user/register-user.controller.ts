@@ -1,13 +1,15 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RegisterUser_Command } from '@bc/auth/application/commands';
 import { RegisterUser_ControllerParams } from './register-user.params';
+import { Inject } from '@nestjs/common';
+import { type ICommandBus } from '@nestjs/cqrs';
+import { COMMAND_BUS } from '@libs/nestjs-common';
 
 @ApiTags('users')
 @Controller('users')
 export class RegisterUser_Controller {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(@Inject(COMMAND_BUS) private readonly commandBus: ICommandBus) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)

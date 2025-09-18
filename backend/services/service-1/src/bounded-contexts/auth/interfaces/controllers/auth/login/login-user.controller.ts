@@ -1,5 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { Inject } from '@nestjs/common';
+import { type ICommandBus, type IQueryBus } from '@nestjs/cqrs';
+import { COMMAND_BUS, QUERY_BUS } from '@libs/nestjs-common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RecordUserLogin_Command } from '@bc/auth/application/commands';
 import {
@@ -13,8 +15,8 @@ import { LoginUserResponseDto } from './login-user.response';
 @Controller('auth')
 export class LoginUser_Controller {
   constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
+    @Inject(COMMAND_BUS) private readonly commandBus: ICommandBus,
+    @Inject(QUERY_BUS) private readonly queryBus: IQueryBus,
   ) {}
 
   @Post('login')

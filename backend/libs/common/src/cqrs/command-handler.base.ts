@@ -1,13 +1,13 @@
-import type { EventBus, ICommand } from '@nestjs/cqrs';
+import type { ICommand, IEventBus } from '@nestjs/cqrs';
 
-import type { SharedAggregateRoot } from '../../domain/entities/AggregateRoot';
-import { TracingService } from '../../../tracing';
-import { CorrelationLogger } from '../../../logger';
+import type { SharedAggregateRoot } from '../general/domain/entities/AggregateRoot';
+import { TracingService } from '../tracing';
+import { CorrelationLogger } from '../logger';
 
 export abstract class BaseCommandHandler<TCommand extends ICommand> {
   protected readonly logger: CorrelationLogger;
 
-  constructor(protected readonly eventBus: EventBus) {
+  constructor(protected readonly eventBus: IEventBus) {
     this.logger = new CorrelationLogger(this.constructor.name);
   }
 

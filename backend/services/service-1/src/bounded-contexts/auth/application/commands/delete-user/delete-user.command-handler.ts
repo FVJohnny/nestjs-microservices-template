@@ -1,4 +1,4 @@
-import { CommandHandler, EventBus } from '@nestjs/cqrs';
+import { CommandHandler, type IEventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { DeleteUser_Command } from './delete-user.command';
 import {
@@ -6,14 +6,15 @@ import {
   type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { BaseCommandHandler, Id, NotFoundException } from '@libs/nestjs-common';
+import { BaseCommandHandler, EVENT_BUS, Id, NotFoundException } from '@libs/nestjs-common';
 
 @CommandHandler(DeleteUser_Command)
 export class DeleteUser_CommandHandler extends BaseCommandHandler<DeleteUser_Command> {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
-    eventBus: EventBus,
+    @Inject(EVENT_BUS)
+    eventBus: IEventBus,
   ) {
     super(eventBus);
   }

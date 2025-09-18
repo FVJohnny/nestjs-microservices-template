@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { CqrsModule } from '@nestjs/cqrs';
 import { AuthBoundedContextModule } from './bounded-contexts/auth/auth.module';
 import {
   HeartbeatModule,
   TracingModule,
   ErrorHandlingModule,
   EventTrackerModule,
+  SharedCqrsModule,
 } from '@libs/nestjs-common';
 import { MetricsModule, JwtAuthModule } from '@libs/nestjs-common';
 import { OutboxModule } from '@libs/nestjs-common';
@@ -27,7 +27,7 @@ import { PostgresDBModule } from '@libs/nestjs-postgresql';
     // KafkaIntegrationEventsModule,
 
     // COMMON MODULES
-    CqrsModule.forRoot(),
+    SharedCqrsModule,
     HeartbeatModule,
     TracingModule,
     ErrorHandlingModule,

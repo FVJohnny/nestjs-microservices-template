@@ -1,6 +1,6 @@
 import type { IQuery } from '@nestjs/cqrs';
-import { TracingService } from '../../../tracing';
-import { CorrelationLogger } from '../../../logger';
+import { TracingService } from '../tracing';
+import { CorrelationLogger } from '../logger';
 
 /**
  * Base class for all query handlers

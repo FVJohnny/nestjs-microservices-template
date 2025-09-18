@@ -1,9 +1,8 @@
 import { UserRegistered_CreateEmailVerification_DomainEventHandler } from './user-registered_create-email-verification.domain-event-handler';
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
-import { createCommandBusMock } from '@libs/nestjs-common';
+import { MockCommandBus } from '@libs/nestjs-common';
 import { CreateEmailVerification_Command } from '@bc/auth/application/commands/create-email-verification/create-email-verification.command';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import type { CommandBus } from '@nestjs/cqrs';
 
 describe('UserRegistered_CreateEmailVerification_DomainEventHandler', () => {
   const createEventFromUser = (user: User) =>
@@ -11,9 +10,9 @@ describe('UserRegistered_CreateEmailVerification_DomainEventHandler', () => {
 
   // Setup factory
   const setup = (params: { shouldFailCommandBus?: boolean } = {}) => {
-    const mockCommandBus = createCommandBusMock({ shouldFail: params.shouldFailCommandBus });
+    const mockCommandBus = new MockCommandBus({ shouldFail: params.shouldFailCommandBus });
     const eventHandler = new UserRegistered_CreateEmailVerification_DomainEventHandler(
-      mockCommandBus as unknown as CommandBus,
+      mockCommandBus,
     );
 
     return { mockCommandBus, eventHandler };
