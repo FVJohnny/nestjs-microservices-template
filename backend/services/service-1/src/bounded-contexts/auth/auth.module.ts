@@ -11,7 +11,6 @@ import { EMAIL_VERIFICATION_REPOSITORY } from './domain/repositories/email-verif
 const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__dirname);
 
 @Module({
-  imports: [],
   controllers: [...controllers],
   providers: [
     ...handlers,
