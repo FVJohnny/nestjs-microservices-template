@@ -1,4 +1,4 @@
-import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './base-integration-event';
+import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './integration-event.base';
 import { Topics } from './topics';
 
 export interface UserExample_IntegrationEventProps extends BaseIntegrationEventProps {

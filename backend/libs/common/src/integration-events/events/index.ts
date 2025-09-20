@@ -1,4 +1,4 @@
-export * from './base-integration-event';
+export * from './integration-event.base';
 
 // Topics
 export * from './topics';

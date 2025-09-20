@@ -1,5 +1,5 @@
 import { ApplicationException } from '../../errors';
-import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './base-integration-event';
+import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './integration-event.base';
 import { Topics } from './topics';
 
 interface UserCreated_IntegrationEventProps extends BaseIntegrationEventProps {
