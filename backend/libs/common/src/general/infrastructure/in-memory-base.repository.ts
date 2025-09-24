@@ -67,16 +67,15 @@ export abstract class InMemoryBaseRepository<
   }
 
   private registerTransactionParticipant(context?: RepositoryContext) {
-    const transaction = context?.transaction;
+    if (!context) return;
 
-    if (!transaction) {
-      return;
-    }
-
-    let participant = transaction.get('inMemory') as InMemoryTransactionParticipant<TEnt, TDto>;
+    let participant = context.transaction.get('inMemory') as InMemoryTransactionParticipant<
+      TEnt,
+      TDto
+    >;
     if (!participant) {
       participant = new InMemoryTransactionParticipant<TEnt, TDto>();
-      transaction.register('inMemory', participant);
+      context.transaction.register('inMemory', participant);
     }
     participant.saveSnapshot(this, new Map(this.items));
   }

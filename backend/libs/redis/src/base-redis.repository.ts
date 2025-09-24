@@ -35,16 +35,12 @@ export abstract class BaseRedisRepository {
   }
 
   protected registerTransactionParticipant(context?: RepositoryContext) {
-    const transaction = context?.transaction;
+    if (!context) return;
 
-    if (!transaction) {
-      return;
-    }
-
-    let participant = transaction.get('redis') as RedisTransactionParticipant;
+    let participant = context.transaction.get('redis') as RedisTransactionParticipant;
     if (!participant) {
       participant = new RedisTransactionParticipant(this.redisClient);
-      transaction.register('redis', participant);
+      context.transaction.register('redis', participant);
     }
   }
 }

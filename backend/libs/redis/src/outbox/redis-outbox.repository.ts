@@ -37,7 +37,6 @@ export class RedisOutboxRepository extends BaseRedisRepository implements Outbox
   }
 
   async findById(id: Id) {
-    this.registerTransactionParticipant();
     const client = this.getRedisClient();
 
     const key = this.itemKey(id.toValue());
@@ -64,7 +63,6 @@ export class RedisOutboxRepository extends BaseRedisRepository implements Outbox
   }
 
   async exists(id: Id) {
-    this.registerTransactionParticipant();
     const client = this.getRedisClient();
     const key = this.itemKey(id.toValue());
 

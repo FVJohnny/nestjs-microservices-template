@@ -100,26 +100,18 @@ export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
   }
 
   protected registerTransactionParticipant(context?: RepositoryContext): void {
-    const transaction = context?.transaction;
+    if (!context) return;
 
-    if (!transaction) {
-      return;
-    }
-
-    const participant = transaction.get('mongo') as MongoTransactionParticipant;
+    const participant = context.transaction.get('mongo') as MongoTransactionParticipant;
     if (!participant) {
-      transaction.register('mongo', new MongoTransactionParticipant(this.mongoClient));
+      context.transaction.register('mongo', new MongoTransactionParticipant(this.mongoClient));
     }
   }
 
   protected getTransactionSession(context?: RepositoryContext): ClientSession | undefined {
-    const transaction = context?.transaction;
+    if (!context) return undefined;
 
-    if (!transaction) {
-      return undefined;
-    }
-
-    const participant = transaction.get('mongo') as MongoTransactionParticipant;
+    const participant = context.transaction.get('mongo') as MongoTransactionParticipant;
     return participant?.getSession();
   }
 }
