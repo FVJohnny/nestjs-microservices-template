@@ -18,7 +18,7 @@ export class EmailVerification_Mongodb_Repository
 
   async save(emailVerification: EmailVerification, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       await this.collection.updateOne(
         { id: emailVerification.id.toValue() },
         { $set: { ...emailVerification.toValue() } },
@@ -31,7 +31,7 @@ export class EmailVerification_Mongodb_Repository
 
   async findById(id: Id, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const document = await this.collection.findOne({ id: id.toValue() }, { session });
 
       if (!document) {
@@ -46,7 +46,7 @@ export class EmailVerification_Mongodb_Repository
 
   async findByUserId(userId: Id, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const document = await this.collection.findOne({ userId: userId.toValue() }, { session });
 
       if (!document) {
@@ -61,7 +61,7 @@ export class EmailVerification_Mongodb_Repository
 
   async findByEmail(email: Email, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const document = await this.collection.findOne(
         {
           email: email.toValue(),
@@ -81,7 +81,7 @@ export class EmailVerification_Mongodb_Repository
 
   async findPendingByUserId(userId: Id, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const document = await this.collection.findOne(
         {
           userId: userId.toValue(),
@@ -103,7 +103,7 @@ export class EmailVerification_Mongodb_Repository
 
   async remove(id: Id, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       await this.collection.deleteOne({ id: id.toValue() }, { session });
     } catch (error: unknown) {
       this.handleDatabaseError('remove', id.toValue(), error);
@@ -112,7 +112,7 @@ export class EmailVerification_Mongodb_Repository
 
   async exists(id: Id, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const count = await this.collection.countDocuments({ id: id.toValue() }, { session });
       return count > 0;
     } catch (error: unknown) {
@@ -122,7 +122,7 @@ export class EmailVerification_Mongodb_Repository
 
   async clear(context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       await this.collection.deleteMany({}, { session });
     } catch (error: unknown) {
       this.handleDatabaseError('clear', '', error);

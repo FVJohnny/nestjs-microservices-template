@@ -15,7 +15,7 @@ import {
 } from '@libs/nestjs-common';
 import type { RepositoryContext } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from './mongodb.tokens';
-import { MongoTransactionContext } from './transactions/mongo-transaction-context';
+import { MongoTransactionParticipant } from './transactions/mongo-transaction-participant';
 
 export interface IndexSpec {
   fields: IndexSpecification;
@@ -99,22 +99,27 @@ export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
     throw new InfrastructureException(operation, id, err);
   }
 
-  protected getSession(context?: RepositoryContext): ClientSession | undefined {
-    const transaction = context?.transaction as MongoTransactionContext | undefined;
-    return transaction?.session;
+  protected registerTransactionParticipant(context?: RepositoryContext): void {
+    const transaction = context?.transaction;
+
+    if (!transaction) {
+      return;
+    }
+
+    const participant = transaction.get('mongo') as MongoTransactionParticipant;
+    if (!participant) {
+      transaction.register('mongo', new MongoTransactionParticipant(this.mongoClient));
+    }
   }
 
-  async withTransaction(work: (context: RepositoryContext) => Promise<void>): Promise<void> {
-    const session = this.mongoClient.startSession();
-    try {
-      await session.withTransaction(async () => {
-        const context: RepositoryContext = {
-          transaction: new MongoTransactionContext(session),
-        };
-        await work(context);
-      });
-    } finally {
-      await session.endSession();
+  protected getTransactionSession(context?: RepositoryContext): ClientSession | undefined {
+    const transaction = context?.transaction;
+
+    if (!transaction) {
+      return undefined;
     }
+
+    const participant = transaction.get('mongo') as MongoTransactionParticipant;
+    return participant?.getSession();
   }
 }

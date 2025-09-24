@@ -2,7 +2,7 @@ import type { ChainableCommander, Redis } from 'ioredis';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import type { RepositoryContext } from '@libs/nestjs-common';
 
-import { RedisTransactionContext } from './transactions/redis-transaction-context';
+import { RedisTransactionParticipant } from './transactions/redis-transaction-participant';
 
 export abstract class BaseRedisRepository {
   protected readonly logger: CorrelationLogger;
@@ -20,46 +20,31 @@ export abstract class BaseRedisRepository {
   }
 
   protected getTransactionClient(context?: RepositoryContext): ChainableCommander | undefined {
-    const transaction = context?.transaction as RedisTransactionContext | undefined;
-    return transaction?.pipeline;
+    const transaction = context?.transaction;
+
+    if (!transaction) {
+      return undefined;
+    }
+
+    const participant = transaction.get('redis') as RedisTransactionParticipant;
+    return participant?.getPipeline();
   }
 
   protected isTransactional(context?: RepositoryContext): boolean {
     return !!this.getTransactionClient(context);
   }
 
-  async withTransaction(work: (context: RepositoryContext) => Promise<void>): Promise<void> {
-    const pipeline = this.redisClient.multi();
-    const context: RepositoryContext = {
-      transaction: new RedisTransactionContext(pipeline),
-    };
+  protected registerTransactionParticipant(context?: RepositoryContext) {
+    const transaction = context?.transaction;
 
-    let executed = false;
-    try {
-      await work(context);
+    if (!transaction) {
+      return;
+    }
 
-      const results = await pipeline.exec();
-      executed = true;
-
-      if (Array.isArray(results)) {
-        for (const [error] of results) {
-          if (error) {
-            throw error;
-          }
-        }
-      }
-    } catch (error) {
-      if (!executed) {
-        try {
-          pipeline.discard();
-        } catch (discardError) {
-          this.logger.error(
-            'Failed to discard Redis transaction',
-            discardError instanceof Error ? discardError : String(discardError),
-          );
-        }
-      }
-      throw error instanceof Error ? error : new Error(String(error));
+    let participant = transaction.get('redis') as RedisTransactionParticipant;
+    if (!participant) {
+      participant = new RedisTransactionParticipant(this.redisClient);
+      transaction.register('redis', participant);
     }
   }
 }

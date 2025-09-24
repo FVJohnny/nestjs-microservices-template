@@ -24,7 +24,7 @@ export class User_Mongodb_Repository
   async save(user: User, context?: RepositoryContext) {
     try {
       const primitives = user.toValue();
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
 
       await this.collection.updateOne(
         { id: user.id.toValue() },
@@ -38,7 +38,7 @@ export class User_Mongodb_Repository
 
   async findById(id: Id, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const document = await this.collection.findOne({ id: id.toValue() }, { session });
 
       if (!document) {
@@ -53,7 +53,7 @@ export class User_Mongodb_Repository
 
   async findByEmail(email: Email, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const document = await this.collection.findOne(
         {
           email: email.toValue(),
@@ -73,7 +73,7 @@ export class User_Mongodb_Repository
 
   async findByUsername(username: Username, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const document = await this.collection.findOne(
         {
           username: username.toValue(),
@@ -93,7 +93,7 @@ export class User_Mongodb_Repository
 
   async existsByEmail(email: Email, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const count = await this.collection.countDocuments(
         {
           email: email.toValue(),
@@ -108,7 +108,7 @@ export class User_Mongodb_Repository
 
   async existsByUsername(username: Username, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const count = await this.collection.countDocuments(
         {
           username: username.toValue(),
@@ -123,7 +123,7 @@ export class User_Mongodb_Repository
 
   async findAll(context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const documents = await this.collection.find({}, { session }).toArray();
       return documents.map((doc) => User.fromValue(doc));
     } catch (error: unknown) {
@@ -136,7 +136,7 @@ export class User_Mongodb_Repository
     context?: RepositoryContext,
   ): Promise<PaginatedRepoResult<User>> {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const converter = new MongoCriteriaConverter<UserDTO>(this.collection);
       const queryResult = await converter.executeQuery(criteria, session);
 
@@ -157,7 +157,7 @@ export class User_Mongodb_Repository
 
   async countByCriteria(criteria: Criteria, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const converter = new MongoCriteriaConverter<UserDTO>(this.collection);
       return await converter.count(criteria, session);
     } catch (error: unknown) {
@@ -167,7 +167,7 @@ export class User_Mongodb_Repository
 
   async remove(id: Id, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       await this.collection.deleteOne({ id: id.toValue() }, { session });
     } catch (error: unknown) {
       this.handleDatabaseError('remove', id.toValue(), error);
@@ -176,7 +176,7 @@ export class User_Mongodb_Repository
 
   async exists(id: Id, context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       const count = await this.collection.countDocuments({ id: id.toValue() }, { session });
       return count > 0;
     } catch (error: unknown) {
@@ -186,7 +186,7 @@ export class User_Mongodb_Repository
 
   async clear(context?: RepositoryContext) {
     try {
-      const session = this.getSession(context);
+      const session = this.getTransactionSession(context);
       await this.collection.deleteMany({}, { session });
     } catch (error: unknown) {
       this.handleDatabaseError('clear', '', error);

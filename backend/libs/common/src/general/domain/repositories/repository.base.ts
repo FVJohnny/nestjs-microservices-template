@@ -7,11 +7,6 @@ import type { RepositoryContext } from '../../../transactions';
  */
 export interface Repository<T, ID = Id> {
   /**
-   * Executes repository operations within a transactional context.
-   */
-  withTransaction(work: (context: RepositoryContext) => Promise<void>): Promise<void>;
-
-  /**
    * Finds an entity by its ID
    */
   findById(id: ID, context?: RepositoryContext): Promise<T | null>;

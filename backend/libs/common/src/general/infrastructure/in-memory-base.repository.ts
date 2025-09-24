@@ -1,5 +1,5 @@
 import { InfrastructureException } from '../../errors';
-import { type RepositoryContext, InMemoryTransactionContext } from '../../transactions';
+import { type RepositoryContext, InMemoryTransactionParticipant } from '../../transactions';
 import type { SharedAggregateRoot, Id, SharedAggregateRootDTO } from '../domain';
 import type { Repository } from '../domain';
 
@@ -19,7 +19,7 @@ export abstract class InMemoryBaseRepository<
   }
 
   async save(entity: TEnt, context?: RepositoryContext) {
-    this.registerTransaction(context);
+    this.registerTransactionParticipant(context);
     this.validate('save');
     this.items.set(entity.id.toValue(), this.toValue(entity));
   }
@@ -41,13 +41,13 @@ export abstract class InMemoryBaseRepository<
   }
 
   async remove(id: Id, context?: RepositoryContext) {
-    this.registerTransaction(context);
+    this.registerTransactionParticipant(context);
     this.validate('remove');
     this.items.delete(id.toValue());
   }
 
   async clear(context?: RepositoryContext) {
-    this.registerTransaction(context);
+    this.registerTransactionParticipant(context);
     this.validate('clear');
     this.items.clear();
   }
@@ -62,26 +62,22 @@ export abstract class InMemoryBaseRepository<
     }
   }
 
-  async withTransaction(work: (context: RepositoryContext) => Promise<void>) {
-    const transaction = new InMemoryTransactionContext();
-
-    try {
-      await work({ transaction });
-      transaction.commit();
-    } catch (error) {
-      transaction.rollback();
-      throw error;
-    }
-  }
-
   restoreFromSnapshot(snapshot: Map<string, TDto>): void {
     this.items = new Map(snapshot);
   }
 
-  private registerTransaction(context?: RepositoryContext) {
-    const transaction = context?.transaction as InMemoryTransactionContext<TEnt, TDto>;
-    if (transaction) {
-      transaction.saveSnapshot(this, new Map(this.items));
+  private registerTransactionParticipant(context?: RepositoryContext) {
+    const transaction = context?.transaction;
+
+    if (!transaction) {
+      return;
     }
+
+    let participant = transaction.get('inMemory') as InMemoryTransactionParticipant<TEnt, TDto>;
+    if (!participant) {
+      participant = new InMemoryTransactionParticipant<TEnt, TDto>();
+      transaction.register('inMemory', participant);
+    }
+    participant.saveSnapshot(this, new Map(this.items));
   }
 }

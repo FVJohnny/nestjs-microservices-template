@@ -19,6 +19,7 @@ import {
   OutboxEvent,
   OutboxEventName,
   OutboxPayload,
+  Transaction,
 } from '@libs/nestjs-common';
 
 @CommandHandler(RegisterUser_Command)
@@ -41,7 +42,7 @@ export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser
       password: await Password.createFromPlainText(command.password),
     });
 
-    await this.userRepository.withTransaction(async (context) => {
+    await Transaction.run(async (context) => {
       await this.userRepository.save(user, context);
 
       await this.sendIntegrationEvent(user, context);

@@ -1,1 +1,1 @@
-export * from './mongo-transaction-context';
+export * from './mongo-transaction-participant';

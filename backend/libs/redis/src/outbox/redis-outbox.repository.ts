@@ -1,13 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Redis } from 'ioredis';
 
-import {
-  Id,
-  OutboxEvent,
-  OutboxRepository,
-  type OutboxEventDTO,
-  type RepositoryContext,
-} from '@libs/nestjs-common';
+import { Id, OutboxEvent, OutboxRepository, type RepositoryContext } from '@libs/nestjs-common';
 
 import { BaseRedisRepository } from '../base-redis.repository';
 
@@ -23,11 +17,8 @@ export class RedisOutboxRepository extends BaseRedisRepository implements Outbox
   }
 
   async save(event: OutboxEvent, context?: RepositoryContext) {
+    this.registerTransactionParticipant(context);
     const client = this.getClient(context);
-    if (!client) {
-      this.logger.warn('Redis client not available. Skipping save().');
-      return;
-    }
 
     const v = event.toValue();
     const key = this.itemKey(v.id);
@@ -46,39 +37,14 @@ export class RedisOutboxRepository extends BaseRedisRepository implements Outbox
   }
 
   async findById(id: Id) {
+    this.registerTransactionParticipant();
     const client = this.getRedisClient();
 
     const key = this.itemKey(id.toValue());
     const json = await client.get(key);
     if (!json) return null;
-    try {
-      const parsed = JSON.parse(json) as unknown as OutboxEventDTO;
-      return OutboxEvent.fromValue(parsed);
-    } catch {
-      this.logger.warn('Failed to parse JSON for key: ' + key);
-      return null;
-    }
-  }
 
-  async exists(id: Id) {
-    const client = this.getRedisClient();
-    const key = this.itemKey(id.toValue());
-
-    const exists = await client.exists(key);
-    return exists === 1;
-  }
-
-  async remove(id: Id, context?: RepositoryContext) {
-    const client = this.getClient(context);
-
-    const key = this.itemKey(id.toValue());
-    await client.del(key);
-  }
-
-  async clear(context?: RepositoryContext) {
-    const client = this.getClient(context);
-
-    await client.del(this.zUnprocessed, this.zProcessed);
+    return this.toEntity(json);
   }
 
   async findUnprocessed(limit = 100) {
@@ -91,22 +57,31 @@ export class RedisOutboxRepository extends BaseRedisRepository implements Outbox
     const jsons = await client.mget(keys);
 
     return jsons
-      .map((json) => {
-        try {
-          const parsed = JSON.parse(json ?? '') as unknown as OutboxEventDTO;
-          return parsed;
-        } catch {
-          this.logger.warn(`Failed to parse JSON: ${json}`);
-          return null;
-        }
-      })
+      .map((json) => this.toEntity(json ?? ''))
       .filter((v) => v !== null)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-      .slice(0, limit)
-      .map((v) => OutboxEvent.fromValue(v));
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .slice(0, limit);
+  }
+
+  async exists(id: Id) {
+    this.registerTransactionParticipant();
+    const client = this.getRedisClient();
+    const key = this.itemKey(id.toValue());
+
+    const exists = await client.exists(key);
+    return exists === 1;
+  }
+
+  async remove(id: Id, context?: RepositoryContext) {
+    this.registerTransactionParticipant(context);
+    const client = this.getClient(context);
+
+    const key = this.itemKey(id.toValue());
+    await client.del(key);
   }
 
   async deleteProcessed(olderThan: Date, context?: RepositoryContext) {
+    this.registerTransactionParticipant(context);
     const client = this.getRedisClient();
     const transactionalClient = this.getTransactionClient(context) ?? client.pipeline();
 
@@ -122,5 +97,16 @@ export class RedisOutboxRepository extends BaseRedisRepository implements Outbox
     if (!this.isTransactional(context)) {
       await transactionalClient.exec();
     }
+  }
+
+  async clear(context?: RepositoryContext) {
+    this.registerTransactionParticipant(context);
+    const client = this.getClient(context);
+
+    await client.del(this.zUnprocessed, this.zProcessed);
+  }
+
+  private toEntity(json: string): OutboxEvent {
+    return OutboxEvent.fromValue(JSON.parse(json));
   }
 }
