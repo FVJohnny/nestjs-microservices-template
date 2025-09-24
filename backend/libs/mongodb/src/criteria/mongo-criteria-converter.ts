@@ -7,7 +7,7 @@ import type {
 } from '@libs/nestjs-common';
 import { Data, type Filter, Operator } from '@libs/nestjs-common';
 import { CriteriaConverter } from '@libs/nestjs-common';
-import { type Collection } from 'mongodb';
+import { type Collection, type ClientSession } from 'mongodb';
 
 /**
  * MongoDB query options interface
@@ -45,18 +45,18 @@ export class MongoCriteriaConverter<D extends SharedAggregateRootDTO> extends Cr
   /**
    * Query a MongoDB collection with criteria and return configured cursor
    */
-  query(criteria: Criteria) {
+  query(criteria: Criteria, session?: ClientSession) {
     const { filters: filter, options } = this.convert(criteria);
     const mongoFilter = filter.length === 0 ? {} : { $and: filter };
 
-    return this.collection.find(mongoFilter, options);
+    return this.collection.find(mongoFilter, { ...options, session });
   }
 
   /**
    * Execute a full query with metadata including cursor and hasNext
    */
-  async executeQuery(criteria: Criteria): Promise<CriteriaQueryResult<D>> {
-    const query = this.query(criteria.withExtraLimit());
+  async executeQuery(criteria: Criteria, session?: ClientSession): Promise<CriteriaQueryResult<D>> {
+    const query = this.query(criteria.withExtraLimit(), session);
     let documents = (await query.toArray()) as D[];
 
     // Check if we got more documents than requested
@@ -66,7 +66,7 @@ export class MongoCriteriaConverter<D extends SharedAggregateRootDTO> extends Cr
     if (criteria.pagination.limit > 0) {
       documents = documents.slice(0, criteria.pagination.limit);
     }
-    const total = criteria.hasWithTotal() ? await this.count(criteria) : null;
+    const total = criteria.hasWithTotal() ? await this.count(criteria, session) : null;
     const cursor = this.generateCursor(documents, criteria);
 
     return {
@@ -80,11 +80,11 @@ export class MongoCriteriaConverter<D extends SharedAggregateRootDTO> extends Cr
   /**
    * Count documents in a MongoDB collection with criteria
    */
-  async count(criteria: Criteria): Promise<number> {
+  async count(criteria: Criteria, session?: ClientSession): Promise<number> {
     const { filters } = this.convert(criteria.withNoPagination());
     const mongoFilter = filters.length === 0 ? {} : { $and: filters };
 
-    return this.collection.countDocuments(mongoFilter);
+    return this.collection.countDocuments(mongoFilter, { session });
   }
 
   /**

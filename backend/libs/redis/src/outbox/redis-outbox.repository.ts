@@ -2,25 +2,29 @@ import { Injectable } from '@nestjs/common';
 import type { Redis } from 'ioredis';
 
 import {
-  CorrelationLogger,
   Id,
   OutboxEvent,
   OutboxRepository,
   type OutboxEventDTO,
+  type RepositoryContext,
 } from '@libs/nestjs-common';
 
+import { BaseRedisRepository } from '../base-redis.repository';
+
 @Injectable()
-export class RedisOutboxRepository implements OutboxRepository {
-  private readonly logger = new CorrelationLogger(RedisOutboxRepository.name);
+export class RedisOutboxRepository extends BaseRedisRepository implements OutboxRepository {
   private readonly keyPrefix = 'outbox:';
   private readonly itemKey = (id: string) => `${this.keyPrefix}event:${id}`;
   private readonly zUnprocessed = `${this.keyPrefix}unprocessedByCreatedAt`;
   private readonly zProcessed = `${this.keyPrefix}processedByProcessedAt`;
 
-  constructor(private readonly redisClient: Redis) {}
+  constructor(redisClient: Redis) {
+    super(redisClient);
+  }
 
-  async save(event: OutboxEvent) {
-    if (!this.redisClient) {
+  async save(event: OutboxEvent, context?: RepositoryContext) {
+    const client = this.getClient(context);
+    if (!client) {
       this.logger.warn('Redis client not available. Skipping save().');
       return;
     }
@@ -29,27 +33,23 @@ export class RedisOutboxRepository implements OutboxRepository {
     const key = this.itemKey(v.id);
 
     // Store the full value as JSON to avoid field-by-field mapping
-    await this.redisClient.set(key, JSON.stringify(v));
+    await client.set(key, JSON.stringify(v));
 
     // Maintain secondary indexes
-    const isUnprocessed = v.processedAt.getTime() === OutboxEvent.NEVER_PROCESSED.getTime();
-    if (isUnprocessed) {
-      await this.redisClient.zadd(this.zUnprocessed, Date.parse(String(v.createdAt)), v.id);
-      await this.redisClient.zrem(this.zProcessed, v.id);
+    if (event.isUnprocessed()) {
+      await client.zadd(this.zUnprocessed, Date.parse(String(v.createdAt)), v.id);
+      await client.zrem(this.zProcessed, v.id);
     } else {
-      await this.redisClient.zrem(this.zUnprocessed, v.id);
-      await this.redisClient.zadd(this.zProcessed, Date.parse(String(v.processedAt)), v.id);
+      await client.zrem(this.zUnprocessed, v.id);
+      await client.zadd(this.zProcessed, Date.parse(String(v.processedAt)), v.id);
     }
   }
 
   async findById(id: Id) {
-    if (!this.redisClient) {
-      this.logger.warn('Redis client not available. Returning null.');
-      return null;
-    }
+    const client = this.getRedisClient();
 
     const key = this.itemKey(id.toValue());
-    const json = await this.redisClient.get(key);
+    const json = await client.get(key);
     if (!json) return null;
     try {
       const parsed = JSON.parse(json) as unknown as OutboxEventDTO;
@@ -61,81 +61,66 @@ export class RedisOutboxRepository implements OutboxRepository {
   }
 
   async exists(id: Id) {
-    if (!this.redisClient) {
-      this.logger.warn('Redis client not available. Returning false.');
-      return false;
-    }
-
+    const client = this.getRedisClient();
     const key = this.itemKey(id.toValue());
-    const exists = await this.redisClient.exists(key);
+
+    const exists = await client.exists(key);
     return exists === 1;
   }
 
-  async remove(id: Id) {
-    if (!this.redisClient) {
-      this.logger.warn('Redis client not available. Skipping remove().');
-      return;
-    }
+  async remove(id: Id, context?: RepositoryContext) {
+    const client = this.getClient(context);
 
     const key = this.itemKey(id.toValue());
-    await this.redisClient.del(key);
+    await client.del(key);
   }
 
-  async clear() {
-    if (!this.redisClient) {
-      this.logger.warn('Redis client not available. Skipping clear().');
-      return;
-    }
+  async clear(context?: RepositoryContext) {
+    const client = this.getClient(context);
 
-    await this.redisClient.del(this.zUnprocessed, this.zProcessed);
+    await client.del(this.zUnprocessed, this.zProcessed);
   }
 
   async findUnprocessed(limit = 100) {
-    if (!this.redisClient) {
-      this.logger.warn('Redis client not available. Returning empty list.');
-      return [];
-    }
+    const client = this.getRedisClient();
 
-    const ids = await this.redisClient.zrange(this.zUnprocessed, 0, 100);
+    const ids = await client.zrange(this.zUnprocessed, 0, 100);
     if (ids.length === 0) return [];
 
     const keys = ids.map((id) => this.itemKey(id));
-    const jsons = await this.redisClient.mget(keys);
+    const jsons = await client.mget(keys);
 
-    const values: OutboxEventDTO[] = [];
-    for (const json of jsons) {
-      if (!json) continue;
-      try {
-        const parsed = JSON.parse(json) as unknown as OutboxEventDTO;
-        values.push(parsed);
-      } catch {
-        this.logger.warn(`Failed to parse JSON: ${json}`);
-      }
-    }
-
-    // Map to entities and ensure order by createdAt asc
-    return values
+    return jsons
+      .map((json) => {
+        try {
+          const parsed = JSON.parse(json ?? '') as unknown as OutboxEventDTO;
+          return parsed;
+        } catch {
+          this.logger.warn(`Failed to parse JSON: ${json}`);
+          return null;
+        }
+      })
+      .filter((v) => v !== null)
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
       .slice(0, limit)
       .map((v) => OutboxEvent.fromValue(v));
   }
 
-  async deleteProcessed(olderThan: Date) {
-    if (!this.redisClient) {
-      this.logger.warn('Redis client not available. Skipping deleteProcessed().');
-      return;
-    }
+  async deleteProcessed(olderThan: Date, context?: RepositoryContext) {
+    const client = this.getRedisClient();
+    const transactionalClient = this.getTransactionClient(context) ?? client.pipeline();
 
-    const cutoff = olderThan.getTime();
-    const ids = await this.redisClient.zrangebyscore(this.zProcessed, '-inf', cutoff);
+    const ids = await client.zrangebyscore(this.zProcessed, '-inf', olderThan.getTime());
     if (ids.length === 0) return;
 
-    const pipeline = this.redisClient.pipeline();
     ids.forEach((id) => {
-      pipeline.del(this.itemKey(id));
-      pipeline.zrem(this.zProcessed, id);
-      pipeline.zrem(this.zUnprocessed, id);
+      transactionalClient.del(this.itemKey(id));
+      transactionalClient.zrem(this.zProcessed, id);
+      transactionalClient.zrem(this.zUnprocessed, id);
     });
-    await pipeline.exec();
+
+    if (!this.isTransactional(context)) {
+      await transactionalClient.exec();
+    }
   }
 }

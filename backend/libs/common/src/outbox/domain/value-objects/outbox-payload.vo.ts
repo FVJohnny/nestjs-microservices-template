@@ -30,7 +30,7 @@ export class OutboxPayload extends StringValueObject {
     });
   }
 
-  toObject(): Record<string, unknown> {
+  toJSON(): Record<string, unknown> {
     return JSON.parse(this.toValue());
   }
 }

@@ -1,77 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { OutboxEvent, OutboxEventDTO } from '../domain/outbox-event.entity';
 import { OutboxRepository } from '../domain/outbox.repository';
-import { Id } from '../../general';
-import { InfrastructureException } from '../../errors';
+import { InMemoryBaseRepository } from '../../general/infrastructure/in-memory-base.repository';
 
 @Injectable()
-export class InMemoryOutboxRepository implements OutboxRepository {
-  // Indexes
-  private byId: Map<string, OutboxEventDTO> = new Map();
-
-  constructor(private shouldThrowError = false) {
-    this.byId = new Map();
+export class InMemoryOutboxRepository
+  extends InMemoryBaseRepository<OutboxEvent, OutboxEventDTO>
+  implements OutboxRepository
+{
+  constructor(shouldThrowError = false) {
+    super(shouldThrowError);
   }
 
-  async save(event: OutboxEvent) {
-    this.validate('save');
-    this.byId.set(event.id.toValue(), event.toValue());
+  protected toEntity(dto: OutboxEventDTO): OutboxEvent {
+    return OutboxEvent.fromValue(dto);
   }
 
-  async findAll() {
-    this.validate('findAll');
-    return Array.from(this.byId.values()).map((e) => OutboxEvent.fromValue(e));
+  protected toValue(entity: OutboxEvent): OutboxEventDTO {
+    return entity.toValue();
   }
 
   async findUnprocessed(limit = 10) {
     this.validate('findUnprocessed');
-    const result = Array.from(this.byId.values())
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-      .filter((e) => new Date(e.processedAt).getTime() === OutboxEvent.NEVER_PROCESSED.getTime())
-      .slice(0, limit)
-      .map((e) => OutboxEvent.fromValue(e));
-
-    return result;
+    return (await this.findAll())
+      .filter((e) => e.processedAt.isNeverProcessed())
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .slice(0, limit);
   }
 
   async deleteProcessed(before: Date) {
     this.validate('deleteProcessed');
-    for (const [id, e] of this.byId.entries()) {
-      const event = OutboxEvent.fromValue(e);
+    const allItems = await this.findAll();
+    for (const event of allItems) {
       if (event.isProcessedBefore(before)) {
-        this.byId.delete(id);
+        await this.remove(event.id);
       }
-    }
-  }
-
-  async findById(id: Id) {
-    this.validate('findById');
-    const dto = this.byId.get(id.toValue());
-    return dto ? OutboxEvent.fromValue(dto) : null;
-  }
-
-  async exists(id: Id) {
-    this.validate('exists');
-    return this.byId.has(id.toValue());
-  }
-
-  async remove(id: Id) {
-    this.validate('remove');
-    this.byId.delete(id.toValue());
-  }
-
-  async clear() {
-    this.validate('clear');
-    this.byId.clear();
-  }
-
-  validate(operation: string): void {
-    if (this.shouldThrowError) {
-      throw new InfrastructureException(
-        operation,
-        `Failed to ${operation} OutboxEvent`,
-        new Error(`Failed to ${operation} OutboxEvent`),
-      );
     }
   }
 }

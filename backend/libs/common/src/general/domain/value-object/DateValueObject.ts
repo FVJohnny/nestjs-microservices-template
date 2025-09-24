@@ -115,4 +115,8 @@ export class DateVO extends ValueObject<Date> {
   isWithinTolerance(expected: Date, toleranceMs: number): boolean {
     return this.diffInMilliseconds(expected) <= toleranceMs;
   }
+
+  getTime(): number {
+    return this.toValue().getTime();
+  }
 }

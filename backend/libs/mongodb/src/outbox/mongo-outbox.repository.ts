@@ -7,8 +7,9 @@ import {
   OutboxProcessedAt,
   OutboxRepository,
   type OutboxEventDTO,
+  type RepositoryContext,
 } from '@libs/nestjs-common';
-import { MONGO_CLIENT_TOKEN } from '../mongodb.module';
+import { MONGO_CLIENT_TOKEN } from '../mongodb.tokens';
 import { BaseMongoRepository, IndexSpec } from '../base-mongo.repository';
 
 @Injectable()
@@ -20,11 +21,12 @@ export class MongoOutboxRepository
     super(mongoClient, 'outbox_events');
   }
 
-  async save(event: OutboxEvent) {
+  async save(event: OutboxEvent, context?: RepositoryContext) {
+    const session = this.getSession(context);
     await this.collection.updateOne(
       { id: event.id.toValue() },
       { $set: event.toValue() },
-      { upsert: true },
+      { upsert: true, session },
     );
   }
 

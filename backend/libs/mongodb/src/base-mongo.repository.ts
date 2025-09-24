@@ -6,13 +6,16 @@ import {
   IndexSpecification,
   MongoServerError,
 } from 'mongodb';
+import type { ClientSession } from 'mongodb';
 import {
   CorrelationLogger,
   SharedAggregateRootDTO,
   AlreadyExistsException,
   InfrastructureException,
 } from '@libs/nestjs-common';
-import { MONGO_CLIENT_TOKEN } from './mongodb.module';
+import type { RepositoryContext } from '@libs/nestjs-common';
+import { MONGO_CLIENT_TOKEN } from './mongodb.tokens';
+import { MongoTransactionContext } from './transactions/mongo-transaction-context';
 
 export interface IndexSpec {
   fields: IndexSpecification;
@@ -94,5 +97,24 @@ export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
     }
 
     throw new InfrastructureException(operation, id, err);
+  }
+
+  protected getSession(context?: RepositoryContext): ClientSession | undefined {
+    const transaction = context?.transaction as MongoTransactionContext | undefined;
+    return transaction?.session;
+  }
+
+  async withTransaction(work: (context: RepositoryContext) => Promise<void>): Promise<void> {
+    const session = this.mongoClient.startSession();
+    try {
+      await session.withTransaction(async () => {
+        const context: RepositoryContext = {
+          transaction: new MongoTransactionContext(session),
+        };
+        await work(context);
+      });
+    } finally {
+      await session.endSession();
+    }
   }
 }

@@ -4,7 +4,6 @@ import { INTEGRATION_EVENT_PUBLISHER, type IntegrationEventPublisher } from '../
 import { OutboxEvent } from './domain/outbox-event.entity';
 import { CorrelationLogger } from '../logger';
 import { TracingService } from '../tracing';
-import { OutboxEventName, OutboxPayload, OutboxTopic } from './domain/value-objects';
 
 export const OUTBOX_REPOSITORY = 'OutboxRepository';
 
@@ -37,16 +36,6 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
       clearInterval(this.processingInterval);
     }
     this.logger.log('Outbox processor stopped');
-  }
-
-  async storeEvent(eventName: string, topic: string, payload: string) {
-    const event = OutboxEvent.create({
-      eventName: new OutboxEventName(eventName),
-      topic: new OutboxTopic(topic),
-      payload: new OutboxPayload(payload),
-    });
-    await this.repository.save(event);
-    this.logger.debug(`Stored outbox event: ${eventName} for topic: ${topic}`);
   }
 
   async processOutboxEvents() {

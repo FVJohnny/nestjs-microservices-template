@@ -3,8 +3,7 @@ import { MongoClient } from 'mongodb';
 
 import { MongoDBController } from './mongodb.controller';
 import { MongoDBConfigService } from './mongodb-config.service';
-
-export const MONGO_CLIENT_TOKEN = 'MONGODB_CLIENT';
+import { MONGO_CLIENT_TOKEN } from './mongodb.tokens';
 
 @Global()
 @Module({

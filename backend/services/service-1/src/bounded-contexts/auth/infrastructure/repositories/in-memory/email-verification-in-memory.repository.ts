@@ -2,19 +2,28 @@ import { Injectable } from '@nestjs/common';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { EmailVerificationDTO } from '@bc/auth/domain/entities/email-verification/email-verification.dto';
 import { EmailVerification_Repository } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
-import { Email, Expiration, Verification } from '@bc/auth/domain/value-objects';
-import { AlreadyExistsException, InfrastructureException, Id } from '@libs/nestjs-common';
+import { Email } from '@bc/auth/domain/value-objects';
+import { AlreadyExistsException, Id } from '@libs/nestjs-common';
+import { InMemoryBaseRepository } from '@libs/nestjs-common';
 
 @Injectable()
-export class EmailVerification_InMemory_Repository implements EmailVerification_Repository {
-  private emailVerifications: Map<string, EmailVerificationDTO> = new Map();
+export class EmailVerification_InMemory_Repository
+  extends InMemoryBaseRepository<EmailVerification, EmailVerificationDTO>
+  implements EmailVerification_Repository
+{
+  constructor(shouldFail: boolean = false) {
+    super(shouldFail);
+  }
 
-  constructor(private readonly shouldFail: boolean = false) {}
+  protected toEntity(dto: EmailVerificationDTO): EmailVerification {
+    return EmailVerification.fromValue(dto);
+  }
+
+  protected toValue(entity: EmailVerification): EmailVerificationDTO {
+    return entity.toValue();
+  }
 
   async save(emailVerification: EmailVerification) {
-    if (this.shouldFail)
-      throw new InfrastructureException('save', 'Repository operation failed', new Error());
-
     // Check if user already has an email verification
     const existingByUserID = await this.findByUserId(emailVerification.userId);
     if (existingByUserID && !existingByUserID.id.equals(emailVerification.id)) {
@@ -27,82 +36,27 @@ export class EmailVerification_InMemory_Repository implements EmailVerification_
       throw new AlreadyExistsException('email', emailVerification.email.toValue());
     }
 
-    this.emailVerifications.set(emailVerification.id.toValue(), emailVerification.toValue());
-  }
-
-  async findById(id: Id) {
-    if (this.shouldFail)
-      throw new InfrastructureException('findById', 'Repository operation failed', new Error());
-
-    for (const dto of this.emailVerifications.values()) {
-      if (dto.id === id.toValue()) {
-        return EmailVerification.fromValue(dto);
-      }
-    }
-    return null;
+    super.save(emailVerification);
   }
 
   async findByUserId(userId: Id) {
-    if (this.shouldFail)
-      throw new InfrastructureException('findByUserId', 'Repository operation failed', new Error());
+    this.validate('findByUserId');
 
-    for (const dto of this.emailVerifications.values()) {
-      if (dto.userId === userId.toValue()) {
-        return EmailVerification.fromValue(dto);
-      }
-    }
-    return null;
+    const values = await this.findAll();
+    return values.find((em) => em.userId.equals(userId)) || null;
   }
 
   async findByEmail(email: Email) {
-    if (this.shouldFail)
-      throw new InfrastructureException('findByEmail', 'Repository operation failed', new Error());
+    this.validate('findByEmail');
 
-    for (const dto of this.emailVerifications.values()) {
-      if (dto.email === email.toValue()) {
-        return EmailVerification.fromValue(dto);
-      }
-    }
-    return null;
+    const values = await this.findAll();
+    return values.find((em) => em.email.equals(email)) || null;
   }
 
   async findPendingByUserId(userId: Id) {
-    if (this.shouldFail)
-      throw new InfrastructureException(
-        'findPendingByUserId',
-        'Repository operation failed',
-        new Error(),
-      );
+    this.validate('findPendingByUserId');
 
-    for (const dto of this.emailVerifications.values()) {
-      if (dto.userId === userId.toValue() && this.isDtoPending(dto)) {
-        return EmailVerification.fromValue(dto);
-      }
-    }
-    return null;
-  }
-
-  async remove(id: Id) {
-    if (this.shouldFail)
-      throw new InfrastructureException('remove', 'Repository operation failed', new Error());
-
-    this.emailVerifications.delete(id.toValue());
-  }
-
-  async exists(id: Id) {
-    if (this.shouldFail)
-      throw new InfrastructureException('exists', 'Repository operation failed', new Error());
-
-    return this.emailVerifications.has(id.toValue());
-  }
-
-  async clear() {
-    this.emailVerifications.clear();
-  }
-
-  private isDtoPending(dto: EmailVerificationDTO) {
-    const verification = new Verification(dto.verification);
-    const expiration = new Expiration(dto.expiration);
-    return !verification.isVerified() && !expiration.isExpired();
+    const values = await this.findAll();
+    return values.find((em) => em.userId.equals(userId) && em.isPending()) || null;
   }
 }

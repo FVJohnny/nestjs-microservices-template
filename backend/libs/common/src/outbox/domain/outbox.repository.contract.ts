@@ -114,7 +114,7 @@ export function testOutboxRepositoryContract(
         expect(foundEvent).toBeDefined();
         expect(foundEvent.id.toValue()).toBe(event.id.toValue());
 
-        const retrievedPayload = foundEvent.payload.toObject();
+        const retrievedPayload = foundEvent.payload.toJSON();
         expect(retrievedPayload.data).toHaveLength(1000);
         expect(retrievedPayload.data?.[0]?.message).toBe(largePayload.data[0].message);
       });

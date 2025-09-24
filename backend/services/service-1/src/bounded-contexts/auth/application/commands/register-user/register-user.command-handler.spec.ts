@@ -8,7 +8,10 @@ import {
   DateVO,
   InfrastructureException,
   MockEventBus,
+  UserCreated_IntegrationEvent,
   wait,
+  InMemoryOutboxRepository,
+  Id,
 } from '@libs/nestjs-common';
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 
@@ -22,37 +25,53 @@ describe('RegisterUserCommandHandler', () => {
     });
 
   // Setup factory
-  const setup = (params: { shouldFailRepository?: boolean; shouldFailEventBus?: boolean } = {}) => {
-    const { shouldFailRepository = false, shouldFailEventBus = false } = params;
+  const setup = (
+    params: {
+      shouldFailRepository?: boolean;
+      shouldFailEventBus?: boolean;
+      shouldFailOutbox?: boolean;
+    } = {},
+  ) => {
+    const {
+      shouldFailRepository = false,
+      shouldFailEventBus = false,
+      shouldFailOutbox = false,
+    } = params;
 
-    const repository = new User_InMemory_Repository(shouldFailRepository);
+    const outboxRepository = new InMemoryOutboxRepository(shouldFailOutbox);
+
+    const userRepository = new User_InMemory_Repository(shouldFailRepository);
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
-    const commandHandler = new RegisterUser_CommandHandler(repository, eventBus);
+    const commandHandler = new RegisterUser_CommandHandler(
+      userRepository,
+      outboxRepository,
+      eventBus,
+    );
 
-    return { repository, eventBus, commandHandler };
+    return { userRepository, eventBus, commandHandler, outboxRepository };
   };
   describe('Happy Path', () => {
     it('should successfully register a new user with complete information', async () => {
       // Arrange
-      const { commandHandler, repository } = setup();
+      const { commandHandler, userRepository } = setup();
       const command = createCommand();
 
       // Act
       await commandHandler.execute(command);
 
       // Assert - Verify user was saved by finding it in repository
-      const savedUser = await repository.findByEmail(new Email(command.email));
+      const savedUser = await userRepository.findByEmail(new Email(command.email));
       expect(savedUser).not.toBeNull();
       expect(savedUser!.email.toValue()).toBe(command.email);
       expect(savedUser!.username.toValue()).toBe(command.username);
       expect(savedUser!.role.toValue()).toBe(UserRoleEnum.USER);
       expect(savedUser!.isEmailVerificationPending()).toBe(true);
-      expect(savedUser!.id).toBeDefined();
+      expect(savedUser!.id).toBeInstanceOf(Id);
     });
 
     it('should publish UserRegisteredEvent after user creation', async () => {
       // Arrange
-      const { commandHandler, eventBus, repository } = setup();
+      const { commandHandler, eventBus, userRepository: repository } = setup();
       const command = createCommand();
 
       // Act
@@ -64,6 +83,7 @@ describe('RegisterUserCommandHandler', () => {
 
       const publishedEvent = eventBus.events[0] as UserRegistered_DomainEvent;
       expect(publishedEvent).toBeInstanceOf(UserRegistered_DomainEvent);
+      expect(publishedEvent.userId).toBeInstanceOf(Id);
       expect(publishedEvent.email.toValue()).toBe(command.email);
       expect(publishedEvent.username.toValue()).toBe(command.username);
       expect(publishedEvent.role.toValue()).toBe(UserRoleEnum.USER);
@@ -74,9 +94,35 @@ describe('RegisterUserCommandHandler', () => {
       expect(publishedEvent.aggregateId.toValue()).toBe(savedUser!.id.toValue());
     });
 
+    it('should store integration event in the outbox', async () => {
+      // Arrange
+      const { commandHandler, outboxRepository, userRepository: repository } = setup();
+      const command = createCommand();
+
+      // Act
+      await commandHandler.execute(command);
+
+      // Assert
+      const outboxEvents = await outboxRepository.findAll();
+      expect(outboxEvents).toHaveLength(1);
+      expect(outboxEvents[0].eventName.toValue()).toBe(UserCreated_IntegrationEvent.name);
+      expect(outboxEvents[0].topic.toValue()).toBe(UserCreated_IntegrationEvent.topic);
+
+      const payload = UserCreated_IntegrationEvent.fromJSON(outboxEvents[0].payload.toJSON());
+      expect(payload.id).toBeDefined();
+      expect(payload.email).toBe(command.email);
+      expect(payload.username).toBe(command.username);
+      expect(payload.role).toBe(UserRoleEnum.USER);
+      expect(payload.occurredOn).toBeInstanceOf(Date);
+
+      // Verify the event's userId matches the created user
+      const savedUser = await repository.findByEmail(new Email(command.email));
+      expect(payload.userId).toBe(savedUser!.id.toValue());
+    });
+
     it('should set proper timestamps on user creation', async () => {
       // Arrange
-      const { commandHandler, repository } = setup();
+      const { commandHandler, userRepository: repository } = setup();
       const command = createCommand();
       const beforeCreation = DateVO.now();
       await wait(10);
@@ -89,14 +135,14 @@ describe('RegisterUserCommandHandler', () => {
       // Assert
       const savedUser = await repository.findByEmail(new Email(command.email));
       expect(savedUser!.timestamps.createdAt.isAfter(beforeCreation)).toBe(true);
-      expect(savedUser!.timestamps.createdAt.isBefore(afterCreation)).toBe(true);
       expect(savedUser!.timestamps.updatedAt.isAfter(beforeCreation)).toBe(true);
+      expect(savedUser!.timestamps.createdAt.isBefore(afterCreation)).toBe(true);
       expect(savedUser!.timestamps.updatedAt.isBefore(afterCreation)).toBe(true);
       expect(savedUser!.lastLogin.isNever()).toBe(true);
     });
     it('should create unique user IDs for different registrations', async () => {
       // Arrange
-      const { commandHandler, repository } = setup();
+      const { commandHandler, userRepository: repository } = setup();
       const command1 = createCommand();
       const command2 = createCommand();
 
@@ -108,8 +154,6 @@ describe('RegisterUserCommandHandler', () => {
       const user1 = await repository.findByEmail(new Email(command1.email));
       const user2 = await repository.findByEmail(new Email(command2.email));
       expect(user1!.id.toValue()).not.toBe(user2!.id.toValue());
-      expect(user1!.id).toBeDefined();
-      expect(user2!.id).toBeDefined();
     });
   });
 
@@ -122,13 +166,33 @@ describe('RegisterUserCommandHandler', () => {
       await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
     });
 
+    it('should propagate failures when storing the integration event in the Outbox fails', async () => {
+      // Arrange
+      const { commandHandler, userRepository } = setup({ shouldFailOutbox: true });
+      const command = createCommand();
+
+      // Act & Assert
+      await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
+      // Verify that the user was not created (Transaction)
+      const userExists = await userRepository.existsByEmail(new Email(command.email));
+      expect(userExists).toBe(false);
+    });
+
     it('should throw ApplicationException when EventBus publishing fails', async () => {
       // Arrange
-      const { commandHandler } = setup({ shouldFailEventBus: true });
+      const { commandHandler, userRepository, outboxRepository } = setup({
+        shouldFailEventBus: true,
+      });
       const command = createCommand();
 
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(ApplicationException);
+      // Verify that the user was not created (Transaction)
+      const userExists = await userRepository.existsByEmail(new Email(command.email));
+      expect(userExists).toBe(false);
+      // Verify that the integration event was not stored in the Outbox
+      const outboxEvents = await outboxRepository.findAll();
+      expect(outboxEvents).toHaveLength(0);
     });
 
     it('should throw AlreadyExistsException when email already exists', async () => {
