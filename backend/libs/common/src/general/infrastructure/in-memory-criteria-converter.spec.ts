@@ -5,7 +5,8 @@ import {
 } from '../domain/criteria/criteria-converter.contract';
 
 describe('InMemoryCriteriaConverter', () => {
-  testCriteriaConverterContract('InMemory Implementation', (entities: TestEntityDTO[]) => {
-    return Promise.resolve(new InMemoryCriteriaConverter<TestEntityDTO>(entities));
-  });
+  testCriteriaConverterContract(
+    'InMemory Implementation',
+    async (entities: TestEntityDTO[]) => new InMemoryCriteriaConverter<TestEntityDTO>(entities),
+  );
 });
