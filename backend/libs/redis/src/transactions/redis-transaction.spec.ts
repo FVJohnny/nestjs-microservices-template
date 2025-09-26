@@ -1,15 +1,15 @@
 import { EntityExample, InMemoryTestRepository } from '@libs/nestjs-common';
 import { Transaction } from '@libs/nestjs-common';
 import { RedisTestService } from '../testing/redis-test.service';
-import { TestRepository } from '../infrastructure/example-redis.repository';
+import { ExampleRedisRepository } from '../infrastructure/example-redis.repository';
 
 describe('Redis transactions', () => {
   const redisTestService = new RedisTestService(2);
-  let repository: TestRepository;
+  let repository: ExampleRedisRepository;
 
   beforeAll(async () => {
     await redisTestService.setupDatabase();
-    repository = new TestRepository(redisTestService.redisClient);
+    repository = new ExampleRedisRepository(redisTestService.redisClient);
   });
 
   afterEach(async () => {
@@ -21,26 +21,36 @@ describe('Redis transactions', () => {
   });
 
   it('persists all writes when every save succeeds', async () => {
+    const aggregate = EntityExample.create('first');
+    const aggregate2 = EntityExample.create('second');
+
     await Transaction.run(async (context) => {
-      await repository.save('first', 'value-1', context);
-      await repository.save('second', 'value-2', context);
+      await repository.save(aggregate, context);
+      await repository.save(aggregate2, context);
     });
 
-    await expect(repository.find('first')).resolves.toBe('value-1');
-    await expect(repository.find('second')).resolves.toBe('value-2');
+    await expect(repository.findById(aggregate.id)).resolves.toMatchObject({
+      value: 'first',
+    });
+    await expect(repository.findById(aggregate2.id)).resolves.toMatchObject({
+      value: 'second',
+    });
   });
 
   it('cancels writes when the second save throws exception', async () => {
+    const aggregate = EntityExample.create('first');
+    const aggregate2 = EntityExample.create('second');
+
     await expect(
       Transaction.run(async (context) => {
-        await repository.save('first', 'value-1', context);
-        await repository.save('second', 'value-2', context);
+        await repository.save(aggregate, context);
+        await repository.save(aggregate2, context);
         throw new Error('forced failure');
       }),
     ).rejects.toThrow('forced failure');
 
-    await expect(repository.find('first')).resolves.toBeNull();
-    await expect(repository.find('second')).resolves.toBeNull();
+    await expect(repository.findById(aggregate.id)).resolves.toBeNull();
+    await expect(repository.findById(aggregate2.id)).resolves.toBeNull();
   });
 
   describe('with in-memory participant', () => {
@@ -54,31 +64,30 @@ describe('Redis transactions', () => {
       const aggregate = EntityExample.create('in-memory-1');
 
       await Transaction.run(async (context) => {
-        await repository.save('first', 'value-1', context);
+        await repository.save(aggregate, context);
         await inMemoryRepository.save(aggregate, context);
       });
 
-      await expect(repository.find('first')).resolves.toBe('value-1');
-      await expect(inMemoryRepository.findById(aggregate.id)).resolves.toMatchObject({
-        value: 'in-memory-1',
-      });
+      await expect(repository.exists(aggregate.id)).resolves.toBe(true);
+      await expect(inMemoryRepository.exists(aggregate.id)).resolves.toBe(true);
     });
 
     it('rolls back in-memory and redis writes when an error occurs', async () => {
-      const aggregate = EntityExample.create('in-memory-rollback');
+      const first = EntityExample.create('in-memory-rollback');
+      const second = EntityExample.create('in-memory-rollback-2');
 
       await expect(
         Transaction.run(async (context) => {
-          await repository.save('first', 'value-1', context);
-          await inMemoryRepository.save(aggregate, context);
-          await repository.save('second', 'value-2', context);
+          await repository.save(first, context);
+          await inMemoryRepository.save(first, context);
+          await repository.save(second, context);
           throw new Error('forced failure');
         }),
       ).rejects.toThrow('forced failure');
 
-      await expect(repository.find('first')).resolves.toBeNull();
-      await expect(repository.find('second')).resolves.toBeNull();
-      await expect(inMemoryRepository.findById(aggregate.id)).resolves.toBeNull();
+      await expect(repository.exists(first.id)).resolves.toBe(false);
+      await expect(repository.exists(second.id)).resolves.toBe(false);
+      await expect(inMemoryRepository.exists(first.id)).resolves.toBe(false);
     });
   });
 });

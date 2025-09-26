@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import type { Redis } from 'ioredis';
 
-import { Id, OutboxEvent, OutboxRepository, type RepositoryContext } from '@libs/nestjs-common';
+import { OutboxEvent, OutboxRepository, type RepositoryContext } from '@libs/nestjs-common';
 
 import { BaseRedisRepository } from '../base-redis.repository';
 
 @Injectable()
-export class RedisOutboxRepository extends BaseRedisRepository implements OutboxRepository {
+export class RedisOutboxRepository
+  extends BaseRedisRepository<OutboxEvent>
+  implements OutboxRepository
+{
   private readonly keyPrefix = 'outbox:';
-  private readonly itemKey = (id: string) => `${this.keyPrefix}event:${id}`;
   private readonly zUnprocessed = `${this.keyPrefix}unprocessedByCreatedAt`;
   private readonly zProcessed = `${this.keyPrefix}processedByProcessedAt`;
 
@@ -16,15 +18,19 @@ export class RedisOutboxRepository extends BaseRedisRepository implements Outbox
     super(redisClient);
   }
 
-  async save(event: OutboxEvent, context?: RepositoryContext) {
-    this.registerTransactionParticipant(context);
+  protected itemKey(id: string): string {
+    return `${this.keyPrefix}event:${id}`;
+  }
+
+  protected toEntity(json: string): OutboxEvent {
+    return OutboxEvent.fromValue(JSON.parse(json));
+  }
+
+  async save(event: OutboxEvent, context?: RepositoryContext): Promise<void> {
+    await super.save(event, context);
+
     const client = this.getClient(context);
-
     const v = event.toValue();
-    const key = this.itemKey(v.id);
-
-    // Store the full value as JSON to avoid field-by-field mapping
-    await client.set(key, JSON.stringify(v));
 
     // Maintain secondary indexes
     if (event.isUnprocessed()) {
@@ -34,16 +40,6 @@ export class RedisOutboxRepository extends BaseRedisRepository implements Outbox
       await client.zrem(this.zUnprocessed, v.id);
       await client.zadd(this.zProcessed, Date.parse(String(v.processedAt)), v.id);
     }
-  }
-
-  async findById(id: Id) {
-    const client = this.getRedisClient();
-
-    const key = this.itemKey(id.toValue());
-    const json = await client.get(key);
-    if (!json) return null;
-
-    return this.toEntity(json);
   }
 
   async findUnprocessed(limit = 100) {
@@ -60,22 +56,6 @@ export class RedisOutboxRepository extends BaseRedisRepository implements Outbox
       .filter((v) => v !== null)
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .slice(0, limit);
-  }
-
-  async exists(id: Id) {
-    const client = this.getRedisClient();
-    const key = this.itemKey(id.toValue());
-
-    const exists = await client.exists(key);
-    return exists === 1;
-  }
-
-  async remove(id: Id, context?: RepositoryContext) {
-    this.registerTransactionParticipant(context);
-    const client = this.getClient(context);
-
-    const key = this.itemKey(id.toValue());
-    await client.del(key);
   }
 
   async deleteProcessed(olderThan: Date, context?: RepositoryContext) {
@@ -97,14 +77,10 @@ export class RedisOutboxRepository extends BaseRedisRepository implements Outbox
     }
   }
 
-  async clear(context?: RepositoryContext) {
-    this.registerTransactionParticipant(context);
+  async clear(context?: RepositoryContext): Promise<void> {
+    await super.clear(context);
+
     const client = this.getClient(context);
-
     await client.del(this.zUnprocessed, this.zProcessed);
-  }
-
-  private toEntity(json: string): OutboxEvent {
-    return OutboxEvent.fromValue(JSON.parse(json));
   }
 }
