@@ -2,7 +2,6 @@ import { Injectable, Inject } from '@nestjs/common';
 import type { MongoClient, Filter } from 'mongodb';
 
 import {
-  Id,
   OutboxEvent,
   OutboxProcessedAt,
   OutboxRepository,
