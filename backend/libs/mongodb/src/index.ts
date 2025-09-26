@@ -7,3 +7,4 @@ export * from './mongodb-config.service';
 export * from './outbox';
 export * from './transactions';
 export * from './testing/mongodb-test.service';
+export * from './infrastructure/example-mongo.repository';

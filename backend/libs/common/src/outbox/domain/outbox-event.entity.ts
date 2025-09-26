@@ -11,7 +11,6 @@ import {
 } from './value-objects';
 
 export class OutboxEventDTO extends SharedAggregateRootDTO {
-  id!: string;
   eventName!: string;
   topic!: string;
   payload!: string;

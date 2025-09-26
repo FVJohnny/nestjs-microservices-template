@@ -9,39 +9,15 @@ import { MONGO_CLIENT_TOKEN, BaseMongoRepository, IndexSpec } from '@libs/nestjs
 
 @Injectable()
 export class EmailVerification_Mongodb_Repository
-  extends BaseMongoRepository<EmailVerificationDTO>
+  extends BaseMongoRepository<EmailVerification, EmailVerificationDTO>
   implements EmailVerification_Repository
 {
   constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
     super(mongoClient, 'email_verifications');
   }
 
-  async save(emailVerification: EmailVerification, context?: RepositoryContext) {
-    try {
-      const session = this.getTransactionSession(context);
-      await this.collection.updateOne(
-        { id: emailVerification.id.toValue() },
-        { $set: { ...emailVerification.toValue() } },
-        { upsert: true, session },
-      );
-    } catch (error: unknown) {
-      this.handleDatabaseError('save', emailVerification.id.toValue(), error);
-    }
-  }
-
-  async findById(id: Id, context?: RepositoryContext) {
-    try {
-      const session = this.getTransactionSession(context);
-      const document = await this.collection.findOne({ id: id.toValue() }, { session });
-
-      if (!document) {
-        return null;
-      }
-
-      return EmailVerification.fromValue(document);
-    } catch (error: unknown) {
-      this.handleDatabaseError('findById', id.toValue(), error);
-    }
+  protected toEntity(dto: EmailVerificationDTO): EmailVerification {
+    return EmailVerification.fromValue(dto);
   }
 
   async findByUserId(userId: Id, context?: RepositoryContext) {
@@ -98,34 +74,6 @@ export class EmailVerification_Mongodb_Repository
       return EmailVerification.fromValue(document);
     } catch (error: unknown) {
       this.handleDatabaseError('findPendingByUserId', userId.toValue(), error);
-    }
-  }
-
-  async remove(id: Id, context?: RepositoryContext) {
-    try {
-      const session = this.getTransactionSession(context);
-      await this.collection.deleteOne({ id: id.toValue() }, { session });
-    } catch (error: unknown) {
-      this.handleDatabaseError('remove', id.toValue(), error);
-    }
-  }
-
-  async exists(id: Id, context?: RepositoryContext) {
-    try {
-      const session = this.getTransactionSession(context);
-      const count = await this.collection.countDocuments({ id: id.toValue() }, { session });
-      return count > 0;
-    } catch (error: unknown) {
-      this.handleDatabaseError('exists', id.toValue(), error);
-    }
-  }
-
-  async clear(context?: RepositoryContext) {
-    try {
-      const session = this.getTransactionSession(context);
-      await this.collection.deleteMany({}, { session });
-    } catch (error: unknown) {
-      this.handleDatabaseError('clear', '', error);
     }
   }
 

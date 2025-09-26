@@ -7,8 +7,7 @@ export class MongodbTestService {
 
   constructor(private readonly dbName: string) {
     const uri =
-      process.env.MONGODB_URI ||
-      `mongodb://admin:admin123@localhost:27017/${this.dbName}?authSource=admin`;
+      process.env.MONGODB_URI || `mongodb://localhost:27017/${this.dbName}?replicaSet=rs0`;
     this.mongoClient = new MongoClient(uri);
   }
 

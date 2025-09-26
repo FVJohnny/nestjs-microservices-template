@@ -3,8 +3,11 @@ import type { TransactionParticipant } from '@libs/nestjs-common';
 
 export class MongoTransactionParticipant implements TransactionParticipant {
   private readonly session: ClientSession;
+  private transactionState: 'active' | 'committed' | 'aborted' = 'active';
+
   constructor(mongoClient: MongoClient) {
     this.session = mongoClient.startSession();
+    this.session.startTransaction();
   }
 
   getSession(): ClientSession {
@@ -12,11 +15,17 @@ export class MongoTransactionParticipant implements TransactionParticipant {
   }
 
   async commit() {
-    await this.session.commitTransaction();
+    if (this.transactionState === 'active') {
+      await this.session.commitTransaction();
+      this.transactionState = 'committed';
+    }
   }
 
   async rollback() {
-    await this.session.abortTransaction();
+    if (this.transactionState === 'active' && this.session.inTransaction()) {
+      await this.session.abortTransaction();
+      this.transactionState = 'aborted';
+    }
   }
 
   async dispose() {

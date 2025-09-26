@@ -19,7 +19,7 @@ services:
       - KAFKA_SERVICE_ID=service-1
       - SERVICE_NAME=service-1
       - PROXY_BASE_PATH=/api/service-1
-      - MONGODB_URI=${MONGODB_URI:-mongodb://admin:admin123@mongodb:27017/service-1-db?authSource=admin}
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/service-1-db?replicaSet=rs0}
       - MONGODB_DB_NAME=${MONGODB_DB_NAME:-service-1-db}
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=${REDIS_PORT:-6379}
@@ -121,22 +121,20 @@ services:
 
   mongodb:
     image: mongo:7.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--noauth"]
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin123
-      MONGO_INITDB_DATABASE: copysignals
     volumes:
       - mongodb_data_dev:/data/db
     networks:
       - backend
     healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
-      interval: 30s
+      test: >
+        bash -c "mongosh --eval 'try { rs.status().ok } catch (e) { rs.initiate({_id:\"rs0\",members:[{_id:0,host:\"localhost:27017\"}]}) }' || exit 1"
+      interval: 5s
       timeout: 10s
-      retries: 5
-      start_period: 10s
+      retries: 10
+      start_period: 30s
 
   redis:
     image: redis:7.0-alpine

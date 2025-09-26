@@ -5,6 +5,7 @@ import {
   CreateIndexesOptions,
   IndexSpecification,
   MongoServerError,
+  Filter,
 } from 'mongodb';
 import type { ClientSession } from 'mongodb';
 import {
@@ -12,19 +13,29 @@ import {
   SharedAggregateRootDTO,
   AlreadyExistsException,
   InfrastructureException,
+  SharedAggregateRoot,
+  Id,
+  Criteria,
+  PaginatedRepoResult,
 } from '@libs/nestjs-common';
-import type { RepositoryContext } from '@libs/nestjs-common';
+import type { RepositoryContext, Repository } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from './mongodb.tokens';
 import { MongoTransactionParticipant } from './transactions/mongo-transaction-participant';
+import { MongoCriteriaConverter } from './criteria/mongo-criteria-converter';
 
 export interface IndexSpec {
   fields: IndexSpecification;
   options?: CreateIndexesOptions;
 }
 
-export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
+export abstract class BaseMongoRepository<
+  TEnt extends SharedAggregateRoot,
+  TDto extends SharedAggregateRootDTO & { id: string },
+> implements Repository<TEnt, Id>
+{
   protected readonly logger: CorrelationLogger;
   protected readonly collection: Collection<TDto>;
+  private indexesInitialized: Promise<void>;
 
   constructor(
     @Inject(MONGO_CLIENT_TOKEN)
@@ -33,7 +44,124 @@ export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
   ) {
     this.logger = new CorrelationLogger(this.constructor.name);
     this.collection = this.mongoClient.db().collection<TDto>(this.collectionName);
-    this.initializeIndexes();
+    this.indexesInitialized = this.initializeIndexes();
+  }
+
+  async ensureIndexes(): Promise<void> {
+    await this.indexesInitialized;
+  }
+
+  protected abstract toEntity(dto: TDto): TEnt;
+
+  protected toValue(entity: TEnt): TDto {
+    return entity.toValue() as TDto;
+  }
+
+  /**
+   * Creates a MongoDB filter for finding documents by ID.
+   *
+   * Note: Uses type assertion because MongoDB's Filter<T> type is extremely complex
+   * and doesn't work well with generic repositories. This is safe because:
+   * 1. All DTOs extending SharedAggregateRootDTO are guaranteed to have an 'id: string' field
+   * 2. We're only creating simple equality filters: { id: "value" }
+   * 3. MongoDB accepts this format for all our use cases
+   */
+  private createIdFilter(id: Id): Filter<TDto> {
+    return { id: id.toValue() } as Filter<TDto>;
+  }
+
+  async save(entity: TEnt, context?: RepositoryContext): Promise<void> {
+    this.registerTransactionParticipant(context);
+
+    const session = this.getTransactionSession(context);
+    try {
+      await this.collection.updateOne(
+        this.createIdFilter(entity.id),
+        { $set: this.toValue(entity) },
+        { upsert: true, session },
+      );
+    } catch (error: unknown) {
+      this.handleDatabaseError('save', entity.id.toValue(), error);
+    }
+  }
+
+  async findById(id: Id): Promise<TEnt | null> {
+    try {
+      const dto = await this.collection.findOne(this.createIdFilter(id));
+      return dto ? this.toEntity(dto as TDto) : null;
+    } catch (error: unknown) {
+      this.handleDatabaseError('findById', id.toValue(), error);
+    }
+  }
+
+  async exists(id: Id): Promise<boolean> {
+    try {
+      const dto = await this.collection.findOne(this.createIdFilter(id));
+      return !!dto;
+    } catch (error: unknown) {
+      this.handleDatabaseError('exists', id.toValue(), error);
+    }
+  }
+
+  async remove(id: Id, context?: RepositoryContext): Promise<void> {
+    this.registerTransactionParticipant(context);
+
+    const session = this.getTransactionSession(context);
+    try {
+      await this.collection.deleteOne(this.createIdFilter(id), { session });
+    } catch (error: unknown) {
+      this.handleDatabaseError('remove', id.toValue(), error);
+    }
+  }
+
+  async clear(context?: RepositoryContext): Promise<void> {
+    this.registerTransactionParticipant(context);
+
+    const session = this.getTransactionSession(context);
+    try {
+      await this.collection.deleteMany({}, { session });
+    } catch (error: unknown) {
+      this.handleDatabaseError('clear', '', error);
+    }
+  }
+
+  async findAll(): Promise<TEnt[]> {
+    try {
+      const docs = await this.collection.find({}).toArray();
+      return docs.map((dto) => this.toEntity(dto as TDto));
+    } catch (error: unknown) {
+      this.handleDatabaseError('findAll', '', error);
+    }
+  }
+
+  async findByCriteria(
+    criteria: Criteria,
+    context?: RepositoryContext,
+  ): Promise<PaginatedRepoResult<TEnt>> {
+    try {
+      const session = this.getTransactionSession(context);
+      const converter = new MongoCriteriaConverter<TDto>(this.collection);
+      const { data, total, cursor, hasNext } = await converter.executeQuery(criteria, session);
+
+      return {
+        data: data.map((doc) => this.toEntity(doc)),
+        total,
+        cursor,
+        hasNext,
+      };
+    } catch (error: unknown) {
+      this.handleDatabaseError('findByCriteria', '', error);
+    }
+  }
+
+  async countByCriteria(criteria: Criteria, context?: RepositoryContext): Promise<number> {
+    try {
+      const session = this.getTransactionSession(context);
+      const converter = new MongoCriteriaConverter<TDto>(this.collection);
+      return await converter.count(criteria, session);
+    } catch (error: unknown) {
+      this.handleDatabaseError('countByCriteria', 'criteria', error);
+    }
   }
 
   protected abstract defineIndexes(): IndexSpec[];
@@ -78,9 +206,6 @@ export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
     }
   }
 
-  /**
-   * Handle database errors consistently
-   */
   protected handleDatabaseError(operation: string, id: string, error: unknown): never {
     const err = error instanceof Error ? error : new Error(String(error));
 
@@ -99,6 +224,7 @@ export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
     throw new InfrastructureException(operation, id, err);
   }
 
+  // TRANSACTIONS - registration
   protected registerTransactionParticipant(context?: RepositoryContext): void {
     if (!context) return;
 
@@ -108,6 +234,7 @@ export abstract class BaseMongoRepository<TDto extends SharedAggregateRootDTO> {
     }
   }
 
+  // TRANSACTIONS - get session
   protected getTransactionSession(context?: RepositoryContext): ClientSession | undefined {
     if (!context) return undefined;
 

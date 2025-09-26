@@ -1,5 +1,6 @@
 // Aggregate Root
 export * from './entities/AggregateRoot';
+export * from './entities/EntityExample';
 
 // Value Objects
 export { CompositeValueObject } from './value-object/CompositeValueObject';
