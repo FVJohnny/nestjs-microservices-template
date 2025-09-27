@@ -14,15 +14,13 @@ import {
     KafkaService,
     {
       provide: INTEGRATION_EVENT_PUBLISHER,
-      useFactory: (kafkaService: KafkaService) => new KafkaIntegrationEventPublisher(kafkaService),
-      inject: [KafkaService],
+      useClass: KafkaIntegrationEventPublisher,
     },
     {
       provide: INTEGRATION_EVENT_LISTENER,
-      useFactory: (kafkaService: KafkaService) => new KafkaIntegrationEventListener(kafkaService),
-      inject: [KafkaService],
+      useClass: KafkaIntegrationEventListener,
     },
   ],
-  exports: [KafkaService, INTEGRATION_EVENT_PUBLISHER, INTEGRATION_EVENT_LISTENER],
+  exports: [INTEGRATION_EVENT_PUBLISHER, INTEGRATION_EVENT_LISTENER],
 })
 export class KafkaIntegrationEventsModule {}

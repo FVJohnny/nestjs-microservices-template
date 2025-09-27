@@ -6,13 +6,15 @@ import {
   ErrorHandlingModule,
   EventTrackerModule,
   SharedCqrsModule,
+  InboxModule,
 } from '@libs/nestjs-common';
 import { MetricsModule, JwtAuthModule } from '@libs/nestjs-common';
 import { OutboxModule } from '@libs/nestjs-common';
 import { MongoOutboxRepository } from '@libs/nestjs-mongodb';
-import { RedisDBModule, RedisIntegrationEventsModule } from '@libs/nestjs-redis';
+import { RedisDBModule } from '@libs/nestjs-redis';
 import { MongoDBModule } from '@libs/nestjs-mongodb';
 import { PostgresDBModule } from '@libs/nestjs-postgresql';
+import { KafkaIntegrationEventsModule } from '@libs/nestjs-kafka';
 
 @Module({
   imports: [
@@ -22,9 +24,10 @@ import { PostgresDBModule } from '@libs/nestjs-postgresql';
     PostgresDBModule,
 
     // INTEGRATION EVENT MODULES
+    InboxModule,
     OutboxModule.forRoot({ repository: MongoOutboxRepository }),
-    RedisIntegrationEventsModule,
-    // KafkaIntegrationEventsModule,
+    // RedisIntegrationEventsModule,
+    KafkaIntegrationEventsModule,
 
     // COMMON MODULES
     SharedCqrsModule,

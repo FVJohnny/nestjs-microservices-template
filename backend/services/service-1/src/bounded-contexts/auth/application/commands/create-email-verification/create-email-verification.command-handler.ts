@@ -1,13 +1,7 @@
 import { CommandHandler, type IEventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { CreateEmailVerification_Command } from './create-email-verification.command';
-import {
-  AlreadyExistsException,
-  BaseCommandHandler,
-  EVENT_BUS,
-  Id,
-  NotFoundException,
-} from '@libs/nestjs-common';
+import { AlreadyExistsException, BaseCommandHandler, EVENT_BUS, Id } from '@libs/nestjs-common';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { Email } from '@bc/auth/domain/value-objects';
 import {
@@ -49,11 +43,6 @@ export class CreateEmailVerification_CommandHandler extends BaseCommandHandler<C
   }
 
   protected async validate(command: CreateEmailVerification_Command) {
-    const user = await this.userRepository.findById(new Id(command.userId));
-    if (!user) {
-      throw new NotFoundException('user');
-    }
-    // No validation needed - we'll remove existing verifications if they exist
     const existingVerificationByEmail = await this.emailVerificationRepository.findByEmail(
       new Email(command.email),
     );

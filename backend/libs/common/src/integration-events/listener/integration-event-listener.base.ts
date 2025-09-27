@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import type { ParsedIntegrationMessage } from '../types/integration-event.types';
 import { CorrelationLogger } from '../../logger';
+import { InboxService } from '../../inbox';
 
 export interface IIntegrationEventHandler {
   handle(message: ParsedIntegrationMessage): Promise<void>;
@@ -30,6 +31,8 @@ export interface IntegrationEventListener {
 export abstract class BaseIntegrationEventListener implements IntegrationEventListener {
   protected readonly logger = new CorrelationLogger(this.constructor.name);
   protected readonly eventHandlers = new Map<string, HandlerInfo[]>(); // topic -> array of handlers
+
+  constructor(private readonly inboxService?: InboxService) {}
 
   async registerEventHandler(
     topicName: string,
@@ -80,6 +83,10 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
    * Parses the message and delegates to the appropriate event handler
    */
   public async handleMessage(topicName: string, message: ParsedIntegrationMessage) {
+    if (this.inboxService) {
+      await this.inboxService.receiveMessage(message, topicName);
+      return true;
+    }
     try {
       // Find the appropriate event handler based on event type
       const eventHandler = this.getEventHandler(topicName, message.name);

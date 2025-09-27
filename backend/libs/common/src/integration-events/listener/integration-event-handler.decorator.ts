@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnModuleInit, Type } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit, Optional, Type } from '@nestjs/common';
 
 import { BaseIntegrationEvent } from '../events';
 import { ParsedIntegrationMessage } from '../types/integration-event.types';
@@ -8,6 +8,7 @@ import {
 } from './integration-event-listener.base';
 import { CorrelationLogger } from '../../logger';
 import { TracingService } from '../../tracing';
+import { InboxService } from '../../inbox';
 
 // Contract the decorated class must implement
 type HandlesIntegrationEvent<TEvent extends BaseIntegrationEvent> = {
@@ -33,12 +34,24 @@ export function IntegrationEventHandler<TEvent extends BaseIntegrationEvent>(
       @Inject(INTEGRATION_EVENT_LISTENER)
       public readonly integrationEventListener: BaseIntegrationEventListener;
 
+      @Inject()
+      @Optional()
+      public readonly inboxService?: InboxService;
+
       async onModuleInit() {
         await this.integrationEventListener.registerEventHandler(
           this.eventClass.topic,
           this.eventClass.name,
           this,
         );
+
+        if (this.inboxService) {
+          await this.inboxService.registerEventHandler(
+            this.eventClass.topic,
+            this.eventClass.name,
+            this,
+          );
+        }
       }
 
       async handle(message: ParsedIntegrationMessage) {

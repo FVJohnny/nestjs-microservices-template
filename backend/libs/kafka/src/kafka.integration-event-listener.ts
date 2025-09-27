@@ -1,13 +1,20 @@
-import { BaseIntegrationEventListener, type ParsedIntegrationMessage } from '@libs/nestjs-common';
-import { Injectable } from '@nestjs/common';
+import {
+  BaseIntegrationEventListener,
+  InboxService,
+  type ParsedIntegrationMessage,
+} from '@libs/nestjs-common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { type KafkaMessage } from 'kafkajs';
 
 import { KafkaService } from './kafka-service';
 
 @Injectable()
 export class KafkaIntegrationEventListener extends BaseIntegrationEventListener {
-  constructor(private readonly kafkaService: KafkaService) {
-    super();
+  constructor(
+    @Inject() private readonly kafkaService: KafkaService,
+    @Inject() @Optional() inboxService?: InboxService,
+  ) {
+    super(inboxService);
   }
 
   protected async subscribeToTopic(topicName: string) {

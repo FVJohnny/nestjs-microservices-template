@@ -8,6 +8,7 @@ export * from './integration-events';
 export * from './logger';
 export * from './metrics';
 export * from './outbox';
+export * from './inbox';
 export * from './transactions';
 export * from './swagger';
 export * from './testing';

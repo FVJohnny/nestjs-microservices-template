@@ -34,20 +34,24 @@ async function discoverServices(max = 10) {
   for (let i = 1; i <= max; i++) {
     const baseUrl = `/api/service-${i}`;
     try {
-      const envRes = await fetch(`${baseUrl}/health/environment`, { headers: { Accept: 'application/json' } });
+      const envRes = await fetch(`${baseUrl}/health/environment`, {
+        headers: { Accept: 'application/json' },
+      });
       if (!envRes.ok) continue;
       const env = await envRes.json().catch(() => ({ environment: 'unknown' }));
       const svc = { id: i, name: `service-${i}`, baseUrl, env: env.environment ?? 'unknown' };
       services.push(svc);
       grid.appendChild(serviceCard(svc));
-      
+
       // Update environment display after card is in DOM
       const envEl = document.getElementById(`svc-${svc.id}-env`);
       if (envEl) envEl.textContent = `env: ${svc.env}`;
-    } catch { }
+    } catch {}
   }
   if (!services.length) {
-    grid.appendChild(el('<div class="empty">No services detected. Start a service to see it here.</div>'));
+    grid.appendChild(
+      el('<div class="empty">No services detected. Start a service to see it here.</div>'),
+    );
   }
   // Update service counter in header
   const count = document.getElementById('svc-count');
@@ -59,7 +63,9 @@ async function refreshService(svc) {
   const listEl = document.getElementById(`svc-${svc.id}-events`);
 
   try {
-    const statsRes = await fetch(`${svc.baseUrl}/event-tracker/stats`, { headers: { Accept: 'application/json' } });
+    const statsRes = await fetch(`${svc.baseUrl}/event-tracker/stats`, {
+      headers: { Accept: 'application/json' },
+    });
     const stats = await statsRes.json().catch(() => ({}));
 
     healthEl.textContent = 'online';
@@ -75,7 +81,7 @@ async function refreshService(svc) {
 
     // Group events by topic
     const eventsByTopic = {};
-    events.forEach(e => {
+    events.forEach((e) => {
       if (!eventsByTopic[e.topic]) {
         eventsByTopic[e.topic] = [];
       }
@@ -89,7 +95,7 @@ async function refreshService(svc) {
         const totalFailure = topicEvents.reduce((sum, e) => sum + (e.failureCount || 0), 0);
         const totalCount = totalSuccess + totalFailure || 1;
         const topicPct = Math.round((totalSuccess / totalCount) * 100);
-        
+
         return `
           <div class="topic-group">
             <div class="topic-header">
@@ -107,14 +113,15 @@ async function refreshService(svc) {
               <div class="bar"><span class="bar-fill" style="width:${topicPct}%"></span></div>
             </div>
             <div class="topic-events">
-              ${topicEvents.map(e => {
-                const s = e.successCount || 0;
-                const f = e.failureCount || 0;
-                const t = s + f || 1;
-                const pct = Math.round((s / t) * 100);
-                // Only show trigger button for non-domain events
-                const showTrigger = topic.toLowerCase() !== 'domain events';
-                return `
+              ${topicEvents
+                .map((e) => {
+                  const s = e.successCount || 0;
+                  const f = e.failureCount || 0;
+                  const t = s + f || 1;
+                  const pct = Math.round((s / t) * 100);
+                  // Only show trigger button for non-domain events
+                  const showTrigger = topic.toLowerCase() !== 'domain events';
+                  return `
                   <div class="evt">
                     <div class="evt-main">
                       <div class="evt-name-wrapper">
@@ -131,7 +138,8 @@ async function refreshService(svc) {
                     </div>
                     <div class="bar"><span class="bar-fill" style="width:${pct}%"></span></div>
                   </div>`;
-              }).join('')}
+                })
+                .join('')}
             </div>
           </div>`;
       })
@@ -159,7 +167,7 @@ async function triggerEvent(evt, serviceId, topic, eventName) {
     btn.disabled = true;
 
     // Find the service to get its baseUrl
-    const service = services.find(s => s.id == serviceId);
+    const service = services.find((s) => s.id == serviceId);
     if (!service) {
       throw new Error(`Service ${serviceId} not found`);
     }
@@ -169,11 +177,10 @@ async function triggerEvent(evt, serviceId, topic, eventName) {
       topic,
       message: {
         name: eventName,
-        id: `test-${Date.now()}`,
         timestamp: new Date().toISOString(),
         triggeredBy: 'frontend-dashboard',
-        testData: `Test event for ${eventName}`
-      }
+        testData: `Test event for ${eventName}`,
+      },
     };
 
     // Try to publish via the service's messaging endpoint
@@ -181,9 +188,9 @@ async function triggerEvent(evt, serviceId, topic, eventName) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        Accept: 'application/json',
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (response.ok) {
@@ -198,7 +205,6 @@ async function triggerEvent(evt, serviceId, topic, eventName) {
     } else {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
-
   } catch (error) {
     console.error('Failed to trigger event:', error);
     btn.textContent = '❌';

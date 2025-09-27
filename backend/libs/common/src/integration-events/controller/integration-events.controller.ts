@@ -4,6 +4,7 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { INTEGRATION_EVENT_PUBLISHER } from '../publisher/event-publisher.interface';
 import type { IntegrationEventPublisher } from '../publisher/event-publisher.interface';
 import { TracingService } from '../../tracing';
+import { Id } from '../../general';
 
 /**
  * Generic messaging controller that works with any event source implementation
@@ -83,6 +84,7 @@ export class IntegrationEventsController {
       const metadata = TracingService.getTracingMetadata();
       const message = {
         ...body.message,
+        id: Id.random().toValue(),
         metadata,
       };
       await this.integrationEventPublisher.publish(body.topic, JSON.stringify(message));

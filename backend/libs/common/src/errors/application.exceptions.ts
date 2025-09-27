@@ -9,8 +9,8 @@ export class UnauthorizedException extends BaseException {
 }
 
 export class NotFoundException extends BaseException {
-  constructor(entityName?: string) {
-    super(`Entity ${entityName} not found`, 'ENTITY_NOT_FOUND', HttpStatus.NOT_FOUND);
+  constructor(entityName?: string, details?: string) {
+    super(`Entity ${entityName} not found. ${details}`, 'ENTITY_NOT_FOUND', HttpStatus.NOT_FOUND);
   }
 }
 

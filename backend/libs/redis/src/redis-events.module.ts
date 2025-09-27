@@ -16,15 +16,13 @@ import { RedisIntegrationEventPublisher } from './redis.integration-event-publis
     RedisService,
     {
       provide: INTEGRATION_EVENT_PUBLISHER,
-      useFactory: (redisService: RedisService) => new RedisIntegrationEventPublisher(redisService),
-      inject: [RedisService],
+      useClass: RedisIntegrationEventPublisher,
     },
     {
       provide: INTEGRATION_EVENT_LISTENER,
-      useFactory: (redisService: RedisService) => new RedisIntegrationEventListener(redisService),
-      inject: [RedisService],
+      useClass: RedisIntegrationEventListener,
     },
   ],
-  exports: [RedisService, INTEGRATION_EVENT_PUBLISHER, INTEGRATION_EVENT_LISTENER],
+  exports: [INTEGRATION_EVENT_PUBLISHER, INTEGRATION_EVENT_LISTENER],
 })
 export class RedisIntegrationEventsModule {}

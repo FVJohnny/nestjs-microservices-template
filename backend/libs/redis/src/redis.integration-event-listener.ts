@@ -1,5 +1,9 @@
-import { BaseIntegrationEventListener, type ParsedIntegrationMessage } from '@libs/nestjs-common';
-import { Injectable } from '@nestjs/common';
+import {
+  BaseIntegrationEventListener,
+  InboxService,
+  type ParsedIntegrationMessage,
+} from '@libs/nestjs-common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 
 import { RedisService } from './redis.service';
 
@@ -9,8 +13,11 @@ import { RedisService } from './redis.service';
  */
 @Injectable()
 export class RedisIntegrationEventListener extends BaseIntegrationEventListener {
-  constructor(private readonly redisService: RedisService) {
-    super();
+  constructor(
+    @Inject() private readonly redisService: RedisService,
+    @Inject() @Optional() inboxService?: InboxService,
+  ) {
+    super(inboxService);
   }
 
   protected async subscribeToTopic(topicName: string) {
