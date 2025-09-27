@@ -13,7 +13,7 @@ describe('Redis transactions', () => {
   });
 
   afterEach(async () => {
-    await redisTestService.clearKeys('transaction-test:*');
+    await redisTestService.clear();
   });
 
   afterAll(async () => {

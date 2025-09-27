@@ -1,6 +1,13 @@
 import type { ChainableCommander, Redis } from 'ioredis';
 import { CorrelationLogger } from '@libs/nestjs-common';
-import type { RepositoryContext, Id, Repository, SharedAggregateRoot } from '@libs/nestjs-common';
+import type {
+  RepositoryContext,
+  Id,
+  Repository,
+  SharedAggregateRoot,
+  Criteria,
+  PaginatedRepoResult,
+} from '@libs/nestjs-common';
 
 import { RedisTransactionParticipant } from './transactions/redis-transaction-participant';
 
@@ -12,17 +19,19 @@ export abstract class BaseRedisRepository<TEnt extends SharedAggregateRoot>
   constructor(private readonly redisClient: Redis) {
     this.logger = new CorrelationLogger(this.constructor.name);
   }
+
   protected abstract itemKey(id: string): string;
   protected abstract toEntity(json: string): TEnt;
 
-  async save(entity: TEnt, context?: RepositoryContext): Promise<void> {
-    this.registerTransactionParticipant(context);
-    const client = this.getClient(context);
+  async findByCriteria(
+    _criteria: Criteria,
+    _context?: RepositoryContext,
+  ): Promise<PaginatedRepoResult<TEnt>> {
+    throw new Error('Method not implemented.');
+  }
 
-    const v = entity.toValue();
-    const key = this.itemKey(v.id);
-
-    await client.set(key, JSON.stringify(v));
+  async countByCriteria(_criteria: Criteria, _context?: RepositoryContext): Promise<number> {
+    throw new Error('Method not implemented.');
   }
 
   async findById(id: Id) {
@@ -41,6 +50,16 @@ export abstract class BaseRedisRepository<TEnt extends SharedAggregateRoot>
 
     const exists = await client.exists(key);
     return exists === 1;
+  }
+
+  async save(entity: TEnt, context?: RepositoryContext): Promise<void> {
+    this.registerTransactionParticipant(context);
+    const client = this.getClient(context);
+
+    const v = entity.toValue();
+    const key = this.itemKey(v.id);
+
+    await client.set(key, JSON.stringify(v));
   }
 
   async remove(id: Id, context?: RepositoryContext): Promise<void> {

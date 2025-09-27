@@ -1,11 +1,15 @@
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { Redis } from 'ioredis';
+import type { SharedAggregateRootDTO } from '@libs/nestjs-common';
 
-export class RedisTestService {
+export class RedisTestService<T extends SharedAggregateRootDTO> {
   readonly redisClient: Redis;
   private readonly logger = new CorrelationLogger(RedisTestService.name);
 
-  constructor(private readonly dbIndex: number = 0) {
+  constructor(
+    private readonly dbIndex: number = 0,
+    public readonly keyPrefix: string = 'test',
+  ) {
     const config = {
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT || '6379', 10),
@@ -45,14 +49,37 @@ export class RedisTestService {
     await this.redisClient.quit();
   }
 
-  async clearKeys(pattern: string = '*') {
-    const keys = await this.redisClient.keys(pattern);
-    if (keys.length > 0) {
-      await this.redisClient.del(keys);
-    }
+  async clear() {
+    await this.redisClient.flushdb();
   }
 
-  async clearOutboxKeys() {
-    await this.clearKeys('outbox:*');
+  async setInitialData(data: T[]) {
+    await this.clear();
+    if (data.length === 0) return;
+
+    const pipeline = this.redisClient.pipeline();
+
+    for (const item of data) {
+      const key = `${this.keyPrefix}:${item.id}`;
+      const hashData: Record<string, string> = {};
+
+      // Convert entity to Redis hash format
+      for (const [field, value] of Object.entries(item)) {
+        if (value === undefined || value === null) {
+          continue;
+        }
+
+        // Store complex objects as JSON strings
+        if (typeof value === 'object') {
+          hashData[field] = JSON.stringify(value);
+        } else {
+          hashData[field] = String(value);
+        }
+      }
+
+      pipeline.hset(key, hashData);
+    }
+
+    await pipeline.exec();
   }
 }

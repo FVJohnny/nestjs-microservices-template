@@ -1,7 +1,8 @@
 import { InfrastructureException } from '../../errors';
 import { type RepositoryContext, InMemoryTransactionParticipant } from '../../transactions';
-import type { SharedAggregateRoot, Id, SharedAggregateRootDTO } from '../domain';
+import type { SharedAggregateRoot, Id, SharedAggregateRootDTO, Criteria } from '../domain';
 import type { Repository } from '../domain';
+import { InMemoryCriteriaConverter } from './in-memory-criteria-converter';
 
 export abstract class InMemoryBaseRepository<
   TEnt extends SharedAggregateRoot,
@@ -33,6 +34,28 @@ export abstract class InMemoryBaseRepository<
     this.validate('findById');
     const ent = this.items.get(id.toValue());
     return ent ? this.toEntity(ent) : null;
+  }
+
+  async findByCriteria(criteria: Criteria) {
+    this.validate('findByCriteria');
+    const entities = await this.findAll();
+    const converter = new InMemoryCriteriaConverter<TDto>(entities.map((e) => this.toValue(e)));
+    const queryResult = await converter.executeQuery(criteria);
+
+    return {
+      data: queryResult.data.map((u) => this.toEntity(u)),
+      total: criteria.hasWithTotal() ? queryResult.total : null,
+      cursor: queryResult.cursor,
+      hasNext: queryResult.hasNext,
+    };
+  }
+
+  async countByCriteria(criteria: Criteria) {
+    this.validate('countByCriteria');
+    const entities = await this.findAll();
+    const converter = new InMemoryCriteriaConverter<TDto>(entities.map((e) => this.toValue(e)));
+    const count = await converter.count(criteria);
+    return count;
   }
 
   async exists(id: Id) {

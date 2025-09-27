@@ -10,9 +10,9 @@ describe('RedisOutboxRepository', () => {
     'Redis Implementation',
     async () => new RedisOutboxRepository(redisTestService.redisClient),
     {
-      beforeAll: () => redisTestService.clearOutboxKeys(),
-      afterAll: () => redisTestService.clearOutboxKeys(),
-      beforeEach: () => redisTestService.clearOutboxKeys(),
+      beforeAll: () => redisTestService.clear(),
+      afterAll: () => redisTestService.clear(),
+      beforeEach: () => redisTestService.clear(),
     },
   );
 });

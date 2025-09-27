@@ -2,12 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { User_Repository } from '@bc/auth/domain/repositories/user/user.repository';
 import { Email, Username } from '@bc/auth/domain/value-objects';
-import {
-  AlreadyExistsException,
-  Criteria,
-  InMemoryCriteriaConverter,
-  type RepositoryContext,
-} from '@libs/nestjs-common';
+import { AlreadyExistsException, type RepositoryContext } from '@libs/nestjs-common';
 import { UserDTO } from '@bc/auth/domain/entities/user/user.dto';
 import { InMemoryBaseRepository } from '@libs/nestjs-common';
 
@@ -60,28 +55,6 @@ export class User_InMemory_Repository
     super.validate('existsByUsername');
     const user = await this.findByUsername(username);
     return user !== null;
-  }
-
-  async findByCriteria(criteria: Criteria) {
-    super.validate('findByCriteria');
-    const users = await this.findAll();
-    const converter = new InMemoryCriteriaConverter(users.map((u) => u.toValue()));
-    const queryResult = await converter.executeQuery(criteria);
-
-    return Promise.resolve({
-      data: queryResult.data.map((u) => User.fromValue(u)),
-      total: criteria.hasWithTotal() ? queryResult.total : null,
-      cursor: queryResult.cursor,
-      hasNext: queryResult.hasNext,
-    });
-  }
-
-  async countByCriteria(criteria: Criteria) {
-    super.validate('countByCriteria');
-    const users = await this.findAll();
-    const converter = new InMemoryCriteriaConverter(users.map((u) => u.toValue()));
-    const count = await converter.count(criteria);
-    return count;
   }
 
   async save(user: User, context?: RepositoryContext) {
