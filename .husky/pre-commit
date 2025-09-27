@@ -7,16 +7,14 @@ npm run -s build || {
   exit 1;
 }
 
-echo "Running pre-commit checks: lint and tests"
-
-# Lint all packages (Nx)
+echo "Running Lint..."
 npm run -s lint || {
   echo "\n✖ Lint failed. Fix issues before committing.";
   exit 1;
 }
 
-# Run unit tests (Nx)
-npm run -s test || {
+echo "Running Tests..."
+LOG_LEVEL=error npm run -s test || {
   echo "\n✖ Tests failed. Fix failures before committing.";
   exit 1;
 }

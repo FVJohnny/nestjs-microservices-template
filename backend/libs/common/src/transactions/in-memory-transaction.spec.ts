@@ -3,7 +3,7 @@ import type { EntityExampleDTO } from '../general/domain/entities/EntityExample'
 import { EntityExample } from '../general/domain/entities/EntityExample';
 import { Transaction } from './transaction';
 
-class InMemoryTestRepository extends InMemoryBaseRepository<EntityExample, EntityExampleDTO> {
+class ExampleInMemoryRepository extends InMemoryBaseRepository<EntityExample, EntityExampleDTO> {
   constructor(shouldFail = false) {
     super(shouldFail);
   }
@@ -14,10 +14,10 @@ class InMemoryTestRepository extends InMemoryBaseRepository<EntityExample, Entit
 }
 
 describe('In-memory transactions', () => {
-  let repository: InMemoryTestRepository;
+  let repository: ExampleInMemoryRepository;
 
   beforeEach(() => {
-    repository = new InMemoryTestRepository();
+    repository = new ExampleInMemoryRepository();
   });
 
   it('commits new saves when the transaction succeeds', async () => {
