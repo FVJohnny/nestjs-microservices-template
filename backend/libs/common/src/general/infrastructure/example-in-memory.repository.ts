@@ -1,7 +1,7 @@
 import { InMemoryBaseRepository } from './in-memory-base.repository';
 import { EntityExample, type EntityExampleDTO } from '../domain/entities/EntityExample';
 
-export class InMemoryTestRepository extends InMemoryBaseRepository<
+export class ExampleInMemoryRepository extends InMemoryBaseRepository<
   EntityExample,
   EntityExampleDTO
 > {

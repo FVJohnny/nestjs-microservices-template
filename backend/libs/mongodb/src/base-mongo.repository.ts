@@ -57,26 +57,13 @@ export abstract class BaseMongoRepository<
     return entity.toValue() as TDto;
   }
 
-  /**
-   * Creates a MongoDB filter for finding documents by ID.
-   *
-   * Note: Uses type assertion because MongoDB's Filter<T> type is extremely complex
-   * and doesn't work well with generic repositories. This is safe because:
-   * 1. All DTOs extending SharedAggregateRootDTO are guaranteed to have an 'id: string' field
-   * 2. We're only creating simple equality filters: { id: "value" }
-   * 3. MongoDB accepts this format for all our use cases
-   */
-  private createIdFilter(id: Id): Filter<TDto> {
-    return { id: id.toValue() } as Filter<TDto>;
-  }
-
   async save(entity: TEnt, context?: RepositoryContext): Promise<void> {
     this.registerTransactionParticipant(context);
 
     const session = this.getTransactionSession(context);
     try {
       await this.collection.updateOne(
-        this.createIdFilter(entity.id),
+        { id: entity.id.toValue() } as Filter<TDto>,
         { $set: this.toValue(entity) },
         { upsert: true, session },
       );
@@ -87,7 +74,7 @@ export abstract class BaseMongoRepository<
 
   async findById(id: Id): Promise<TEnt | null> {
     try {
-      const dto = await this.collection.findOne(this.createIdFilter(id));
+      const dto = await this.collection.findOne({ id: id.toValue() } as Filter<TDto>);
       return dto ? this.toEntity(dto as TDto) : null;
     } catch (error: unknown) {
       this.handleDatabaseError('findById', id.toValue(), error);
@@ -96,7 +83,7 @@ export abstract class BaseMongoRepository<
 
   async exists(id: Id): Promise<boolean> {
     try {
-      const dto = await this.collection.findOne(this.createIdFilter(id));
+      const dto = await this.collection.findOne({ id: id.toValue() } as Filter<TDto>);
       return !!dto;
     } catch (error: unknown) {
       this.handleDatabaseError('exists', id.toValue(), error);
@@ -108,7 +95,7 @@ export abstract class BaseMongoRepository<
 
     const session = this.getTransactionSession(context);
     try {
-      await this.collection.deleteOne(this.createIdFilter(id), { session });
+      await this.collection.deleteOne({ id: id.toValue() } as Filter<TDto>, { session });
     } catch (error: unknown) {
       this.handleDatabaseError('remove', id.toValue(), error);
     }

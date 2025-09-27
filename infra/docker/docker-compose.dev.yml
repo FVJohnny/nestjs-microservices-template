@@ -19,8 +19,7 @@ services:
       - KAFKA_SERVICE_ID=service-1
       - SERVICE_NAME=service-1
       - PROXY_BASE_PATH=/api/service-1
-      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/service-1-db?replicaSet=rs0}
-      - MONGODB_DB_NAME=${MONGODB_DB_NAME:-service-1-db}
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/service-1?replicaSet=rs0}
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}

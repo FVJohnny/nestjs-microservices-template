@@ -12,8 +12,10 @@ export class EmailVerification_Mongodb_Repository
   extends BaseMongoRepository<EmailVerification, EmailVerificationDTO>
   implements EmailVerification_Repository
 {
+  static readonly CollectionName = 'email_verifications';
+
   constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
-    super(mongoClient, 'email_verifications');
+    super(mongoClient, EmailVerification_Mongodb_Repository.CollectionName);
   }
 
   protected toEntity(dto: EmailVerificationDTO): EmailVerification {

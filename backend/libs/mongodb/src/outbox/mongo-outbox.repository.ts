@@ -16,8 +16,10 @@ export class MongoOutboxRepository
   extends BaseMongoRepository<OutboxEvent, OutboxEventDTO>
   implements OutboxRepository
 {
+  static CollectionName = 'outbox_events';
+
   constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
-    super(mongoClient, 'outbox_events');
+    super(mongoClient, MongoOutboxRepository.CollectionName);
   }
 
   protected toEntity(dto: OutboxEventDTO): OutboxEvent {

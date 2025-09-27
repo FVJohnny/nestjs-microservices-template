@@ -5,8 +5,10 @@ import type { MongoClient } from 'mongodb';
 import { EntityExample } from '@libs/nestjs-common';
 
 export class ExampleMongoRepository extends BaseMongoRepository<EntityExample, EntityExampleDTO> {
+  static CollectionName = 'transaction-test';
+
   constructor(mongoClient: MongoClient) {
-    super(mongoClient, 'transaction-test');
+    super(mongoClient, ExampleMongoRepository.CollectionName);
   }
 
   protected toEntity(dto: EntityExampleDTO): EntityExample {

@@ -4,7 +4,20 @@ import { MongooseModuleOptions } from '@nestjs/mongoose';
 @Injectable()
 export class MongoDBConfigService {
   getConnectionString(): string {
-    return process.env.MONGODB_URI || 'mongodb://localhost:27017';
+    const serviceName = process.env.SERVICE_NAME || 'service-1';
+
+    if (process.env.NODE_ENV === 'test') {
+      // Tests run locally, connect to MongoDB Docker container via localhost
+      return (
+        process.env.MONGODB_URI ||
+        `mongodb://localhost:27017/${serviceName}-tests?replicaSet=rs0&directConnection=true`
+      );
+    }
+
+    return (
+      process.env.MONGODB_URI ||
+      `mongodb://mongodb:27017/${serviceName}?replicaSet=rs0&directConnection=true`
+    );
   }
 
   getDatabaseName(): string {

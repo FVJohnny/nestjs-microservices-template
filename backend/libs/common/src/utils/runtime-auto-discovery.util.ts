@@ -85,7 +85,7 @@ export class RuntimeAutoDiscovery {
     const handlers: Type<unknown>[] = [];
     const fullPath = path.join(basePath, subPath);
 
-    this.logger.debug(`🔍 Looking for handlers in: ${fullPath} with suffix: ${suffix}`);
+    // this.logger.debug(`🔍 Looking for handlers in: ${fullPath} with suffix: ${suffix}`);
 
     if (!fs.existsSync(fullPath)) {
       this.logger.debug(`⚠️  Path does not exist: ${fullPath}`);
@@ -94,12 +94,12 @@ export class RuntimeAutoDiscovery {
 
     try {
       const files = this.getAllFilesRecursively(fullPath, suffix);
-      this.logger.debug(
-        `📁 Found ${files.length} files with suffix ${suffix}: ${files.join(', ')}`,
-      );
+      // this.logger.debug(
+      //   `📁 Found ${files.length} files with suffix ${suffix}: ${files.join(', ')}`,
+      // );
 
       for (const filePath of files) {
-        this.logger.debug(`🔍 Processing file: ${filePath}`);
+        // this.logger.debug(`🔍 Processing file: ${filePath}`);
         try {
           // Clear require cache to ensure fresh load
           delete require.cache[require.resolve(filePath)];
@@ -107,10 +107,10 @@ export class RuntimeAutoDiscovery {
           // Use require for both .js and .ts files (ts-node handles .ts in test env)
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           const module = require(filePath);
-          this.logger.debug(`📦 Module exports: ${Object.keys(module).join(', ')}`);
+          // this.logger.debug(`📦 Module exports: ${Object.keys(module).join(', ')}`);
 
           const handlerClass = this.extractComponentFromModule(module, 'Handler');
-          this.logger.debug(`🎯 Extracted handler class: ${handlerClass?.name || 'null'}`);
+          // this.logger.debug(`🎯 Extracted handler class: ${handlerClass?.name || 'null'}`);
 
           if (handlerClass) {
             handlers.push(handlerClass);

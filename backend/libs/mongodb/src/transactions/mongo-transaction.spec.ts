@@ -1,22 +1,33 @@
-import { EntityExample, InMemoryTestRepository, Transaction } from '@libs/nestjs-common';
+import type { EntityExampleDTO } from '@libs/nestjs-common';
+import { EntityExample, ExampleInMemoryRepository, Transaction } from '@libs/nestjs-common';
 import { ExampleMongoRepository } from '../infrastructure/example-mongo.repository';
 import { MongodbTestService } from '../testing/mongodb-test.service';
 
 describe('Mongo transactions', () => {
-  const setup = async () => {
-    const mongoTestService = new MongodbTestService('mongo_transaction_test_db');
+  const mongoTestService = new MongodbTestService<EntityExampleDTO>(
+    ExampleMongoRepository.CollectionName,
+  );
+  const mongoRepository = new ExampleMongoRepository(mongoTestService.mongoClient);
+  const inMemoryRepository = new ExampleInMemoryRepository();
+
+  beforeAll(async () => {
     await mongoTestService.setupDatabase();
-
-    const mongoRepository = new ExampleMongoRepository(mongoTestService.mongoClient);
     await mongoRepository.ensureIndexes();
+  });
 
-    const inMemoryRepository = new InMemoryTestRepository();
-    return { mongoRepository, inMemoryRepository, mongoTestService };
-  };
+  beforeEach(async () => {
+    await mongoTestService.clearCollection();
+  });
+
+  afterEach(async () => {
+    await mongoTestService.clearCollection();
+  });
+
+  afterAll(async () => {
+    await mongoTestService.cleanup();
+  });
 
   it('commits all writes when each save succeeds', async () => {
-    const { mongoRepository, mongoTestService } = await setup();
-
     const firstAggregate = EntityExample.create('value-1');
     const secondAggregate = EntityExample.create('value-2');
 
@@ -31,12 +42,9 @@ describe('Mongo transactions', () => {
     await expect(mongoRepository.findById(secondAggregate.id)).resolves.toMatchObject({
       value: 'value-2',
     });
-
-    await mongoTestService.cleanupDatabase();
   });
 
   it('rolls back writes when a failure occurs', async () => {
-    const { mongoRepository, mongoTestService } = await setup();
     const firstAggregate = EntityExample.create('value-1');
     const secondAggregate = EntityExample.create('value-2');
 
@@ -50,14 +58,10 @@ describe('Mongo transactions', () => {
 
     await expect(mongoRepository.findById(firstAggregate.id)).resolves.toBeNull();
     await expect(mongoRepository.findById(secondAggregate.id)).resolves.toBeNull();
-
-    await mongoTestService.cleanupDatabase();
   });
 
   describe('with in-memory participant', () => {
     it('commits both mongo and in-memory writes when successful', async () => {
-      const { mongoRepository, inMemoryRepository, mongoTestService } = await setup();
-
       const aggregate = EntityExample.create('composed-success');
 
       await Transaction.run(async (context) => {
@@ -71,13 +75,9 @@ describe('Mongo transactions', () => {
       await expect(inMemoryRepository.findById(aggregate.id)).resolves.toMatchObject({
         value: 'composed-success',
       });
-
-      await mongoTestService.cleanupDatabase();
     });
 
     it('rolls back mongo and in-memory writes when an error occurs', async () => {
-      const { mongoRepository, inMemoryRepository, mongoTestService } = await setup();
-
       const aggregate = EntityExample.create('composed-rollback');
 
       await expect(
@@ -90,8 +90,6 @@ describe('Mongo transactions', () => {
 
       await expect(mongoRepository.findById(aggregate.id)).resolves.toBeNull();
       await expect(inMemoryRepository.findById(aggregate.id)).resolves.toBeNull();
-
-      await mongoTestService.cleanupDatabase();
     });
   });
 });

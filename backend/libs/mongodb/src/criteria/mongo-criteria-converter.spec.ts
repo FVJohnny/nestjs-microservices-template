@@ -1,4 +1,3 @@
-import type { Collection } from 'mongodb';
 import { MongoCriteriaConverter } from './mongo-criteria-converter';
 import { MongodbTestService } from '../testing/mongodb-test.service';
 import {
@@ -7,30 +6,24 @@ import {
 } from '@libs/nestjs-common/test-exports';
 
 describe('MongoCriteriaConverter', () => {
-  const mongoTestService = new MongodbTestService('criteria_converter_test_db');
-  let collection: Collection<TestEntityDTO>;
-
-  const TEST_COLLECTION_NAME = 'test_entities';
+  const mongoTestService = new MongodbTestService<TestEntityDTO>('test_entities');
 
   beforeAll(async () => {
-    const db = mongoTestService.mongoClient.db('criteria_converter_test_db');
-    collection = db.collection<TestEntityDTO>(TEST_COLLECTION_NAME);
-  });
-
-  afterAll(async () => {
-    await mongoTestService.cleanupDatabase();
+    await mongoTestService.setupDatabase();
   });
 
   beforeEach(async () => {
-    await mongoTestService.clearCollection(TEST_COLLECTION_NAME);
+    await mongoTestService.clearCollection();
+  });
+
+  afterAll(async () => {
+    await mongoTestService.cleanup();
   });
 
   // Run the shared contract tests
   testCriteriaConverterContract('MongoDB Implementation', async (entities: TestEntityDTO[]) => {
-    await mongoTestService.clearCollection(TEST_COLLECTION_NAME);
-    if (entities.length > 0) {
-      await collection.insertMany(entities);
-    }
+    await mongoTestService.setInitialData(entities);
+    const collection = mongoTestService.getCollection();
     return new MongoCriteriaConverter(collection);
   });
 });

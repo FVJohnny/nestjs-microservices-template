@@ -22,7 +22,8 @@ export class MongoDBModule {
           return null;
         }
 
-        const client = new MongoClient(configService.getConnectionString());
+        const uri = configService.getConnectionString();
+        const client = new MongoClient(uri);
         await client.connect();
         return client;
       },

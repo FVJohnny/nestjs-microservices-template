@@ -1,13 +1,17 @@
+import type { SharedAggregateRootDTO } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { MongoClient } from 'mongodb';
+import { MongoDBConfigService } from '../mongodb-config.service';
 
-export class MongodbTestService {
+export class MongodbTestService<T extends SharedAggregateRootDTO> {
   readonly mongoClient: MongoClient;
   private readonly logger = new CorrelationLogger(MongodbTestService.name);
 
-  constructor(private readonly dbName: string) {
-    const uri =
-      process.env.MONGODB_URI || `mongodb://localhost:27017/${this.dbName}?replicaSet=rs0`;
+  constructor(private collectionName: string) {
+    const mongoConfigService = new MongoDBConfigService();
+    const uri = mongoConfigService.getConnectionString();
+
+    this.logger.log(`MongoDB connection string: ${uri}`);
     this.mongoClient = new MongoClient(uri);
   }
 
@@ -17,8 +21,7 @@ export class MongodbTestService {
 
       await this.mongoClient.connect();
 
-      await this.mongoClient.db(this.dbName).admin().ping();
-      await this.mongoClient.db(this.dbName).dropDatabase();
+      await this.mongoClient.db().admin().ping();
 
       this.logger.debug('Test setup completed');
     } catch (error) {
@@ -27,18 +30,22 @@ export class MongodbTestService {
     }
   }
 
-  async cleanupDatabase() {
-    try {
-      await this.mongoClient.db(this.dbName).dropDatabase();
-      this.logger.debug('Cleaned up test database');
-    } catch (error) {
-      this.logger.error('Error cleaning up test database:', error);
-    }
-    await this.mongoClient.close();
+  getCollection() {
+    return this.mongoClient.db().collection<T>(this.collectionName);
   }
 
-  async clearCollection(collectionName: string) {
-    const db = this.mongoClient.db(this.dbName);
-    await db.collection(collectionName).deleteMany({});
+  async setInitialData(data: T[]) {
+    if (data.length === 0) return;
+
+    await this.mongoClient.db().collection(this.collectionName).insertMany(data);
+  }
+
+  async clearCollection() {
+    await this.mongoClient.db().collection(this.collectionName).deleteMany({});
+  }
+
+  async cleanup() {
+    await this.mongoClient.db().collection(this.collectionName).drop();
+    await this.mongoClient.close();
   }
 }

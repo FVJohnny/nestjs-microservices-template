@@ -12,8 +12,10 @@ export class User_Mongodb_Repository
   extends BaseMongoRepository<User, UserDTO>
   implements User_Repository
 {
+  static readonly CollectionName = 'users';
+
   constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
-    super(mongoClient, 'users');
+    super(mongoClient, User_Mongodb_Repository.CollectionName);
   }
 
   protected toEntity(dto: UserDTO): User {
