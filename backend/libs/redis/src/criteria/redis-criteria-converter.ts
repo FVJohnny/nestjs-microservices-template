@@ -47,7 +47,6 @@ export class RedisCriteriaConverter<D extends SharedAggregateRootDTO> extends Cr
     // Scan for matching keys
     const keys = await this.scanKeys(scanPattern, scanOptions);
 
-
     // Fetch all matching entities
     let entities: D[] = [];
     if (keys.length > 0) {
