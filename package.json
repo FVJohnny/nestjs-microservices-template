@@ -9,7 +9,7 @@
     "test:e2e": "nx run-many --target=test:e2e --all --exclude=nestjs-microservices-monorepo-template",
     "test:e2e:watch": "npm run test:e2e -- --watchAll",
     "test:nocache": "npm run test -- --skip-nx-cache",
-    "test": "sh -c 'npm run test:unit -- \"$@\" && npm run test:e2e -- \"$@\"' -- ",
+    "test": "npm run test:unit && npm run test:e2e",
     "lint": "nx run-many -t lint --fix --exclude=nestjs-microservices-monorepo-template",
     "lint:fix": "nx run-many -t lint --fix --exclude=nestjs-microservices-monorepo-template",
     "dev": "./infra/docker/start-dev.sh",
@@ -17,7 +17,7 @@
     "prod": "docker compose -f infra/docker/docker-compose.prod.yml up --build -d",
     "prod-down": "docker compose -f infra/docker/docker-compose.prod.yml down",
     "nx": "nx",
-    "prepare": "command -v husky >/dev/null 2>&1 && husky || true",
+    "prepare": "husky",
     "zip": "zip -r project.zip . -x \"*/node_modules/*\" \"*/dist/*\" \"node_modules/*\" \"dist/*\" \".nx/*\" \".git/*\""
   },
   "workspaces": [

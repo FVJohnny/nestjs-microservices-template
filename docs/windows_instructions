@@ -1,0 +1,17 @@
+
+1. Install Docker Desktop for Windows: https://www.docker.com/products/docker-desktop
+
+2. Install Git for Windows if you don’t have it: https://git-scm.com/download/win
+
+3. Tell npm to use Bash for scripts so npm run dev works as-is:
+
+    Per-project:
+        npm config set script-shell "C:\Program Files\Git\bin\bash.exe" --location=project
+
+    Per-user:
+        npm config set script-shell "C:\Program Files\Git\bin\bash.exe" --location=user
+
+4. Try running npm run dev.   If it doesn't work, check where Bash is installed with:
+where bash
+
+5. Then, run the previous command with the correct path to bash.exe

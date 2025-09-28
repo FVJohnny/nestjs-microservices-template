@@ -1,32 +1,31 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-# Generate keyfile for replica set authentication
-openssl rand -base64 756 > /tmp/keyfile
-chmod 400 /tmp/keyfile
-chown 999:999 /tmp/keyfile
-
-# Start MongoDB with replica set and keyfile
-mongod --replSet rs0 --bind_ip_all --keyFile /tmp/keyfile &
+# Start MongoDB with replica set
+mongod --replSet rs0 --bind_ip_all &
 MONGO_PID=$!
 
-# Wait for MongoDB to start
+# Wait for mongod to accept connections
 echo "Waiting for MongoDB to start..."
-sleep 10
+for i in {1..30}; do
+  if mongosh --quiet --eval "db.adminCommand('ping').ok" | grep -q 1; then
+    echo "MongoDB is up"
+    break
+  fi
+  sleep 1
+done
 
 # Initialize replica set if not already initialized
-mongosh -u admin -p admin123 --authenticationDatabase admin --eval "
+echo "Ensuring replica set is initiated..."
+mongosh --quiet --eval "
   try {
-    var status = rs.status();
+    rs.status();
     print('Replica set already initialized');
-  } catch(e) {
+  } catch (e) {
     print('Initializing replica set...');
-    rs.initiate({
-      _id: 'rs0',
-      members: [{_id: 0, host: 'localhost:27017'}]
-    });
+    rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongodb:27017' }] });
   }
 " || true
 
-# Keep MongoDB running
+# Keep MongoDB running in foreground
 wait $MONGO_PID

@@ -120,16 +120,16 @@ services:
 
   mongodb:
     image: mongo:7.0
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--noauth"]
+    command: ["bash", "/scripts/mongo-startup.sh"]
     ports:
       - "27017:27017"
     volumes:
       - mongodb_data_dev:/data/db
+      - ${PWD}/infra/docker/mongo-startup.sh:/scripts/mongo-startup.sh:ro
     networks:
       - backend
     healthcheck:
-      test: >
-        bash -c "mongosh --eval 'try { rs.status().ok } catch (e) { rs.initiate({_id:\"rs0\",members:[{_id:0,host:\"localhost:27017\"}]}) }' || exit 1"
+      test: ["CMD-SHELL", "mongosh --eval 'rs.status().ok' | grep -q 1"]
       interval: 5s
       timeout: 10s
       retries: 10
