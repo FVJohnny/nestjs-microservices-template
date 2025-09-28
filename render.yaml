@@ -6,7 +6,7 @@ services:
     # Use the repo root as the Docker build context so Dockerfile
     # can COPY both libs/ and services/ directories
     rootDir: .
-    dockerfilePath: backend/services/service-1/Dockerfile
+    dockerfilePath: infra/docker/Dockerfile.nestjs-service
     plan: starter
     autoDeploy: true
     envVars:

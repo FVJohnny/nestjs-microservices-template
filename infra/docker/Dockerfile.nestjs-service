@@ -3,7 +3,7 @@
 # Shared Dockerfile for NestJS services in the monorepo
 # Usage: docker build -f docker/Dockerfile.nestjs-service --build-arg SERVICE_NAME=service-1 .
 
-ARG SERVICE_NAME
+ARG SERVICE_NAME=service-1
 ARG NODE_VERSION=22
 
 # --- Builder stage: install deps and build ---
