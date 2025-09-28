@@ -64,7 +64,7 @@ export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser
 
     const usernameExists = await this.userRepository.existsByUsername(username);
     if (usernameExists) {
-      throw new AlreadyExistsException('usernamea', command.username);
+      throw new AlreadyExistsException('username', command.username);
     }
   }
 
