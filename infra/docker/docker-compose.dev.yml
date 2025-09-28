@@ -1,11 +1,11 @@
 services:
   service-1:
     image: node:22-alpine
-    working_dir: /app/backend/services/service-1
+    working_dir: /app
     volumes:
       - ${PWD}:/app
     command: >
-      sh -c "npm run start:dev"
+      sh -lc "NX_DAEMON=false NX_NATIVE_LOGS=trace npx nx run service-1:serve --watch --verbose"
     env_file:
       - .env
     environment:
@@ -13,6 +13,7 @@ services:
       - PORT=3000
       - CHOKIDAR_USEPOLLING=1
       - WATCHPACK_POLLING=true
+      - NX_DAEMON=false
       - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
       - KAFKA_USERNAME=${KAFKA_USERNAME:-}
       - KAFKA_PASSWORD=${KAFKA_PASSWORD:-}

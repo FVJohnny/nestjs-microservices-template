@@ -15,6 +15,9 @@ export default [
       '**/jest.config.js',
       '**/*.config.js',
       '**/*.test.ts',
+      '**/*.spec.ts',
+      '**/*.e2e-spec.ts',
+      '**/test/**',
     ],
   },
 
@@ -31,7 +34,7 @@ export default [
       },
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['*.mjs', '*.js', '*.cjs'],
+          allowDefaultProject: ['*.mjs', '*.js', '*.cjs', '*.ts', '*.tsx'],
         },
         tsconfigRootDir: import.meta.dirname,
       },
