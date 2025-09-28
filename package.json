@@ -19,7 +19,6 @@
     "prod": "docker compose -f infra/docker/docker-compose.prod.yml up --build -d",
     "prod-down": "docker compose -f infra/docker/docker-compose.prod.yml down",
     "nx": "nx",
-    "prepare": "husky",
     "zip": "zip -r project.zip . -x \"*/node_modules/*\" \"*/dist/*\" \"node_modules/*\" \"dist/*\" \".nx/*\" \".git/*\""
   },
   "workspaces": [

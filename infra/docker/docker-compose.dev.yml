@@ -5,7 +5,7 @@ services:
     volumes:
       - ${PWD}:/app
     command: >
-      sh -lc "NX_DAEMON=false NX_NATIVE_LOGS=trace npx nx run service-1:serve --watch --verbose"
+      sh -c "npm run nx -- serve service-1 --watch --verbose"
     env_file:
       - .env
     environment:
@@ -14,6 +14,10 @@ services:
       - CHOKIDAR_USEPOLLING=1
       - WATCHPACK_POLLING=true
       - NX_DAEMON=false
+      - NX_CACHE_DIRECTORY=/tmp/nx-cache
+      - NX_INTERACTIVE_ANALYTICS=false
+      - NX_GENERATE_QUIET=true
+      - CI=true
       - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
       - KAFKA_USERNAME=${KAFKA_USERNAME:-}
       - KAFKA_PASSWORD=${KAFKA_PASSWORD:-}
