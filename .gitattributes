@@ -1,0 +1,21 @@
+# Normalize line endings to LF for all text files
+* text eol=lf
+
+# Shell scripts should always be LF
+*.sh text eol=lf
+
+# Windows batch files use CRLF
+*.bat text eol=crlf
+
+# Mark binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.svg text eol=lf
+*.ico binary
+*.pdf binary
+
+# Keep lock files consistent
+package-lock.json text eol=lf
