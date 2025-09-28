@@ -13,6 +13,6 @@ export default {
   },
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/../src/$1',
-    ...pathsToModuleNameMapper(baseCompilerOptions.paths || {}, { prefix: '<rootDir>/../' }),
+    ...pathsToModuleNameMapper(baseCompilerOptions.paths || {}, { prefix: '<rootDir>/../../../../' }),
   },
 };

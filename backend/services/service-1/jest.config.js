@@ -14,7 +14,7 @@ module.exports = {
   coverageDirectory: '../coverage',
   moduleFileExtensions: ['js', 'json', 'ts'],
   moduleNameMapper: {
-    ...pathsToModuleNameMapper(baseCompilerOptions.paths || {}, { prefix: '<rootDir>/../' }),
+    ...pathsToModuleNameMapper(baseCompilerOptions.paths || {}, { prefix: '<rootDir>/../../../../' }),
     '^express$': '<rootDir>/../node_modules/express/index.js',
   },
 };
