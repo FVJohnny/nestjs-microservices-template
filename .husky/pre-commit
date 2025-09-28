@@ -8,7 +8,7 @@ npm run -s build || {
 }
 
 echo "Running Lint..."
-npm run -s lint || {
+npm run -s lint:fix || {
   echo "\n✖ Lint failed. Fix issues before committing.";
   exit 1;
 }
