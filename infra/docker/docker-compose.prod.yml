@@ -2,7 +2,9 @@ services:
   service-1:
     build:
       context: ${PWD}
-      dockerfile: backend/services/service-1/Dockerfile
+      dockerfile: ./infra/docker/Dockerfile.nestjs-service
+      args:
+        SERVICE_NAME: service-1
     image: copy-signals-service-1:latest
     env_file:
       - .env
