@@ -30,7 +30,7 @@ services:
       - POSTGRES_LOGGING=${POSTGRES_LOGGING:-true}
       - CORS_ORIGINS=${CORS_ORIGINS:-https://copysignals.ai,https://www.copysignals.ai}
     ports:
-      - "3001:3000"
+      - '3001:3000'
     networks:
       - backend
     depends_on:
@@ -43,14 +43,13 @@ services:
       postgres:
         condition: service_healthy
 
-
   frontend:
     build:
       context: ${PWD}/frontend
       dockerfile: Dockerfile
     image: copy-signals-frontend:latest
     ports:
-      - "3000:80"
+      - '3000:80'
     networks:
       - backend
     environment:
@@ -71,7 +70,7 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "9092:9092"
+      - '9092:9092'
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -81,7 +80,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: [ "CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list" ]
+      test: ['CMD-SHELL', 'kafka-topics --bootstrap-server localhost:9092 --list']
       interval: 30s
       timeout: 10s
       retries: 5
@@ -90,7 +89,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     ports:
-      - "9090:9090"
+      - '9090:9090'
     volumes:
       - ${PWD}/infra/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
@@ -102,7 +101,7 @@ services:
   grafana:
     image: grafana/grafana:10.4.2
     ports:
-      - "4000:3000"
+      - '4000:3000'
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -120,7 +119,7 @@ services:
   mongodb:
     image: mongo:7.0
     ports:
-      - "27017:27017"
+      - '27017:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: secureproductionpassword
@@ -131,7 +130,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -141,14 +140,14 @@ services:
   redis:
     image: redis:7.0-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     command: redis-server --appendonly yes --requirepass secureproductionredispassword
     volumes:
       - redis_data:/data
     networks:
       - backend
     healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "secureproductionredispassword", "ping" ]
+      test: ['CMD', 'redis-cli', '-a', 'secureproductionredispassword', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -158,7 +157,7 @@ services:
   postgres:
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: secureproductionpostgrespassword
@@ -169,7 +168,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U admin -d service-1-db" ]
+      test: ['CMD-SHELL', 'pg_isready -U admin -d service-1-db']
       interval: 10s
       timeout: 5s
       retries: 5

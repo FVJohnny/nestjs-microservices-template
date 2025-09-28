@@ -7,11 +7,7 @@
         "data": {
           "root": "backend/services/service-1",
           "name": "service-1",
-          "tags": [
-            "npm:private",
-            "type:app",
-            "scope:service"
-          ],
+          "tags": ["npm:private", "type:app", "scope:service"],
           "metadata": {
             "targetGroups": {
               "NPM Scripts": [
@@ -143,9 +139,7 @@
             },
             "build": {
               "executor": "@nx/js:tsc",
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
+              "outputs": ["{projectRoot}/dist"],
               "options": {
                 "outputPath": "backend/services/service-1/dist",
                 "main": "backend/services/service-1/src/main.ts",
@@ -154,21 +148,14 @@
               },
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ],
-              "inputs": [
-                "production",
-                "^production"
-              ],
+              "dependsOn": ["^build"],
+              "inputs": ["production", "^production"],
               "cache": true
             },
             "serve": {
               "executor": "@nx/js:node",
               "defaultConfiguration": "development",
-              "dependsOn": [
-                "build"
-              ],
+              "dependsOn": ["build"],
               "options": {
                 "buildTarget": "service-1:build",
                 "inspect": false
@@ -185,9 +172,7 @@
             },
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
                 "lintFilePatterns": [
                   "backend/services/service-1/src/**/*.ts",
@@ -205,19 +190,13 @@
             },
             "test": {
               "executor": "@nx/jest:jest",
-              "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
-              ],
+              "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
               "options": {
                 "jestConfig": "backend/services/service-1/jest.config.js"
               },
               "configurations": {},
               "parallelism": true,
-              "inputs": [
-                "default",
-                "^production",
-                "{workspaceRoot}/jest.preset.js"
-              ],
+              "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
               "cache": true
             }
           },
@@ -251,9 +230,7 @@
           ],
           "metadata": {
             "targetGroups": {
-              "NPM Scripts": [
-                "dev"
-              ]
+              "NPM Scripts": ["dev"]
             },
             "description": "Shared PostgreSQL utilities for NestJS services",
             "js": {
@@ -277,18 +254,14 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
             },
             "build": {
               "executor": "@nx/js:tsc",
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
+              "outputs": ["{projectRoot}/dist"],
               "options": {
                 "outputPath": "backend/libs/postgresql/dist",
                 "main": "backend/libs/postgresql/src/index.ts",
@@ -297,24 +270,15 @@
               },
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ],
-              "inputs": [
-                "production",
-                "^production"
-              ],
+              "dependsOn": ["^build"],
+              "inputs": ["production", "^production"],
               "cache": true
             },
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": [
-                  "backend/libs/postgresql/src/**/*.ts"
-                ]
+                "lintFilePatterns": ["backend/libs/postgresql/src/**/*.ts"]
               },
               "configurations": {},
               "parallelism": true,
@@ -327,19 +291,13 @@
             },
             "test": {
               "executor": "@nx/jest:jest",
-              "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
-              ],
+              "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
               "options": {
                 "jestConfig": "backend/libs/postgresql/jest.config.js"
               },
               "configurations": {},
               "parallelism": true,
-              "inputs": [
-                "default",
-                "^production",
-                "{workspaceRoot}/jest.preset.js"
-              ],
+              "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
               "cache": true
             }
           },
@@ -367,9 +325,7 @@
           ],
           "metadata": {
             "targetGroups": {
-              "NPM Scripts": [
-                "build:watch"
-              ]
+              "NPM Scripts": ["build:watch"]
             },
             "description": "Shared MongoDB module for NestJS services",
             "js": {
@@ -393,18 +349,14 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
             },
             "build": {
               "executor": "@nx/js:tsc",
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
+              "outputs": ["{projectRoot}/dist"],
               "options": {
                 "outputPath": "backend/libs/mongodb/dist",
                 "main": "backend/libs/mongodb/src/index.ts",
@@ -413,24 +365,15 @@
               },
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ],
-              "inputs": [
-                "production",
-                "^production"
-              ],
+              "dependsOn": ["^build"],
+              "inputs": ["production", "^production"],
               "cache": true
             },
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": [
-                  "backend/libs/mongodb/src/**/*.ts"
-                ]
+                "lintFilePatterns": ["backend/libs/mongodb/src/**/*.ts"]
               },
               "configurations": {},
               "parallelism": true,
@@ -443,19 +386,13 @@
             },
             "test": {
               "executor": "@nx/jest:jest",
-              "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
-              ],
+              "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
               "options": {
                 "jestConfig": "backend/libs/mongodb/jest.config.js"
               },
               "configurations": {},
               "parallelism": true,
-              "inputs": [
-                "default",
-                "^production",
-                "{workspaceRoot}/jest.preset.js"
-              ],
+              "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
               "cache": true
             }
           },
@@ -470,9 +407,7 @@
         "data": {
           "root": "backend/libs/eslint",
           "name": "@libs/nestjs-eslint",
-          "tags": [
-            "npm:public"
-          ],
+          "tags": ["npm:public"],
           "metadata": {
             "targetGroups": {},
             "js": {
@@ -484,9 +419,7 @@
           "targets": {
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
@@ -513,9 +446,7 @@
           ],
           "metadata": {
             "targetGroups": {
-              "NPM Scripts": [
-                "dev"
-              ]
+              "NPM Scripts": ["dev"]
             },
             "description": "Shared common utilities for NestJS services (e.g., Heartbeat module)",
             "js": {
@@ -539,18 +470,14 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
             },
             "build": {
               "executor": "@nx/js:tsc",
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
+              "outputs": ["{projectRoot}/dist"],
               "options": {
                 "outputPath": "backend/libs/common/dist",
                 "main": "backend/libs/common/src/index.ts",
@@ -559,24 +486,15 @@
               },
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ],
-              "inputs": [
-                "production",
-                "^production"
-              ],
+              "dependsOn": ["^build"],
+              "inputs": ["production", "^production"],
               "cache": true
             },
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": [
-                  "backend/libs/common/src/**/*.ts"
-                ]
+                "lintFilePatterns": ["backend/libs/common/src/**/*.ts"]
               },
               "configurations": {},
               "parallelism": true,
@@ -589,19 +507,13 @@
             },
             "test": {
               "executor": "@nx/jest:jest",
-              "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
-              ],
+              "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
               "options": {
                 "jestConfig": "backend/libs/common/jest.config.js"
               },
               "configurations": {},
               "parallelism": true,
-              "inputs": [
-                "default",
-                "^production",
-                "{workspaceRoot}/jest.preset.js"
-              ],
+              "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
               "cache": true
             }
           },
@@ -616,17 +528,10 @@
         "data": {
           "root": "backend/libs/kafka",
           "name": "nestjs-kafka",
-          "tags": [
-            "npm:public",
-            "type:lib",
-            "scope:nestjs",
-            "topic:kafka"
-          ],
+          "tags": ["npm:public", "type:lib", "scope:nestjs", "topic:kafka"],
           "metadata": {
             "targetGroups": {
-              "NPM Scripts": [
-                "build:watch"
-              ]
+              "NPM Scripts": ["build:watch"]
             },
             "description": "Shared Kafka module for NestJS services",
             "js": {
@@ -650,18 +555,14 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
             },
             "build": {
               "executor": "@nx/js:tsc",
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
+              "outputs": ["{projectRoot}/dist"],
               "options": {
                 "outputPath": "backend/libs/kafka/dist",
                 "main": "backend/libs/kafka/src/index.ts",
@@ -670,24 +571,15 @@
               },
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ],
-              "inputs": [
-                "production",
-                "^production"
-              ],
+              "dependsOn": ["^build"],
+              "inputs": ["production", "^production"],
               "cache": true
             },
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": [
-                  "backend/libs/kafka/src/**/*.ts"
-                ]
+                "lintFilePatterns": ["backend/libs/kafka/src/**/*.ts"]
               },
               "configurations": {},
               "parallelism": true,
@@ -700,19 +592,13 @@
             },
             "test": {
               "executor": "@nx/jest:jest",
-              "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
-              ],
+              "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
               "options": {
                 "jestConfig": "backend/libs/kafka/jest.config.js"
               },
               "configurations": {},
               "parallelism": true,
-              "inputs": [
-                "default",
-                "^production",
-                "{workspaceRoot}/jest.preset.js"
-              ],
+              "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
               "cache": true
             }
           },
@@ -742,9 +628,7 @@
           ],
           "metadata": {
             "targetGroups": {
-              "NPM Scripts": [
-                "build:watch"
-              ]
+              "NPM Scripts": ["build:watch"]
             },
             "description": "Shared Redis module for NestJS services with Channel repository implementation",
             "js": {
@@ -768,18 +652,14 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
             },
             "build": {
               "executor": "@nx/js:tsc",
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
+              "outputs": ["{projectRoot}/dist"],
               "options": {
                 "outputPath": "backend/libs/redis/dist",
                 "main": "backend/libs/redis/src/index.ts",
@@ -788,24 +668,15 @@
               },
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ],
-              "inputs": [
-                "production",
-                "^production"
-              ],
+              "dependsOn": ["^build"],
+              "inputs": ["production", "^production"],
               "cache": true
             },
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": [
-                  "backend/libs/redis/src/**/*.ts"
-                ]
+                "lintFilePatterns": ["backend/libs/redis/src/**/*.ts"]
               },
               "configurations": {},
               "parallelism": true,
@@ -818,19 +689,13 @@
             },
             "test": {
               "executor": "@nx/jest:jest",
-              "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
-              ],
+              "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
               "options": {
                 "jestConfig": "backend/libs/redis/jest.config.js"
               },
               "configurations": {},
               "parallelism": true,
-              "inputs": [
-                "default",
-                "^production",
-                "{workspaceRoot}/jest.preset.js"
-              ],
+              "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
               "cache": true
             }
           },

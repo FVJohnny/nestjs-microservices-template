@@ -1,7 +1,7 @@
 import type { IEventHandler } from '@nestjs/cqrs';
-import type { DomainEvent } from './domain-event.base';
-import { TracingService } from '../tracing';
 import { CorrelationLogger } from '../logger';
+import { TracingService } from '../tracing';
+import type { DomainEvent } from './domain-event.base';
 
 export abstract class DomainEventHandlerBase<T extends DomainEvent> implements IEventHandler<T> {
   protected readonly logger: CorrelationLogger;

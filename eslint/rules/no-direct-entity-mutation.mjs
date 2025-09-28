@@ -45,19 +45,14 @@ export default createRule({
       }
 
       for (const declaration of symbol.getDeclarations() ?? []) {
-        if (
-          ts.isClassDeclaration(declaration) ||
-          ts.isClassExpression(declaration)
-        ) {
+        if (ts.isClassDeclaration(declaration) || ts.isClassExpression(declaration)) {
           for (const heritage of declaration.heritageClauses ?? []) {
             if (heritage.token !== ts.SyntaxKind.ExtendsKeyword) {
               continue;
             }
 
             for (const baseType of heritage.types) {
-              const baseSymbol = checker
-                .getTypeAtLocation(baseType.expression)
-                .getSymbol();
+              const baseSymbol = checker.getTypeAtLocation(baseType.expression).getSymbol();
 
               if (baseSymbol && symbolExtendsSharedAggregateRoot(baseSymbol, seen)) {
                 return true;
@@ -78,9 +73,7 @@ export default createRule({
       seen.add(type);
 
       if (type.isUnion() || type.isIntersection()) {
-        return type.types.some((member) =>
-          typeExtendsSharedAggregateRoot(member, seen),
-        );
+        return type.types.some((member) => typeExtendsSharedAggregateRoot(member, seen));
       }
 
       const symbol = type.getSymbol() ?? type.aliasSymbol;

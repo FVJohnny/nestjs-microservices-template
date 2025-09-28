@@ -12,13 +12,6 @@
       "@bc/*": ["backend/services/service-1/src/bounded-contexts/*"]
     }
   },
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "test/*.js"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*", "test/**/*", "test/*.js"],
+  "exclude": ["node_modules", "dist"]
 }

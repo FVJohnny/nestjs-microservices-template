@@ -15,10 +15,7 @@
     "importHelpers": true,
     "allowSyntheticDefaultImports": true,
     "target": "ES2023",
-    "lib": [
-      "es2020",
-      "dom"
-    ],
+    "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "strictNullChecks": true,
@@ -29,31 +26,14 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@libs/nestjs-common": [
-        "../../libs/common/dist"
-      ],
-      "@libs/nestjs-common/test-exports": [
-        "../../libs/common/dist/test-exports/index"
-      ],
-      "@libs/nestjs-kafka": [
-        "../../libs/kafka/dist"
-      ],
-      "@libs/nestjs-mongodb": [
-        "../../libs/mongodb/dist"
-      ],
-      "@libs/nestjs-redis": [
-        "../../libs/redis/dist"
-      ],
-      "@libs/nestjs-postgresql": [
-        "../../libs/postgresql/dist"
-      ],
-      "@bc/*": [
-        "src/bounded-contexts/*"
-      ]
+      "@libs/nestjs-common": ["../../libs/common/dist"],
+      "@libs/nestjs-common/test-exports": ["../../libs/common/dist/test-exports/index"],
+      "@libs/nestjs-kafka": ["../../libs/kafka/dist"],
+      "@libs/nestjs-mongodb": ["../../libs/mongodb/dist"],
+      "@libs/nestjs-redis": ["../../libs/redis/dist"],
+      "@libs/nestjs-postgresql": ["../../libs/postgresql/dist"],
+      "@bc/*": ["src/bounded-contexts/*"]
     }
   },
-  "exclude": [
-    "node_modules",
-    "tmp"
-  ]
+  "exclude": ["node_modules", "tmp"]
 }
