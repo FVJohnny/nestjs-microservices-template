@@ -25,12 +25,12 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@libs/nestjs-common": ["backend/libs/common/dist"],
-      "@libs/nestjs-common/test-exports": ["backend/libs/common/dist/test-exports"],
-      "@libs/nestjs-kafka": ["backend/libs/kafka/dist"],
-      "@libs/nestjs-mongodb": ["backend/libs/mongodb/dist"],
-      "@libs/nestjs-redis": ["backend/libs/redis/dist"],
-      "@libs/nestjs-postgresql": ["backend/libs/postgresql/dist"],
+      "@libs/nestjs-common": ["backend/libs/common/src"],
+      "@libs/nestjs-common/test-exports": ["backend/libs/common/src/test-exports"],
+      "@libs/nestjs-kafka": ["backend/libs/kafka/src"],
+      "@libs/nestjs-mongodb": ["backend/libs/mongodb/src"],
+      "@libs/nestjs-redis": ["backend/libs/redis/src"],
+      "@libs/nestjs-postgresql": ["backend/libs/postgresql/src"],
       "@bc/*": ["backend/services/service-1/src/bounded-contexts/*"]
     }
   },

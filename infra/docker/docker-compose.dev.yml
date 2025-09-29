@@ -5,7 +5,7 @@ services:
     volumes:
       - ${PWD}:/app
     command: >
-      sh -c "npm i && npm run nx -- serve service-1 --watch --verbose"
+      sh -c "npm i && cd backend/services/service-1 && npm run start:dev"
     env_file:
       - .env
     environment:
