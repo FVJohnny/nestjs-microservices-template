@@ -50,6 +50,7 @@ venv/
 !.vscode/extensions.json
 *.swp
 *.swo
+.claude/
 
 # Docker
 *.pid
