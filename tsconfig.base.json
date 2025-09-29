@@ -26,7 +26,7 @@
     "baseUrl": ".",
     "paths": {
       "@libs/nestjs-common": ["backend/libs/common/dist"],
-      "@libs/nestjs-common/test-exports": ["backend/libs/common/dist/test-exports/index"],
+      "@libs/nestjs-common/test-exports": ["backend/libs/common/dist/test-exports"],
       "@libs/nestjs-kafka": ["backend/libs/kafka/dist"],
       "@libs/nestjs-mongodb": ["backend/libs/mongodb/dist"],
       "@libs/nestjs-redis": ["backend/libs/redis/dist"],

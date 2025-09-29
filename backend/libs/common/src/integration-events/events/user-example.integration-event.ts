@@ -1,3 +1,4 @@
+import { ApplicationException } from '../../errors';
 import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './integration-event.base';
 import { Topics } from './topics';
 
@@ -34,5 +35,10 @@ export class UserExample_IntegrationEvent extends BaseIntegrationEvent {
     });
     event.validate();
     return event;
+  }
+
+  protected validate(): void {
+    super.validate();
+    if (!this.example) throw new ApplicationException('example is required');
   }
 }

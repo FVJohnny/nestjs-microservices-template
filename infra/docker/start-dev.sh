@@ -17,9 +17,6 @@ fi
 echo "📦 Installing dependencies..."
 npm install
 
-echo "🔨 Building libraries and services..."
-npm run build
-
 echo "🐳 Starting Docker containers..."
 docker compose -f infra/docker/docker-compose.dev.yml up --build -d
 
