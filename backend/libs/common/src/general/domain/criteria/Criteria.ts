@@ -2,6 +2,7 @@ import { Filters } from './filters/Filters';
 import { Order } from './order/Order';
 import { PaginationOffset } from './pagination/PaginationOffset';
 import { PaginationCursor } from './pagination/PaginationCursor';
+import { DomainValidationException } from '../../../errors';
 
 interface CriteriaProps {
   filters?: Filters;
@@ -12,6 +13,8 @@ export class Criteria implements CriteriaProps {
   readonly filters: Filters;
   readonly order: Order;
   readonly pagination: PaginationOffset | PaginationCursor;
+
+  private static readonly MAX_LIMIT = 30;
 
   constructor(props: CriteriaProps = {}) {
     this.filters = props.filters || Filters.none();
@@ -52,6 +55,14 @@ export class Criteria implements CriteriaProps {
       if (!this.order.hasOrder()) {
         throw new Error('Cursor pagination requires an order value');
       }
+    }
+
+    if (this.pagination.limit > Criteria.MAX_LIMIT) {
+      throw new DomainValidationException(
+        'Criteria limit',
+        this.pagination.limit,
+        'exceeds maximum limit of ' + Criteria.MAX_LIMIT,
+      );
     }
   }
 }

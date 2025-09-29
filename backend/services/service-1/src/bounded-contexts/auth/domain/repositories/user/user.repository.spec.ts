@@ -457,7 +457,7 @@ export function testUserRepositoryContract(
         });
 
         it('should filter with date fields using GT operator', async () => {
-          const { repository, users } = await setup({ numUsers: 100 });
+          const { repository, users } = await setup({ numUsers: 25 });
           // Arrange
           const pastDate = DateVO.dateVOAtDaysFromNow(-30); // Yesterday
           const filter = new Filter(
@@ -666,7 +666,7 @@ export function testUserRepositoryContract(
           // Arrange
           const { repository, users } = await setup({ numUsers: 10 });
           const criteria = new Criteria({
-            pagination: new PaginationOffset(50, 2),
+            pagination: new PaginationOffset(25, 2),
           });
 
           // Act

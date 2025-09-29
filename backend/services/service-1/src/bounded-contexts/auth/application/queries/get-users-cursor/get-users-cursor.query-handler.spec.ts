@@ -3,7 +3,7 @@ import { GetUsersCursor_Query } from './get-users-cursor.query';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { UserRoleEnum } from '@bc/auth/domain/value-objects';
-import { InfrastructureException } from '@libs/nestjs-common';
+import { DomainValidationException, InfrastructureException } from '@libs/nestjs-common';
 
 describe('GetUsersCursor_QueryHandler', () => {
   // Test data factory
@@ -341,19 +341,17 @@ describe('GetUsersCursor_QueryHandler', () => {
       expect(result.pagination.hasNext).toBe(false);
     });
 
-    it('should handle very large limit', async () => {
+    it('should throw error when limit is larger than max limit', async () => {
       // Arrange
       const { handler, users } = await setup(5);
 
       // Act
       const query = createQuery({
-        pagination: { limit: 1000 },
+        pagination: { limit: 75 },
       });
-      const result = await handler.execute(query);
-
-      // Assert
-      expect(result.data).toHaveLength(users.length); // Only available users
-      expect(result.pagination.hasNext).toBe(false);
+      await expect(handler.execute(query)).rejects.toThrow(
+        DomainValidationException,
+      );
     });
 
     it('should maintain consistent cursors across identical queries', async () => {
