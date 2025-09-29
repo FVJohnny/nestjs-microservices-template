@@ -1,287 +1,271 @@
-// import request from 'supertest';
-// import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
-// import { deleteUsers, createTestAccessToken, createTestUsers } from './utils';
+import request from 'supertest';
+import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
+import { createTestAccessToken, createTestUsers } from './utils';
 
 describe('Complete Authentication Flow (E2E)', () => {
+  let testSetup: E2ETestSetup;
+  let accessToken: string;
+
+  beforeAll(async () => {
+    testSetup = await createE2ETestApp({ bypassRateLimit: true });
+    accessToken = createTestAccessToken(testSetup.jwtTokenService);
+  });
+
+  afterAll(async () => {
+    await testSetup.app.close();
+  });
+
+  describe('Complete Happy Path Flow', () => {
     it('should complete full authentication journey: register → verify → login → refresh', async () => {
-        expect(true).toBe(true);
-    })
-})
-// describe('Complete Authentication Flow (E2E)', () => {
-//   let testSetup: E2ETestSetup;
-//   let accessToken: string;
+      const [user] = await createTestUsers(testSetup.agent, accessToken, 'happy-path', 1);
+      // Step 2: Get Email Verification via API
+      const emailVerificationRes = await testSetup.agent
+        .get(`/api/v1/email-verification`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .query({ userId: user.id })
+        .expect(200);
+      const emailVerificationId = emailVerificationRes.body.id;
+      expect(emailVerificationId).toBeDefined();
+      expect(emailVerificationRes.body.userId).toBe(user.id);
+      expect(emailVerificationRes.body.email).toBe(user.email);
 
-//   beforeAll(async () => {
-//     testSetup = await createE2ETestApp({ bypassRateLimit: true });
-//     accessToken = createTestAccessToken(testSetup.jwtTokenService);
-//   });
+      // Step 3: Verify Email
+      await testSetup.agent
+        .post('/api/v1/email-verification/verify')
+        .send({ emailVerificationId })
+        .expect(200);
 
-//   afterAll(async () => {
-//     await testSetup.app.close();
-//   });
+      // Verify user status changed to active
+      const updatedUserRes = await testSetup.agent
+        .get(`/api/v1/users/${user.id}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(200);
+      expect(updatedUserRes.body.status).toBe('active');
 
+      // Step 4: Login with Verified Account
+      const loginRes = await testSetup.agent
+        .post('/api/v1/auth/login')
+        .send({
+          email: user.email,
+          password: user.password,
+        })
+        .expect(200);
 
-//   describe('Complete Happy Path Flow', () => {
-//     it('should complete full authentication journey: register → verify → login → refresh', async () => {
-//       const userData = createTestUsers()
+      // Verify login response structure
+      expect(typeof loginRes.body.accessToken).toBe('string');
+      expect(typeof loginRes.body.refreshToken).toBe('string');
 
-//       // Get the created user
-//       const getUsersRes = await request(testSetup.server)
-//         .get('/api/v1/users')
-//         .set('Authorization', `Bearer ${accessToken}`)
-//         .query({ email: userData.email })
-//         .expect(200);
-//       expect(getUsersRes.body.data).toHaveLength(1);
-//       const user = getUsersRes.body.data[0];
+      // Step 5: Refresh Token
+      const refreshToken = loginRes.body.refreshToken;
+      const refreshRes = await testSetup.agent
+        .post('/api/v1/auth/refresh-token')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ refreshToken })
+        .expect(200);
 
-//       // Step 2: Get Email Verification via API
-//       const emailVerificationRes = await request(testSetup.server)
-//         .get(`/api/v1/email-verification`)
-//         .set('Authorization', `Bearer ${accessToken}`)
-//         .query({ userId: user.id })
-//         .expect(200);
-//       const emailVerificationId = emailVerificationRes.body.id;
-//       expect(emailVerificationId).toBeDefined();
-//       expect(emailVerificationRes.body.userId).toBe(user.id);
-//       expect(emailVerificationRes.body.email).toBe(userData.email);
+      // Verify refresh response
+      expect(typeof refreshRes.body.accessToken).toBe('string');
+      expect(typeof refreshRes.body.refreshToken).toBe('string');
 
-//       // Step 3: Verify Email
-//       await request(testSetup.server)
-//         .post('/api/v1/email-verification/verify')
-//         .send({ emailVerificationId })
-//         .expect(200);
+      // Verify refresh tokens are different from original
+      expect(refreshRes.body.accessToken).not.toBe(accessToken);
+      expect(refreshRes.body.refreshToken).not.toBe(refreshToken);
+    });
+  });
 
-//       // Verify user status changed to active
-//       const updatedUserRes = await request(testSetup.server)
-//         .get(`/api/v1/users/${user.id}`)
-//         .set('Authorization', `Bearer ${accessToken}`)
-//         .expect(200);
-//       expect(updatedUserRes.body.status).toBe('active');
+  describe('Registration Error Cases', () => {
+    it('should reject duplicate email registration', async () => {
+      const userData = {
+        email: 'duplicate@example.com',
+        username: 'user1',
+        password: 'Password123!',
+      };
 
-//       // Step 4: Login with Verified Account
-//       const loginRes = await request(testSetup.server)
-//         .post('/api/v1/auth/login')
-//         .send({
-//           email: userData.email,
-//           password: userData.password,
-//         })
-//         .expect(200);
+      // First registration should succeed
+      await testSetup.agent.post('/api/v1/users').send(userData).expect(201);
 
-//       // Verify login response structure
-//       expect(typeof loginRes.body.accessToken).toBe('string');
-//       expect(typeof loginRes.body.refreshToken).toBe('string');
+      // Second registration with same email should fail
+      await testSetup.agent
+        .post('/api/v1/users')
+        .send({ ...userData, username: 'user2' })
+        .expect(409);
+    });
 
-//       // Step 5: Refresh Token
-//       const refreshToken = loginRes.body.refreshToken;
-//       const refreshRes = await request(testSetup.server)
-//         .post('/api/v1/auth/refresh-token')
-//         .set('Authorization', `Bearer ${accessToken}`)
-//         .send({ refreshToken })
-//         .expect(200);
+    it('should validate user input properly', async () => {
+      // Invalid email format
+      await testSetup.agent
+        .post('/api/v1/users')
+        .send({
+          email: 'invalid-email',
+          username: 'testuser',
+          password: 'ValidPassword123!',
+        })
+        .expect(422);
 
-//       // Verify refresh response
-//       expect(typeof refreshRes.body.accessToken).toBe('string');
-//       expect(typeof refreshRes.body.refreshToken).toBe('string');
+      // Missing required fields
+      await testSetup.agent.post('/api/v1/users').send({}).expect(400);
+    });
+  });
 
-//       // Verify refresh tokens are different from original
-//       expect(refreshRes.body.accessToken).not.toBe(accessToken);
-//       expect(refreshRes.body.refreshToken).not.toBe(refreshToken);
-//     });
-//   });
+  describe('Email Verification Error Cases', () => {
+    it('should return 404 for non-existent verification ID', async () => {
+      const nonExistentId = '123e4567-e89b-12d3-a456-426614174999';
+      await testSetup.agent
+        .post('/api/v1/email-verification/verify')
+        .send({ emailVerificationId: nonExistentId })
+        .expect(404);
+    });
 
-//   describe('Registration Error Cases', () => {
-//     it('should reject duplicate email registration', async () => {
-//       const userData = {
-//         email: 'duplicate@example.com',
-//         username: 'user1',
-//         password: 'Password123!',
-//       };
+    it('should return 404 for non-existent verification with specified user ID', async () => {
+      const nonExistentUserId = '123e4567-e89b-12d3-a456-426614174999';
+      await testSetup.agent
+        .get(`/api/v1/email-verification/user/${nonExistentUserId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(404);
+    });
 
-//       // First registration should succeed
-//       await request(testSetup.server).post('/api/v1/users').send(userData).expect(201);
+    it('should prevent double email verification', async () => {
+      const userData = {
+        email: 'double@example.com',
+        username: 'doubleuser',
+        password: 'Password123!',
+      };
 
-//       // Second registration with same email should fail
-//       await request(testSetup.server)
-//         .post('/api/v1/users')
-//         .send({ ...userData, username: 'user2' })
-//         .expect(409);
-//     });
+      // Register user
+      await testSetup.agent.post('/api/v1/users').send(userData).expect(201);
 
-//     it('should validate user input properly', async () => {
-//       // Invalid email format
-//       await request(testSetup.server)
-//         .post('/api/v1/users')
-//         .send({
-//           email: 'invalid-email',
-//           username: 'testuser',
-//           password: 'ValidPassword123!',
-//         })
-//         .expect(422);
+      // Get user
+      const getUsersRes = await testSetup.agent
+        .get('/api/v1/users')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .query({ email: userData.email })
+        .expect(200);
+      const userId = getUsersRes.body.data[0].id;
 
-//       // Missing required fields
-//       await request(testSetup.server).post('/api/v1/users').send({}).expect(400);
-//     });
-//   });
+      // Get verification
+      const verificationRes = await testSetup.agent
+        .get(`/api/v1/email-verification`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .query({ userId })
+        .expect(200);
+      const emailVerificationId = verificationRes.body.id;
 
-//   describe('Email Verification Error Cases', () => {
-//     it('should return 404 for non-existent verification ID', async () => {
-//       const nonExistentId = '123e4567-e89b-12d3-a456-426614174999';
-//       await request(testSetup.server)
-//         .post('/api/v1/email-verification/verify')
-//         .send({ emailVerificationId: nonExistentId })
-//         .expect(404);
-//     });
+      // First verification should succeed. Second verification should fail.
+      await testSetup.agent
+        .post('/api/v1/email-verification/verify')
+        .send({ emailVerificationId })
+        .expect(200);
+      await testSetup.agent
+        .post('/api/v1/email-verification/verify')
+        .send({ emailVerificationId })
+        .expect(400);
+    });
+  });
 
-//     it('should return 404 for non-existent verification with specified user ID', async () => {
-//       const nonExistentUserId = '123e4567-e89b-12d3-a456-426614174999';
-//       await request(testSetup.server)
-//         .get(`/api/v1/email-verification/user/${nonExistentUserId}`)
-//         .set('Authorization', `Bearer ${accessToken}`)
-//         .expect(404);
-//     });
+  describe('Login Error Cases', () => {
+    it('should reject login with unverified email', async () => {
+      const userData = {
+        email: 'unverified@example.com',
+        username: 'unverifieduser',
+        password: 'Password123!',
+      };
 
-//     it('should prevent double email verification', async () => {
-//       const userData = {
-//         email: 'double@example.com',
-//         username: 'doubleuser',
-//         password: 'Password123!',
-//       };
+      // Register user but don't verify email
+      await testSetup.agent.post('/api/v1/users').send(userData).expect(201);
 
-//       // Register user
-//       await request(testSetup.server).post('/api/v1/users').send(userData).expect(201);
+      // Login should fail
+      await testSetup.agent
+        .post('/api/v1/auth/login')
+        .send({
+          email: userData.email,
+          password: userData.password,
+        })
+        .expect(401);
+    });
 
-//       // Get user
-//       const getUsersRes = await request(testSetup.server)
-//         .get('/api/v1/users')
-//         .set('Authorization', `Bearer ${accessToken}`)
-//         .query({ email: userData.email })
-//         .expect(200);
-//       const userId = getUsersRes.body.data[0].id;
+    it('should reject login with wrong credentials', async () => {
+      const userData = {
+        email: 'wrongcreds@example.com',
+        username: 'wrongcredsuser',
+        password: 'CorrectPassword123!',
+      };
 
-//       // Get verification
-//       const verificationRes = await request(testSetup.server)
-//         .get(`/api/v1/email-verification`)
-//         .set('Authorization', `Bearer ${accessToken}`)
-//         .query({ userId })
-//         .expect(200);
-//       const emailVerificationId = verificationRes.body.id;
+      // Complete registration and verification
+      await testSetup.agent.post('/api/v1/users').send(userData).expect(201);
 
-//       // First verification should succeed. Second verification should fail.
-//       await request(testSetup.server)
-//         .post('/api/v1/email-verification/verify')
-//         .send({ emailVerificationId })
-//         .expect(200);
-//       await request(testSetup.server)
-//         .post('/api/v1/email-verification/verify')
-//         .send({ emailVerificationId })
-//         .expect(400);
-//     });
-//   });
+      const getUsersRes = await testSetup.agent
+        .get('/api/v1/users')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .query({ email: userData.email })
+        .expect(200);
+      const userId = getUsersRes.body.data[0].id;
 
-//   describe('Login Error Cases', () => {
-//     it('should reject login with unverified email', async () => {
-//       const userData = {
-//         email: 'unverified@example.com',
-//         username: 'unverifieduser',
-//         password: 'Password123!',
-//       };
+      const verificationRes = await testSetup.agent
+        .get(`/api/v1/email-verification`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .query({ userId })
+        .expect(200);
+      const emailVerificationId = verificationRes.body.id;
 
-//       // Register user but don't verify email
-//       await request(testSetup.server).post('/api/v1/users').send(userData).expect(201);
+      await testSetup.agent
+        .post('/api/v1/email-verification/verify')
+        .send({ emailVerificationId })
+        .expect(200);
 
-//       // Login should fail
-//       await request(testSetup.server)
-//         .post('/api/v1/auth/login')
-//         .send({
-//           email: userData.email,
-//           password: userData.password,
-//         })
-//         .expect(401);
-//     });
+      // Wrong password
+      await testSetup.agent
+        .post('/api/v1/auth/login')
+        .send({
+          email: userData.email,
+          password: 'WrongPassword123!',
+        })
+        .expect(401);
 
-//     it('should reject login with wrong credentials', async () => {
-//       const userData = {
-//         email: 'wrongcreds@example.com',
-//         username: 'wrongcredsuser',
-//         password: 'CorrectPassword123!',
-//       };
+      // Wrong email
+      await testSetup.agent
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'wrong@example.com',
+          password: userData.password,
+        })
+        .expect(401);
+    });
 
-//       // Complete registration and verification
-//       await request(testSetup.server).post('/api/v1/users').send(userData).expect(201);
+    it('should validate login input properly', async () => {
+      // Invalid email format
+      await testSetup.agent
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'not-an-email',
+          password: 'ValidPassword123!',
+        })
+        .expect(422);
 
-//       const getUsersRes = await request(testSetup.server)
-//         .get('/api/v1/users')
-//         .set('Authorization', `Bearer ${accessToken}`)
-//         .query({ email: userData.email })
-//         .expect(200);
-//       const userId = getUsersRes.body.data[0].id;
+      // Missing password
+      await testSetup.agent
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'valid@example.com',
+        })
+        .expect(400);
+    });
+  });
 
-//       const verificationRes = await request(testSetup.server)
-//         .get(`/api/v1/email-verification`)
-//         .set('Authorization', `Bearer ${accessToken}`)
-//         .query({ userId })
-//         .expect(200);
-//       const emailVerificationId = verificationRes.body.id;
+  describe('Token Refresh Error Cases', () => {
+    it('should reject invalid refresh tokens', async () => {
+      // Invalid refresh token format
+      await testSetup.agent
+        .post('/api/v1/auth/refresh-token')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ refreshToken: 'invalid-token' })
+        .expect(401);
 
-//       await request(testSetup.server)
-//         .post('/api/v1/email-verification/verify')
-//         .send({ emailVerificationId })
-//         .expect(200);
-
-//       // Wrong password
-//       await request(testSetup.server)
-//         .post('/api/v1/auth/login')
-//         .send({
-//           email: userData.email,
-//           password: 'WrongPassword123!',
-//         })
-//         .expect(401);
-
-//       // Wrong email
-//       await request(testSetup.server)
-//         .post('/api/v1/auth/login')
-//         .send({
-//           email: 'wrong@example.com',
-//           password: userData.password,
-//         })
-//         .expect(401);
-//     });
-
-//     it('should validate login input properly', async () => {
-//       // Invalid email format
-//       await request(testSetup.server)
-//         .post('/api/v1/auth/login')
-//         .send({
-//           email: 'not-an-email',
-//           password: 'ValidPassword123!',
-//         })
-//         .expect(422);
-
-//       // Missing password
-//       await request(testSetup.server)
-//         .post('/api/v1/auth/login')
-//         .send({
-//           email: 'valid@example.com',
-//         })
-//         .expect(400);
-//     });
-//   });
-
-//   describe('Token Refresh Error Cases', () => {
-//     it('should reject invalid refresh tokens', async () => {
-//       // Invalid refresh token format
-//       await request(testSetup.server)
-//         .post('/api/v1/auth/refresh-token')
-//         .set('Authorization', `Bearer ${accessToken}`)
-//         .send({ refreshToken: 'invalid-token' })
-//         .expect(401);
-
-//       // Missing refresh token
-//       await request(testSetup.server)
-//         .post('/api/v1/auth/refresh-token')
-//         .set('Authorization', `Bearer ${accessToken}`)
-//         .send({})
-//         .expect(400);
-//     });
-//   });
-// });
+      // Missing refresh token
+      await testSetup.agent
+        .post('/api/v1/auth/refresh-token')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({})
+        .expect(400);
+    });
+  });
+});

@@ -17,13 +17,15 @@ import { AppModule } from '../src/app.module';
 import { KafkaIntegrationEventsModule } from '@libs/nestjs-kafka';
 import { Module } from '@nestjs/common';
 import { MongoDBModule } from '@libs/nestjs-mongodb';
+import request from 'supertest';
+import TestAgent from 'supertest/lib/agent';
 
 @Module({})
 class DummyModule {}
 
 export interface E2ETestSetup {
   app: INestApplication;
-  server: Server;
+  agent: TestAgent;
   jwtTokenService: JwtTokenService;
 }
 
@@ -59,7 +61,9 @@ export async function createE2ETestApp(
 
   const jwtTokenService = app.get(JwtTokenService);
 
-  return { app, server, jwtTokenService };
+  const agent = request(server);
+
+  return { agent, app, jwtTokenService };
 }
 
 function setupRandomIPMiddleware(app: INestApplication): void {

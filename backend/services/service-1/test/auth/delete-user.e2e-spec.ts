@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { v4 as uuid } from 'uuid';
 import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
 import { createTestAccessToken, createTestUsers, deleteUsers } from './utils';
 
@@ -16,14 +17,15 @@ describe('DELETE /users/:userId (E2E)', () => {
   });
 
   it('removes the user and returns 204', async () => {
-    const userData = await createTestUsers(testSetup.server, accessToken, 1);
+    const testId = uuid().substring(0, 5);
+    const userData = await createTestUsers(testSetup.agent, accessToken, testId, 1);
 
-    await request(testSetup.server)
+    await testSetup.agent
       .delete(`/api/v1/users/${userData[0].id}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(204);
 
-    await request(testSetup.server)
+    await testSetup.agent
       .get(`/api/v1/users/${userData[0].id}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(404);
@@ -33,7 +35,7 @@ describe('DELETE /users/:userId (E2E)', () => {
     const accessToken = createTestAccessToken(testSetup.jwtTokenService);
     const nonExistentId = '123e4567-e89b-12d3-a456-426614174000';
 
-    await request(testSetup.server)
+    await testSetup.agent
       .delete(`/api/v1/users/${nonExistentId}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(404);
