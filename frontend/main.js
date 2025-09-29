@@ -32,7 +32,7 @@ async function discoverServices(max = 10) {
   grid.innerHTML = '';
   services = [];
   for (let i = 1; i <= max; i++) {
-    const baseUrl = `/api/service-${i}`;
+    const baseUrl = `/api/service-${i}/v1`;
     try {
       const envRes = await fetch(`${baseUrl}/health/environment`, {
         headers: { Accept: 'application/json' },
@@ -184,7 +184,7 @@ async function triggerEvent(evt, serviceId, topic, eventName) {
     };
 
     // Try to publish via the service's messaging endpoint
-    const response = await fetch(`${service.baseUrl}/integration-events/publish`, {
+    const response = await fetch(`${service.baseUrl}/v1/integration-events/publish`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

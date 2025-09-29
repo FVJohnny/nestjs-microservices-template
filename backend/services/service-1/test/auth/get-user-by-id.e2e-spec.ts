@@ -23,7 +23,7 @@ describe('GET /users/:id (E2E)', () => {
   it('returns a user when found', async () => {
     // Create user via endpoint
     await request(testSetup.server)
-      .post('/users')
+      .post('/api/v1/users')
       .send({
         email: 'test@example.com',
         username: 'testuser',
@@ -33,7 +33,7 @@ describe('GET /users/:id (E2E)', () => {
 
     // Find the user to get its ID
     const getUsersRes = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ email: 'test@example.com' })
       .expect(200);
@@ -41,7 +41,7 @@ describe('GET /users/:id (E2E)', () => {
     const userId = getUsersRes.body.data[0].id;
 
     const res = await request(testSetup.server)
-      .get(`/users/${userId}`)
+      .get(`/api/v1/users/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
     expect(res.body.id).toBe(userId);
@@ -51,14 +51,14 @@ describe('GET /users/:id (E2E)', () => {
 
   it('returns 404 Not Found when not found', async () => {
     await request(testSetup.server)
-      .get(`/users/${uuid()}`)
+      .get(`/api/v1/users/${uuid()}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(404);
   });
 
   it('returns 422 Unprocessable Entity when invalid id', async () => {
     await request(testSetup.server)
-      .get(`/users/invalid-id`)
+      .get(`/api/v1/users/invalid-id`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(422);
   });

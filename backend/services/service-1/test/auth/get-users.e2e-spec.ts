@@ -27,11 +27,11 @@ describe('GET /users (E2E)', () => {
     ];
 
     for (const data of userData) {
-      await request(testSetup.server).post('/users').send(data).expect(201);
+      await request(testSetup.server).post('/api/v1/users').send(data).expect(201);
     }
 
     const res = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
@@ -43,7 +43,7 @@ describe('GET /users (E2E)', () => {
 
   it('filters by status', async () => {
     await request(testSetup.server)
-      .post('/users')
+      .post('/api/v1/users')
       .send({
         email: 'inactive@example.com',
         username: 'inactive',
@@ -52,7 +52,7 @@ describe('GET /users (E2E)', () => {
       .expect(201);
 
     await request(testSetup.server)
-      .post('/users')
+      .post('/api/v1/users')
       .send({
         email: 'active@example.com',
         username: 'active',
@@ -61,14 +61,14 @@ describe('GET /users (E2E)', () => {
       .expect(201);
 
     const res = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ status: 'email-verification-pending' })
       .expect(200);
     expect(res.body.data).toHaveLength(2);
 
     const res2 = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ status: 'active' })
       .expect(200);
@@ -83,18 +83,18 @@ describe('GET /users (E2E)', () => {
     ];
 
     for (const data of userData) {
-      await request(testSetup.server).post('/users').send(data).expect(201);
+      await request(testSetup.server).post('/api/v1/users').send(data).expect(201);
     }
 
     const adminLookup = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ email: 'admin@' })
       .expect(200);
     const adminId = adminLookup.body.data[0].id;
 
     const byId = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ userId: adminId })
       .expect(200);
@@ -103,7 +103,7 @@ describe('GET /users (E2E)', () => {
     expect(byId.body.data[0].email).toBe('admin@example.com');
 
     const byEmail = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ email: 'user1' })
       .expect(200);
@@ -112,7 +112,7 @@ describe('GET /users (E2E)', () => {
     expect(byEmail.body.data[0].email).toBe('user1@example.com');
 
     const byUsername = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ username: 'er2' })
       .expect(200);
@@ -129,11 +129,11 @@ describe('GET /users (E2E)', () => {
     ];
 
     for (const data of userData) {
-      await request(testSetup.server).post('/users').send(data).expect(201);
+      await request(testSetup.server).post('/api/v1/users').send(data).expect(201);
     }
 
     const onlyUsers = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ role: 'user' })
       .expect(200);
@@ -145,7 +145,7 @@ describe('GET /users (E2E)', () => {
     ]);
 
     const onlyAdmins = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ role: 'admin' })
       .expect(200);
@@ -160,11 +160,11 @@ describe('GET /users (E2E)', () => {
     ];
 
     for (const data of userData) {
-      await request(testSetup.server).post('/users').send(data).expect(201);
+      await request(testSetup.server).post('/api/v1/users').send(data).expect(201);
     }
 
     const orderedAsc = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ orderBy: 'username', orderType: 'asc' })
       .expect(200);
@@ -175,7 +175,7 @@ describe('GET /users (E2E)', () => {
     ]);
 
     const orderedDesc = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ orderBy: 'username', orderType: 'desc' })
       .expect(200);
@@ -186,14 +186,14 @@ describe('GET /users (E2E)', () => {
     ]);
 
     const page = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 1 })
       .expect(200);
     expect(page.body.data.map((u: { username: string }) => u.username)).toEqual(['user1', 'user2']);
 
     const page2 = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 2 })
       .expect(200);
@@ -202,7 +202,7 @@ describe('GET /users (E2E)', () => {
 
   it('rejects invalid orderType with 422 (validation)', async () => {
     await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ orderBy: 'username', orderType: 'INVALID_ORDER_TYPE' })
       .expect(422);

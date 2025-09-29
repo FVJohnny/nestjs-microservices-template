@@ -28,11 +28,11 @@ describe('Complete Authentication Flow (E2E)', () => {
       };
 
       // Step 1: Register User
-      await request(testSetup.server).post('/users').send(userData).expect(201);
+      await request(testSetup.server).post('/api/v1/users').send(userData).expect(201);
 
       // Get the created user
       const getUsersRes = await request(testSetup.server)
-        .get('/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${accessToken}`)
         .query({ email: userData.email })
         .expect(200);
@@ -41,7 +41,7 @@ describe('Complete Authentication Flow (E2E)', () => {
 
       // Step 2: Get Email Verification via API
       const emailVerificationRes = await request(testSetup.server)
-        .get(`/email-verification`)
+        .get(`/api/v1/email-verification`)
         .set('Authorization', `Bearer ${accessToken}`)
         .query({ userId: user.id })
         .expect(200);
@@ -52,20 +52,20 @@ describe('Complete Authentication Flow (E2E)', () => {
 
       // Step 3: Verify Email
       await request(testSetup.server)
-        .post('/email-verification/verify')
+        .post('/api/v1/email-verification/verify')
         .send({ emailVerificationId })
         .expect(200);
 
       // Verify user status changed to active
       const updatedUserRes = await request(testSetup.server)
-        .get(`/users/${user.id}`)
+        .get(`/api/v1/users/${user.id}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
       expect(updatedUserRes.body.status).toBe('active');
 
       // Step 4: Login with Verified Account
       const loginRes = await request(testSetup.server)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: userData.email,
           password: userData.password,
@@ -79,7 +79,7 @@ describe('Complete Authentication Flow (E2E)', () => {
       // Step 5: Refresh Token
       const refreshToken = loginRes.body.refreshToken;
       const refreshRes = await request(testSetup.server)
-        .post('/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ refreshToken })
         .expect(200);
@@ -103,11 +103,11 @@ describe('Complete Authentication Flow (E2E)', () => {
       };
 
       // First registration should succeed
-      await request(testSetup.server).post('/users').send(userData).expect(201);
+      await request(testSetup.server).post('/api/v1/users').send(userData).expect(201);
 
       // Second registration with same email should fail
       await request(testSetup.server)
-        .post('/users')
+        .post('/api/v1/users')
         .send({ ...userData, username: 'user2' })
         .expect(409);
     });
@@ -115,7 +115,7 @@ describe('Complete Authentication Flow (E2E)', () => {
     it('should validate user input properly', async () => {
       // Invalid email format
       await request(testSetup.server)
-        .post('/users')
+        .post('/api/v1/users')
         .send({
           email: 'invalid-email',
           username: 'testuser',
@@ -124,7 +124,7 @@ describe('Complete Authentication Flow (E2E)', () => {
         .expect(422);
 
       // Missing required fields
-      await request(testSetup.server).post('/users').send({}).expect(400);
+      await request(testSetup.server).post('/api/v1/users').send({}).expect(400);
     });
   });
 
@@ -132,7 +132,7 @@ describe('Complete Authentication Flow (E2E)', () => {
     it('should return 404 for non-existent verification ID', async () => {
       const nonExistentId = '123e4567-e89b-12d3-a456-426614174999';
       await request(testSetup.server)
-        .post('/email-verification/verify')
+        .post('/api/v1/email-verification/verify')
         .send({ emailVerificationId: nonExistentId })
         .expect(404);
     });
@@ -140,7 +140,7 @@ describe('Complete Authentication Flow (E2E)', () => {
     it('should return 404 for non-existent verification with specified user ID', async () => {
       const nonExistentUserId = '123e4567-e89b-12d3-a456-426614174999';
       await request(testSetup.server)
-        .get(`/email-verification/user/${nonExistentUserId}`)
+        .get(`/api/v1/email-verification/user/${nonExistentUserId}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(404);
     });
@@ -153,11 +153,11 @@ describe('Complete Authentication Flow (E2E)', () => {
       };
 
       // Register user
-      await request(testSetup.server).post('/users').send(userData).expect(201);
+      await request(testSetup.server).post('/api/v1/users').send(userData).expect(201);
 
       // Get user
       const getUsersRes = await request(testSetup.server)
-        .get('/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${accessToken}`)
         .query({ email: userData.email })
         .expect(200);
@@ -165,7 +165,7 @@ describe('Complete Authentication Flow (E2E)', () => {
 
       // Get verification
       const verificationRes = await request(testSetup.server)
-        .get(`/email-verification`)
+        .get(`/api/v1/email-verification`)
         .set('Authorization', `Bearer ${accessToken}`)
         .query({ userId })
         .expect(200);
@@ -173,11 +173,11 @@ describe('Complete Authentication Flow (E2E)', () => {
 
       // First verification should succeed. Second verification should fail.
       await request(testSetup.server)
-        .post('/email-verification/verify')
+        .post('/api/v1/email-verification/verify')
         .send({ emailVerificationId })
         .expect(200);
       await request(testSetup.server)
-        .post('/email-verification/verify')
+        .post('/api/v1/email-verification/verify')
         .send({ emailVerificationId })
         .expect(400);
     });
@@ -192,11 +192,11 @@ describe('Complete Authentication Flow (E2E)', () => {
       };
 
       // Register user but don't verify email
-      await request(testSetup.server).post('/users').send(userData).expect(201);
+      await request(testSetup.server).post('/api/v1/users').send(userData).expect(201);
 
       // Login should fail
       await request(testSetup.server)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: userData.email,
           password: userData.password,
@@ -212,30 +212,30 @@ describe('Complete Authentication Flow (E2E)', () => {
       };
 
       // Complete registration and verification
-      await request(testSetup.server).post('/users').send(userData).expect(201);
+      await request(testSetup.server).post('/api/v1/users').send(userData).expect(201);
 
       const getUsersRes = await request(testSetup.server)
-        .get('/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${accessToken}`)
         .query({ email: userData.email })
         .expect(200);
       const userId = getUsersRes.body.data[0].id;
 
       const verificationRes = await request(testSetup.server)
-        .get(`/email-verification`)
+        .get(`/api/v1/email-verification`)
         .set('Authorization', `Bearer ${accessToken}`)
         .query({ userId })
         .expect(200);
       const emailVerificationId = verificationRes.body.id;
 
       await request(testSetup.server)
-        .post('/email-verification/verify')
+        .post('/api/v1/email-verification/verify')
         .send({ emailVerificationId })
         .expect(200);
 
       // Wrong password
       await request(testSetup.server)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: userData.email,
           password: 'WrongPassword123!',
@@ -244,7 +244,7 @@ describe('Complete Authentication Flow (E2E)', () => {
 
       // Wrong email
       await request(testSetup.server)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'wrong@example.com',
           password: userData.password,
@@ -255,7 +255,7 @@ describe('Complete Authentication Flow (E2E)', () => {
     it('should validate login input properly', async () => {
       // Invalid email format
       await request(testSetup.server)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'not-an-email',
           password: 'ValidPassword123!',
@@ -264,7 +264,7 @@ describe('Complete Authentication Flow (E2E)', () => {
 
       // Missing password
       await request(testSetup.server)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'valid@example.com',
         })
@@ -276,14 +276,14 @@ describe('Complete Authentication Flow (E2E)', () => {
     it('should reject invalid refresh tokens', async () => {
       // Invalid refresh token format
       await request(testSetup.server)
-        .post('/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ refreshToken: 'invalid-token' })
         .expect(401);
 
       // Missing refresh token
       await request(testSetup.server)
-        .post('/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({})
         .expect(400);

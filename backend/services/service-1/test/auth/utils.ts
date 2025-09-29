@@ -19,7 +19,7 @@ export function createTestAccessToken(
 
 export async function deleteAllUsers(server: Server, accessToken: string): Promise<void> {
   const usersResponse = await request(server)
-    .get('/users')
+    .get('/api/v1/users')
     .set('Authorization', `Bearer ${accessToken}`)
     .expect(200);
 
@@ -30,7 +30,7 @@ export async function deleteAllUsers(server: Server, accessToken: string): Promi
   await Promise.all(
     userIds.map(async (userId) => {
       const res = await request(server)
-        .delete(`/users/${userId}`)
+        .delete(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${accessToken}`);
 
       if (![204, 404].includes(res.status)) {

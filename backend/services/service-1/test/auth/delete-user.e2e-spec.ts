@@ -26,10 +26,10 @@ describe('DELETE /users/:userId (E2E)', () => {
       password: 'Password123!',
     };
 
-    await request(testSetup.server).post('/users').send(userPayload).expect(201);
+    await request(testSetup.server).post('/api/v1/users').send(userPayload).expect(201);
 
     const lookup = await request(testSetup.server)
-      .get('/users')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ email: userPayload.email })
       .expect(200);
@@ -37,12 +37,12 @@ describe('DELETE /users/:userId (E2E)', () => {
     const userId = lookup.body.data[0].id;
 
     await request(testSetup.server)
-      .delete(`/users/${userId}`)
+      .delete(`/api/v1/users/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(204);
 
     await request(testSetup.server)
-      .get(`/users/${userId}`)
+      .get(`/api/v1/users/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(404);
   });
@@ -52,7 +52,7 @@ describe('DELETE /users/:userId (E2E)', () => {
     const nonExistentId = '123e4567-e89b-12d3-a456-426614174000';
 
     await request(testSetup.server)
-      .delete(`/users/${nonExistentId}`)
+      .delete(`/api/v1/users/${nonExistentId}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(404);
   });

@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerUtility } from '@libs/nestjs-common';
 import helmet from 'helmet';
 
@@ -19,6 +19,15 @@ export function configureApp(
     enableShutdownHooks: true,
   },
 ): void {
+  // Set global API prefix
+  app.setGlobalPrefix('api');
+
+  // Enable API versioning with default version
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
+
   // Always apply validation pipe with consistent settings
   app.useGlobalPipes(
     new ValidationPipe({
