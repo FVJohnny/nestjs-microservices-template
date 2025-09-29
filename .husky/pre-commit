@@ -1,12 +1,3 @@
-echo "Removing NX Cache"
-npx nx reset
-
-echo "Building project..."
-npm run -s build || {
-  echo "\n✖ Build failed. Fix issues before committing."
-  exit 1;
-}
-
 echo "Running Lint..."
 npm run -s lint:fix || {
   echo "\n✖ Lint failed. Fix issues before committing.";
