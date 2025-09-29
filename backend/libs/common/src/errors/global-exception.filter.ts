@@ -58,7 +58,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     response.set('Content-Type', 'application/problem+json');
     response.status(this.getHttpStatus(exception)).json(errorResponse);
   }
-ร
+
   private handleBaseException(
     exception: BaseException,
     path: string,
