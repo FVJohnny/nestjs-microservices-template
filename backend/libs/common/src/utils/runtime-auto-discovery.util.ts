@@ -23,7 +23,9 @@ export class RuntimeAutoDiscovery {
     };
 
     try {
-      this.logger.log(`🔍 Starting runtime auto-discovery from: ${boundedContextPath}`);
+      // Resolve the correct path based on environment (src vs dist)
+      const resolvedPath = this.resolveBoundedContextPath(boundedContextPath);
+      this.logger.log(`🔍 Starting runtime auto-discovery from: ${resolvedPath}`);
 
       // Determine file extension based on environment
       const isTestEnv = process.env.NODE_ENV === 'test' || __filename.endsWith('.ts');
@@ -33,22 +35,22 @@ export class RuntimeAutoDiscovery {
       // Discover handlers
       result.handlers = [
         ...this.discoverHandlers(
-          boundedContextPath,
+          resolvedPath,
           'application/commands',
           `.command-handler${fileExtension}`,
         ),
         ...this.discoverHandlers(
-          boundedContextPath,
+          resolvedPath,
           'application/queries',
           `.query-handler${fileExtension}`,
         ),
         ...this.discoverHandlers(
-          boundedContextPath,
+          resolvedPath,
           'application/domain-event-handlers',
           `.domain-event-handler${fileExtension}`,
         ),
         ...this.discoverHandlers(
-          boundedContextPath,
+          resolvedPath,
           'interfaces/integration-events',
           `.integration-event-handler${fileExtension}`,
         ),
@@ -56,7 +58,7 @@ export class RuntimeAutoDiscovery {
 
       // Discover controllers
       result.controllers = this.discoverControllers(
-        boundedContextPath,
+        resolvedPath,
         'interfaces/controllers',
         controllerSuffix,
       );
@@ -225,5 +227,34 @@ export class RuntimeAutoDiscovery {
     }
 
     return null;
+  }
+
+  private static resolveBoundedContextPath(boundedContextPath: string): string {
+    // Check if the provided path exists (for development/src environment)
+    if (fs.existsSync(boundedContextPath)) {
+      return boundedContextPath;
+    }
+
+    // In production, __dirname points to compiled JS location, we need to find the actual bounded context
+    // Extract service name and construct the correct path
+    const pathParts = boundedContextPath.split(path.sep);
+    const distIndex = pathParts.findIndex((part) => part === 'dist');
+
+    if (distIndex !== -1) {
+      // We're in a dist directory, find the service root and bounded context name
+      const serviceRoot = pathParts.slice(0, distIndex).join(path.sep);
+      const remainingPath = pathParts.slice(distIndex + 1);
+
+      // For paths like: /app/backend/services/service-1/dist/services/service-1/src/bounded-contexts/auth
+      // We want: /app/backend/services/service-1/dist/services/service-1/src/bounded-contexts/auth
+      const reconstructedPath = path.join(serviceRoot, 'dist', ...remainingPath);
+
+      if (fs.existsSync(reconstructedPath)) {
+        return reconstructedPath;
+      }
+    }
+
+    // Return original path if we can't resolve it
+    return boundedContextPath;
   }
 }

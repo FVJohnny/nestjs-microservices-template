@@ -7,5 +7,5 @@
     "webpack": false,
     "tsConfigPath": "tsconfig.build.json"
   },
-  "entryFile": "main"
+  "entryFile": "services/service-1/src/main"
 }
