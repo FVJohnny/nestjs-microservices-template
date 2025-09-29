@@ -1,6 +1,6 @@
-import type { JwtTokenService, TokenPayload } from '@libs/nestjs-common';
-import { v4 as uuid } from 'uuid';
+import { wait, type JwtTokenService, type TokenPayload } from '@libs/nestjs-common';
 import TestAgent from 'supertest/lib/agent';
+import { v4 as uuid } from 'uuid';
 
 interface TestUser {
   id: string;
@@ -46,7 +46,9 @@ export async function createTestUsers(
   testId: string,
   amount: number = 1,
 ): Promise<TestUser[]> {
-  const userPromises = Array.from({ length: amount }, async () => {
+  const users: TestUser[] = [];
+
+  for (let i = 0; i < amount; i++) {
     const data = {
       email: randomEmail(testId),
       username: randomUsername(testId),
@@ -73,22 +75,16 @@ export async function createTestUsers(
       throw new Error(`Failed to get test user: ${resGet.status} ${JSON.stringify(resGet.body)}`);
     }
 
-    return {
+    users.push({
       ...resGet.body.data[0],
       password: data.password,
-    } as TestUser;
-  });
+    } as TestUser);
 
-  try {
-    const users: TestUser[] = [];
-    for (const userPromise of userPromises) {
-      users.push(await userPromise);
-    }
-    return users;
-  } catch (error) {
-    console.error(error);
-    throw error;
+    // Small delay between creating users to avoid overwhelming the connection pool
+    await wait(50);
   }
+
+  return users;
 }
 
 function randomEmail(testId?: string): string {
