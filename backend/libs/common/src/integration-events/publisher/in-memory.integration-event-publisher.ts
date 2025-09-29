@@ -9,7 +9,7 @@ export class InMemoryIntegrationEventPublisher implements IntegrationEventPublis
 
   public publishedEvents: { topic: string; message: string }[] = [];
 
-  constructor(private readonly shouldFail: boolean) {}
+  constructor(private readonly shouldFail = false) {}
 
   async publish(topic: string, message: string) {
     if (this.shouldFail) {

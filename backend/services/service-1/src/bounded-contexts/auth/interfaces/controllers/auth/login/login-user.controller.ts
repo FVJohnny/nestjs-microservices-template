@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { type ICommandBus, type IQueryBus } from '@nestjs/cqrs';
-import { COMMAND_BUS, QUERY_BUS } from '@libs/nestjs-common';
+import { COMMAND_BUS, QUERY_BUS, StrictRateLimit } from '@libs/nestjs-common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RecordUserLogin_Command } from '@bc/auth/application/commands';
 import {
@@ -20,6 +20,7 @@ export class LoginUser_Controller {
   ) {}
 
   @Post('login')
+  @StrictRateLimit()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login user' })
   @ApiResponse({

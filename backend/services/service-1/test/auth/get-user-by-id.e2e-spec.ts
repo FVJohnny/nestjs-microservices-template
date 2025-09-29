@@ -1,14 +1,14 @@
 import request from 'supertest';
 import { v4 as uuid } from 'uuid';
 import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
-import { createTestAccessToken, deleteAllUsers } from './utils';
+import { createTestAccessToken, createTestUsers, deleteUsers } from './utils';
 
 describe('GET /users/:id (E2E)', () => {
   let testSetup: E2ETestSetup;
   let accessToken: string;
 
   beforeAll(async () => {
-    testSetup = await createE2ETestApp();
+    testSetup = await createE2ETestApp({ bypassRateLimit: true });
     accessToken = createTestAccessToken(testSetup.jwtTokenService);
   });
 
@@ -16,37 +16,17 @@ describe('GET /users/:id (E2E)', () => {
     await testSetup.app.close();
   });
 
-  beforeEach(async () => {
-    await deleteAllUsers(testSetup.server, accessToken);
-  });
-
   it('returns a user when found', async () => {
     // Create user via endpoint
-    await request(testSetup.server)
-      .post('/api/v1/users')
-      .send({
-        email: 'test@example.com',
-        username: 'testuser',
-        password: 'Password123!',
-      })
-      .expect(201);
-
-    // Find the user to get its ID
-    const getUsersRes = await request(testSetup.server)
-      .get('/api/v1/users')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .query({ email: 'test@example.com' })
-      .expect(200);
-
-    const userId = getUsersRes.body.data[0].id;
+    const userData = await createTestUsers(testSetup.server, accessToken, 1);
 
     const res = await request(testSetup.server)
-      .get(`/api/v1/users/${userId}`)
+      .get(`/api/v1/users/${userData[0].id}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
-    expect(res.body.id).toBe(userId);
-    expect(res.body.username).toBe('testuser');
-    expect(res.body.email).toBe('test@example.com');
+    expect(res.body.id).toBe(userData[0].id);
+    expect(res.body.username).toBe(userData[0].username);
+    expect(res.body.email).toBe(userData[0].email);
   });
 
   it('returns 404 Not Found when not found', async () => {

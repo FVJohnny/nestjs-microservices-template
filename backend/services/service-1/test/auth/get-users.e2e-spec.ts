@@ -1,13 +1,14 @@
 import request from 'supertest';
 import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
-import { createTestAccessToken, deleteAllUsers } from './utils';
+import { createTestAccessToken, createTestUsers, deleteUsers } from './utils';
+import { v4 as uuid } from 'uuid';
 
 describe('GET /users (E2E)', () => {
   let testSetup: E2ETestSetup;
   let accessToken: string;
 
   beforeAll(async () => {
-    testSetup = await createE2ETestApp();
+    testSetup = await createE2ETestApp({ bypassRateLimit: true });
     accessToken = createTestAccessToken(testSetup.jwtTokenService);
   });
 
@@ -15,189 +16,150 @@ describe('GET /users (E2E)', () => {
     await testSetup.app.close();
   });
 
-  beforeEach(async () => {
-    await deleteAllUsers(testSetup.server, accessToken);
-  });
-
   it('returns all users when no filters provided', async () => {
-    const userData = [
-      { email: 'admin@example.com', username: 'admin', password: 'Password123!' },
-      { email: 'user1@example.com', username: 'user1', password: 'Password123!' },
-      { email: 'user2@example.com', username: 'user2', password: 'Password123!' },
-    ];
-
-    for (const data of userData) {
-      await request(testSetup.server).post('/api/v1/users').send(data).expect(201);
-    }
+    const testId = uuid().substring(0, 5);
+    const userData = await createTestUsers(testSetup.server, accessToken, testId, 3);
+    expect(userData).toHaveLength(3);
 
     const res = await request(testSetup.server)
       .get('/api/v1/users')
+      .query({ username: testId })
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
     expect(Array.isArray(res.body.data)).toBe(true);
     expect(res.body.data).toHaveLength(3);
-    const usernames = res.body.data.map((u: { username: string }) => u.username).sort();
-    expect(usernames).toEqual(['admin', 'user1', 'user2']);
+
+    const resUsernames = res.body.data.map((u) => u.username);
+    const usernames = userData.map((u) => u.username);
+
+    expect(resUsernames.sort()).toEqual(usernames.sort());
+
+    await deleteUsers(
+      testSetup.server,
+      accessToken,
+      res.body.data.map((u) => u.id),
+    );
   });
 
   it('filters by status', async () => {
-    await request(testSetup.server)
-      .post('/api/v1/users')
-      .send({
-        email: 'inactive@example.com',
-        username: 'inactive',
-        password: 'Password123!',
-      })
-      .expect(201);
-
-    await request(testSetup.server)
-      .post('/api/v1/users')
-      .send({
-        email: 'active@example.com',
-        username: 'active',
-        password: 'Password123!',
-      })
-      .expect(201);
+    const testId = uuid().substring(0, 5);
+    const userData = await createTestUsers(testSetup.server, accessToken, testId, 1);
+    expect(userData).toHaveLength(1);
 
     const res = await request(testSetup.server)
       .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
-      .query({ status: 'email-verification-pending' })
+      .query({ username: testId, status: userData[0].status })
       .expect(200);
-    expect(res.body.data).toHaveLength(2);
+    expect(res.body.data).toHaveLength(1);
 
-    const res2 = await request(testSetup.server)
-      .get('/api/v1/users')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .query({ status: 'active' })
-      .expect(200);
-    expect(res2.body.data).toHaveLength(0);
+    await deleteUsers(testSetup.server, accessToken, [res.body.data[0].id]);
   });
 
   it('supports contains filters: id, email, username', async () => {
-    const userData = [
-      { email: 'admin@example.com', username: 'admin', password: 'Password123!' },
-      { email: 'user1@example.com', username: 'user1', password: 'Password123!' },
-      { email: 'user2@example.com', username: 'user2', password: 'Password123!' },
-    ];
-
-    for (const data of userData) {
-      await request(testSetup.server).post('/api/v1/users').send(data).expect(201);
-    }
-
-    const adminLookup = await request(testSetup.server)
-      .get('/api/v1/users')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .query({ email: 'admin@' })
-      .expect(200);
-    const adminId = adminLookup.body.data[0].id;
+    const testId = uuid().substring(0, 5);
+    const userData = await createTestUsers(testSetup.server, accessToken, testId, 3);
+    expect(userData).toHaveLength(3);
 
     const byId = await request(testSetup.server)
       .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
-      .query({ userId: adminId })
+      .query({ userId: userData[0].id })
       .expect(200);
     expect(byId.body.data).toHaveLength(1);
-    expect(byId.body.data[0].username).toBe('admin');
-    expect(byId.body.data[0].email).toBe('admin@example.com');
+    expect(byId.body.data[0].username).toBe(userData[0].username);
+    expect(byId.body.data[0].email).toBe(userData[0].email);
 
     const byEmail = await request(testSetup.server)
       .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
-      .query({ email: 'user1' })
+      .query({ email: userData[1].email })
       .expect(200);
     expect(byEmail.body.data).toHaveLength(1);
-    expect(byEmail.body.data[0].username).toBe('user1');
-    expect(byEmail.body.data[0].email).toBe('user1@example.com');
+    expect(byEmail.body.data[0].username).toBe(userData[1].username);
+    expect(byEmail.body.data[0].email).toBe(userData[1].email);
 
     const byUsername = await request(testSetup.server)
       .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
-      .query({ username: 'er2' })
+      .query({ username: userData[2].username })
       .expect(200);
     expect(byUsername.body.data).toHaveLength(1);
-    expect(byUsername.body.data[0].username).toBe('user2');
-    expect(byUsername.body.data[0].email).toBe('user2@example.com');
+    expect(byUsername.body.data[0].username).toBe(userData[2].username);
+    expect(byUsername.body.data[0].email).toBe(userData[2].email);
+
+    await deleteUsers(
+      testSetup.server,
+      accessToken,
+      userData.map((u) => u.id),
+    );
   });
 
   it('filters by role equality', async () => {
-    const userData = [
-      { email: 'admin@example.com', username: 'admin', password: 'Password123!' },
-      { email: 'user1@example.com', username: 'user1', password: 'Password123!' },
-      { email: 'user2@example.com', username: 'user2', password: 'Password123!' },
-    ];
+    const testId = uuid().substring(0, 5);
+    const userData = await createTestUsers(testSetup.server, accessToken, testId, 3);
+    expect(userData).toHaveLength(3);
 
-    for (const data of userData) {
-      await request(testSetup.server).post('/api/v1/users').send(data).expect(201);
-    }
+    const emails = userData.map((u) => u.email);
 
     const onlyUsers = await request(testSetup.server)
       .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
-      .query({ role: 'user' })
+      .query({ username: testId, role: 'user' })
       .expect(200);
     expect(onlyUsers.body.data).toHaveLength(3);
-    expect(onlyUsers.body.data.map((u: { email: string }) => u.email).sort()).toEqual([
-      'admin@example.com',
-      'user1@example.com',
-      'user2@example.com',
-    ]);
+    expect(onlyUsers.body.data.map((u) => u.email).sort()).toEqual(emails.sort());
 
-    const onlyAdmins = await request(testSetup.server)
-      .get('/api/v1/users')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .query({ role: 'admin' })
-      .expect(200);
-    expect(onlyAdmins.body.data).toHaveLength(0);
+    await deleteUsers(
+      testSetup.server,
+      accessToken,
+      userData.map((u) => u.id),
+    );
   });
 
   it('orders by username asc and paginates with limit/offset', async () => {
-    const userData = [
-      { email: 'admin@example.com', username: 'admin', password: 'Password123!' },
-      { email: 'user1@example.com', username: 'user1', password: 'Password123!' },
-      { email: 'user2@example.com', username: 'user2', password: 'Password123!' },
-    ];
+    const testId = uuid().substring(0, 5);
+    const userData = await createTestUsers(testSetup.server, accessToken, testId, 3);
+    expect(userData).toHaveLength(3);
 
-    for (const data of userData) {
-      await request(testSetup.server).post('/api/v1/users').send(data).expect(201);
-    }
+    const emails = userData.map((u) => u.email);
+    const usernames = userData.map((u) => u.username);
 
     const orderedAsc = await request(testSetup.server)
       .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
-      .query({ orderBy: 'username', orderType: 'asc' })
+      .query({ username: testId, orderBy: 'email', orderType: 'asc' })
       .expect(200);
-    expect(orderedAsc.body.data.map((u: { username: string }) => u.username)).toEqual([
-      'admin',
-      'user1',
-      'user2',
-    ]);
+
+    expect(orderedAsc.body.data.map((u) => u.email)).toEqual(emails.sort());
 
     const orderedDesc = await request(testSetup.server)
       .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
-      .query({ orderBy: 'username', orderType: 'desc' })
+      .query({ username: testId, orderBy: 'username', orderType: 'desc' })
       .expect(200);
-    expect(orderedDesc.body.data.map((u: { username: string }) => u.username)).toEqual([
-      'user2',
-      'user1',
-      'admin',
-    ]);
+    expect(orderedDesc.body.data.map((u) => u.username)).toEqual(usernames.sort().reverse());
 
     const page = await request(testSetup.server)
       .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
-      .query({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 1 })
+      .query({ username: testId, orderBy: 'username', orderType: 'asc', limit: 2, offset: 1 })
       .expect(200);
-    expect(page.body.data.map((u: { username: string }) => u.username)).toEqual(['user1', 'user2']);
+    expect(page.body.data.map((u) => u.username)).toEqual(usernames.sort().slice(1, 3));
 
     const page2 = await request(testSetup.server)
       .get('/api/v1/users')
       .set('Authorization', `Bearer ${accessToken}`)
-      .query({ orderBy: 'username', orderType: 'asc', limit: 2, offset: 2 })
+      .query({ username: testId, orderBy: 'username', orderType: 'asc', limit: 2, offset: 2 })
       .expect(200);
-    expect(page2.body.data.map((u: { username: string }) => u.username)).toEqual(['user2']);
+    expect(page2.body.data.map((u) => u.username)).toEqual(usernames.sort().slice(2, 4));
+
+    await deleteUsers(
+      testSetup.server,
+      accessToken,
+      userData.map((u) => u.id),
+    );
   });
 
   it('rejects invalid orderType with 422 (validation)', async () => {

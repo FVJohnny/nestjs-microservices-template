@@ -1,15 +1,10 @@
 import { Global, Module } from '@nestjs/common';
 import { KafkaService } from './kafka-service';
 import { KafkaIntegrationEventPublisher, KafkaIntegrationEventListener } from './index';
-import {
-  INTEGRATION_EVENT_PUBLISHER,
-  INTEGRATION_EVENT_LISTENER,
-  IntegrationEventsController,
-} from '@libs/nestjs-common';
+import { INTEGRATION_EVENT_PUBLISHER, INTEGRATION_EVENT_LISTENER } from '@libs/nestjs-common';
 
 @Global()
 @Module({
-  controllers: [IntegrationEventsController],
   providers: [
     KafkaService,
     {

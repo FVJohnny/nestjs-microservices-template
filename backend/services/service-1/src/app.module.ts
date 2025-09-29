@@ -7,6 +7,7 @@ import {
   EventTrackerModule,
   SharedCqrsModule,
   InboxModule,
+  ApiRateLimitModule,
 } from '@libs/nestjs-common';
 import { MetricsModule, JwtAuthModule } from '@libs/nestjs-common';
 import { OutboxModule } from '@libs/nestjs-common';
@@ -37,6 +38,7 @@ import { KafkaIntegrationEventsModule } from '@libs/nestjs-kafka';
     MetricsModule,
     JwtAuthModule,
     EventTrackerModule,
+    ApiRateLimitModule.forRoot({ '1minute': { type: 'ip', limit: 100 } }),
 
     // BOUNDED CONTEXTS
     AuthBoundedContextModule,

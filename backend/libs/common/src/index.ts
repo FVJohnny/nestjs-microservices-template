@@ -14,3 +14,4 @@ export * from './swagger';
 export * from './testing';
 export * from './tracing';
 export * from './utils';
+export * from './security';

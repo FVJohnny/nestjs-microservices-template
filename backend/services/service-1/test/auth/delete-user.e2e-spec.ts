@@ -1,13 +1,13 @@
 import request from 'supertest';
 import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
-import { createTestAccessToken, deleteAllUsers } from './utils';
+import { createTestAccessToken, createTestUsers, deleteUsers } from './utils';
 
 describe('DELETE /users/:userId (E2E)', () => {
   let testSetup: E2ETestSetup;
   let accessToken: string;
 
   beforeAll(async () => {
-    testSetup = await createE2ETestApp();
+    testSetup = await createE2ETestApp({ bypassRateLimit: true });
     accessToken = createTestAccessToken(testSetup.jwtTokenService);
   });
 
@@ -15,34 +15,16 @@ describe('DELETE /users/:userId (E2E)', () => {
     await testSetup.app.close();
   });
 
-  beforeEach(async () => {
-    await deleteAllUsers(testSetup.server, accessToken);
-  });
-
   it('removes the user and returns 204', async () => {
-    const userPayload = {
-      email: 'delete-me@example.com',
-      username: 'delete-me',
-      password: 'Password123!',
-    };
-
-    await request(testSetup.server).post('/api/v1/users').send(userPayload).expect(201);
-
-    const lookup = await request(testSetup.server)
-      .get('/api/v1/users')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .query({ email: userPayload.email })
-      .expect(200);
-
-    const userId = lookup.body.data[0].id;
+    const userData = await createTestUsers(testSetup.server, accessToken, 1);
 
     await request(testSetup.server)
-      .delete(`/api/v1/users/${userId}`)
+      .delete(`/api/v1/users/${userData[0].id}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(204);
 
     await request(testSetup.server)
-      .get(`/api/v1/users/${userId}`)
+      .get(`/api/v1/users/${userData[0].id}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(404);
   });

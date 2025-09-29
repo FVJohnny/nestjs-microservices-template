@@ -4,7 +4,7 @@ import { RegisterUser_Command } from '@bc/auth/application/commands';
 import { RegisterUser_ControllerParams } from './register-user.params';
 import { Inject } from '@nestjs/common';
 import { type ICommandBus } from '@nestjs/cqrs';
-import { COMMAND_BUS } from '@libs/nestjs-common';
+import { COMMAND_BUS, StrictRateLimit } from '@libs/nestjs-common';
 
 @ApiTags('users')
 @Controller('users')
@@ -12,6 +12,7 @@ export class RegisterUser_Controller {
   constructor(@Inject(COMMAND_BUS) private readonly commandBus: ICommandBus) {}
 
   @Post()
+  @StrictRateLimit()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({
