@@ -1,24 +1,24 @@
-import type { TestingModule } from '@nestjs/testing';
-import { Test } from '@nestjs/testing';
-import type { INestApplication } from '@nestjs/common';
-import { configureApp } from '../src/app-config';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { EMAIL_VERIFICATION_REPOSITORY } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
 import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
-import { EMAIL_VERIFICATION_REPOSITORY } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import {
-  Outbox_InMemory_Repository,
-  JwtTokenService,
-  OUTBOX_REPOSITORY,
   InMemoryIntegrationEventsModule,
+  JwtTokenService,
+  Outbox_InMemory_Repository,
+  OUTBOX_REPOSITORY,
 } from '@libs/nestjs-common';
-import type { Server } from 'http';
-import { AppModule } from '../src/app.module';
 import { KafkaIntegrationEventsModule } from '@libs/nestjs-kafka';
-import { Module } from '@nestjs/common';
 import { MongoDBModule } from '@libs/nestjs-mongodb';
+import { RedisDBModule } from '@libs/nestjs-redis';
+import type { INestApplication } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import TestAgent from 'supertest/lib/agent';
+import { configureApp } from '../src/app-config';
+import { AppModule } from '../src/app.module';
 
 @Module({})
 class DummyModule {}
@@ -38,6 +38,8 @@ export async function createE2ETestApp(
     .overrideModule(KafkaIntegrationEventsModule)
     .useModule(InMemoryIntegrationEventsModule)
     .overrideModule(MongoDBModule)
+    .useModule(DummyModule)
+    .overrideModule(RedisDBModule)
     .useModule(DummyModule)
     .overrideProvider(USER_REPOSITORY)
     .useValue(new User_InMemory_Repository(false))

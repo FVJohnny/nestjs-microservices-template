@@ -24,6 +24,7 @@
   "dependencies": {
     "@types/uuid": "^10.0.0",
     "@types/uuid-validate": "^0.0.3",
+    "opossum": "^8.1.4",
     "prom-client": "^14.2.0",
     "uuid": "^11.1.0",
     "uuid-validate": "^0.0.3"
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.7",
+    "@types/opossum": "^8.1.9",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",
     "eslint": "^9.34.0",
