@@ -2,7 +2,7 @@ import type { TransactionParticipant } from './transaction-participant';
 import type { InMemoryBaseRepository } from '../general/infrastructure/in-memory-base.repository';
 import type { SharedAggregateRoot, SharedAggregateRootDTO } from '../general/domain';
 
-export class InMemoryTransactionParticipant<
+export class TransactionParticipant_InMemory<
   TEnt extends SharedAggregateRoot,
   TDto extends SharedAggregateRootDTO,
 > implements TransactionParticipant

@@ -5,7 +5,7 @@ import type { Redis } from 'ioredis';
 /**
  * Redis-specific transaction context that exposes the underlying multi pipeline.
  */
-export class RedisTransactionParticipant implements TransactionParticipant {
+export class TransactionParticipant_Redis implements TransactionParticipant {
   private readonly pipeline: ChainableCommander;
 
   constructor(public readonly redis: Redis) {

@@ -1,5 +1,5 @@
 import { InfrastructureException } from '../../errors';
-import { type RepositoryContext, InMemoryTransactionParticipant } from '../../transactions';
+import { type RepositoryContext, TransactionParticipant_InMemory } from '../../transactions';
 import type { SharedAggregateRoot, Id, SharedAggregateRootDTO, Criteria } from '../domain';
 import type { Repository } from '../domain';
 import { InMemoryCriteriaConverter } from './in-memory-criteria-converter';
@@ -92,12 +92,12 @@ export abstract class InMemoryBaseRepository<
   private registerTransactionParticipant(context?: RepositoryContext) {
     if (!context) return;
 
-    let participant = context.transaction.get('inMemory') as InMemoryTransactionParticipant<
+    let participant = context.transaction.get('inMemory') as TransactionParticipant_InMemory<
       TEnt,
       TDto
     >;
     if (!participant) {
-      participant = new InMemoryTransactionParticipant<TEnt, TDto>();
+      participant = new TransactionParticipant_InMemory<TEnt, TDto>();
       context.transaction.register('inMemory', participant);
     }
     participant.saveSnapshot(this, new Map(this.items));

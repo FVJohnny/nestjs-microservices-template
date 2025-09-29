@@ -1,7 +1,7 @@
 import type { MongoClient, ClientSession } from 'mongodb';
 import type { TransactionParticipant } from '@libs/nestjs-common';
 
-export class MongoTransactionParticipant implements TransactionParticipant {
+export class TransactionParticipant_Mongodb implements TransactionParticipant {
   private readonly session: ClientSession;
   private transactionState: 'active' | 'committed' | 'aborted' = 'active';
 

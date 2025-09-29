@@ -9,7 +9,7 @@ import type {
   PaginatedRepoResult,
 } from '@libs/nestjs-common';
 
-import { RedisTransactionParticipant } from './transactions/redis-transaction-participant';
+import { TransactionParticipant_Redis } from './transactions/transaction-participant-redis';
 
 export abstract class BaseRedisRepository<TEnt extends SharedAggregateRoot>
   implements Repository<TEnt, Id>
@@ -95,7 +95,7 @@ export abstract class BaseRedisRepository<TEnt extends SharedAggregateRoot>
       return undefined;
     }
 
-    const participant = transaction.get('redis') as RedisTransactionParticipant;
+    const participant = transaction.get('redis') as TransactionParticipant_Redis;
     return participant?.getPipeline();
   }
 
@@ -106,9 +106,9 @@ export abstract class BaseRedisRepository<TEnt extends SharedAggregateRoot>
   protected registerTransactionParticipant(context?: RepositoryContext) {
     if (!context) return;
 
-    let participant = context.transaction.get('redis') as RedisTransactionParticipant;
+    let participant = context.transaction.get('redis') as TransactionParticipant_Redis;
     if (!participant) {
-      participant = new RedisTransactionParticipant(this.redisClient);
+      participant = new TransactionParticipant_Redis(this.redisClient);
       context.transaction.register('redis', participant);
     }
   }

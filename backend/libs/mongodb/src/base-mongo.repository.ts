@@ -20,7 +20,7 @@ import {
 } from '@libs/nestjs-common';
 import type { RepositoryContext, Repository } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from './mongodb.tokens';
-import { MongoTransactionParticipant } from './transactions/mongo-transaction-participant';
+import { TransactionParticipant_Mongodb } from './transactions/transaction-participant-mongodb';
 import { MongoCriteriaConverter } from './criteria/mongo-criteria-converter';
 
 export interface IndexSpec {
@@ -215,9 +215,9 @@ export abstract class BaseMongoRepository<
   protected registerTransactionParticipant(context?: RepositoryContext): void {
     if (!context) return;
 
-    const participant = context.transaction.get('mongo') as MongoTransactionParticipant;
+    const participant = context.transaction.get('mongo') as TransactionParticipant_Mongodb;
     if (!participant) {
-      context.transaction.register('mongo', new MongoTransactionParticipant(this.mongoClient));
+      context.transaction.register('mongo', new TransactionParticipant_Mongodb(this.mongoClient));
     }
   }
 
@@ -225,7 +225,7 @@ export abstract class BaseMongoRepository<
   protected getTransactionSession(context?: RepositoryContext): ClientSession | undefined {
     if (!context) return undefined;
 
-    const participant = context.transaction.get('mongo') as MongoTransactionParticipant;
+    const participant = context.transaction.get('mongo') as TransactionParticipant_Mongodb;
     return participant?.getSession();
   }
 }
