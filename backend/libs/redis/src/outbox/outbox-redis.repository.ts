@@ -6,7 +6,7 @@ import { OutboxEvent, OutboxRepository, type RepositoryContext } from '@libs/nes
 import { BaseRedisRepository } from '../base-redis.repository';
 
 @Injectable()
-export class RedisOutboxRepository
+export class Outbox_Redis_Repository
   extends BaseRedisRepository<OutboxEvent>
   implements OutboxRepository
 {

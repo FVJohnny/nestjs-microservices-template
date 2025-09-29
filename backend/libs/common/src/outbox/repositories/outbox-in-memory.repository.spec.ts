@@ -1,10 +1,10 @@
-import { InMemoryOutboxRepository } from './in-memory-outbox.repository';
+import { Outbox_InMemory_Repository } from './outbox-in-memory.repository';
 import { testOutboxRepositoryContract } from '../domain/outbox.repository.contract';
 
-describe('InMemoryOutboxRepository', () => {
+describe('Outbox_InMemory_Repository', () => {
   // Run the shared contract tests
 
-  const repository = new InMemoryOutboxRepository();
+  const repository = new Outbox_InMemory_Repository();
   testOutboxRepositoryContract(
     'In-Memory Implementation',
     async () => {

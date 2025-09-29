@@ -1,17 +1,17 @@
-import { MongoOutboxRepository } from './mongo-outbox.repository';
+import { Outbox_Mongodb_Repository } from './outbox-mongodb.repository';
 import { testOutboxRepositoryContract } from '@libs/nestjs-common/test-exports';
 import { MongodbTestService } from '../testing/mongodb-test.service';
 import type { OutboxEventDTO } from '@libs/nestjs-common';
 
-describe('MongoOutboxRepository', () => {
+describe('Outbox_Mongodb_Repository', () => {
   const mongoTestService = new MongodbTestService<OutboxEventDTO>(
-    MongoOutboxRepository.CollectionName,
+    Outbox_Mongodb_Repository.CollectionName,
   );
 
   // Run the shared contract tests
   testOutboxRepositoryContract(
     'MongoDB Implementation',
-    async () => new MongoOutboxRepository(mongoTestService.mongoClient),
+    async () => new Outbox_Mongodb_Repository(mongoTestService.mongoClient),
     {
       beforeAll: () => mongoTestService.setupDatabase(),
       beforeEach: () => mongoTestService.clearCollection(),

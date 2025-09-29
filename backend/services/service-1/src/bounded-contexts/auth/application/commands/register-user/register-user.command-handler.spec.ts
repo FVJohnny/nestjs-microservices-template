@@ -10,7 +10,7 @@ import {
   MockEventBus,
   UserCreated_IntegrationEvent,
   wait,
-  InMemoryOutboxRepository,
+  Outbox_InMemory_Repository,
   Id,
 } from '@libs/nestjs-common';
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
@@ -38,7 +38,7 @@ describe('RegisterUserCommandHandler', () => {
       shouldFailOutbox = false,
     } = params;
 
-    const outboxRepository = new InMemoryOutboxRepository(shouldFailOutbox);
+    const outboxRepository = new Outbox_InMemory_Repository(shouldFailOutbox);
 
     const userRepository = new User_InMemory_Repository(shouldFailRepository);
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });

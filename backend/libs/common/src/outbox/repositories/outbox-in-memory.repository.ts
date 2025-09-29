@@ -4,7 +4,7 @@ import { OutboxRepository } from '../domain/outbox.repository';
 import { InMemoryBaseRepository } from '../../general/infrastructure/in-memory-base.repository';
 
 @Injectable()
-export class InMemoryOutboxRepository
+export class Outbox_InMemory_Repository
   extends InMemoryBaseRepository<OutboxEvent, OutboxEventDTO>
   implements OutboxRepository
 {

@@ -1,1 +1,1 @@
-export * from './redis-outbox.repository';
+export * from './outbox-redis.repository';

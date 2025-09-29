@@ -12,14 +12,14 @@ import { MONGO_CLIENT_TOKEN } from '../mongodb.tokens';
 import { BaseMongoRepository, IndexSpec } from '../base-mongo.repository';
 
 @Injectable()
-export class MongoOutboxRepository
+export class Outbox_Mongodb_Repository
   extends BaseMongoRepository<OutboxEvent, OutboxEventDTO>
   implements OutboxRepository
 {
   static CollectionName = 'outbox_events';
 
   constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
-    super(mongoClient, MongoOutboxRepository.CollectionName);
+    super(mongoClient, Outbox_Mongodb_Repository.CollectionName);
   }
 
   protected toEntity(dto: OutboxEventDTO): OutboxEvent {
