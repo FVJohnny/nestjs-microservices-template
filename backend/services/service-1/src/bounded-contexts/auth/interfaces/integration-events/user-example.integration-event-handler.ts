@@ -13,20 +13,13 @@ export class UserExample_IntegrationEventHandler {
   constructor(@Inject(COMMAND_BUS) private readonly commandBus: ICommandBus) {}
 
   async handleEvent(_event: UserExample_IntegrationEvent) {
-    try {
-      // Generate random user data
-      const user = User.random();
-      const command = new RegisterUser_Command({
-        email: user.email.toValue(),
-        username: user.username.toValue(),
-        password: 'password',
-      });
-      await this.commandBus.execute(command);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      this.logger.error(
-        `❌ Failed to create example user via UserExample integration event: ${errorMessage}`,
-      );
-    }
+    // Generate random user data
+    const user = User.random();
+    const command = new RegisterUser_Command({
+      email: user.email.toValue(),
+      username: user.username.toValue(),
+      password: 'password',
+    });
+    await this.commandBus.execute(command);
   }
 }

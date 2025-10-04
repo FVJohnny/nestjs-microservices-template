@@ -61,14 +61,13 @@ export class CorrelationLogger extends NestLogger implements LoggerService {
   }
 
   private prefix(): string {
-    const metadata = TracingService.getTracingMetadata();
-    const idLog = metadata?.id ? `[ID: ${metadata?.id}] ` : '';
-    const correlationIdLog = metadata?.correlationId
-      ? `[CorrelationID: ${metadata?.correlationId}] `
-      : '';
-    const causationIdLog = metadata?.causationId ? `[CausationID: ${metadata?.causationId}] ` : '';
+    const traceId = TracingService.getTraceId();
+    const spanId = TracingService.getSpanId();
 
-    return `${idLog}${correlationIdLog}${causationIdLog}`;
+    const traceIdLog = traceId ? `[TraceID: ${traceId}] ` : '';
+    const spanIdLog = spanId ? `[SpanID: ${spanId}] ` : '';
+
+    return `${traceIdLog}${spanIdLog}`;
   }
 
   private toString(message: LogMessage): string {

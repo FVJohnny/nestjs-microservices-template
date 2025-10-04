@@ -1,3 +1,6 @@
+// Initialize OpenTelemetry first, before any other imports
+import './otel-instrumentation';
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { configureApp } from './app-config';

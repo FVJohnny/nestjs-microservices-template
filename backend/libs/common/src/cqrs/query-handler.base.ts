@@ -21,13 +21,19 @@ export abstract class BaseQueryHandler<TQuery extends IQuery, TResult extends ob
    * 3. Handle the query (implemented by subclasses)
    */
   async execute(query: TQuery): Promise<TResult> {
-    await this.authorize(query);
-    await this.validate(query);
+    return TracingService.withSpan(
+      `query.execute.${query.constructor.name}`,
+      async () => {
+        await this.authorize(query);
+        await this.validate(query);
 
-    return await TracingService.runWithNewMetadata(() => {
-      this.logger.log(`Executing query: ${query.constructor.name}`);
-      return this.handle(query);
-    });
+        this.logger.log(`Executing query: ${query.constructor.name}`);
+        return this.handle(query);
+      },
+      {
+        'query.name': query.constructor.name,
+      },
+    );
   }
 
   /**

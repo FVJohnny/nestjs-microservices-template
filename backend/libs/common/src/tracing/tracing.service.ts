@@ -1,46 +1,118 @@
 import { Injectable } from '@nestjs/common';
-import { AsyncLocalStorage } from 'async_hooks';
-import { randomUUID } from 'crypto';
-
-export interface TracingMetadata {
-  id: string;
-  correlationId: string;
-  causationId?: string;
-  userId?: string;
-  requestId?: string;
-}
+import { trace, context, Span, SpanStatusCode } from '@opentelemetry/api';
 
 @Injectable()
 export class TracingService {
-  private static asyncLocalStorage = new AsyncLocalStorage<TracingMetadata>();
+  private static readonly tracer = trace.getTracer('nestjs-service');
 
-  static getTracingMetadata(): TracingMetadata | undefined {
-    return this.asyncLocalStorage.getStore();
+  /**
+   * Get current span context (traceId, spanId)
+   */
+  static getSpanContext() {
+    return trace.getActiveSpan()?.spanContext();
   }
 
-  static createTracingMetadata(otherMetadata?: TracingMetadata): TracingMetadata {
-    const id = randomUUID();
-    const correlationId = otherMetadata?.correlationId || id;
-    const causationId = correlationId !== id ? otherMetadata?.id : undefined;
-    return {
-      id,
-      correlationId,
-      causationId,
-    };
+  /**
+   * Get current trace ID (use as correlation ID)
+   */
+  static getTraceId(): string | undefined {
+    return this.getSpanContext()?.traceId;
   }
 
-  static runWithMetadata<T>(context: TracingMetadata, callback: () => T): T {
-    return this.asyncLocalStorage.run(context, callback);
+  /**
+   * Get current span ID
+   */
+  static getSpanId(): string | undefined {
+    return this.getSpanContext()?.spanId;
   }
 
-  static runWithNewMetadataFrom<T>(metadata: TracingMetadata, callback: () => T): T {
-    const newMetadata = this.createTracingMetadata(metadata);
-    return this.runWithMetadata(newMetadata, callback);
+  /**
+   * Get current trace metadata (traceId and spanId) for inclusion in events/messages
+   * Returns undefined if no active trace context
+   */
+  static getTraceMetadata():
+    | {
+        traceId: string;
+        spanId: string;
+      }
+    | undefined {
+    const traceId = this.getTraceId();
+    const spanId = this.getSpanId();
+
+    if (traceId && spanId) {
+      return { traceId, spanId };
+    }
+
+    return undefined;
   }
 
-  static runWithNewMetadata<T>(callback: () => T): T {
-    const oldMetadata = this.getTracingMetadata();
-    const metadata = this.createTracingMetadata(oldMetadata);
-    return this.runWithMetadata(metadata, callback);
+  /**
+   * Execute a function within a new span (auto-cleanup)
+   *
+   * @param name - Span name
+   * @param fn - Function to execute within the span
+   * @param attributes - Optional span attributes
+   * @param parentContext - Optional remote parent trace context to continue the same trace
+   *
+   * Use cases:
+   * - Background processes: call without parentContext to create independent trace
+   * - Nested operations: span will be child of current active span (if exists)
+   * - Integration events: provide parentContext to continue the trace from the original publisher
+   *
+   * Note: If parentContext is provided, the new span will be part of the same trace,
+   * maintaining trace continuity across service boundaries.
+   */
+  static async withSpan<T>(
+    name: string,
+    fn: (span: Span) => Promise<T>,
+    attributes?: Record<string, string | number | boolean>,
+    parentContext?: { traceId: string; spanId: string },
+  ): Promise<T> {
+    let activeContext = context.active();
+
+    // If there's a remote parent context, set it as the active context
+    // This continues the same trace across service boundaries
+    if (parentContext) {
+      activeContext = trace.setSpanContext(activeContext, {
+        traceId: parentContext.traceId,
+        spanId: parentContext.spanId,
+        traceFlags: 1,
+      });
+    }
+
+    const span = this.tracer.startSpan(name, {}, activeContext);
+    if (attributes) {
+      span.setAttributes(attributes);
+    }
+    const ctx = trace.setSpan(activeContext, span);
+
+    try {
+      const result = await context.with(ctx, () => fn(span));
+      span.setStatus({ code: SpanStatusCode.OK });
+      return result;
+    } catch (error) {
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+      span.recordException(error as Error);
+      throw error;
+    } finally {
+      span.end();
+    }
+  }
+
+  /**
+   * Add attribute to current active span
+   */
+  static setAttribute(key: string, value: string | number | boolean): void {
+    trace.getActiveSpan()?.setAttribute(key, value);
+  }
+
+  /**
+   * Add event to current active span
+   */
+  static addEvent(name: string, attributes?: Record<string, string | number | boolean>): void {
+    trace.getActiveSpan()?.addEvent(name, attributes);
   }
 }

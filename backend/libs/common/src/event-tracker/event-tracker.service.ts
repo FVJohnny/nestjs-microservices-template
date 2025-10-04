@@ -3,6 +3,7 @@ import { CorrelationLogger } from '../logger';
 
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
 import { DomainEvent } from '../cqrs';
+import { TracingService } from '../tracing';
 
 // Integration event stats
 export interface EventStats {
@@ -51,7 +52,7 @@ export class EventTrackerService {
       {
         id: event.id,
         name: eventName,
-        metadata: event.metadata,
+        metadata: TracingService.getTraceMetadata(),
       },
       success,
     );

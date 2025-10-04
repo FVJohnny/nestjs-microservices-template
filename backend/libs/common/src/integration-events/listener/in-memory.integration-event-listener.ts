@@ -16,8 +16,8 @@ export class InMemoryIntegrationEventListener extends BaseIntegrationEventListen
       id: 'id',
       name: 'name',
       metadata: {
-        id: 'id',
-        correlationId: 'correlationId',
+        traceId: 'traceId',
+        spanId: 'spanId',
       },
     };
   }

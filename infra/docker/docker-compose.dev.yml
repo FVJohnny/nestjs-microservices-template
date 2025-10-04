@@ -39,6 +39,10 @@ services:
       - POSTGRES_SYNCHRONIZE=${POSTGRES_SYNCHRONIZE:-true}
       - POSTGRES_LOGGING=${POSTGRES_LOGGING:-true}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://tempo:4318}
+      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-service-1}
+      - OTEL_TRACES_ENABLED=${OTEL_TRACES_ENABLED:-true}
+      - OTEL_METRICS_ENABLED=${OTEL_METRICS_ENABLED:-true}
     ports:
       - '3001:3000'
     networks:
@@ -123,6 +127,19 @@ services:
     networks:
       - backend
 
+  tempo:
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    user: "0:0"
+    volumes:
+      - ${PWD}/infra/monitoring/tempo/tempo.yaml:/etc/tempo.yaml
+      - tempo_data:/tmp/tempo
+    ports:
+      - '3200:3200'   # Tempo API
+      - '4318:4318'   # OTLP HTTP receiver
+    networks:
+      - backend
+
   mongodb:
     image: mongo:7.0
     command: ['bash', '/scripts/mongo-startup.sh']
@@ -184,3 +201,4 @@ volumes:
   mongodb_data_dev:
   redis_data_dev:
   postgres_data_dev:
+  tempo_data:

@@ -3,10 +3,12 @@ import { INTEGRATION_EVENT_PUBLISHER } from './publisher/event-publisher.interfa
 import { InMemoryIntegrationEventPublisher } from './publisher/in-memory.integration-event-publisher';
 import { InMemoryIntegrationEventListener } from './listener/in-memory.integration-event-listener';
 import { INTEGRATION_EVENT_LISTENER } from './listener/integration-event-listener.base';
+import { IntegrationEventsController } from './controller/integration-events.controller';
 
 @Global()
 @Module({
   providers: [
+    IntegrationEventsController,
     {
       provide: INTEGRATION_EVENT_PUBLISHER,
       useFactory: () => new InMemoryIntegrationEventPublisher(false),

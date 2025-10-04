@@ -30,12 +30,19 @@ export abstract class BaseIntegrationEvent {
 
   /**
    * Converts the event to a JSON message payload.
+   *
+   * Note: Includes trace metadata for transports that don't support trace propagation
+   * via headers (e.g., Redis pub/sub). For transports with header support (e.g., Kafka),
+   * OpenTelemetry automatically propagates trace context via headers.
    */
   toJSON(): Record<string, unknown> {
+    const metadata = TracingService.getTraceMetadata();
+
     return {
       id: this.id,
       occurredOn: this.occurredOn.toISOString(),
-      metadata: TracingService.getTracingMetadata(),
+      // Include trace metadata for Redis/transports without header support
+      metadata: metadata || {},
       ...this.toEventJSON(),
     };
   }

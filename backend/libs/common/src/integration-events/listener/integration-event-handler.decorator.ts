@@ -7,7 +7,6 @@ import {
   type BaseIntegrationEventListener,
 } from './integration-event-listener.base';
 import { CorrelationLogger } from '../../logger';
-import { TracingService } from '../../tracing';
 import { InboxService } from '../../inbox';
 
 // Contract the decorated class must implement
@@ -56,12 +55,7 @@ export function IntegrationEventHandler<TEvent extends BaseIntegrationEvent>(
 
       async handle(message: ParsedIntegrationMessage) {
         const event = this.eventClass.fromJSON(message) as TEvent;
-        await TracingService.runWithNewMetadataFrom(message.metadata, async () => {
-          this.logger.log(
-            `Processing ${this.eventClass.topic} event [${event.id}] - ${this.eventClass.name}`,
-          );
-          await this.handleEvent(event);
-        });
+        await this.handleEvent(event);
       }
     }
 

@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Optional } from '@nestjs/common';
 import { EventTrackerService } from './event-tracker.service';
 import {
   IIntegrationEventHandler,
@@ -6,7 +6,7 @@ import {
   type IntegrationEventListener,
 } from '../integration-events/listener/integration-event-listener.base';
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
-import { TracingService } from '../tracing/tracing.service';
+import { InboxService } from '../inbox';
 
 /**
  * Universal Integration Event Tracker that intercepts Integration Event Listener
@@ -17,8 +17,13 @@ export class EventTrackerIntegrationInterceptor {
     private readonly eventTracker: EventTrackerService,
     @Inject(INTEGRATION_EVENT_LISTENER)
     private readonly integrationEventListener: IntegrationEventListener,
+    @Optional() private readonly inboxService?: InboxService,
   ) {
     this.wrapIntegrationEventListener();
+    // If inbox is enabled, set the tracker on it (inbox will track after processing)
+    if (this.inboxService) {
+      this.inboxService.setEventTracker(this.eventTracker.trackEvent.bind(this.eventTracker));
+    }
   }
 
   /**
@@ -52,18 +57,22 @@ export class EventTrackerIntegrationInterceptor {
       topicName: string,
       message: ParsedIntegrationMessage,
     ) => {
-      return TracingService.runWithNewMetadataFrom(message.metadata, async () => {
-        try {
-          const result = await originalHandleMessage(topicName, message);
-          if (result) {
-            this.eventTracker.trackEvent(topicName, message, true);
-          }
-          return result;
-        } catch (error) {
-          this.eventTracker.trackEvent(topicName, message, false);
-          throw error;
+      // If inbox is enabled, don't track here - inbox will track after processing
+      if (this.inboxService) {
+        return originalHandleMessage(topicName, message);
+      }
+
+      // No inbox: track immediately after handling
+      try {
+        const result = await originalHandleMessage(topicName, message);
+        if (result) {
+          this.eventTracker.trackEvent(topicName, message, true);
         }
-      });
+        return result;
+      } catch (error) {
+        this.eventTracker.trackEvent(topicName, message, false);
+        throw error;
+      }
     };
   }
 }

@@ -1,6 +1,7 @@
 import type { RepositoryContext } from './repository-context';
 import { DistributedTransactionContext } from './distributed-transaction-context';
 import { CorrelationLogger } from '../logger';
+import { TracingService } from '../tracing';
 
 export class Transaction {
   protected readonly logger: CorrelationLogger = new CorrelationLogger(this.constructor.name);
@@ -9,13 +10,19 @@ export class Transaction {
     const transactionContext = new DistributedTransactionContext();
 
     try {
-      await work({ transaction: transactionContext });
-      await transactionContext.commit();
+      await TracingService.withSpan('transaction.run', async () => {
+        await work({ transaction: transactionContext });
+        await transactionContext.commit();
+      });
     } catch (error) {
-      await transactionContext.rollback();
+      await TracingService.withSpan('transaction.rollback', async () => {
+        await transactionContext.rollback();
+      });
       throw error;
     } finally {
-      await transactionContext.dispose();
+      await TracingService.withSpan('transaction.dispose', async () => {
+        await transactionContext.dispose();
+      });
     }
   }
 }

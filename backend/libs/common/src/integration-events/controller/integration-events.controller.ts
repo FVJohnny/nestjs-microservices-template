@@ -81,7 +81,10 @@ export class IntegrationEventsController {
   })
   async publishEvent(@Body() body: { topic: string; message: object }) {
     try {
-      const metadata = TracingService.getTracingMetadata();
+      const metadata = {
+        traceId: TracingService.getTraceId(),
+        spanId: TracingService.getSpanId(),
+      };
       const message = {
         ...body.message,
         id: Id.random().toValue(),

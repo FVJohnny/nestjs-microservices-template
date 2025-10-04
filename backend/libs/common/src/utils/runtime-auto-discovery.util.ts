@@ -116,9 +116,6 @@ export class RuntimeAutoDiscovery {
 
           if (handlerClass) {
             handlers.push(handlerClass);
-            this.logger.log(
-              `✅ Discovered handler: ${handlerClass.name} from ${path.basename(filePath)}`,
-            );
           }
         } catch (error) {
           console.warn(`⚠️ Failed to load handler from ${filePath}:`, (error as Error).message);
@@ -158,9 +155,6 @@ export class RuntimeAutoDiscovery {
 
           if (controllerClass) {
             controllers.push(controllerClass);
-            this.logger.log(
-              `✅ Discovered controller: ${controllerClass.name} from ${path.basename(filePath)}`,
-            );
           }
         } catch (error) {
           console.warn(`⚠️ Failed to load controller from ${filePath}:`, (error as Error).message);

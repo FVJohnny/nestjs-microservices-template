@@ -3,19 +3,24 @@ import { NextFunction, Request, Response } from 'express';
 
 import { TracingService } from './tracing.service';
 
+/**
+ * Middleware that adds trace context to response headers
+ * OpenTelemetry auto-instrumentation handles trace propagation
+ */
 @Injectable()
 export class TracingMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: NextFunction) {
-    const correlationId = req.headers['x-correlation-id'] as string;
-    const id = req.headers['x-tracing-id'] as string;
+  use(_req: Request, res: Response, next: NextFunction) {
+    // Intercept writeHead to set trace ID header before response is sent
+    const originalWriteHead = res.writeHead;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    res.writeHead = function (this: Response, ...args: any[]) {
+      const traceId = TracingService.getTraceId();
+      if (traceId && !res.headersSent) {
+        res.setHeader('x-trace-id', traceId);
+      }
+      return originalWriteHead.apply(this, args);
+    };
 
-    const tracingMetadata = TracingService.createTracingMetadata({ id, correlationId });
-    // Set correlation ID in response header
-
-    res.setHeader('x-correlation-id', tracingMetadata.correlationId);
-    res.setHeader('x-tracing-id', tracingMetadata.id);
-
-    // Run the request within the correlation context
-    TracingService.runWithMetadata(tracingMetadata, () => next());
+    next();
   }
 }

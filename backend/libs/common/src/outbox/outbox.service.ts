@@ -21,14 +21,12 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit() {
-    TracingService.runWithNewMetadata(() => {
-      this.processingInterval = setInterval(
-        () => this.processOutboxEvents(),
-        this.PROCESSING_INTERVAL_MS,
-      );
+    this.processingInterval = setInterval(
+      () => this.processOutboxEvents(),
+      this.PROCESSING_INTERVAL_MS,
+    );
 
-      this.logger.log(`Outbox processor started with ${this.PROCESSING_INTERVAL_MS}ms interval`);
-    });
+    this.logger.log(`Outbox processor started with ${this.PROCESSING_INTERVAL_MS}ms interval`);
   }
 
   async onModuleDestroy() {
@@ -39,14 +37,20 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   }
 
   async processOutboxEvents() {
-    const events = await this.repository.findUnprocessed(10);
-    if (!events.length) return;
+    return TracingService.withSpan('outbox.process_batch', async (span) => {
+      const events = await this.repository.findUnprocessed(10);
+      if (!events.length) {
+        span.setAttribute('outbox.events_count', 0);
+        return;
+      }
 
-    this.logger.debug(`Processing ${events.length} outbox events`);
+      span.setAttribute('outbox.events_count', events.length);
+      this.logger.debug(`Processing ${events.length} outbox events`);
 
-    for (const event of events) {
-      await this.processEvent(event);
-    }
+      for (const event of events) {
+        await this.processEvent(event);
+      }
+    });
   }
 
   private async processEvent(event: OutboxEvent) {

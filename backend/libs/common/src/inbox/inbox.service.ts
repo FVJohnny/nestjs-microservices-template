@@ -6,15 +6,16 @@ import { InboxEvent } from './domain/inbox-event.entity';
 import type { IIntegrationEventHandler } from '../integration-events/listener/integration-event-listener.base';
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
 import { InboxEventName, InboxPayload, InboxTopic } from './domain/value-objects';
-import { TracingService } from '../tracing';
 import { normalizeError } from '../utils';
 import { Id } from '../general';
+import { TracingService } from '../tracing';
 
 @Injectable()
 export class InboxService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new CorrelationLogger(InboxService.name);
   private processingInterval?: NodeJS.Timeout;
   private readonly eventHandlers = new Map<string, Map<string, IIntegrationEventHandler>>(); // topic -> eventName -> handler
+  private trackEvent?: (topic: string, message: ParsedIntegrationMessage, success: boolean) => void;
 
   private readonly config = {
     batchSize: 10,
@@ -27,14 +28,9 @@ export class InboxService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit() {
-    TracingService.runWithNewMetadata(() => {
-      this.processingInterval = setInterval(
-        () => this.processInboxEvents(),
-        this.config.intervalMs,
-      );
+    this.processingInterval = setInterval(() => this.processInboxEvents(), this.config.intervalMs);
 
-      this.logger.log(`Inbox processor started with ${this.config.intervalMs}ms interval`);
-    });
+    this.logger.log(`Inbox processor started with ${this.config.intervalMs}ms interval`);
   }
 
   async onModuleDestroy() {
@@ -42,6 +38,12 @@ export class InboxService implements OnModuleInit, OnModuleDestroy {
       clearInterval(this.processingInterval);
     }
     this.logger.log('Inbox processor stopped');
+  }
+
+  setEventTracker(
+    tracker: (topic: string, message: ParsedIntegrationMessage, success: boolean) => void,
+  ): void {
+    this.trackEvent = tracker;
   }
 
   async receiveMessage(
@@ -108,21 +110,70 @@ export class InboxService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private safeProcessEvent(event: InboxEvent): Promise<void> {
-    return this.processEvent(event).catch((error) => {
-      this.logger.error(
-        `❌ Error processing inbox event. Topic: ${event.topic.toValue()}, Event: ${event.eventName.toValue()} ( id: ${event.id.toValue()})`,
-        normalizeError(error),
-      );
-      event.markAsFailed();
-      return this.inboxRepository.save(event);
-    });
+  private async safeProcessEvent(event: InboxEvent): Promise<void> {
+    const eventId = event.id.toValue();
+    const eventName = event.eventName.toValue();
+    const topic = event.topic.toValue();
+    const message = JSON.parse(event.payload.toValue()) as ParsedIntegrationMessage;
+
+    const parentContext =
+      message.metadata?.traceId && message.metadata?.spanId
+        ? { traceId: message.metadata.traceId, spanId: message.metadata.spanId }
+        : undefined;
+
+    return TracingService.withSpan(
+      `inbox.process_integration_event.${topic}.${eventName}`,
+      async () => {
+        try {
+          await this.processEvent(event);
+          this.trackEvent?.(topic, message, true);
+        } catch (error) {
+          this.handleEventFailure(event, message, topic, error);
+          throw error;
+        }
+      },
+      {
+        'inbox.integration_event_id': eventId,
+        'inbox.integration_event_name': eventName,
+        'inbox.integration_event_topic': topic,
+      },
+      parentContext,
+    ).catch(() => {});
+  }
+
+  private handleEventFailure(
+    event: InboxEvent,
+    message: ParsedIntegrationMessage,
+    topic: string,
+    error: unknown,
+  ) {
+    return TracingService.withSpan(
+      'inbox.handle_event_failure',
+      async () => {
+        this.logger.error(
+          `❌ Error processing inbox event. Topic: ${event.topic.toValue()}, Event: ${event.eventName.toValue()} ( id: ${event.id.toValue()})`,
+          normalizeError(error),
+        );
+        event.markAsFailed();
+        await this.inboxRepository.save(event);
+        this.trackEvent?.(topic, message, false);
+      },
+      {
+        'inbox.event_id': event.id.toValue(),
+        'inbox.event_name': event.eventName.toValue(),
+        'inbox.topic': topic,
+        'error.message': error instanceof Error ? error.message : 'Unknown error',
+      },
+    );
   }
 
   private async processEvent(event: InboxEvent): Promise<void> {
     const eventId = event.id.toValue();
     const eventName = event.eventName.toValue();
     const topic = event.topic.toValue();
+
+    // Parse message to extract trace metadata
+    const message = JSON.parse(event.payload.toValue()) as ParsedIntegrationMessage;
 
     this.logger.log(
       `🔄 Processing inbox event. Topic: ${topic}, Event: ${eventName} ( id: ${eventId})`,
@@ -131,9 +182,8 @@ export class InboxService implements OnModuleInit, OnModuleDestroy {
     event.markAsProcessing();
     await this.inboxRepository.save(event);
 
-    // Find the appropriate handler and parse the event payload
+    // Find the appropriate handler
     const handler = this.findHandler(topic, eventName);
-    const message = JSON.parse(event.payload.toValue()) as ParsedIntegrationMessage;
 
     // Execute the handler
     const startTime = Date.now();
