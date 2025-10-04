@@ -174,7 +174,7 @@ export abstract class BaseMongoRepository<
       for (const indexSpec of indexSpecs) {
         const indexName = indexSpec.options?.name;
         if (!indexName) {
-          this.logger.warn('Index definition missing name, skipping:', indexSpec.fields);
+          this.logger.warn(`Index definition missing name, skipping: ${indexSpec.fields}`);
           continue;
         }
 

@@ -9,7 +9,7 @@ export function initializeOpenTelemetry() {
   const tracesEnabled = process.env.OTEL_TRACES_ENABLED === 'true';
   const metricsEnabled = process.env.OTEL_METRICS_ENABLED === 'true';
   const otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318';
-  const serviceName = process.env.OTEL_SERVICE_NAME || process.env.SERVICE_NAME || 'nestjs-service';
+  const serviceName = process.env.SERVICE_NAME || 'nestjs-service';
 
   console.log('🔭 Initializing OpenTelemetry SDK...');
   console.log(`  - Service: ${serviceName}`);

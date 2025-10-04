@@ -1,75 +1,93 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Logger as NestLogger, type LoggerService } from '@nestjs/common';
+import { Logger, type LoggerService } from '@nestjs/common';
+import { hostname } from 'os';
 
 import { TracingService } from '../tracing/tracing.service';
 
 type LogMessage = string | number | boolean | object | Error;
 
-export class CorrelationLogger extends NestLogger implements LoggerService {
+export class CorrelationLogger extends Logger implements LoggerService {
   private logLevel: string;
+  private service: string;
+  private environment: string;
+  private hostname: string;
 
-  constructor(context?: string) {
-    super(context || 'CorrelationLogger');
+  constructor(context: string) {
+    super(context);
+
     this.logLevel = process.env.LOG_LEVEL || 'debug';
+    this.service = process.env.SERVICE_NAME || 'unknown-service';
+    this.environment = process.env.NODE_ENV || 'development';
+    // Prefer k8s pod name, fallback to OS hostname, then env var
+    this.hostname = process.env.POD_NAME || hostname() || process.env.HOSTNAME || 'unknown-host';
   }
 
-  log = (message: LogMessage, ...optionalParams: any[]) => {
-    if (this.shouldLog('log')) {
-      super.log(`${this.prefix()} ${this.formatMessage(message, optionalParams)}`);
-    }
+  log = (message: LogMessage) => {
+    if (!this.shouldLog('log')) return;
+
+    super.log(this.toJsonLog('info', message));
   };
 
-  error = (message: LogMessage, traceOrError?: string | Error, ...optionalParams: any[]) => {
-    if (this.shouldLog('error')) {
-      if (traceOrError instanceof Error) {
-        super.error(
-          `${this.prefix()} ${this.formatMessage(message, optionalParams)}`,
-          traceOrError.stack,
-        );
-      } else {
-        super.error(
-          `${this.prefix()} ${this.formatMessage(message, optionalParams)}`,
-          traceOrError,
-        );
-      }
-    }
+  error = (message: LogMessage, traceOrError?: string | Error) => {
+    if (!this.shouldLog('error')) return;
+
+    super.error(
+      this.toJsonLog('error', message, traceOrError instanceof Error ? traceOrError : undefined),
+    );
   };
 
-  warn = (message: LogMessage, ...optionalParams: any[]) => {
-    if (this.shouldLog('warn')) {
-      super.warn(`${this.prefix()} ${this.formatMessage(message, optionalParams)}`);
-    }
+  warn = (message: LogMessage) => {
+    if (!this.shouldLog('warn')) return;
+
+    super.warn(this.toJsonLog('warn', message));
   };
 
-  debug = (message: LogMessage, ...optionalParams: any[]) => {
-    if (this.shouldLog('debug')) {
-      super.debug(`${this.prefix()} ${this.formatMessage(message, optionalParams)}`);
-    }
-  };
+  debug = (message: LogMessage) => {
+    if (!this.shouldLog('debug')) return;
 
-  verbose = (message: LogMessage, ...optionalParams: any[]) => {
-    if (this.shouldLog('verbose')) {
-      super.verbose(`${this.prefix()} ${this.toString(message)}`, ...optionalParams);
-    }
+    super.debug(this.toJsonLog('debug', message));
   };
 
   private shouldLog(level: string): boolean {
-    const levels = ['error', 'warn', 'log', 'debug', 'verbose'];
+    const levels = ['error', 'warn', 'log', 'debug'];
     const currentLevelIndex = levels.indexOf(this.logLevel);
     const requestedLevelIndex = levels.indexOf(level);
     return requestedLevelIndex <= currentLevelIndex;
   }
 
-  private prefix(): string {
+  private toJsonLog(level: string, message: LogMessage, error?: Error): string {
     const traceMetadata = TracingService.getTraceMetadata();
 
-    const traceIdLog = traceMetadata?.traceId ? `[TraceID: ${traceMetadata.traceId}] ` : '';
-    const spanIdLog = traceMetadata?.spanId ? `[SpanID: ${traceMetadata.spanId}] ` : '';
+    const logObject: Record<string, any> = {
+      timestamp: new Date().toISOString(),
+      level,
+      message: this.convertToString(message),
+      service: this.service,
+      environment: this.environment,
+      hostname: this.hostname,
+      metadata: traceMetadata,
+    };
 
-    return `${traceIdLog}${spanIdLog}`;
+    // Add error details if present
+    if (error) {
+      logObject.error = {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      };
+
+      // Include custom error properties (like code, statusCode, etc.)
+      Object.keys(error).forEach((key) => {
+        if (!['name', 'message', 'stack'].includes(key)) {
+          logObject.error[key] = (error as any)[key];
+        }
+      });
+    }
+
+    return JSON.stringify(logObject);
   }
 
-  private toString(message: LogMessage): string {
+  private convertToString(message: LogMessage): string {
     if (message instanceof Error) return message.message;
     if (typeof message === 'string') return message;
     try {
@@ -77,9 +95,5 @@ export class CorrelationLogger extends NestLogger implements LoggerService {
     } catch {
       return String(message);
     }
-  }
-
-  private formatMessage(message: LogMessage, optionalParams: any[]): string {
-    return `${this.toString(message)} ${optionalParams.map((p) => this.toString(p)).join('\n')}`;
   }
 }

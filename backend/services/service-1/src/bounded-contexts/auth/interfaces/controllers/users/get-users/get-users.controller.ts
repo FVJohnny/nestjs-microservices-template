@@ -26,7 +26,7 @@ export class GetUsers_Controller {
     type: Object,
   })
   async getUsers(@Query() params: GetUsers_ControllerParams): Promise<GetUsersQueryResponse> {
-    this.logger.debug(`Get users with params:`, params);
+    this.logger.debug(`Get users with params: ${params}`);
     const query = new GetUsers_Query({
       userId: params.userId,
       status: params.status,
