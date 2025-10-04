@@ -55,15 +55,8 @@ export interface WithSpanOptions {
  * })
  * async execute(command: RegisterUserCommand) { ... }
  */
-export function WithSpan(
-  spanNameOrPrefix: string,
-  options: WithSpanOptions = {},
-): MethodDecorator {
-  return function (
-    target: object,
-    propertyKey: string | symbol,
-    descriptor: PropertyDescriptor,
-  ) {
+export function WithSpan(spanNameOrPrefix: string, options: WithSpanOptions = {}): MethodDecorator {
+  return function (target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: unknown[]) {
