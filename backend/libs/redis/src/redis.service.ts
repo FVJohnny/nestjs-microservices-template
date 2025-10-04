@@ -37,9 +37,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       password: process.env.REDIS_PASSWORD,
       db: parseInt(process.env.REDIS_DB || '0', 10),
       keyPrefix: process.env.REDIS_KEY_PREFIX || '',
-      connectTimeout: 10000,
+      connectTimeout: Number(process.env.REDIS_CONNECT_TIMEOUT) || 10000,
       lazyConnect: true,
-      maxRetriesPerRequest: 3,
+      maxRetriesPerRequest: Number(process.env.REDIS_MAX_RETRIES_PER_REQUEST) || 3,
     };
 
     this.logger.log(`Connecting to Redis at ${config.host}:${config.port}`);

@@ -22,8 +22,10 @@ export function createKafkaConfig(): KafkaConfig {
     kafkaConfig.authenticationTimeout = 30000;
     kafkaConfig.requestTimeout = 30000;
     kafkaConfig.retry = {
-      initialRetryTime: 100,
-      retries: 8,
+      initialRetryTime: Number(process.env.KAFKA_RETRY_INITIAL_TIME) || 300,
+      retries: Number(process.env.KAFKA_RETRY_RETRIES) || 8,
+      factor: Number(process.env.KAFKA_RETRY_FACTOR) || 2,
+      multiplier: Number(process.env.KAFKA_RETRY_MULTIPLIER) || 1.5,
     };
   }
 
