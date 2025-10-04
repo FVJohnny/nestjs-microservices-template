@@ -46,6 +46,15 @@ services:
       - '3001:3000'
     networks:
       - backend
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service,environment"
+    labels:
+      - "service=service-1"
+      - "environment=development"
     depends_on:
       kafka:
         condition: service_healthy
@@ -55,6 +64,8 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      loki:
+        condition: service_started
 
   frontend:
     image: nginx:alpine
@@ -139,6 +150,27 @@ services:
     networks:
       - backend
 
+  loki:
+    image: grafana/loki:latest
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - '3100:3100'
+    volumes:
+      - loki_data:/loki
+    networks:
+      - backend
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${PWD}/infra/monitoring/promtail/promtail-config.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
+    networks:
+      - backend
+    depends_on:
+      - loki
+
   mongodb:
     image: mongo:7.0
     command: ['bash', '/scripts/mongo-startup.sh']
@@ -201,3 +233,4 @@ volumes:
   redis_data_dev:
   postgres_data_dev:
   tempo_data:
+  loki_data:

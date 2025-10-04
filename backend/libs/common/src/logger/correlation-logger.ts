@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Logger, type LoggerService } from '@nestjs/common';
+import { type LoggerService } from '@nestjs/common';
 import { hostname } from 'os';
 
 import { TracingService } from '../tracing/tracing.service';
 
 type LogMessage = string | number | boolean | object | Error;
 
-export class CorrelationLogger extends Logger implements LoggerService {
+export class CorrelationLogger implements LoggerService {
   private logLevel: string;
   private service: string;
   private environment: string;
   private hostname: string;
+  private context: string;
 
   constructor(context: string) {
-    super(context);
-
+    this.context = context;
     this.logLevel = process.env.LOG_LEVEL || 'debug';
     this.service = process.env.SERVICE_NAME || 'unknown-service';
     this.environment = process.env.NODE_ENV || 'development';
@@ -25,13 +25,13 @@ export class CorrelationLogger extends Logger implements LoggerService {
   log = (message: LogMessage) => {
     if (!this.shouldLog('log')) return;
 
-    super.log(this.toJsonLog('info', message));
+    console.log(this.toJsonLog('info', message));
   };
 
   error = (message: LogMessage, traceOrError?: string | Error) => {
     if (!this.shouldLog('error')) return;
 
-    super.error(
+    console.error(
       this.toJsonLog('error', message, traceOrError instanceof Error ? traceOrError : undefined),
     );
   };
@@ -39,13 +39,13 @@ export class CorrelationLogger extends Logger implements LoggerService {
   warn = (message: LogMessage) => {
     if (!this.shouldLog('warn')) return;
 
-    super.warn(this.toJsonLog('warn', message));
+    console.warn(this.toJsonLog('warn', message));
   };
 
   debug = (message: LogMessage) => {
     if (!this.shouldLog('debug')) return;
 
-    super.debug(this.toJsonLog('debug', message));
+    console.debug(this.toJsonLog('debug', message));
   };
 
   private shouldLog(level: string): boolean {
@@ -62,10 +62,14 @@ export class CorrelationLogger extends Logger implements LoggerService {
       timestamp: new Date().toISOString(),
       level,
       message: this.convertToString(message),
+      context: this.context,
       service: this.service,
       environment: this.environment,
       hostname: this.hostname,
-      metadata: traceMetadata,
+      ...(traceMetadata && {
+        traceId: traceMetadata.traceId,
+        spanId: traceMetadata.spanId,
+      }),
     };
 
     // Add error details if present
