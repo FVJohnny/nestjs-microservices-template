@@ -1,43 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { trace, context, Span, SpanStatusCode } from '@opentelemetry/api';
 
+export type TraceMetadata = {
+  traceId: string;
+  spanId: string;
+};
+
 @Injectable()
 export class TracingService {
   private static readonly tracer = trace.getTracer('nestjs-service');
 
   /**
-   * Get current span context (traceId, spanId)
-   */
-  static getSpanContext() {
-    return trace.getActiveSpan()?.spanContext();
-  }
-
-  /**
-   * Get current trace ID (use as correlation ID)
-   */
-  static getTraceId(): string | undefined {
-    return this.getSpanContext()?.traceId;
-  }
-
-  /**
-   * Get current span ID
-   */
-  static getSpanId(): string | undefined {
-    return this.getSpanContext()?.spanId;
-  }
-
-  /**
    * Get current trace metadata (traceId and spanId) for inclusion in events/messages
    * Returns undefined if no active trace context
    */
-  static getTraceMetadata():
-    | {
-        traceId: string;
-        spanId: string;
-      }
-    | undefined {
-    const traceId = this.getTraceId();
-    const spanId = this.getSpanId();
+  static getTraceMetadata(): TraceMetadata | undefined {
+    const context = trace.getActiveSpan()?.spanContext();
+
+    const traceId = context?.traceId;
+    const spanId = context?.spanId;
 
     if (traceId && spanId) {
       return { traceId, spanId };
@@ -66,7 +47,7 @@ export class TracingService {
     name: string,
     fn: (span: Span) => Promise<T>,
     attributes?: Record<string, string | number | boolean>,
-    parentContext?: { traceId: string; spanId: string },
+    parentContext?: TraceMetadata,
   ): Promise<T> {
     let activeContext = context.active();
 

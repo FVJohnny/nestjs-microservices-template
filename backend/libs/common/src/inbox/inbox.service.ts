@@ -116,11 +116,6 @@ export class InboxService implements OnModuleInit, OnModuleDestroy {
     const topic = event.topic.toValue();
     const message = JSON.parse(event.payload.toValue()) as ParsedIntegrationMessage;
 
-    const parentContext =
-      message.metadata?.traceId && message.metadata?.spanId
-        ? { traceId: message.metadata.traceId, spanId: message.metadata.spanId }
-        : undefined;
-
     return TracingService.withSpan(
       `inbox.process_integration_event.${topic}.${eventName}`,
       async () => {
@@ -137,7 +132,7 @@ export class InboxService implements OnModuleInit, OnModuleDestroy {
         'inbox.integration_event_name': eventName,
         'inbox.integration_event_topic': topic,
       },
-      parentContext,
+      event.payload.getTraceMetadata(),
     ).catch(() => {});
   }
 
@@ -170,21 +165,40 @@ export class InboxService implements OnModuleInit, OnModuleDestroy {
     this.logger.log(
       `🔄 Processing inbox event. Topic: ${topic}, Event: ${eventName} ( id: ${eventId})`,
     );
+
+    TracingService.addEvent('inbox.event.processing_started', {
+      'inbox.event_id': eventId,
+      'inbox.event_name': eventName,
+      'inbox.topic': topic,
+    });
+
     // Mark as processing
     event.markAsProcessing();
     await this.inboxRepository.save(event);
 
+    TracingService.addEvent('inbox.event.marked_as_processing');
+
     // Find the appropriate handler
     const handler = this.findHandler(topic, eventName);
+
+    TracingService.addEvent('inbox.event.handler_found', {
+      'handler.name': handler.constructor.name,
+    });
 
     // Execute the handler
     const startTime = Date.now();
     await handler.handle(message);
     const duration = Date.now() - startTime;
 
+    TracingService.addEvent('inbox.event.handler_completed', {
+      duration_ms: duration,
+    });
+
     // Mark as processed
     event.markAsProcessed();
     await this.inboxRepository.save(event);
+
+    TracingService.addEvent('inbox.event.marked_as_processed');
 
     this.logger.log(
       `✅ Successfully processed inbox event in ${duration}ms. Topic: ${topic}, Event: ${eventName} ( id: ${eventId})`,

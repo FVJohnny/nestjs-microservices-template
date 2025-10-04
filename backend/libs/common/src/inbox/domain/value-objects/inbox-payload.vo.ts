@@ -1,4 +1,5 @@
 import { StringValueObject } from '../../../general';
+import type { TraceMetadata } from '../../../tracing';
 
 export class InboxPayload extends StringValueObject {
   protected ensureIsValid(value: string): void {
@@ -19,5 +20,18 @@ export class InboxPayload extends StringValueObject {
       timestamp: new Date().toISOString(),
     };
     return new InboxPayload(JSON.stringify(randomData));
+  }
+
+  toJSON(): Record<string, unknown> {
+    return JSON.parse(this.toValue());
+  }
+
+  getTraceMetadata(): TraceMetadata | undefined {
+    const payload = this.toJSON() as { metadata?: TraceMetadata };
+    const metadata = payload.metadata;
+
+    return metadata?.traceId && metadata?.spanId
+      ? { traceId: metadata.traceId, spanId: metadata.spanId }
+      : undefined;
   }
 }

@@ -84,7 +84,7 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
    * Parses the message and delegates to the appropriate event handler
    */
   @WithSpan('integration_event_listener.process_event', {
-    attributesFrom: ['name'],
+    attributesFrom: ['message.name'],
     prefix: 'integration_event_listener.process_event',
   })
   public async handleMessage(topicName: string, message: ParsedIntegrationMessage) {

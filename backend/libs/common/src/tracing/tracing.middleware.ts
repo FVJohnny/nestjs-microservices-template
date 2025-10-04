@@ -14,9 +14,10 @@ export class TracingMiddleware implements NestMiddleware {
     const originalWriteHead = res.writeHead;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     res.writeHead = function (this: Response, ...args: any[]) {
-      const traceId = TracingService.getTraceId();
-      if (traceId && !res.headersSent) {
-        res.setHeader('x-trace-id', traceId);
+      const traceMetadata = TracingService.getTraceMetadata();
+      if (traceMetadata && !res.headersSent) {
+        res.setHeader('x-trace-id', traceMetadata.traceId);
+        res.setHeader('x-span-id', traceMetadata.spanId);
       }
       return originalWriteHead.apply(this, args);
     };

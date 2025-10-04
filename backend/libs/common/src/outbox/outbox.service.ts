@@ -3,7 +3,7 @@ import { type OutboxRepository } from './domain/outbox.repository';
 import { INTEGRATION_EVENT_PUBLISHER, type IntegrationEventPublisher } from '../integration-events';
 import { OutboxEvent } from './domain/outbox-event.entity';
 import { CorrelationLogger } from '../logger';
-import { WithSpan } from '../tracing';
+import { WithSpan, TracingService } from '../tracing';
 
 export const OUTBOX_REPOSITORY = 'OutboxRepository';
 
@@ -36,7 +36,6 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('Outbox processor stopped');
   }
 
-  @WithSpan('outbox.process_batch')
   async processOutboxEvents() {
     const events = await this.repository.findUnprocessed(10);
     if (!events.length) {
@@ -51,14 +50,38 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async processEvent(event: OutboxEvent) {
-    try {
-      await this.publisher.publish(event.topic.toValue(), event.payload.toValue());
-      event.markAsProcessed();
-      await this.repository.save(event);
-      this.logger.debug(`Successfully processed outbox event: ${event.id.toValue()}`);
-    } catch (error) {
-      await this.handleEventError(event, error);
-    }
+    TracingService.withSpan(
+      'outbox.process_event',
+      async () => {
+        try {
+          await this.publisher.publish(event.topic.toValue(), event.payload.toValue());
+
+          TracingService.addEvent('outbox.event.published', {
+            'outbox.event_id': event.id.toValue(),
+          });
+
+          event.markAsProcessed();
+          await this.repository.save(event);
+
+          TracingService.addEvent('outbox.event.marked_as_processed', {
+            'outbox.event_id': event.id.toValue(),
+          });
+
+          this.logger.debug(`Successfully processed outbox event: ${event.id.toValue()}`);
+        } catch (error) {
+          TracingService.addEvent('outbox.event.publish_failed', {
+            'outbox.event_id': event.id.toValue(),
+            'error.message': error instanceof Error ? error.message : 'Unknown error',
+          });
+          await this.handleEventError(event, error);
+        }
+      },
+      {
+        'outbox.event_id': event.id.toValue(),
+        'outbox.topic': event.topic.toValue(),
+      },
+      event.payload.getTraceMetadata(),
+    ).catch(() => {});
   }
 
   @WithSpan('outbox.cleanup_processed_events')

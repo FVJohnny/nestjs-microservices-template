@@ -1,5 +1,6 @@
 import { Id, StringValueObject } from '../../../general';
 import { DomainValidationException } from '../../../errors';
+import type { TraceMetadata } from '../../../tracing';
 
 export class OutboxPayload extends StringValueObject {
   constructor(value: string) {
@@ -32,5 +33,13 @@ export class OutboxPayload extends StringValueObject {
 
   toJSON(): Record<string, unknown> {
     return JSON.parse(this.toValue());
+  }
+
+  getTraceMetadata(): TraceMetadata | undefined {
+    const payload = this.toJSON() as TraceMetadata;
+
+    return payload.traceId && payload.spanId
+      ? { traceId: payload.traceId, spanId: payload.spanId }
+      : undefined;
   }
 }
