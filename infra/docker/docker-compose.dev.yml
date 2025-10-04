@@ -7,7 +7,7 @@ services:
     command: >
       sh -c "npm i && npm run build && cd backend/services/service-1 && npm run start:dev"
     env_file:
-      - .env
+      - ../../backend/services/service-1/.env
     environment:
       - NODE_ENV=development
       - PORT=3000

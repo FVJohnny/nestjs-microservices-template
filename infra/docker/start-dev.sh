@@ -8,11 +8,21 @@ echo "🚀 Starting development environment..."
 # Go to project root
 cd "$(dirname "$0")/../.."
 
-# Check if .env exists, if not copy from .env.example
-if [ ! -f infra/docker/.env ]; then
-    echo "📋 Creating .env from .env.example..."
-    cp infra/docker/.env.example infra/docker/.env
-fi
+# Create .env files for each service if they don't exist
+echo "📋 Setting up service environment files..."
+for service_dir in backend/services/*; do
+    if [ -d "$service_dir" ]; then
+        service_name=$(basename "$service_dir")
+
+        # Check if .env exists for this service
+        if [ ! -f "$service_dir/.env" ]; then
+            echo "  Creating .env for $service_name from infra/.env.example..."
+            cp infra/docker/.env.example "$service_dir/.env"
+        else
+            echo "  .env already exists for $service_name"
+        fi
+    fi
+done
 
 echo "📦 Installing dependencies..."
 npm install
