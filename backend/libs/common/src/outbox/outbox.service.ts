@@ -3,7 +3,7 @@ import { type OutboxRepository } from './domain/outbox.repository';
 import { INTEGRATION_EVENT_PUBLISHER, type IntegrationEventPublisher } from '../integration-events';
 import { OutboxEvent } from './domain/outbox-event.entity';
 import { CorrelationLogger } from '../logger';
-import { TracingService } from '../tracing';
+import { WithSpan } from '../tracing';
 
 export const OUTBOX_REPOSITORY = 'OutboxRepository';
 
@@ -36,21 +36,18 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('Outbox processor stopped');
   }
 
+  @WithSpan('outbox.process_batch')
   async processOutboxEvents() {
-    return TracingService.withSpan('outbox.process_batch', async (span) => {
-      const events = await this.repository.findUnprocessed(10);
-      if (!events.length) {
-        span.setAttribute('outbox.events_count', 0);
-        return;
-      }
+    const events = await this.repository.findUnprocessed(10);
+    if (!events.length) {
+      return;
+    }
 
-      span.setAttribute('outbox.events_count', events.length);
-      this.logger.debug(`Processing ${events.length} outbox events`);
+    this.logger.debug(`Processing ${events.length} outbox events`);
 
-      for (const event of events) {
-        await this.processEvent(event);
-      }
-    });
+    for (const event of events) {
+      await this.processEvent(event);
+    }
   }
 
   private async processEvent(event: OutboxEvent) {
@@ -64,6 +61,7 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  @WithSpan('outbox.cleanup_processed_events')
   async cleanupProcessedEvents() {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     await this.repository.deleteProcessed(sevenDaysAgo);
@@ -74,7 +72,7 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     this.logger.error(`Failed to process outbox event ${event.id.toValue()}:`, error as Error);
 
     if (event.canRetry()) {
-      await event.incrementRetry();
+      event.incrementRetry();
       await this.repository.save(event);
       this.logger.warn(
         `Incremented retry count for event ${event.id.toValue()}: ${event.retryCount.toValue()}/${event.maxRetries.toValue()}`,

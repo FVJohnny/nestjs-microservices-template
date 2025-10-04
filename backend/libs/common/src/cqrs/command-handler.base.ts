@@ -2,7 +2,7 @@ import type { ICommand, IEventBus } from '@nestjs/cqrs';
 
 import type { SharedAggregateRoot } from '../general/domain/entities/AggregateRoot';
 import { CorrelationLogger } from '../logger';
-import { TracingService } from '../tracing';
+import { WithSpan } from '../tracing';
 
 export abstract class BaseCommandHandler<TCommand extends ICommand> {
   protected readonly logger: CorrelationLogger;
@@ -17,20 +17,13 @@ export abstract class BaseCommandHandler<TCommand extends ICommand> {
    * 2. Validate business rules
    * 3. Handle the command (implemented by subclasses)
    */
+  @WithSpan('command.execute', { attributesFrom: ['constructor.name'] })
   async execute(command: TCommand) {
-    return TracingService.withSpan(
-      `command.execute.${command.constructor.name}`,
-      async () => {
-        await this.authorize(command);
-        await this.validate(command);
+    await this.authorize(command);
+    await this.validate(command);
 
-        this.logger.log(`Executing command: ${command.constructor.name}`);
-        return this.handle(command);
-      },
-      {
-        'command.name': command.constructor.name,
-      },
-    );
+    this.logger.log(`Executing command: ${command.constructor.name}`);
+    return this.handle(command);
   }
 
   /**

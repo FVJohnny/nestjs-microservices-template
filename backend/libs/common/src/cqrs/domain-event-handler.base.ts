@@ -1,7 +1,7 @@
 import type { IEventHandler } from '@nestjs/cqrs';
 import { CorrelationLogger } from '../logger';
 import type { DomainEvent } from './domain-event.base';
-import { TracingService } from '../tracing';
+import { WithSpan } from '../tracing';
 
 export abstract class DomainEventHandlerBase<T extends DomainEvent> implements IEventHandler<T> {
   protected readonly logger: CorrelationLogger;
@@ -9,17 +9,10 @@ export abstract class DomainEventHandlerBase<T extends DomainEvent> implements I
     this.logger = new CorrelationLogger(this.constructor.name);
   }
 
+  @WithSpan('domain_event.handle', { attributesFrom: ['constructor.name'] })
   async handle(event: T) {
-    return TracingService.withSpan(
-      `domain-event-handler.${event.constructor.name}`,
-      async () => {
-        this.logger.log(`Handling domain event: ${event.constructor.name}`);
-        return this.handleEvent(event);
-      },
-      {
-        'domain-event.name': event.constructor.name,
-      },
-    );
+    this.logger.log(`Handling domain event: ${event.constructor.name}`);
+    return this.handleEvent(event);
   }
 
   abstract handleEvent(event: T): Promise<void>;

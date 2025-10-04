@@ -8,7 +8,7 @@ import type { ParsedIntegrationMessage } from '../integration-events/types/integ
 import { InboxEventName, InboxPayload, InboxTopic } from './domain/value-objects';
 import { normalizeError } from '../utils';
 import { Id } from '../general';
-import { TracingService } from '../tracing';
+import { WithSpan, TracingService } from '../tracing';
 
 @Injectable()
 export class InboxService implements OnModuleInit, OnModuleDestroy {
@@ -141,30 +141,22 @@ export class InboxService implements OnModuleInit, OnModuleDestroy {
     ).catch(() => {});
   }
 
-  private handleEventFailure(
+  @WithSpan('inbox.handle_event_failure', {
+    attributesFrom: ['id', 'eventName', 'topic'],
+  })
+  private async handleEventFailure(
     event: InboxEvent,
     message: ParsedIntegrationMessage,
     topic: string,
     error: unknown,
   ) {
-    return TracingService.withSpan(
-      'inbox.handle_event_failure',
-      async () => {
-        this.logger.error(
-          `❌ Error processing inbox event. Topic: ${event.topic.toValue()}, Event: ${event.eventName.toValue()} ( id: ${event.id.toValue()})`,
-          normalizeError(error),
-        );
-        event.markAsFailed();
-        await this.inboxRepository.save(event);
-        this.trackEvent?.(topic, message, false);
-      },
-      {
-        'inbox.event_id': event.id.toValue(),
-        'inbox.event_name': event.eventName.toValue(),
-        'inbox.topic': topic,
-        'error.message': error instanceof Error ? error.message : 'Unknown error',
-      },
+    this.logger.error(
+      `❌ Error processing inbox event. Topic: ${event.topic.toValue()}, Event: ${event.eventName.toValue()} ( id: ${event.id.toValue()})`,
+      normalizeError(error),
     );
+    event.markAsFailed();
+    await this.inboxRepository.save(event);
+    this.trackEvent?.(topic, message, false);
   }
 
   private async processEvent(event: InboxEvent): Promise<void> {

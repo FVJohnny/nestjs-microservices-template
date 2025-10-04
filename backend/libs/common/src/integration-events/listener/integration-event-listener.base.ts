@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { ParsedIntegrationMessage } from '../types/integration-event.types';
 import { CorrelationLogger } from '../../logger';
 import { InboxService } from '../../inbox';
-import { TracingService } from '../../tracing';
+import { WithSpan } from '../../tracing';
 
 export interface IIntegrationEventHandler {
   handle(message: ParsedIntegrationMessage): Promise<void>;
@@ -83,33 +83,27 @@ export abstract class BaseIntegrationEventListener implements IntegrationEventLi
    * Handle incoming messages from the event source
    * Parses the message and delegates to the appropriate event handler
    */
+  @WithSpan('integration_event_listener.process_event', {
+    attributesFrom: ['name'],
+    prefix: 'integration_event_listener.process_event',
+  })
   public async handleMessage(topicName: string, message: ParsedIntegrationMessage) {
     if (this.inboxService) {
       await this.inboxService.receiveMessage(message, topicName);
       return true;
     }
 
-    return await TracingService.withSpan(
-      `integration_event_listener.process_event.${message.name}`,
-      async () => {
-        // Find the appropriate event handler based on event type
-        const eventHandler = this.getEventHandler(topicName, message.name);
-        if (!eventHandler) {
-          this.logger.debug(
-            `No handler registered for topic '${topicName}' and event name '${message.name}', skipping message [${message.id}]`,
-          );
-          return false;
-        }
+    // Find the appropriate event handler based on event type
+    const eventHandler = this.getEventHandler(topicName, message.name);
+    if (!eventHandler) {
+      this.logger.debug(
+        `No handler registered for topic '${topicName}' and event name '${message.name}', skipping message [${message.id}]`,
+      );
+      return false;
+    }
 
-        await eventHandler.handler.handle(message);
-        return true;
-      },
-      {
-        'integration_event.id': message.id,
-        'integration_event.name': message.name,
-        'integration_event.topic': topicName,
-      },
-    );
+    await eventHandler.handler.handle(message);
+    return true;
   }
 
   /**
