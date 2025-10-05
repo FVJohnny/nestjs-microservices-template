@@ -24,7 +24,7 @@ export class Outbox_InMemory_Repository
     this.validate('findUnprocessed');
     return (await this.findAll())
       .filter((e) => e.processedAt.isNeverProcessed())
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .sort((a, b) => a.timestamps.createdAt.getTime() - b.timestamps.createdAt.getTime())
       .slice(0, limit);
   }
 

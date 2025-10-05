@@ -121,14 +121,10 @@ export abstract class BaseMongoRepository<
     }
   }
 
-  async findByCriteria(
-    criteria: Criteria,
-    context?: RepositoryContext,
-  ): Promise<PaginatedRepoResult<TEnt>> {
+  async findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<TEnt>> {
     try {
-      const session = this.getTransactionSession(context);
       const converter = new MongoCriteriaConverter<TDto>(this.collection);
-      const { data, total, cursor, hasNext } = await converter.executeQuery(criteria, session);
+      const { data, total, cursor, hasNext } = await converter.executeQuery(criteria);
 
       return {
         data: data.map((doc) => this.toEntity(doc)),

@@ -1,24 +1,33 @@
 import { isDeepStrictEqual } from 'node:util';
 
 import { AggregateRoot, type IEvent } from '@nestjs/cqrs';
-import type { Id } from '../value-object/Id';
+import { Id } from '../value-object/Id';
+import { Timestamps } from '../value-object/TimestampsVO';
 
 /**
  * Base class for aggregate roots in Domain-Driven Design
  */
 export abstract class SharedAggregateRoot extends AggregateRoot<IEvent> {
   id: Id;
+  timestamps: Timestamps;
 
-  constructor(id: Id) {
+  constructor(id: Id, timestamps?: Timestamps) {
     super();
     this.id = id;
+    this.timestamps = timestamps || Timestamps.create();
   }
 
   /**
    * Convert the aggregate to its primitive representation
    * This is used for persistence and serialization
    */
-  abstract toValue(): SharedAggregateRootDTO;
+  public toValue(): SharedAggregateRootDTO {
+    return {
+      id: this.id.toValue(),
+      createdAt: this.timestamps.createdAt.toValue(),
+      updatedAt: this.timestamps.updatedAt.toValue(),
+    };
+  }
 
   /**
    * Compares two aggregate roots for equality based on their primitive values
@@ -32,4 +41,14 @@ export abstract class SharedAggregateRoot extends AggregateRoot<IEvent> {
 export class SharedAggregateRootDTO implements Record<string, unknown> {
   [key: string]: unknown;
   id: string;
+  createdAt: Date;
+  updatedAt: Date;
+
+  static random(): SharedAggregateRootDTO {
+    return {
+      id: Id.random().toValue(),
+      createdAt: Timestamps.random().createdAt.toValue(),
+      updatedAt: Timestamps.random().updatedAt.toValue(),
+    };
+  }
 }

@@ -42,11 +42,15 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   status: UserStatus;
   role: UserRole;
   lastLogin: LastLogin;
-  timestamps: Timestamps;
 
   constructor(props: UserAttributes) {
-    super(props.id);
-    Object.assign(this, props);
+    super(props.id, props.timestamps);
+    this.email = props.email;
+    this.username = props.username;
+    this.password = props.password;
+    this.status = props.status;
+    this.role = props.role;
+    this.lastLogin = props.lastLogin;
   }
 
   static create(props: CreateUserProps): User {
@@ -153,15 +157,14 @@ export class User extends SharedAggregateRoot implements UserAttributes {
 
   toValue(): UserDTO {
     return {
-      id: this.id.toValue(),
+      ...super.toValue(),
+
       email: this.email.toValue(),
       username: this.username.toValue(),
       password: this.password.toValue(),
       status: this.status.toValue(),
       role: this.role.toValue(),
       lastLogin: this.lastLogin.toValue(),
-      createdAt: this.timestamps.createdAt.toValue(),
-      updatedAt: this.timestamps.updatedAt.toValue(),
     };
   }
 }

@@ -6,8 +6,8 @@ export class DateVO extends ValueObject<Date> {
   private static readonly HOUR_MS = 60 * DateVO.MINUTE_MS;
   private static readonly DAY_MS = 24 * DateVO.HOUR_MS;
 
-  constructor(value: Date) {
-    super(value);
+  constructor(value: Date | string | number) {
+    super(value instanceof Date ? value : new Date(value));
   }
 
   static now(): DateVO {

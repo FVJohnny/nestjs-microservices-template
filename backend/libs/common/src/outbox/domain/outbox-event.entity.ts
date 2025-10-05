@@ -1,7 +1,6 @@
-import { Id, SharedAggregateRoot, SharedAggregateRootDTO } from '../../general';
+import { DateVO, Id, SharedAggregateRoot, SharedAggregateRootDTO, Timestamps } from '../../general';
 import { DomainValidationException } from '../../errors';
 import {
-  OutboxCreatedAt,
   OutboxEventName,
   OutboxMaxRetries,
   OutboxPayload,
@@ -11,13 +10,12 @@ import {
 } from './value-objects';
 
 export class OutboxEventDTO extends SharedAggregateRootDTO {
-  eventName!: string;
-  topic!: string;
-  payload!: string;
-  createdAt!: Date;
-  processedAt!: Date;
-  retryCount!: number;
-  maxRetries!: number;
+  eventName: string;
+  topic: string;
+  payload: string;
+  processedAt: Date;
+  retryCount: number;
+  maxRetries: number;
 
   static random(overrides: Partial<OutboxEventDTO> = {}): OutboxEventDTO {
     const entity = OutboxEvent.random({
@@ -25,7 +23,6 @@ export class OutboxEventDTO extends SharedAggregateRootDTO {
       eventName: overrides.eventName ? new OutboxEventName(overrides.eventName) : undefined,
       topic: overrides.topic ? new OutboxTopic(overrides.topic) : undefined,
       payload: overrides.payload ? new OutboxPayload(overrides.payload) : undefined,
-      createdAt: overrides.createdAt ? new OutboxCreatedAt(overrides.createdAt) : undefined,
       processedAt: overrides.processedAt ? new OutboxProcessedAt(overrides.processedAt) : undefined,
       retryCount: overrides.retryCount ? new OutboxRetryCount(overrides.retryCount) : undefined,
       maxRetries: overrides.maxRetries ? new OutboxMaxRetries(overrides.maxRetries) : undefined,
@@ -39,10 +36,10 @@ export interface OutboxEventAttributes {
   eventName: OutboxEventName;
   topic: OutboxTopic;
   payload: OutboxPayload;
-  createdAt: OutboxCreatedAt;
   processedAt: OutboxProcessedAt;
   retryCount: OutboxRetryCount;
   maxRetries: OutboxMaxRetries;
+  timestamps: Timestamps;
 }
 
 export interface CreateOutboxEventProps {
@@ -57,17 +54,15 @@ export class OutboxEvent extends SharedAggregateRoot implements OutboxEventAttri
   eventName: OutboxEventName;
   topic: OutboxTopic;
   payload: OutboxPayload;
-  createdAt: OutboxCreatedAt;
   processedAt: OutboxProcessedAt;
   retryCount: OutboxRetryCount;
   maxRetries: OutboxMaxRetries;
 
   constructor(props: OutboxEventAttributes) {
-    super(props.id);
+    super(props.id, props.timestamps);
     this.eventName = props.eventName;
     this.topic = props.topic;
     this.payload = props.payload;
-    this.createdAt = props.createdAt;
     this.processedAt = props.processedAt;
     this.retryCount = props.retryCount;
     this.maxRetries = props.maxRetries;
@@ -80,10 +75,10 @@ export class OutboxEvent extends SharedAggregateRoot implements OutboxEventAttri
       eventName: props.eventName,
       topic: props.topic,
       payload: props.payload,
-      createdAt: OutboxCreatedAt.now(),
       processedAt: OutboxProcessedAt.never(),
       retryCount: OutboxRetryCount.zero(),
       maxRetries: OutboxMaxRetries.default(),
+      timestamps: Timestamps.create(),
     });
   }
 
@@ -95,12 +90,12 @@ export class OutboxEvent extends SharedAggregateRoot implements OutboxEventAttri
       eventName: overrides.eventName ?? OutboxEventName.random(),
       topic: overrides.topic ?? OutboxTopic.random(),
       payload: overrides.payload ?? OutboxPayload.random(),
-      createdAt: overrides.createdAt ?? OutboxCreatedAt.random(),
       processedAt:
         overrides.processedAt ??
         (Math.random() > 0.5 ? OutboxProcessedAt.random() : OutboxProcessedAt.never()),
       retryCount: overrides.retryCount ?? OutboxRetryCount.random(maxRetries.toValue()),
       maxRetries,
+      timestamps: overrides.timestamps ?? Timestamps.random(),
     });
   }
 
@@ -121,16 +116,16 @@ export class OutboxEvent extends SharedAggregateRoot implements OutboxEventAttri
   }
 
   toValue(): OutboxEventDTO {
-    const dto = new OutboxEventDTO();
-    dto.id = this.id.toValue();
-    dto.eventName = this.eventName.toValue();
-    dto.topic = this.topic.toValue();
-    dto.payload = this.payload.toValue();
-    dto.createdAt = this.createdAt.toValue();
-    dto.processedAt = this.processedAt.toValue();
-    dto.retryCount = this.retryCount.toValue();
-    dto.maxRetries = this.maxRetries.toValue();
-    return dto;
+    return {
+      ...super.toValue(),
+
+      eventName: this.eventName.toValue(),
+      topic: this.topic.toValue(),
+      payload: this.payload.toValue(),
+      processedAt: this.processedAt.toValue(),
+      retryCount: this.retryCount.toValue(),
+      maxRetries: this.maxRetries.toValue(),
+    };
   }
 
   static fromValue(value: OutboxEventDTO): OutboxEvent {
@@ -139,10 +134,10 @@ export class OutboxEvent extends SharedAggregateRoot implements OutboxEventAttri
       eventName: new OutboxEventName(value.eventName),
       topic: new OutboxTopic(value.topic),
       payload: new OutboxPayload(value.payload),
-      createdAt: new OutboxCreatedAt(new Date(value.createdAt)),
       processedAt: new OutboxProcessedAt(new Date(value.processedAt)),
       retryCount: new OutboxRetryCount(value.retryCount),
       maxRetries: new OutboxMaxRetries(value.maxRetries),
+      timestamps: new Timestamps(new DateVO(value.createdAt), new DateVO(value.updatedAt)),
     });
   }
 

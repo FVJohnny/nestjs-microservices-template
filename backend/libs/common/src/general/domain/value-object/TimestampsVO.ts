@@ -2,10 +2,12 @@ import { DomainValidationException } from '../../../errors';
 import { DateVO } from './DateValueObject';
 
 export class Timestamps {
-  constructor(
-    public readonly createdAt: DateVO,
-    public updatedAt: DateVO,
-  ) {
+  public readonly createdAt: DateVO;
+  public updatedAt: DateVO;
+
+  constructor(createdAt: DateVO, updatedAt: DateVO) {
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
     this.validate();
   }
 
@@ -14,10 +16,13 @@ export class Timestamps {
     return new Timestamps(new DateVO(now), new DateVO(now));
   }
 
-  static random(): Timestamps {
+  static random({
+    createdAt,
+    updatedAt,
+  }: { createdAt?: DateVO; updatedAt?: DateVO } = {}): Timestamps {
     return new Timestamps(
-      DateVO.dateVOAtDaysFromNow(Math.floor(Math.random() * -100)),
-      DateVO.dateVOAtDaysFromNow(Math.floor(Math.random() * -100)),
+      createdAt ?? DateVO.dateVOAtDaysFromNow(Math.floor(Math.random() * -100)),
+      updatedAt ?? DateVO.dateVOAtDaysFromNow(Math.floor(Math.random() * -100)),
     );
   }
 
@@ -27,8 +32,8 @@ export class Timestamps {
 
   toValue() {
     return {
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
+      createdAt: this.createdAt.toValue(),
+      updatedAt: this.updatedAt.toValue(),
     };
   }
 

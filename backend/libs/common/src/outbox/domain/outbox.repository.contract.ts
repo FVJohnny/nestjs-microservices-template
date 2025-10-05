@@ -1,8 +1,7 @@
-import { DateVO } from '../../general';
+import { DateVO, Timestamps } from '../../general';
 import { OutboxEvent } from './outbox-event.entity';
 import type { OutboxRepository } from './outbox.repository';
 import {
-  OutboxCreatedAt,
   OutboxMaxRetries,
   OutboxPayload,
   OutboxProcessedAt,
@@ -50,7 +49,9 @@ export function testOutboxRepositoryContract(
       it('saves and returns unprocessed events ordered by createdAt ASC', async () => {
         const events = Array.from({ length: 3 }, (_, i) =>
           OutboxEvent.random({
-            createdAt: new OutboxCreatedAt(DateVO.dateVOAtDaysFromNow(-i).toValue()),
+            timestamps: Timestamps.random({
+              createdAt: DateVO.dateVOAtDaysFromNow(-i),
+            }),
             processedAt: OutboxProcessedAt.never(),
           }),
         );
@@ -194,7 +195,7 @@ export function testOutboxRepositoryContract(
         expect(batch3).toHaveLength(10); // Only 10 total
 
         // Verify ordering is consistent
-        expect(batch1[0].createdAt.isBefore(batch1[1].createdAt)).toBe(true);
+        expect(batch1[0].timestamps.createdAt.isBefore(batch1[1].timestamps.createdAt)).toBe(true);
         expect(batch2[0].id.toValue()).toBe(batch1[0].id.toValue()); // Same first item
         expect(batch3[0].id.toValue()).toBe(batch2[0].id.toValue()); // Same first item
       });

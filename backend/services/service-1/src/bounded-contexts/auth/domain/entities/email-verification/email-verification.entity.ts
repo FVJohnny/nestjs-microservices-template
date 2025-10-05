@@ -24,11 +24,13 @@ export class EmailVerification extends SharedAggregateRoot {
   email: Email;
   expiration: Expiration;
   verification: Verification;
-  timestamps: Timestamps;
 
   constructor(props: EmailVerificationAttributes) {
-    super(props.id);
-    Object.assign(this, props);
+    super(props.id, props.timestamps);
+    this.userId = props.userId;
+    this.email = props.email;
+    this.expiration = props.expiration;
+    this.verification = props.verification;
   }
 
   static create(props: CreateEmailVerificationProps): EmailVerification {
@@ -103,13 +105,12 @@ export class EmailVerification extends SharedAggregateRoot {
 
   toValue(): EmailVerificationDTO {
     return {
-      id: this.id.toValue(),
+      ...super.toValue(),
+
       userId: this.userId.toValue(),
       email: this.email.toValue(),
       expiration: this.expiration.toValue(),
       verification: this.verification.toValue(),
-      createdAt: this.timestamps.createdAt.toValue(),
-      updatedAt: this.timestamps.updatedAt.toValue(),
     };
   }
 }

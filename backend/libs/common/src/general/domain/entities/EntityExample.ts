@@ -21,6 +21,8 @@ export class EntityExample extends SharedAggregateRoot {
     return {
       id: this.id.toValue(),
       value: this.value,
+      createdAt: this.timestamps.createdAt.toValue(),
+      updatedAt: this.timestamps.updatedAt.toValue(),
     };
   }
 }

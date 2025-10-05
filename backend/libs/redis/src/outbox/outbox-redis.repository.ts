@@ -54,7 +54,7 @@ export class Outbox_Redis_Repository
     return jsons
       .map((json) => this.toEntity(json ?? ''))
       .filter((v) => v !== null)
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .sort((a, b) => a.timestamps.createdAt.getTime() - b.timestamps.createdAt.getTime())
       .slice(0, limit);
   }
 
