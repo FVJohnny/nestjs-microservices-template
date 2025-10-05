@@ -19,7 +19,9 @@ import {
   PaginationOffset,
 } from '@libs/nestjs-common';
 
-export class GetUsers_QueryHandler extends BaseQueryHandler(GetUsers_Query)<GetUsersQueryResponse>() {
+export class GetUsers_QueryHandler extends BaseQueryHandler(
+  GetUsers_Query,
+)<GetUsersQueryResponse>() {
   constructor(@Inject(USER_REPOSITORY) private readonly userRepository: User_Repository) {
     super();
   }
