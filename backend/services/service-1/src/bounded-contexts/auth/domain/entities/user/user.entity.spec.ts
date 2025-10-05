@@ -10,6 +10,7 @@ import {
   LastLogin,
 } from '@bc/auth/domain/value-objects';
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
+import { UserPasswordChanged_DomainEvent } from '@bc/auth/domain/events/password-changed.domain-event';
 import { InvalidOperationException, Timestamps, Id, wait, DateVO } from '@libs/nestjs-common';
 import { UserDTO } from './user.dto';
 import type { UserDeleted_DomainEvent } from '../../events/user-deleted.domain-event';
@@ -267,6 +268,75 @@ describe('User Entity', () => {
       // Assert
       expect(user.role).toBe(role);
       expect(user.timestamps.updatedAt.equals(originalUpdatedAt)).toBe(true);
+    });
+  });
+
+  describe('changePassword()', () => {
+    it('should change password successfully', async () => {
+      // Arrange
+      const user = User.random();
+      const oldPasswordHash = user.password.toValue();
+      const newPassword = await Password.createFromPlainText('NewPassword456!');
+
+      // Act
+      user.changePassword(newPassword);
+
+      // Assert
+      expect(user.password).toBe(newPassword);
+      expect(user.password.toValue()).not.toBe(oldPasswordHash);
+    });
+
+    it('should update timestamps when password is changed', async () => {
+      // Arrange
+      const user = User.random();
+      const originalUpdatedAt = new DateVO(user.timestamps.updatedAt.toValue());
+      const newPassword = await Password.createFromPlainText('NewPassword456!');
+      await wait(10);
+
+      // Act
+      user.changePassword(newPassword);
+
+      // Assert
+      expect(user.timestamps.updatedAt.isAfter(originalUpdatedAt)).toBe(true);
+    });
+
+    it('should emit UserPasswordChanged domain event when password is changed', async () => {
+      // Arrange
+      const user = User.random();
+      const newPassword = await Password.createFromPlainText('NewPassword456!');
+
+      // Act
+      user.changePassword(newPassword);
+
+      // Assert
+      const events = user.getUncommittedEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0]).toBeInstanceOf(UserPasswordChanged_DomainEvent);
+
+      const event = events[0] as UserPasswordChanged_DomainEvent;
+      expect(event.aggregateId).toBe(user.id);
+      expect(event.email).toBe(user.email);
+    });
+
+    it('should allow changing password multiple times', async () => {
+      // Arrange
+      const user = User.random();
+      const password1 = await Password.createFromPlainText('Password1!');
+      const password2 = await Password.createFromPlainText('Password2!');
+      const password3 = await Password.createFromPlainText('Password3!');
+
+      // Act
+      user.changePassword(password1);
+      expect(user.password).toBe(password1);
+
+      user.changePassword(password2);
+      expect(user.password).toBe(password2);
+
+      user.changePassword(password3);
+      expect(user.password).toBe(password3);
+
+      // Assert
+      expect(user.password).toBe(password3);
     });
   });
 

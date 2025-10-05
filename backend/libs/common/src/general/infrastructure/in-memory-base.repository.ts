@@ -11,7 +11,7 @@ export abstract class InMemoryBaseRepository<
 {
   protected items: Map<string, TDto> = new Map();
 
-  constructor(private shouldFail: boolean = false) {}
+  constructor(public shouldFail: boolean = false) {}
 
   protected abstract toEntity(dto: TDto): TEnt;
 
@@ -79,8 +79,8 @@ export abstract class InMemoryBaseRepository<
     if (this.shouldFail) {
       throw new InfrastructureException(
         operation,
-        `Failed to ${operation} OutboxEvent`,
-        new Error(`Failed to ${operation} OutboxEvent`),
+        `Failed to ${operation}`,
+        new Error(`Failed to ${operation}`),
       );
     }
   }
