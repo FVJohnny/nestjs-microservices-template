@@ -1,0 +1,73 @@
+import { Injectable } from '@nestjs/common';
+import { PasswordReset } from '@bc/auth/domain/entities/password-reset/password-reset.entity';
+import { PasswordResetDTO } from '@bc/auth/domain/entities/password-reset/password-reset.dto';
+import { PasswordReset_Repository } from '@bc/auth/domain/repositories/password-reset/password-reset.repository';
+import { Email, Expiration, Used } from '@bc/auth/domain/value-objects';
+import {
+  InMemoryBaseRepository,
+  Criteria,
+  Filters,
+  Filter,
+  FilterField,
+  FilterOperator,
+  FilterValue,
+  Operator,
+} from '@libs/nestjs-common';
+
+@Injectable()
+export class PasswordReset_InMemory_Repository
+  extends InMemoryBaseRepository<PasswordReset, PasswordResetDTO>
+  implements PasswordReset_Repository
+{
+  constructor(shouldFail: boolean = false) {
+    super(shouldFail);
+  }
+
+  protected toEntity(dto: PasswordResetDTO): PasswordReset {
+    return PasswordReset.fromValue(dto);
+  }
+
+  protected toValue(entity: PasswordReset): PasswordResetDTO {
+    return entity.toValue();
+  }
+
+  async findByEmail(email: Email) {
+    const criteria = new Criteria({
+      filters: new Filters([
+        new Filter(
+          new FilterField('email'),
+          FilterOperator.fromValue(Operator.EQUAL),
+          new FilterValue(email.toValue()),
+        ),
+      ]),
+    });
+
+    const result = await this.findByCriteria(criteria);
+    return result.data[0] || null;
+  }
+
+  async findValidByEmail(email: Email) {
+    const criteria = new Criteria({
+      filters: new Filters([
+        new Filter(
+          new FilterField('email'),
+          FilterOperator.fromValue(Operator.EQUAL),
+          new FilterValue(email.toValue()),
+        ),
+        new Filter(
+          new FilterField('expiration'),
+          FilterOperator.fromValue(Operator.GT),
+          new FilterValue(Expiration.atHoursFromNow(0).toValue().toISOString()),
+        ),
+        new Filter(
+          new FilterField('used'),
+          FilterOperator.fromValue(Operator.EQUAL),
+          new FilterValue(String(Used.no().toValue())),
+        ),
+      ]),
+    });
+
+    const result = await this.findByCriteria(criteria);
+    return result.data[0] || null;
+  }
+}

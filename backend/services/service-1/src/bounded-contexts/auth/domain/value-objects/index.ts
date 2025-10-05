@@ -6,3 +6,4 @@ export * from './password.vo';
 export * from './verification.vo';
 export * from './expiration.vo';
 export * from './last-login.vo';
+export * from './used.vo';
