@@ -11,6 +11,7 @@ import {
 } from '@bc/auth/domain/value-objects';
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 import { UserPasswordChanged_DomainEvent } from '@bc/auth/domain/events/password-changed.domain-event';
+import { UserLogout_DomainEvent } from '@bc/auth/domain/events/user-logout.domain-event';
 import { InvalidOperationException, Timestamps, Id, wait, DateVO } from '@libs/nestjs-common';
 import { UserDTO } from './user.dto';
 import type { UserDeleted_DomainEvent } from '../../events/user-deleted.domain-event';
@@ -310,12 +311,16 @@ describe('User Entity', () => {
 
       // Assert
       const events = user.getUncommittedEvents();
-      expect(events).toHaveLength(1);
+      expect(events).toHaveLength(2);
       expect(events[0]).toBeInstanceOf(UserPasswordChanged_DomainEvent);
+      expect(events[1]).toBeInstanceOf(UserLogout_DomainEvent);
 
-      const event = events[0] as UserPasswordChanged_DomainEvent;
-      expect(event.aggregateId).toBe(user.id);
-      expect(event.email).toBe(user.email);
+      const passwordChangedEvent = events[0] as UserPasswordChanged_DomainEvent;
+      expect(passwordChangedEvent.aggregateId).toBe(user.id);
+      expect(passwordChangedEvent.email).toBe(user.email);
+
+      const logoutEvent = events[1] as UserLogout_DomainEvent;
+      expect(logoutEvent.aggregateId).toBe(user.id);
     });
 
     it('should allow changing password multiple times', async () => {

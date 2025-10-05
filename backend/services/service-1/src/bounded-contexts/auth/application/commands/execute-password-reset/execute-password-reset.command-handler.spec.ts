@@ -15,6 +15,7 @@ import {
   wait,
 } from '@libs/nestjs-common';
 import { UserPasswordChanged_DomainEvent } from '@bc/auth/domain/events/password-changed.domain-event';
+import { UserLogout_DomainEvent } from '@bc/auth/domain/events/user-logout.domain-event';
 
 describe('ExecutePasswordResetCommandHandler', () => {
   // Test data factory
@@ -120,14 +121,18 @@ describe('ExecutePasswordResetCommandHandler', () => {
       // Act
       await commandHandler.execute(command);
 
-      // Assert - Check the event was published
+      // Assert - Check the events were published
       expect(eventBus.events).toBeDefined();
-      expect(eventBus.events).toHaveLength(1);
+      expect(eventBus.events).toHaveLength(2);
 
-      const publishedEvent = eventBus.events[0] as UserPasswordChanged_DomainEvent;
-      expect(publishedEvent).toBeInstanceOf(UserPasswordChanged_DomainEvent);
-      expect(publishedEvent.email.toValue()).toBe(user.email.toValue());
-      expect(publishedEvent.occurredOn).toBeInstanceOf(Date);
+      const passwordChangedEvent = eventBus.events[0] as UserPasswordChanged_DomainEvent;
+      expect(passwordChangedEvent).toBeInstanceOf(UserPasswordChanged_DomainEvent);
+      expect(passwordChangedEvent.email.toValue()).toBe(user.email.toValue());
+      expect(passwordChangedEvent.occurredOn).toBeInstanceOf(Date);
+
+      const logoutEvent = eventBus.events[1];
+      expect(logoutEvent).toBeInstanceOf(UserLogout_DomainEvent);
+      expect(logoutEvent.occurredOn).toBeInstanceOf(Date);
     });
 
     it('should update timestamps on password change', async () => {
