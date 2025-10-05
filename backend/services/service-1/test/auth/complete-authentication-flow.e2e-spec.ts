@@ -268,4 +268,78 @@ describe('Complete Authentication Flow (E2E)', () => {
         .expect(400);
     });
   });
+
+  describe('Password Reset Flow', () => {
+    it('should complete password reset: request → reset → verify old password fails → login with new password', async () => {
+      // Step 1: Register and verify user
+      const [user] = await createTestUsers(testSetup.agent, accessToken, 'password-reset', 1);
+
+      const emailVerificationRes = await testSetup.agent
+        .get(`/api/v1/email-verification`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .query({ userId: user.id })
+        .expect(200);
+      const emailVerificationId = emailVerificationRes.body.id;
+
+      await testSetup.agent
+        .post('/api/v1/email-verification/verify')
+        .send({ emailVerificationId })
+        .expect(200);
+
+      // Step 2: Verify can login with old password
+      await testSetup.agent
+        .post('/api/v1/auth/login')
+        .send({
+          email: user.email,
+          password: user.password,
+        })
+        .expect(200);
+
+      // Step 3: Request password reset
+      await testSetup.agent
+        .post('/api/v1/password-reset/request')
+        .send({ email: user.email })
+        .expect(200);
+
+      // Step 4: Get password reset by email
+      const passwordResetRes = await testSetup.agent
+        .get('/api/v1/password-reset')
+        .query({ email: user.email })
+        .expect(200);
+      const passwordResetId = passwordResetRes.body.id;
+      expect(passwordResetId).toBeDefined();
+      expect(passwordResetRes.body.email).toBe(user.email);
+
+      // Step 5: Execute password reset with new password
+      const newPassword = 'NewSecurePassword123!';
+      await testSetup.agent
+        .post('/api/v1/password-reset/execute')
+        .send({
+          passwordResetId,
+          newPassword,
+        })
+        .expect(200);
+
+      // Step 6: Verify cannot login with old password anymore
+      await testSetup.agent
+        .post('/api/v1/auth/login')
+        .send({
+          email: user.email,
+          password: user.password, // old password
+        })
+        .expect(401);
+
+      // Step 7: Verify can login with new password
+      const loginRes = await testSetup.agent
+        .post('/api/v1/auth/login')
+        .send({
+          email: user.email,
+          password: newPassword,
+        })
+        .expect(200);
+
+      expect(typeof loginRes.body.accessToken).toBe('string');
+      expect(typeof loginRes.body.refreshToken).toBe('string');
+    });
+  });
 });
