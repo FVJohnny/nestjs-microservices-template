@@ -39,9 +39,7 @@ export class PasswordResetRequested_IntegrationEvent extends BaseIntegrationEven
     };
   }
 
-  static fromJSON(
-    json: Record<string, unknown>,
-  ): PasswordResetRequested_IntegrationEvent {
+  static fromJSON(json: Record<string, unknown>): PasswordResetRequested_IntegrationEvent {
     const event = new PasswordResetRequested_IntegrationEvent({
       id: json.id as string,
       occurredOn: json.occurredOn ? new Date(json.occurredOn as string) : undefined,
@@ -57,8 +55,7 @@ export class PasswordResetRequested_IntegrationEvent extends BaseIntegrationEven
   protected validate(): void {
     super.validate();
     if (!this.email) throw new ApplicationException('email is required');
-    if (!this.passwordResetId)
-      throw new ApplicationException('passwordResetId is required');
+    if (!this.passwordResetId) throw new ApplicationException('passwordResetId is required');
     if (!this.expiresAt) throw new ApplicationException('expiresAt is required');
   }
 }
