@@ -6,6 +6,7 @@ import importPlugin from 'eslint-plugin-import';
 
 import noDirectEntityMutationRule from './eslint/rules/no-direct-entity-mutation.mjs';
 import { hexagonalArchitectureConfigs } from './eslint/rules/hexagonal-architecture.mjs';
+import cqrsHandlerCollocationRule from './eslint/rules/cqrs-handler-collocation.mjs';
 
 export default [
   {
@@ -47,6 +48,11 @@ export default [
           'no-direct-entity-mutation': noDirectEntityMutationRule,
         },
       },
+      cqrs: {
+        rules: {
+          'handler-collocation': cqrsHandlerCollocationRule,
+        },
+      },
       import: importPlugin,
     },
     rules: {
@@ -55,6 +61,7 @@ export default [
       'prefer-const': 'error',
       eqeqeq: 'error',
       'entity-domain/no-direct-entity-mutation': 'error',
+      'cqrs/handler-collocation': 'error',
     },
   },
 
