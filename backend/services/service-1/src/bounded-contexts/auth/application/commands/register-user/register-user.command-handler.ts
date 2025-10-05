@@ -1,4 +1,4 @@
-import { CommandHandler, type IEventBus } from '@nestjs/cqrs';
+import { type IEventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { RegisterUser_Command } from './register-user.command';
 import {
@@ -22,8 +22,7 @@ import {
   Transaction,
 } from '@libs/nestjs-common';
 
-@CommandHandler(RegisterUser_Command)
-export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser_Command> {
+export class RegisterUser_CommandHandler extends BaseCommandHandler(RegisterUser_Command) {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
@@ -35,7 +34,7 @@ export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser
     super(eventBus);
   }
 
-  protected async handle(command: RegisterUser_Command) {
+  async handle(command: RegisterUser_Command) {
     const user = User.create({
       email: new Email(command.email),
       username: new Username(command.username),
@@ -49,11 +48,11 @@ export class RegisterUser_CommandHandler extends BaseCommandHandler<RegisterUser
     });
   }
 
-  protected async authorize(_command: RegisterUser_Command) {
+  async authorize(_command: RegisterUser_Command) {
     return true;
   }
 
-  protected async validate(command: RegisterUser_Command) {
+  async validate(command: RegisterUser_Command) {
     const email = new Email(command.email);
     const username = new Username(command.username);
 

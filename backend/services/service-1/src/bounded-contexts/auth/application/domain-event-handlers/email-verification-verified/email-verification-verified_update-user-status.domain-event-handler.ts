@@ -1,14 +1,14 @@
-import { EventsHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
 import {
   USER_REPOSITORY,
   type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
-import { DomainEventHandlerBase, NotFoundException } from '@libs/nestjs-common';
+import { BaseDomainEventHandler, NotFoundException } from '@libs/nestjs-common';
 
-@EventsHandler(EmailVerificationVerified_DomainEvent)
-export class EmailVerificationVerified_UpdateUserStatus_DomainEventHandler extends DomainEventHandlerBase<EmailVerificationVerified_DomainEvent> {
+export class EmailVerificationVerified_UpdateUserStatus_DomainEventHandler extends BaseDomainEventHandler(
+  EmailVerificationVerified_DomainEvent,
+) {
   constructor(@Inject(USER_REPOSITORY) private readonly userRepository: User_Repository) {
     super();
   }

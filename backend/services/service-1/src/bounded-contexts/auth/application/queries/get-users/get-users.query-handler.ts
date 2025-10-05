@@ -1,4 +1,3 @@
-import { QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { GetUsers_Query } from './get-users.query';
 import { GetUsersQueryResponse } from './get-users.response';
@@ -20,13 +19,12 @@ import {
   PaginationOffset,
 } from '@libs/nestjs-common';
 
-@QueryHandler(GetUsers_Query)
-export class GetUsers_QueryHandler extends BaseQueryHandler<GetUsers_Query, GetUsersQueryResponse> {
+export class GetUsers_QueryHandler extends BaseQueryHandler(GetUsers_Query)<GetUsersQueryResponse>() {
   constructor(@Inject(USER_REPOSITORY) private readonly userRepository: User_Repository) {
     super();
   }
 
-  protected async handle(query: GetUsers_Query): Promise<GetUsersQueryResponse> {
+  async handle(query: GetUsers_Query): Promise<GetUsersQueryResponse> {
     const filterList: Filter[] = [];
     // Handle specific id filter
     if (query.userId) {
@@ -109,12 +107,12 @@ export class GetUsers_QueryHandler extends BaseQueryHandler<GetUsers_Query, GetU
     };
   }
 
-  protected async authorize(_query: GetUsers_Query) {
+  async authorize(_query: GetUsers_Query) {
     // TODO: Implement authorization logic
     return true;
   }
 
-  protected async validate(_query: GetUsers_Query) {
+  async validate(_query: GetUsers_Query) {
     // TODO: Implement validation logic
   }
 }

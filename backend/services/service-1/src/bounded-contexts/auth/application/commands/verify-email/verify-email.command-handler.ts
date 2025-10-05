@@ -1,4 +1,4 @@
-import { CommandHandler, type IEventBus } from '@nestjs/cqrs';
+import { type IEventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { VerifyEmail_Command } from './verify-email.command';
 import {
@@ -8,8 +8,7 @@ import {
 import { BaseCommandHandler, EVENT_BUS, NotFoundException } from '@libs/nestjs-common';
 import { Id } from '@libs/nestjs-common';
 
-@CommandHandler(VerifyEmail_Command)
-export class VerifyEmail_CommandHandler extends BaseCommandHandler<VerifyEmail_Command> {
+export class VerifyEmail_CommandHandler extends BaseCommandHandler(VerifyEmail_Command) {
   constructor(
     @Inject(EMAIL_VERIFICATION_REPOSITORY)
     private readonly emailVerificationRepository: EmailVerification_Repository,
@@ -19,7 +18,7 @@ export class VerifyEmail_CommandHandler extends BaseCommandHandler<VerifyEmail_C
     super(eventBus);
   }
 
-  protected async handle(command: VerifyEmail_Command) {
+  async handle(command: VerifyEmail_Command) {
     const emailVerification = await this.emailVerificationRepository.findById(
       new Id(command.emailVerificationId),
     );
@@ -35,9 +34,9 @@ export class VerifyEmail_CommandHandler extends BaseCommandHandler<VerifyEmail_C
     await this.sendDomainEvents(emailVerification);
   }
 
-  protected async authorize(_command: VerifyEmail_Command) {
+  async authorize(_command: VerifyEmail_Command) {
     return true;
   }
 
-  protected async validate(_command: VerifyEmail_Command) {}
+  async validate(_command: VerifyEmail_Command) {}
 }

@@ -1,4 +1,4 @@
-import { CommandHandler, type IEventBus } from '@nestjs/cqrs';
+import { type IEventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { CreateEmailVerification_Command } from './create-email-verification.command';
 import { AlreadyExistsException, BaseCommandHandler, EVENT_BUS, Id } from '@libs/nestjs-common';
@@ -11,8 +11,9 @@ import {
 import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
 import type { User_Repository } from '@bc/auth/domain/repositories/user/user.repository';
 
-@CommandHandler(CreateEmailVerification_Command)
-export class CreateEmailVerification_CommandHandler extends BaseCommandHandler<CreateEmailVerification_Command> {
+export class CreateEmailVerification_CommandHandler extends BaseCommandHandler(
+  CreateEmailVerification_Command,
+) {
   constructor(
     @Inject(EMAIL_VERIFICATION_REPOSITORY)
     private readonly emailVerificationRepository: EmailVerification_Repository,
@@ -24,7 +25,7 @@ export class CreateEmailVerification_CommandHandler extends BaseCommandHandler<C
     super(eventBus);
   }
 
-  protected async handle(command: CreateEmailVerification_Command) {
+  async handle(command: CreateEmailVerification_Command) {
     const userId = new Id(command.userId);
     const email = new Email(command.email);
 
@@ -38,11 +39,11 @@ export class CreateEmailVerification_CommandHandler extends BaseCommandHandler<C
     await this.sendDomainEvents<EmailVerification>(emailVerification);
   }
 
-  protected async authorize(_command: CreateEmailVerification_Command) {
+  async authorize(_command: CreateEmailVerification_Command) {
     return true;
   }
 
-  protected async validate(command: CreateEmailVerification_Command) {
+  async validate(command: CreateEmailVerification_Command) {
     const existingVerificationByEmail = await this.emailVerificationRepository.findByEmail(
       new Email(command.email),
     );

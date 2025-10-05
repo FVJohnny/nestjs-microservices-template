@@ -1,4 +1,4 @@
-import { CommandHandler, type IEventBus } from '@nestjs/cqrs';
+import { type IEventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { RecordUserLogin_Command } from './record-user-login.command';
 import {
@@ -8,8 +8,7 @@ import {
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { BaseCommandHandler, EVENT_BUS, Id, NotFoundException } from '@libs/nestjs-common';
 
-@CommandHandler(RecordUserLogin_Command)
-export class RecordUserLogin_CommandHandler extends BaseCommandHandler<RecordUserLogin_Command> {
+export class RecordUserLogin_CommandHandler extends BaseCommandHandler(RecordUserLogin_Command) {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
@@ -19,7 +18,7 @@ export class RecordUserLogin_CommandHandler extends BaseCommandHandler<RecordUse
     super(eventBus);
   }
 
-  protected async handle(command: RecordUserLogin_Command) {
+  async handle(command: RecordUserLogin_Command) {
     const user = await this.userRepository.findById(new Id(command.userId));
 
     if (!user) {
@@ -34,9 +33,9 @@ export class RecordUserLogin_CommandHandler extends BaseCommandHandler<RecordUse
     await this.sendDomainEvents<User>(user);
   }
 
-  protected async authorize(_command: RecordUserLogin_Command) {
+  async authorize(_command: RecordUserLogin_Command) {
     return true;
   }
 
-  protected async validate(_command: RecordUserLogin_Command) {}
+  async validate(_command: RecordUserLogin_Command) {}
 }

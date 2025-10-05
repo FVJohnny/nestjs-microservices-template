@@ -1,4 +1,3 @@
-import { QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { GetTokensFromUserCredentials_Query } from './get-tokens-from-user-credentials.query';
 import { GetTokensFromUserCredentials_QueryResponse } from './get-tokens-from-user-credentials.response';
@@ -14,11 +13,9 @@ import {
   TokenPayload,
 } from '@libs/nestjs-common';
 
-@QueryHandler(GetTokensFromUserCredentials_Query)
-export class GetTokensFromUserCredentials_QueryHandler extends BaseQueryHandler<
+export class GetTokensFromUserCredentials_QueryHandler extends BaseQueryHandler(
   GetTokensFromUserCredentials_Query,
-  GetTokensFromUserCredentials_QueryResponse
-> {
+)<GetTokensFromUserCredentials_QueryResponse>() {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
@@ -27,7 +24,7 @@ export class GetTokensFromUserCredentials_QueryHandler extends BaseQueryHandler<
     super();
   }
 
-  protected async handle(
+  async handle(
     query: GetTokensFromUserCredentials_Query,
   ): Promise<GetTokensFromUserCredentials_QueryResponse> {
     const email = new Email(query.email);
@@ -66,12 +63,12 @@ export class GetTokensFromUserCredentials_QueryHandler extends BaseQueryHandler<
     };
   }
 
-  protected async authorize(_query: GetTokensFromUserCredentials_Query) {
+  async authorize(_query: GetTokensFromUserCredentials_Query) {
     // Login doesn't require additional authorization - authentication is done in handle()
     return true;
   }
 
-  protected async validate(query: GetTokensFromUserCredentials_Query) {
+  async validate(query: GetTokensFromUserCredentials_Query) {
     // Validate email format
     new Email(query.email);
 

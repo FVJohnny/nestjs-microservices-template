@@ -1,24 +1,30 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { GetTokensFromRefreshToken_Query } from './get-tokens-from-refresh-token.query';
 import {
   USER_REPOSITORY,
   type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
-import { UnauthorizedException, JwtTokenService, Id, TokenPayload } from '@libs/nestjs-common';
+import {
+  BaseQueryHandler,
+  UnauthorizedException,
+  JwtTokenService,
+  Id,
+  TokenPayload,
+} from '@libs/nestjs-common';
 import { GetTokensFromRefreshTokenQueryResponse } from './get-tokens-from-refresh-token.response';
 
-@QueryHandler(GetTokensFromRefreshToken_Query)
-export class GetTokensFromRefreshToken_QueryHandler
-  implements IQueryHandler<GetTokensFromRefreshToken_Query, GetTokensFromRefreshTokenQueryResponse>
-{
+export class GetTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
+  GetTokensFromRefreshToken_Query,
+)<GetTokensFromRefreshTokenQueryResponse>() {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
     private readonly jwtTokenService: JwtTokenService,
-  ) {}
+  ) {
+    super();
+  }
 
-  async execute(
+  async handle(
     query: GetTokensFromRefreshToken_Query,
   ): Promise<GetTokensFromRefreshTokenQueryResponse> {
     if (!query.refreshToken || query.refreshToken.trim().length === 0) {
@@ -61,4 +67,10 @@ export class GetTokensFromRefreshToken_QueryHandler
       refreshToken,
     };
   }
+
+  async authorize(_query: GetTokensFromRefreshToken_Query) {
+    return true;
+  }
+
+  async validate(_query: GetTokensFromRefreshToken_Query) {}
 }

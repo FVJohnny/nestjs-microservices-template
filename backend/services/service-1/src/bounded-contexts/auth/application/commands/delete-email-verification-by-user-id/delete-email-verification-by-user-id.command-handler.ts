@@ -1,4 +1,4 @@
-import { CommandHandler, type IEventBus } from '@nestjs/cqrs';
+import { type IEventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { DeleteEmailVerificationByUserId_Command } from './delete-email-verification-by-user-id.command';
 import {
@@ -7,8 +7,9 @@ import {
 } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { BaseCommandHandler, EVENT_BUS, Id } from '@libs/nestjs-common';
 
-@CommandHandler(DeleteEmailVerificationByUserId_Command)
-export class DeleteEmailVerificationByUserId_CommandHandler extends BaseCommandHandler<DeleteEmailVerificationByUserId_Command> {
+export class DeleteEmailVerificationByUserId_CommandHandler extends BaseCommandHandler(
+  DeleteEmailVerificationByUserId_Command,
+) {
   constructor(
     @Inject(EMAIL_VERIFICATION_REPOSITORY)
     private readonly emailVerificationRepository: EmailVerification_Repository,
@@ -18,7 +19,7 @@ export class DeleteEmailVerificationByUserId_CommandHandler extends BaseCommandH
     super(eventBus);
   }
 
-  protected async handle(command: DeleteEmailVerificationByUserId_Command) {
+  async handle(command: DeleteEmailVerificationByUserId_Command) {
     const userId = new Id(command.userId);
 
     const verification = await this.emailVerificationRepository.findByUserId(userId);
@@ -27,9 +28,9 @@ export class DeleteEmailVerificationByUserId_CommandHandler extends BaseCommandH
     }
   }
 
-  protected async authorize(_command: DeleteEmailVerificationByUserId_Command) {
+  async authorize(_command: DeleteEmailVerificationByUserId_Command) {
     return true;
   }
 
-  protected async validate(_command: DeleteEmailVerificationByUserId_Command) {}
+  async validate(_command: DeleteEmailVerificationByUserId_Command) {}
 }

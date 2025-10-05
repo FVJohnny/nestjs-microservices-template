@@ -1,4 +1,3 @@
-import { QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { GetUserById_Query } from './get-user-by-id.query';
 import {
@@ -8,11 +7,9 @@ import {
 import { BaseQueryHandler, NotFoundException, Id } from '@libs/nestjs-common';
 import { GetUserByIdQueryResponse } from './get-user-by-id.response';
 
-@QueryHandler(GetUserById_Query)
-export class GetUserById_QueryHandler extends BaseQueryHandler<
+export class GetUserById_QueryHandler extends BaseQueryHandler(
   GetUserById_Query,
-  GetUserByIdQueryResponse
-> {
+)<GetUserByIdQueryResponse>() {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
@@ -20,7 +17,7 @@ export class GetUserById_QueryHandler extends BaseQueryHandler<
     super();
   }
 
-  protected async handle(query: GetUserById_Query): Promise<GetUserByIdQueryResponse> {
+  async handle(query: GetUserById_Query): Promise<GetUserByIdQueryResponse> {
     const user = await this.userRepository.findById(new Id(query.userId));
 
     if (!user) {
@@ -30,12 +27,12 @@ export class GetUserById_QueryHandler extends BaseQueryHandler<
     return user.toValue();
   }
 
-  protected async authorize(_query: GetUserById_Query) {
+  async authorize(_query: GetUserById_Query) {
     // TODO: Implement authorization logic
     return true;
   }
 
-  protected async validate(_query: GetUserById_Query) {
+  async validate(_query: GetUserById_Query) {
     // TODO: Implement validation logic
   }
 }
