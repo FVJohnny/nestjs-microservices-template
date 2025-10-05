@@ -1,6 +1,7 @@
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
 import { UserDeleted_DomainEvent } from '@bc/auth/domain/events/user-deleted.domain-event';
 import { UserPasswordChanged_DomainEvent } from '@bc/auth/domain/events/password-changed.domain-event';
+import { UserLogout_DomainEvent } from '@bc/auth/domain/events/user-logout.domain-event';
 import type { UserRoleEnum } from '@bc/auth/domain/value-objects';
 import {
   UserStatus,
@@ -124,6 +125,11 @@ export class User extends SharedAggregateRoot implements UserAttributes {
     this.password = newPassword;
     this.timestamps.update();
     this.apply(new UserPasswordChanged_DomainEvent(this.id, this.email));
+    this.logout();
+  }
+
+  logout(): void {
+    this.apply(new UserLogout_DomainEvent(this.id));
   }
 
   isActive(): boolean {
