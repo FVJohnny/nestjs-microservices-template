@@ -4,6 +4,7 @@ import type { RepositoryContext } from '@libs/nestjs-common';
 import { Id } from '@libs/nestjs-common';
 import type { UserToken_Repository } from '@bc/auth/domain/repositories/user-token/user-token.repository';
 import { UserToken } from '@bc/auth/domain/entities/user-token/user-token.entity';
+import { Token } from '@bc/auth/domain/entities/user-token/token.vo';
 
 @Injectable()
 export class UserToken_Redis_Repository
@@ -27,6 +28,24 @@ export class UserToken_Redis_Repository
 
   protected toEntity(json: string): UserToken {
     return UserToken.fromValue(JSON.parse(json));
+  }
+
+  async findByToken(token: Token) {
+    const client = this.getRedisClient();
+    const pattern = `${this.keyPrefix}*`;
+    const keys = await client.keys(pattern);
+
+    for (const key of keys) {
+      const json = await client.get(key);
+      if (json) {
+        const userToken = this.toEntity(json);
+        if (userToken.token.toValue() === token.toValue()) {
+          return userToken;
+        }
+      }
+    }
+
+    return null;
   }
 
   async save(token: UserToken, context?: RepositoryContext): Promise<void> {

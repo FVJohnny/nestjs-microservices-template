@@ -1,7 +1,10 @@
 import { GetTokensFromRefreshToken_QueryHandler } from './get-tokens-from-refresh-token.query-handler';
 import { GetTokensFromRefreshToken_Query } from './get-tokens-from-refresh-token.query';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { UserToken_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-token-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { UserToken } from '@bc/auth/domain/entities/user-token/user-token.entity';
+import { Token } from '@bc/auth/domain/entities/user-token/token.vo';
 import { Email, Username, UserRole, UserStatus } from '@bc/auth/domain/value-objects';
 import type { TokenPayload } from '@libs/nestjs-common';
 import { Id, JwtTokenService, UnauthorizedException } from '@libs/nestjs-common';
@@ -13,41 +16,59 @@ describe('GetTokensFromRefreshToken_QueryHandler', () => {
       withUser?: boolean;
       userStatus?: 'active' | 'inactive';
       shouldFailRepository?: boolean;
+      withSavedToken?: boolean;
     } = {},
   ) => {
-    const { withUser = false, userStatus = 'active', shouldFailRepository = false } = params;
+    const { withUser = false, userStatus = 'active', shouldFailRepository = false, withSavedToken = false } = params;
 
-    const repository = new User_InMemory_Repository(shouldFailRepository);
+    const userRepository = new User_InMemory_Repository(shouldFailRepository);
+    const userTokenRepository = new UserToken_InMemory_Repository(shouldFailRepository);
     const jwtTokenService = new JwtTokenService(new JwtService());
-    const handler = new GetTokensFromRefreshToken_QueryHandler(repository, jwtTokenService);
+    const handler = new GetTokensFromRefreshToken_QueryHandler(userRepository, userTokenRepository, jwtTokenService);
 
     let user: User | null = null;
+    let refreshToken: string | null = null;
+
     if (withUser) {
       user = User.random({
         id: Id.random(),
         status: userStatus === 'active' ? UserStatus.active() : UserStatus.inactive(),
       });
-      await repository.save(user);
+      await userRepository.save(user);
+
+      // Generate refresh token for this user
+      const payload: TokenPayload = {
+        userId: user.id.toValue(),
+        email: user.email.toValue(),
+        username: user.username.toValue(),
+        role: user.role.toValue(),
+      };
+      refreshToken = jwtTokenService.generateRefreshToken(payload);
+
+      // Only save token if withSavedToken is true
+      if (withSavedToken) {
+        const userToken = UserToken.create({
+          userId: user.id,
+          token: new Token(refreshToken),
+          type: 'refresh',
+        });
+        await userTokenRepository.save(userToken);
+      }
     }
 
-    return { repository, jwtTokenService, handler, user };
+    return { userRepository, userTokenRepository, jwtTokenService, handler, user, refreshToken };
   };
 
-  it('should successfully refresh tokens for valid refresh token', async () => {
+  it('should successfully refresh tokens for valid and stored refresh token', async () => {
     // Arrange
-    const { handler, user, jwtTokenService } = await setup({
+    const { handler, user, jwtTokenService, refreshToken } = await setup({
       withUser: true,
       userStatus: 'active',
+      withSavedToken: true,
     });
 
-    const payload: TokenPayload = {
-      userId: user!.id.toValue(),
-      email: user!.email.toValue(),
-      username: user!.username.toValue(),
-      role: user!.role.toValue(),
-    };
-    const refreshToken = jwtTokenService.generateRefreshToken(payload);
-    const query = new GetTokensFromRefreshToken_Query(refreshToken);
+    const query = new GetTokensFromRefreshToken_Query(refreshToken!);
+
     // Act
     const result = await handler.execute(query);
 
@@ -56,16 +77,16 @@ describe('GetTokensFromRefreshToken_QueryHandler', () => {
     expect(result.refreshToken).toBeDefined();
 
     const decodedAccessToken = jwtTokenService.verifyAccessToken(result.accessToken);
-    expect(decodedAccessToken.userId).toBe(payload.userId);
-    expect(decodedAccessToken.email).toBe(payload.email);
-    expect(decodedAccessToken.username).toBe(payload.username);
-    expect(decodedAccessToken.role).toBe(payload.role);
+    expect(decodedAccessToken.userId).toBe(user?.id.toValue());
+    expect(decodedAccessToken.email).toBe(user?.email.toValue());
+    expect(decodedAccessToken.username).toBe(user?.username.toValue());
+    expect(decodedAccessToken.role).toBe(user?.role.toValue());
 
     const decodedRefreshToken = jwtTokenService.verifyRefreshToken(result.refreshToken);
-    expect(decodedRefreshToken.userId).toBe(payload.userId);
-    expect(decodedRefreshToken.email).toBe(payload.email);
-    expect(decodedRefreshToken.username).toBe(payload.username);
-    expect(decodedRefreshToken.role).toBe(payload.role);
+    expect(decodedRefreshToken.userId).toBe(user?.id.toValue());
+    expect(decodedRefreshToken.email).toBe(user?.email.toValue());
+    expect(decodedRefreshToken.username).toBe(user?.username.toValue());
+    expect(decodedRefreshToken.role).toBe(user?.role.toValue());
   });
 
   it('should throw UnauthorizedException for empty refresh token', async () => {
@@ -104,19 +125,27 @@ describe('GetTokensFromRefreshToken_QueryHandler', () => {
 
   it('should throw UnauthorizedException if user is inactive', async () => {
     // Arrange
-    const { handler, user, jwtTokenService } = await setup({
+    const { handler, refreshToken } = await setup({
       withUser: true,
       userStatus: 'inactive',
+      withSavedToken: true,
     });
 
-    const payload: TokenPayload = {
-      userId: user!.id.toValue(),
-      email: user!.email.toValue(),
-      username: user!.username.toValue(),
-      role: user!.role.toValue(),
-    };
-    const refreshToken = jwtTokenService.generateRefreshToken(payload);
-    const query = new GetTokensFromRefreshToken_Query(refreshToken);
+    const query = new GetTokensFromRefreshToken_Query(refreshToken!);
+
+    // Act & Assert
+    await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('should throw UnauthorizedException if token is not saved in repository', async () => {
+    // Arrange
+    const { handler, refreshToken } = await setup({
+      withUser: true,
+      userStatus: 'active',
+      withSavedToken: false,
+    });
+
+    const query = new GetTokensFromRefreshToken_Query(refreshToken!);
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);

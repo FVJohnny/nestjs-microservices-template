@@ -4,11 +4,11 @@ type TokenTypeEnum = 'access' | 'refresh';
 const TOKEN_TYPE_VALUES: TokenTypeEnum[] = ['access', 'refresh'];
 
 export class TokenType extends EnumValueObject<TokenTypeEnum> {
-  constructor(value: TokenTypeEnum) {
-    super(value, TOKEN_TYPE_VALUES);
+  constructor(value: string) {
+    super(value as TokenTypeEnum, TOKEN_TYPE_VALUES);
   }
 
-  protected throwErrorForInvalidValue(value: TokenTypeEnum): void {
+  protected throwErrorForInvalidValue(value: string): void {
     throw new Error(`Invalid token type: ${value}. Must be either 'access' or 'refresh'.`);
   }
 

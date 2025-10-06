@@ -12,6 +12,9 @@ import {
   TokenPayload,
 } from '@libs/nestjs-common';
 import { GetTokensFromRefreshTokenQueryResponse } from './get-tokens-from-refresh-token.response';
+import { USER_TOKEN_REPOSITORY } from '@bc/auth/domain/repositories/user-token/user-token.repository';
+import { type UserToken_Repository } from '@bc/auth/domain/repositories/user-token/user-token.repository';
+import { Token } from '@bc/auth/domain/entities/user-token/token.vo';
 
 export class GetTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
   GetTokensFromRefreshToken_Query,
@@ -19,6 +22,8 @@ export class GetTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
+    @Inject(USER_TOKEN_REPOSITORY)
+    private readonly userTokenRepository: UserToken_Repository,
     private readonly jwtTokenService: JwtTokenService,
   ) {
     super();
@@ -41,13 +46,13 @@ export class GetTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
     }
 
     const user = await this.userRepository.findById(new Id(userId));
-
-    if (!user) {
+    if (!user || !user.isActive()) {
       throw new UnauthorizedException();
     }
 
-    // Check if user is active
-    if (!user.isActive()) {
+    // Check the token exists in repository
+    const userToken = await this.userTokenRepository.findByToken(new Token(query.refreshToken));
+    if (!userToken) {
       throw new UnauthorizedException();
     }
 
@@ -63,6 +68,7 @@ export class GetTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
     const refreshToken = this.jwtTokenService.generateRefreshToken(payload);
 
     return {
+      userId,
       accessToken,
       refreshToken,
     };

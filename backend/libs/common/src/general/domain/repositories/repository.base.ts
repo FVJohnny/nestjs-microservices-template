@@ -11,22 +11,22 @@ export interface Repository<T, ID = Id> {
   /**
    * Finds an entity by its ID
    */
-  findById(id: ID, context?: RepositoryContext): Promise<T | null>;
+  findById(id: ID): Promise<T | null>;
 
   /**
    * Finds entities by criteria
    */
-  findByCriteria(criteria: Criteria, context?: RepositoryContext): Promise<PaginatedRepoResult<T>>;
+  findByCriteria(criteria: Criteria): Promise<PaginatedRepoResult<T>>;
 
   /**
    * Counts entities by criteria
    */
-  countByCriteria(criteria: Criteria, context?: RepositoryContext): Promise<number>;
+  countByCriteria(criteria: Criteria): Promise<number>;
 
   /**
-   * Saves an entity (create or update)
+   * Checks if an entity exists by its ID
    */
-  save(entity: T, context?: RepositoryContext): Promise<void>;
+  exists(id: ID): Promise<boolean>;
 
   /**
    * Removes an entity by its ID
@@ -34,9 +34,9 @@ export interface Repository<T, ID = Id> {
   remove(id: ID, context?: RepositoryContext): Promise<void>;
 
   /**
-   * Checks if an entity exists by its ID
+   * Saves an entity (create or update)
    */
-  exists(id: ID, context?: RepositoryContext): Promise<boolean>;
+  save(entity: T, context?: RepositoryContext): Promise<void>;
 
   /**
    * Clears the repository

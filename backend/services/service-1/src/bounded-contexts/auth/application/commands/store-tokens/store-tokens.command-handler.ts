@@ -7,6 +7,7 @@ import {
 } from '@bc/auth/domain/repositories/user-token/user-token.repository';
 import { BaseCommandHandler, EVENT_BUS, Id, Transaction } from '@libs/nestjs-common';
 import { UserToken } from '@bc/auth/domain/entities/user-token/user-token.entity';
+import { Token } from '@bc/auth/domain/entities/user-token/token.vo';
 
 export class StoreTokens_CommandHandler extends BaseCommandHandler(StoreTokens_Command) {
   constructor(
@@ -19,20 +20,18 @@ export class StoreTokens_CommandHandler extends BaseCommandHandler(StoreTokens_C
   }
 
   async handle(command: StoreTokens_Command) {
-    // Create and store access token entity
     const accessToken = UserToken.create({
-      token: command.accessToken,
+      token: new Token(command.accessToken),
       userId: new Id(command.userId),
       type: 'access',
     });
-    // Create and store refresh token entity
     const refreshToken = UserToken.create({
-      token: command.refreshToken,
+      token: new Token(command.refreshToken),
       userId: new Id(command.userId),
       type: 'refresh',
     });
 
-    Transaction.run(async (context) => {
+    await Transaction.run(async (context) => {
       await this.tokenRepository.save(accessToken, context);
       await this.tokenRepository.save(refreshToken, context);
     });
