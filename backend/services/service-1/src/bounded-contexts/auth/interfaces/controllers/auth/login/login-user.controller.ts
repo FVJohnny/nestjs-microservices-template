@@ -10,6 +10,7 @@ import {
 } from '@bc/auth/application/queries';
 import { LoginUserControllerParams } from './login-user.params';
 import { LoginUserResponseDto } from './login-user.response';
+import { StoreTokens_Command } from '@bc/auth/application/commands/store-tokens/store-tokens.command';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -42,7 +43,11 @@ export class LoginUser_Controller {
     });
     const { accessToken, refreshToken, userId } = await this.queryBus.execute(tokensQuery);
 
-    // Record login using command (async)
+    // Store tokens using command (sync)
+    const storeTokensCommand = new StoreTokens_Command({ userId, accessToken, refreshToken });
+    await this.commandBus.execute(storeTokensCommand);
+
+    // Record login using command (Async)
     const recordLoginCommand = new RecordUserLogin_Command({ userId });
     this.commandBus.execute(recordLoginCommand);
 
