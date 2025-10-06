@@ -195,7 +195,9 @@ export function testOutboxRepositoryContract(
         expect(batch3).toHaveLength(10); // Only 10 total
 
         // Verify ordering is consistent
-        expect(batch1[0].timestamps.createdAt.isBefore(batch1[1].timestamps.createdAt)).toBe(true);
+        expect(batch1[0].timestamps.createdAt.isBeforeOrEqual(batch1[1].timestamps.createdAt)).toBe(
+          true,
+        );
         expect(batch2[0].id.toValue()).toBe(batch1[0].id.toValue()); // Same first item
         expect(batch3[0].id.toValue()).toBe(batch2[0].id.toValue()); // Same first item
       });

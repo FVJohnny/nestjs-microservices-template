@@ -74,8 +74,16 @@ export class DateVO extends ValueObject<Date> {
     return this.toValue() < other.toValue();
   }
 
+  isBeforeOrEqual(other: DateVO): boolean {
+    return this.toValue() <= other.toValue();
+  }
+
   isAfter(other: DateVO): boolean {
     return this.toValue() > other.toValue();
+  }
+
+  isAfterOrEqual(other: DateVO): boolean {
+    return this.toValue() >= other.toValue();
   }
 
   equals(other: DateVO): boolean {
