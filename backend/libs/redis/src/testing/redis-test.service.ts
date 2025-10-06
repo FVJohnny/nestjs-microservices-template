@@ -1,63 +1,38 @@
-import { CorrelationLogger } from '@libs/nestjs-common';
-import { Redis } from 'ioredis';
 import type { SharedAggregateRootDTO } from '@libs/nestjs-common';
+import { RedisService } from '../redis.service';
 
-export class RedisTestService<T extends SharedAggregateRootDTO> {
-  readonly redisClient: Redis;
-  private readonly logger = new CorrelationLogger(RedisTestService.name);
+export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisService {
+  private static dbCounter = 0;
 
-  constructor(
-    private readonly dbIndex: number = 0,
-    public readonly keyPrefix: string = 'test',
-  ) {
-    const config = {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      db: dbIndex,
-      connectTimeout: 10000,
-      lazyConnect: true,
-      maxRetriesPerRequest: 3,
-    };
-
-    this.redisClient = new Redis(config);
+  constructor(private readonly keyPrefix: string = 'test') {
+    super();
   }
 
   async setupDatabase() {
-    try {
-      this.logger.debug('Connecting to existing Redis instance...');
-
-      await this.redisClient.connect();
-      await this.redisClient.ping();
-
-      // Clear the test database
-      await this.redisClient.flushdb();
-
-      this.logger.debug('Test setup completed');
-    } catch (error) {
-      this.logger.error('Error in database setup:', error);
-      throw error;
+    if (!process.env.REDIS_HOST) {
+      process.env.REDIS_HOST = 'localhost';
+      process.env.REDIS_PORT = '6379';
     }
+    // Use instance-specific database number
+    process.env.REDIS_DB = String((Date.now() % 100) * 100 + (RedisTestService.dbCounter++ % 100));
+
+    await this.onModuleInit();
   }
 
-  async cleanupDatabase() {
-    try {
-      await this.redisClient.flushdb();
-      this.logger.debug('Cleaned up test database');
-    } catch (error) {
-      this.logger.error('Error cleaning up test database:', error);
-    }
-    await this.redisClient.quit();
+  async closeDatabase() {
+    await this.clear();
+    await this.onModuleDestroy();
   }
 
   async clear() {
-    await this.redisClient.flushdb();
+    await this.getDatabaseClient()?.flushdb();
   }
 
   async setInitialData(data: T[]) {
     await this.clear();
     if (data.length === 0) return;
 
-    const pipeline = this.redisClient.pipeline();
+    const pipeline = this.getDatabaseClient()?.pipeline();
 
     for (const item of data) {
       const key = `${this.keyPrefix}:${item.id}`;
@@ -77,9 +52,9 @@ export class RedisTestService<T extends SharedAggregateRootDTO> {
         }
       }
 
-      pipeline.hset(key, hashData);
+      pipeline?.hset(key, hashData);
     }
 
-    await pipeline.exec();
+    await pipeline?.exec();
   }
 }

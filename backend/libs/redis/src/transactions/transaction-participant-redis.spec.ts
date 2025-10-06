@@ -4,12 +4,12 @@ import { RedisTestService } from '../testing/redis-test.service';
 import { ExampleRedisRepository } from '../infrastructure/example-redis.repository';
 
 describe('Redis transactions', () => {
-  const redisTestService = new RedisTestService(2);
+  const redisTestService = new RedisTestService();
   let repository: ExampleRedisRepository;
 
   beforeAll(async () => {
     await redisTestService.setupDatabase();
-    repository = new ExampleRedisRepository(redisTestService.redisClient);
+    repository = new ExampleRedisRepository(redisTestService);
   });
 
   afterEach(async () => {
@@ -17,7 +17,7 @@ describe('Redis transactions', () => {
   });
 
   afterAll(async () => {
-    await redisTestService.cleanupDatabase();
+    await redisTestService.closeDatabase();
   });
 
   it('persists all writes when every save succeeds', async () => {

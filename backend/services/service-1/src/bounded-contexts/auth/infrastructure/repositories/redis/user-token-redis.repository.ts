@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import type { Redis } from 'ioredis';
 import { BaseRedisRepository, RedisService } from '@libs/nestjs-redis';
 import type { RepositoryContext } from '@libs/nestjs-common';
 import { Id } from '@libs/nestjs-common';
@@ -15,7 +14,7 @@ export class UserToken_Redis_Repository
   private readonly userTokensPrefix = 'auth:user-tokens:';
 
   constructor(redisService: RedisService) {
-    super(redisService.getDatabaseClient() as Redis);
+    super(redisService);
   }
 
   protected itemKey(id: string): string {

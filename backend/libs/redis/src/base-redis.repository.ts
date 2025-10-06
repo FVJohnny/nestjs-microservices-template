@@ -10,13 +10,14 @@ import type {
 } from '@libs/nestjs-common';
 
 import { TransactionParticipant_Redis } from './transactions/transaction-participant-redis';
+import type { RedisService } from './redis.service';
 
 export abstract class BaseRedisRepository<TEnt extends SharedAggregateRoot>
   implements Repository<TEnt, Id>
 {
   protected readonly logger: CorrelationLogger;
 
-  constructor(private readonly redisClient: Redis) {
+  constructor(private readonly redisService: RedisService) {
     this.logger = new CorrelationLogger(this.constructor.name);
   }
 
@@ -81,11 +82,11 @@ export abstract class BaseRedisRepository<TEnt extends SharedAggregateRoot>
   }
 
   protected getClient(context?: RepositoryContext): Redis | ChainableCommander {
-    return this.getTransactionClient(context) ?? this.redisClient;
+    return this.getTransactionClient(context) ?? this.redisService.getDatabaseClient()!;
   }
 
   protected getRedisClient(): Redis {
-    return this.redisClient;
+    return this.redisService.getDatabaseClient()!;
   }
 
   protected getTransactionClient(context?: RepositoryContext): ChainableCommander | undefined {
@@ -108,7 +109,7 @@ export abstract class BaseRedisRepository<TEnt extends SharedAggregateRoot>
 
     let participant = context.transaction.get('redis') as TransactionParticipant_Redis;
     if (!participant) {
-      participant = new TransactionParticipant_Redis(this.redisClient);
+      participant = new TransactionParticipant_Redis(this.getRedisClient());
       context.transaction.register('redis', participant);
     }
   }

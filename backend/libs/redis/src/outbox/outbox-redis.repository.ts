@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import type { Redis } from 'ioredis';
 
 import { OutboxEvent, OutboxRepository, type RepositoryContext } from '@libs/nestjs-common';
 
 import { BaseRedisRepository } from '../base-redis.repository';
+import type { RedisService } from '../redis.service';
 
 @Injectable()
 export class Outbox_Redis_Repository
@@ -14,8 +14,8 @@ export class Outbox_Redis_Repository
   private readonly zUnprocessed = `${this.keyPrefix}unprocessedByCreatedAt`;
   private readonly zProcessed = `${this.keyPrefix}processedByProcessedAt`;
 
-  constructor(redisClient: Redis) {
-    super(redisClient);
+  constructor(redisService: RedisService) {
+    super(redisService);
   }
 
   protected itemKey(id: string): string {
