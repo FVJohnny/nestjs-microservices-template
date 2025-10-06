@@ -11,8 +11,8 @@ export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisSer
     // Assign unique database number for each test instance to avoid conflicts
     // Redis supports databases 0-15 by default
     this.dbNumber = RedisTestService.dbCounter++ % 16;
-    // Add timestamp to keyPrefix for additional isolation
-    this.uniqueKeyPrefix = `${keyPrefix}:${Date.now()}:${this.dbNumber}`;
+    // Add timestamp and random value to keyPrefix for additional isolation
+    this.uniqueKeyPrefix = `${keyPrefix}:${Date.now()}:${Math.random().toString(36).substring(2, 11)}`;
   }
 
   async setupDatabase() {
@@ -24,15 +24,22 @@ export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisSer
     process.env.REDIS_DB = String(this.dbNumber);
 
     await this.onModuleInit();
+
+    // Clear the database immediately after connecting to ensure clean state
+    await this.clear();
   }
 
   async closeDatabase() {
+    // Clear before closing to prevent stale data
     await this.clear();
     await this.onModuleDestroy();
   }
 
   async clear() {
-    await this.getDatabaseClient()?.flushdb();
+    const client = this.getDatabaseClient();
+    if (client) {
+      await client.flushdb();
+    }
   }
 
   async setInitialData(data: T[]) {

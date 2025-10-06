@@ -8,7 +8,7 @@ import { EmailVerification_Mongodb_Repository } from './infrastructure/repositor
 import { EMAIL_VERIFICATION_REPOSITORY } from './domain/repositories/email-verification/email-verification.repository';
 import { PasswordReset_Mongodb_Repository } from './infrastructure/repositories/mongodb/password-reset-mongodb.repository';
 import { PASSWORD_RESET_REPOSITORY } from './domain/repositories/password-reset/password-reset.repository';
-import { UserToken_Redis_Repository } from './infrastructure/repositories/redis/user-token-redis.repository';
+import { UserToken_Redis_Repository } from '@libs/nestjs-redis';
 import {
   USER_TOKEN_REPOSITORY,
   StoreTokens_CommandHandler,

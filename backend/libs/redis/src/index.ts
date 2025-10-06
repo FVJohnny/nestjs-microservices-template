@@ -6,3 +6,4 @@ export * from './redis-database.module';
 export * from './redis.integration-events.module';
 export * from './base-redis.repository';
 export * from './testing/redis-test.service';
+export * from './auth/user-token-redis.repository';

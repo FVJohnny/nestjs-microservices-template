@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { BaseRedisRepository, RedisService } from '@libs/nestjs-redis';
+import { BaseRedisRepository } from '../base-redis.repository';
+import { RedisService } from '../redis.service';
 import type { RepositoryContext } from '@libs/nestjs-common';
 import { Id, type UserToken_Repository, UserToken, Token } from '@libs/nestjs-common';
 
