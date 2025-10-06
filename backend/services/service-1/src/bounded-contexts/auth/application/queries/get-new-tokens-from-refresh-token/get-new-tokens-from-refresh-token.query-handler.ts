@@ -30,12 +30,9 @@ export class GetNewTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
   async handle(
     query: GetNewTokensFromRefreshToken_Query,
   ): Promise<GetNewTokensFromRefreshTokenQueryResponse> {
-    if (!query.refreshToken || query.refreshToken.trim().length === 0) {
-      throw new UnauthorizedException();
-    }
-
     let userId: string;
 
+    // Decode refresh token
     try {
       const decoded = this.jwtTokenService.verifyRefreshToken(query.refreshToken);
       userId = decoded.userId;
@@ -43,6 +40,7 @@ export class GetNewTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
       throw new UnauthorizedException();
     }
 
+    // Check if user exists and is active
     const user = await this.userRepository.findById(new Id(userId));
     if (!user || !user.isActive()) {
       throw new UnauthorizedException();
@@ -76,5 +74,10 @@ export class GetNewTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
     return true;
   }
 
-  async validate(_query: GetNewTokensFromRefreshToken_Query) {}
+  async validate(_query: GetNewTokensFromRefreshToken_Query) {
+    // Refresh token must not be empty
+    if (!_query.refreshToken || _query.refreshToken.trim().length === 0) {
+      throw new UnauthorizedException();
+    }
+  }
 }

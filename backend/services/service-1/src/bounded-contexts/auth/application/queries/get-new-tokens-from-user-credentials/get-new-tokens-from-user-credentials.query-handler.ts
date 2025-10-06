@@ -30,18 +30,13 @@ export class GetNewTokensFromUserCredentials_QueryHandler extends BaseQueryHandl
     const email = new Email(query.email);
     const user = await this.userRepository.findByEmail(email);
 
-    if (!user) {
+    if (!user || !user.isActive()) {
       throw new UnauthorizedException();
     }
 
     // Verify password
     const isPasswordValid = await user.password.verify(query.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException();
-    }
-
-    // Check if user is active
-    if (!user.isActive()) {
       throw new UnauthorizedException();
     }
 

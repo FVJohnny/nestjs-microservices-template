@@ -45,17 +45,19 @@ export class Outbox_Redis_Repository
   async findUnprocessed(limit = 100) {
     const client = this.getRedisClient();
 
-    const ids = await client.zrange(this.zUnprocessed, 0, 100);
+    // Use zrange with ascending order to get oldest events first
+    // (events with lowest createdAt timestamp scores)
+    const ids = await client.zrange(this.zUnprocessed, 0, limit - 1);
     if (ids.length === 0) return [];
 
     const keys = ids.map((id) => this.itemKey(id));
     const jsons = await client.mget(keys);
 
+    // Results are already sorted by createdAt (ascending) from zrange
     return jsons
-      .map((json) => this.toEntity(json ?? ''))
-      .filter((v) => v !== null)
-      .sort((a, b) => a.timestamps.createdAt.getTime() - b.timestamps.createdAt.getTime())
-      .slice(0, limit);
+      .filter((json) => !!json)
+      .map((json) => this.toEntity(json || ''))
+      .filter((v) => v !== null);
   }
 
   async deleteProcessed(olderThan: Date, context?: RepositoryContext) {

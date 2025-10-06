@@ -30,7 +30,7 @@ export class JwtAuthGuard implements CanActivate {
       // Verify JWT signature and expiration
       const payload = await this.jwtService.verifyAsync<JwtTokenPayload>(token);
 
-      // Check if token exists in the repository (not revoked)
+      // Check if token exists in the repository
       const query = new GetUserTokenByToken_Query(token);
       await this.queryBus.execute(query);
 
