@@ -1,5 +1,5 @@
 import type { ICommand } from '@nestjs/cqrs';
-import { BaseCommand } from '@libs/nestjs-common';
+import { BaseCommand } from '../../../../cqrs/command.base';
 
 export class StoreTokens_Command extends BaseCommand implements ICommand {
   public readonly userId: string;

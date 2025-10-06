@@ -12,7 +12,7 @@ import { RefreshToken_ControllerParams } from './refresh-token.params';
 import { RefreshTokenResponseDto } from './refresh-token.response';
 import { JwtAuthGuard } from '@libs/nestjs-common';
 import { UseGuards } from '@nestjs/common';
-import { StoreTokens_Command } from '@bc/auth/application/commands/store-tokens/store-tokens.command';
+import { StoreTokens_Command } from '@libs/nestjs-common';
 
 @ApiTags('auth')
 @Controller('auth')

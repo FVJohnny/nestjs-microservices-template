@@ -1,7 +1,10 @@
-import type { RepositoryContext, Id } from '@libs/nestjs-common';
-import { InMemoryBaseRepository } from '@libs/nestjs-common';
-import type { UserToken_Repository, UserTokenDTO, Token } from '@libs/nestjs-common';
-import { UserToken } from '@libs/nestjs-common';
+import type { RepositoryContext } from '../../transactions';
+import type { Id } from '../../general/domain/value-object/Id';
+import { InMemoryBaseRepository } from '../../general/infrastructure/in-memory-base.repository';
+import type { UserToken_Repository } from '../domain/repositories/user-token.repository';
+import { UserToken } from '../domain/entities/user-token.entity';
+import type { UserTokenDTO } from '../domain/entities/user-token.dto';
+import type { Token } from '../domain/entities/token.vo';
 import {
   Criteria,
   Filter,
@@ -10,7 +13,7 @@ import {
   Filters,
   FilterValue,
   Operator,
-} from '@libs/nestjs-common';
+} from '../../general/domain';
 
 export class UserToken_InMemory_Repository
   extends InMemoryBaseRepository<UserToken, UserTokenDTO>

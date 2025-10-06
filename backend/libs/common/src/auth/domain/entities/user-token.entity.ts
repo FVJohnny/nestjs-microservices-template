@@ -1,5 +1,7 @@
-import { DateVO, Id, Timestamps } from '@libs/nestjs-common';
-import { SharedAggregateRoot } from '@libs/nestjs-common';
+import { DateVO } from '../../../general/domain/value-object/DateValueObject';
+import { Id } from '../../../general/domain/value-object/Id';
+import { Timestamps } from '../../../general/domain/value-object/TimestampsVO';
+import { SharedAggregateRoot } from '../../../general/domain/entities/AggregateRoot';
 import type { UserTokenDTO } from './user-token.dto';
 import { TokenType } from './token-type.vo';
 import { Token } from './token.vo';

@@ -12,9 +12,7 @@ import {
   TokenPayload,
 } from '@libs/nestjs-common';
 import { GetNewTokensFromRefreshTokenQueryResponse } from './get-new-tokens-from-refresh-token.response';
-import { USER_TOKEN_REPOSITORY } from '@bc/auth/domain/repositories/user-token/user-token.repository';
-import { type UserToken_Repository } from '@bc/auth/domain/repositories/user-token/user-token.repository';
-import { Token } from '@bc/auth/domain/entities/user-token/token.vo';
+import { USER_TOKEN_REPOSITORY, type UserToken_Repository, Token } from '@libs/nestjs-common';
 
 export class GetNewTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
   GetNewTokensFromRefreshToken_Query,

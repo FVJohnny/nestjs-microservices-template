@@ -9,7 +9,11 @@ import { EMAIL_VERIFICATION_REPOSITORY } from './domain/repositories/email-verif
 import { PasswordReset_Mongodb_Repository } from './infrastructure/repositories/mongodb/password-reset-mongodb.repository';
 import { PASSWORD_RESET_REPOSITORY } from './domain/repositories/password-reset/password-reset.repository';
 import { UserToken_Redis_Repository } from './infrastructure/repositories/redis/user-token-redis.repository';
-import { USER_TOKEN_REPOSITORY } from './domain/repositories/user-token/user-token.repository';
+import {
+  USER_TOKEN_REPOSITORY,
+  StoreTokens_CommandHandler,
+  GetUserTokenByToken_QueryHandler,
+} from '@libs/nestjs-common';
 
 // 🚀 RUNTIME AUTO-DISCOVERY
 const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__dirname);
@@ -18,6 +22,8 @@ const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__d
   controllers: [...controllers],
   providers: [
     ...handlers,
+    StoreTokens_CommandHandler,
+    GetUserTokenByToken_QueryHandler,
     {
       provide: USER_REPOSITORY,
       useClass: User_Mongodb_Repository,

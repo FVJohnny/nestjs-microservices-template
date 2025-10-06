@@ -1,4 +1,4 @@
-import { EnumValueObject } from '@libs/nestjs-common';
+import { EnumValueObject } from '../../../general/domain/value-object/EnumValueObject';
 
 type TokenTypeEnum = 'access' | 'refresh';
 const TOKEN_TYPE_VALUES: TokenTypeEnum[] = ['access', 'refresh'];

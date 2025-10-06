@@ -1,4 +1,4 @@
-import { StringValueObject } from '@libs/nestjs-common';
+import { StringValueObject } from '../../../general/domain/value-object/StringValueObject';
 
 let _seq = 0;
 export class Token extends StringValueObject {

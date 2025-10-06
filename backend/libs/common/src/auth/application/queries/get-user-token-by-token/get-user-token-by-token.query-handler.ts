@@ -3,10 +3,11 @@ import { GetUserTokenByToken_Query } from './get-user-token-by-token.query';
 import {
   USER_TOKEN_REPOSITORY,
   type UserToken_Repository,
-} from '@bc/auth/domain/repositories/user-token/user-token.repository';
-import { BaseQueryHandler, NotFoundException } from '@libs/nestjs-common';
+} from '../../../domain/repositories/user-token.repository';
+import { BaseQueryHandler } from '../../../../cqrs/query-handler.base';
+import { NotFoundException } from '../../../../errors/application.exceptions';
 import { GetUserTokenByToken_QueryResponse } from './get-user-token-by-token.response';
-import { Token } from '@bc/auth/domain/entities/user-token/token.vo';
+import { Token } from '../../../domain/entities/token.vo';
 
 export class GetUserTokenByToken_QueryHandler extends BaseQueryHandler(
   GetUserTokenByToken_Query,

@@ -1,14 +1,13 @@
 import { EMAIL_VERIFICATION_REPOSITORY } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { PASSWORD_RESET_REPOSITORY } from '@bc/auth/domain/repositories/password-reset/password-reset.repository';
 import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
-import { USER_TOKEN_REPOSITORY } from '@bc/auth/domain/repositories/user-token/user-token.repository';
+import { USER_TOKEN_REPOSITORY } from '@libs/nestjs-common';
 import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { PasswordReset_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset-in-memory.repository';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { UserToken_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-token-in-memory.repository';
 import {
   InMemoryIntegrationEventsModule,
-  JwtTokenService,
   Outbox_InMemory_Repository,
   OUTBOX_REPOSITORY,
 } from '@libs/nestjs-common';
@@ -30,7 +29,6 @@ class DummyModule {}
 export interface E2ETestSetup {
   app: INestApplication;
   agent: TestAgent;
-  jwtTokenService: JwtTokenService;
 }
 
 export async function createE2ETestApp(
@@ -69,11 +67,9 @@ export async function createE2ETestApp(
 
   const server = app.getHttpServer();
 
-  const jwtTokenService = app.get(JwtTokenService);
-
   const agent = request(server);
 
-  return { agent, app, jwtTokenService };
+  return { agent, app };
 }
 
 function setupRandomIPMiddleware(app: INestApplication): void {

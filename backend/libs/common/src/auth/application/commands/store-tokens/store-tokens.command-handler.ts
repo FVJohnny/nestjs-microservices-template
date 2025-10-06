@@ -4,10 +4,13 @@ import { StoreTokens_Command } from './store-tokens.command';
 import {
   USER_TOKEN_REPOSITORY,
   type UserToken_Repository,
-} from '@bc/auth/domain/repositories/user-token/user-token.repository';
-import { BaseCommandHandler, EVENT_BUS, Id, Transaction } from '@libs/nestjs-common';
-import { UserToken } from '@bc/auth/domain/entities/user-token/user-token.entity';
-import { Token } from '@bc/auth/domain/entities/user-token/token.vo';
+} from '../../../domain/repositories/user-token.repository';
+import { BaseCommandHandler } from '../../../../cqrs/command-handler.base';
+import { EVENT_BUS } from '../../../../cqrs/cqrs.module';
+import { Id } from '../../../../general/domain/value-object/Id';
+import { Transaction } from '../../../../transactions/transaction';
+import { UserToken } from '../../../domain/entities/user-token.entity';
+import { Token } from '../../../domain/entities/token.vo';
 
 export class StoreTokens_CommandHandler extends BaseCommandHandler(StoreTokens_Command) {
   constructor(

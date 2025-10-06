@@ -1,6 +1,5 @@
-import request from 'supertest';
 import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
-import { createTestAccessToken, createTestUsers } from './utils';
+import { createTestUsers, registerAndLogin } from './utils';
 
 describe('Complete Authentication Flow (E2E)', () => {
   let testSetup: E2ETestSetup;
@@ -8,7 +7,7 @@ describe('Complete Authentication Flow (E2E)', () => {
 
   beforeAll(async () => {
     testSetup = await createE2ETestApp({ bypassRateLimit: true });
-    accessToken = createTestAccessToken(testSetup.jwtTokenService);
+    accessToken = await registerAndLogin(testSetup.agent, 'admin-setup');
   });
 
   afterAll(async () => {

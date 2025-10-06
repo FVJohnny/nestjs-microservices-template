@@ -3,9 +3,16 @@ import { RedisService } from '../redis.service';
 
 export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisService {
   private static dbCounter = 0;
+  private readonly dbNumber: number;
+  private readonly uniqueKeyPrefix: string;
 
-  constructor(private readonly keyPrefix: string = 'test') {
+  constructor(keyPrefix: string = 'test') {
     super();
+    // Assign unique database number for each test instance to avoid conflicts
+    // Redis supports databases 0-15 by default
+    this.dbNumber = RedisTestService.dbCounter++ % 16;
+    // Add timestamp to keyPrefix for additional isolation
+    this.uniqueKeyPrefix = `${keyPrefix}:${Date.now()}:${this.dbNumber}`;
   }
 
   async setupDatabase() {
@@ -13,8 +20,8 @@ export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisSer
       process.env.REDIS_HOST = 'localhost';
       process.env.REDIS_PORT = '6379';
     }
-    // Use instance-specific database number
-    process.env.REDIS_DB = String((Date.now() % 100) * 100 + (RedisTestService.dbCounter++ % 100));
+    // Use instance-specific database number to isolate tests
+    process.env.REDIS_DB = String(this.dbNumber);
 
     await this.onModuleInit();
   }
@@ -35,7 +42,7 @@ export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisSer
     const pipeline = this.getDatabaseClient()?.pipeline();
 
     for (const item of data) {
-      const key = `${this.keyPrefix}:${item.id}`;
+      const key = `${this.uniqueKeyPrefix}:${item.id}`;
       const hashData: Record<string, string> = {};
 
       // Convert entity to Redis hash format

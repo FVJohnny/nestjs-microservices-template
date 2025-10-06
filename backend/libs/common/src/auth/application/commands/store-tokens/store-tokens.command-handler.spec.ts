@@ -1,7 +1,9 @@
 import { StoreTokens_CommandHandler } from './store-tokens.command-handler';
 import { StoreTokens_Command } from './store-tokens.command';
-import { UserToken_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-token-in-memory.repository';
-import { Id, MockEventBus, InfrastructureException } from '@libs/nestjs-common';
+import { UserToken_InMemory_Repository } from '../../../testing/user-token-in-memory.repository';
+import { Id } from '../../../../general/domain/value-object/Id';
+import { MockEventBus } from '../../../../testing/mock-event-bus';
+import { InfrastructureException } from '../../../../errors/application.exceptions';
 
 describe('StoreTokens_CommandHandler', () => {
   const createCommand = (props?: Partial<StoreTokens_Command>) =>

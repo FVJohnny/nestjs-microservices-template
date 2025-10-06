@@ -1,17 +1,14 @@
-import request from 'supertest';
 import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
-import { createTestAccessToken, createTestUsers, deleteUsers } from './utils';
+import { createTestUsers, deleteUsers, registerAndLogin } from './utils';
 import { v4 as uuid } from 'uuid';
-import TestAgent from 'supertest/lib/agent';
 
 describe('GET /users (E2E)', () => {
   let testSetup: E2ETestSetup;
   let accessToken: string;
-  let agent: TestAgent;
 
   beforeAll(async () => {
     testSetup = await createE2ETestApp({ bypassRateLimit: true });
-    accessToken = createTestAccessToken(testSetup.jwtTokenService);
+    accessToken = await registerAndLogin(testSetup.agent, 'admin-setup');
   });
 
   afterAll(async () => {

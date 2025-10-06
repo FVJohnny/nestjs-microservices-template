@@ -1,4 +1,4 @@
-import { wait, type JwtTokenService, type TokenPayload } from '@libs/nestjs-common';
+import { wait } from '@libs/nestjs-common';
 import TestAgent from 'supertest/lib/agent';
 import { v4 as uuid } from 'uuid';
 
@@ -10,34 +10,58 @@ interface TestUser {
   password: string;
 }
 
-export function createTestAccessToken(
-  jwtTokenService: JwtTokenService,
-  overrides: Partial<TokenPayload> = {},
-): string {
-  const payload: TokenPayload = {
-    userId: overrides.userId ?? uuid(),
-    email: overrides.email ?? randomEmail(),
-    username: overrides.username ?? randomUsername(),
-    role: overrides.role ?? 'admin',
+/**
+ * Registers a new user, verifies their email, and logs them in to get an access token
+ */
+export async function registerAndLogin(
+  agent: TestAgent,
+  testId: string = 'admin',
+): Promise<string> {
+  // Register user
+  const userData = {
+    email: randomEmail(testId),
+    username: randomUsername(testId),
+    password: 'Password123!',
   };
 
-  return jwtTokenService.generateAccessToken(payload);
-}
+  const registerRes = await agent.post('/api/v1/users').send(userData);
 
-export async function deleteUsers(
-  agent: TestAgent,
-  accessToken: string,
-  userIds: string[],
-): Promise<void> {
-  for (const userId of userIds) {
-    const res = await agent
-      .delete(`/api/v1/users/${userId}`)
-      .set('Authorization', `Bearer ${accessToken}`);
-
-    if (res.status !== 204) {
-      throw new Error(`Failed to delete user ${userId}: ${res.status} ${JSON.stringify(res.body)}`);
-    }
+  if (registerRes.status !== 201) {
+    throw new Error(
+      `Failed to register user: ${registerRes.status} ${JSON.stringify(registerRes.body)}`,
+    );
   }
+
+  // Get the email verification by email
+  const verifyRes = await agent.get('/api/v1/email-verification').query({ email: userData.email });
+
+  if (verifyRes.status !== 200) {
+    throw new Error(
+      `Failed to get email verification: ${verifyRes.status} ${JSON.stringify(verifyRes.body)}`,
+    );
+  }
+
+  // Verify the email
+  const verificationRes = await agent
+    .post('/api/v1/email-verification/verify')
+    .send({ emailVerificationId: verifyRes.body.id });
+
+  if (verificationRes.status !== 200) {
+    throw new Error(
+      `Failed to verify email: ${verificationRes.status} ${JSON.stringify(verificationRes.body)}`,
+    );
+  }
+
+  // Login to get the access token
+  const loginRes = await agent
+    .post('/api/v1/auth/login')
+    .send({ email: userData.email, password: userData.password });
+
+  if (loginRes.status !== 200) {
+    throw new Error(`Failed to login: ${loginRes.status} ${JSON.stringify(loginRes.body)}`);
+  }
+
+  return loginRes.body.accessToken;
 }
 
 export async function createTestUsers(
@@ -66,13 +90,16 @@ export async function createTestUsers(
       );
     }
 
+    // Fetch the created user to get the full user data including ID
     const resGet = await agent
-      .get(`/api/v1/users`)
-      .query({ username: data.username })
+      .get('/api/v1/users')
+      .query({ email: data.email })
       .set('Authorization', `Bearer ${accessToken}`);
 
-    if (resGet.status !== 200) {
-      throw new Error(`Failed to get test user: ${resGet.status} ${JSON.stringify(resGet.body)}`);
+    if (resGet.status !== 200 || !resGet.body.data || resGet.body.data.length === 0) {
+      throw new Error(
+        `Failed to fetch created user: ${resGet.status} ${JSON.stringify(resGet.body)}`,
+      );
     }
 
     users.push({
@@ -85,6 +112,22 @@ export async function createTestUsers(
   }
 
   return users;
+}
+
+export async function deleteUsers(
+  agent: TestAgent,
+  accessToken: string,
+  userIds: string[],
+): Promise<void> {
+  for (const userId of userIds) {
+    const res = await agent
+      .delete(`/api/v1/users/${userId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
+    if (res.status !== 204) {
+      throw new Error(`Failed to delete user ${userId}: ${res.status} ${JSON.stringify(res.body)}`);
+    }
+  }
 }
 
 function randomEmail(testId?: string): string {

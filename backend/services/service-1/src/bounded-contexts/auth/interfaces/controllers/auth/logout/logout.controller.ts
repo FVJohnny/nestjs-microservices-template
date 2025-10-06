@@ -24,7 +24,7 @@ export class Logout_Controller {
     description: 'Unauthorized',
   })
   async logout(@Req() req: AuthenticatedRequest) {
-    const command = new Logout_Command(req.token.userId);
+    const command = new Logout_Command(req.tokenData.userId);
     await this.commandBus.execute(command);
   }
 }

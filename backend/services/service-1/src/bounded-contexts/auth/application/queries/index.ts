@@ -21,7 +21,3 @@ export * from './get-new-tokens-from-user-credentials/get-new-tokens-from-user-c
 export * from './get-email-verification-by-user-id/get-email-verification-by-user-id.query';
 export * from './get-email-verification-by-user-id/get-email-verification-by-user-id.query-handler';
 export * from './get-email-verification-by-user-id/get-email-verification-by-user-id.response';
-
-export * from './get-user-token-by-token/get-user-token-by-token.query';
-export * from './get-user-token-by-token/get-user-token-by-token.query-handler';
-export * from './get-user-token-by-token/get-user-token-by-token.response';

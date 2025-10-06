@@ -1,9 +1,10 @@
 import { GetUserTokenByToken_QueryHandler } from './get-user-token-by-token.query-handler';
 import { GetUserTokenByToken_Query } from './get-user-token-by-token.query';
-import { UserToken_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-token-in-memory.repository';
-import { UserToken } from '@bc/auth/domain/entities/user-token/user-token.entity';
-import { Token } from '@bc/auth/domain/entities/user-token/token.vo';
-import { NotFoundException, InfrastructureException, Id } from '@libs/nestjs-common';
+import { UserToken_InMemory_Repository } from '../../../testing/user-token-in-memory.repository';
+import { UserToken } from '../../../domain/entities/user-token.entity';
+import { Token } from '../../../domain/entities/token.vo';
+import { NotFoundException, InfrastructureException } from '../../../../errors/application.exceptions';
+import { Id } from '../../../../general/domain/value-object/Id';
 
 describe('GetUserTokenByToken_QueryHandler', () => {
   const createQuery = (overrides: Partial<GetUserTokenByToken_Query> = {}) =>

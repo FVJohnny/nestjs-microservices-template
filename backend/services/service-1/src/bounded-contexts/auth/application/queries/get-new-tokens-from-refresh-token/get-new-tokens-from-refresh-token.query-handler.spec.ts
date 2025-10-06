@@ -3,8 +3,7 @@ import { GetNewTokensFromRefreshToken_Query } from './get-new-tokens-from-refres
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { UserToken_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-token-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { UserToken } from '@bc/auth/domain/entities/user-token/user-token.entity';
-import { Token } from '@bc/auth/domain/entities/user-token/token.vo';
+import { UserToken, Token } from '@libs/nestjs-common';
 import { Email, Username, UserRole, UserStatus } from '@bc/auth/domain/value-objects';
 import type { TokenPayload } from '@libs/nestjs-common';
 import { Id, JwtTokenService, UnauthorizedException } from '@libs/nestjs-common';

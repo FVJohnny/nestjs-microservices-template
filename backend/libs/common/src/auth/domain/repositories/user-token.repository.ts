@@ -1,6 +1,6 @@
-import type { Repository, RepositoryContext, Id } from '@libs/nestjs-common';
-import type { UserToken } from '@bc/auth/domain/entities/user-token/user-token.entity';
-import type { Token } from '@bc/auth/domain/entities/user-token/token.vo';
+import type { Repository, RepositoryContext, Id } from '../../..';
+import type { UserToken } from '../entities/user-token.entity';
+import type { Token } from '../entities/token.vo';
 
 export const USER_TOKEN_REPOSITORY = Symbol('UserTokenRepository');
 

@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRedisRepository, RedisService } from '@libs/nestjs-redis';
 import type { RepositoryContext } from '@libs/nestjs-common';
-import { Id } from '@libs/nestjs-common';
-import type { UserToken_Repository } from '@bc/auth/domain/repositories/user-token/user-token.repository';
-import { UserToken } from '@bc/auth/domain/entities/user-token/user-token.entity';
-import { Token } from '@bc/auth/domain/entities/user-token/token.vo';
+import { Id, type UserToken_Repository, UserToken, Token } from '@libs/nestjs-common';
 
 @Injectable()
 export class UserToken_Redis_Repository

@@ -1,4 +1,4 @@
-import type { SharedAggregateRootDTO } from '@libs/nestjs-common';
+import type { SharedAggregateRootDTO } from '../../../general/domain/entities/AggregateRoot';
 
 export interface UserTokenDTO extends SharedAggregateRootDTO {
   userId: string;

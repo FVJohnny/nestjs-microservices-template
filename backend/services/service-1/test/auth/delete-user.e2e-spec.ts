@@ -1,7 +1,6 @@
-import request from 'supertest';
 import { v4 as uuid } from 'uuid';
 import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
-import { createTestAccessToken, createTestUsers, deleteUsers } from './utils';
+import { createTestUsers, registerAndLogin } from './utils';
 
 describe('DELETE /users/:userId (E2E)', () => {
   let testSetup: E2ETestSetup;
@@ -9,7 +8,7 @@ describe('DELETE /users/:userId (E2E)', () => {
 
   beforeAll(async () => {
     testSetup = await createE2ETestApp({ bypassRateLimit: true });
-    accessToken = createTestAccessToken(testSetup.jwtTokenService);
+    accessToken = await registerAndLogin(testSetup.agent, 'admin-setup');
   });
 
   afterAll(async () => {
@@ -18,6 +17,7 @@ describe('DELETE /users/:userId (E2E)', () => {
 
   it('removes the user and returns 204', async () => {
     const testId = uuid().substring(0, 5);
+
     const userData = await createTestUsers(testSetup.agent, accessToken, testId, 1);
 
     await testSetup.agent
@@ -32,7 +32,6 @@ describe('DELETE /users/:userId (E2E)', () => {
   });
 
   it('returns 404 when deleting a non-existent user', async () => {
-    const accessToken = createTestAccessToken(testSetup.jwtTokenService);
     const nonExistentId = '123e4567-e89b-12d3-a456-426614174000';
 
     await testSetup.agent

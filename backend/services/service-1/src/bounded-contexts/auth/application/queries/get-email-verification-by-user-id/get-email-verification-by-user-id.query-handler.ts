@@ -6,6 +6,7 @@ import {
 } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { BaseQueryHandler, NotFoundException, Id } from '@libs/nestjs-common';
 import { GetEmailVerificationByUserIdQueryResponse } from './get-email-verification-by-user-id.response';
+import { Email } from '@bc/auth/domain/value-objects';
 
 export class GetEmailVerificationByUserId_QueryHandler extends BaseQueryHandler(
   GetEmailVerificationByUserId_Query,
@@ -20,9 +21,15 @@ export class GetEmailVerificationByUserId_QueryHandler extends BaseQueryHandler(
   async handle(
     query: GetEmailVerificationByUserId_Query,
   ): Promise<GetEmailVerificationByUserIdQueryResponse> {
-    const emailVerification = await this.emailVerificationRepository.findByUserId(
-      new Id(query.userId),
-    );
+    let emailVerification;
+
+    if (query.userId) {
+      emailVerification = await this.emailVerificationRepository.findByUserId(new Id(query.userId));
+    } else if (query.email) {
+      emailVerification = await this.emailVerificationRepository.findByEmail(new Email(query.email));
+    } else {
+      throw new NotFoundException();
+    }
 
     if (!emailVerification) {
       throw new NotFoundException();

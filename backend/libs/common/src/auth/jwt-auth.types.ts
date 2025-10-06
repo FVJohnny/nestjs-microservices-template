@@ -16,5 +16,5 @@ class JwtPayload {
 export type JwtTokenPayload = JwtPayload & TokenPayload;
 
 export interface AuthenticatedRequest extends Request {
-  token: JwtTokenPayload;
+  tokenData: JwtTokenPayload;
 }

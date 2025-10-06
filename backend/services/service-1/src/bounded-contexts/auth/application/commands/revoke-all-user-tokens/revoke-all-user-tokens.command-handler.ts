@@ -1,11 +1,7 @@
 import { type IEventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { RevokeAllUserTokens_Command } from './revoke-all-user-tokens.command';
-import {
-  USER_TOKEN_REPOSITORY,
-  type UserToken_Repository,
-} from '@bc/auth/domain/repositories/user-token/user-token.repository';
-import { BaseCommandHandler, EVENT_BUS, Id } from '@libs/nestjs-common';
+import { BaseCommandHandler, EVENT_BUS, Id, USER_TOKEN_REPOSITORY, type UserToken_Repository } from '@libs/nestjs-common';
 
 export class RevokeAllUserTokens_CommandHandler extends BaseCommandHandler(
   RevokeAllUserTokens_Command,
