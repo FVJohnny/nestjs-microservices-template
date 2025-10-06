@@ -74,6 +74,9 @@ export class Outbox_Redis_Repository
       transactionalClient.zrem(this.zUnprocessed, id);
     });
 
+    // If this is not executed under a "parent" transaction
+    // Execute the pipeline. If it is, we don't want to execute it now.
+    // The "parent" transaction will execute it.
     if (!this.isTransactional(context)) {
       await transactionalClient.exec();
     }
