@@ -1,9 +1,11 @@
 import { EMAIL_VERIFICATION_REPOSITORY } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { PASSWORD_RESET_REPOSITORY } from '@bc/auth/domain/repositories/password-reset/password-reset.repository';
 import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
+import { USER_TOKEN_REPOSITORY } from '@bc/auth/domain/repositories/user-token/user-token.repository';
 import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
 import { PasswordReset_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset-in-memory.repository';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { UserToken_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-token-in-memory.repository';
 import {
   InMemoryIntegrationEventsModule,
   JwtTokenService,
@@ -49,6 +51,8 @@ export async function createE2ETestApp(
     .useValue(new EmailVerification_InMemory_Repository(false))
     .overrideProvider(PASSWORD_RESET_REPOSITORY)
     .useValue(new PasswordReset_InMemory_Repository(false))
+    .overrideProvider(USER_TOKEN_REPOSITORY)
+    .useValue(new UserToken_InMemory_Repository(false))
     .overrideProvider(OUTBOX_REPOSITORY)
     .useValue(new Outbox_InMemory_Repository())
     .compile();

@@ -1,0 +1,95 @@
+import { Injectable } from '@nestjs/common';
+import type { Redis } from 'ioredis';
+import { BaseRedisRepository, RedisService } from '@libs/nestjs-redis';
+import type { RepositoryContext } from '@libs/nestjs-common';
+import { Id } from '@libs/nestjs-common';
+import type { UserToken_Repository } from '@bc/auth/domain/repositories/user-token/user-token.repository';
+import { UserToken } from '@bc/auth/domain/entities/user-token/user-token.entity';
+
+@Injectable()
+export class UserToken_Redis_Repository
+  extends BaseRedisRepository<UserToken>
+  implements UserToken_Repository
+{
+  private readonly keyPrefix = 'auth:token:';
+  private readonly userTokensPrefix = 'auth:user-tokens:';
+
+  constructor(redisService: RedisService) {
+    super(redisService.getDatabaseClient() as Redis);
+  }
+
+  protected itemKey(id: string): string {
+    return `${this.keyPrefix}${id}`;
+  }
+
+  private getUserTokensKey(userId: string): string {
+    return `${this.userTokensPrefix}${userId}`;
+  }
+
+  protected toEntity(json: string): UserToken {
+    return UserToken.fromValue(JSON.parse(json));
+  }
+
+  async save(token: UserToken, context?: RepositoryContext): Promise<void> {
+    this.registerTransactionParticipant(context);
+    const client = this.getClient(context);
+
+    // Add token to user's token set
+    const userTokensKey = this.getUserTokensKey(token.userId.toValue());
+    await client.sadd(userTokensKey, token.id.toValue());
+
+    await super.save(token, context);
+
+    this.logger.debug(`Stored ${token.type.toValue()} token for user ${token.userId.toValue()}`);
+  }
+
+  async getUserTokens(userId: Id): Promise<UserToken[]> {
+    const userTokensKey = this.getUserTokensKey(userId.toValue());
+
+    try {
+      const tokenIds = await this.getRedisClient().smembers(userTokensKey);
+      const tokens: UserToken[] = [];
+
+      for (const tokenId of tokenIds) {
+        const token = await this.findById(new Id(tokenId));
+        if (token) {
+          tokens.push(token);
+        }
+      }
+
+      return tokens;
+    } catch (error) {
+      this.logger.error(`Failed to get user tokens: ${error}`);
+      return [];
+    }
+  }
+
+  async revokeAllUserTokens(userId: Id, context?: RepositoryContext): Promise<void> {
+    this.registerTransactionParticipant(context);
+    const client = this.getClient(context);
+
+    const userTokensKey = this.getUserTokensKey(userId.toValue());
+
+    try {
+      // Get all token IDs for this user
+      const tokenIds = await this.getRedisClient().smembers(userTokensKey);
+
+      if (tokenIds.length === 0) {
+        this.logger.debug(`No tokens found for user ${userId}`);
+        return;
+      }
+
+      // Delete all tokens
+      for (const tokenId of tokenIds) {
+        await client.del(this.itemKey(tokenId));
+        await this.remove(new Id(tokenId), context);
+      }
+      await client.del(userTokensKey);
+
+      this.logger.debug(`Revoked ${tokenIds.length} tokens for user ${userId}`);
+    } catch (error) {
+      this.logger.error(`Failed to revoke user tokens: ${error}`);
+      throw error;
+    }
+  }
+}

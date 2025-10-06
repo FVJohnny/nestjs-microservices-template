@@ -10,3 +10,5 @@ export * from './delete-user/delete-user.command';
 export * from './delete-user/delete-user.command-handler';
 export * from './delete-email-verification-by-user-id/delete-email-verification-by-user-id.command';
 export * from './delete-email-verification-by-user-id/delete-email-verification-by-user-id.command-handler';
+export * from './revoke-all-user-tokens/revoke-all-user-tokens.command';
+export * from './revoke-all-user-tokens/revoke-all-user-tokens.command-handler';
