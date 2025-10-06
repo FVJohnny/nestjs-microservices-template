@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { GetTokensFromRefreshToken_Query } from './get-tokens-from-refresh-token.query';
+import { GetNewTokensFromRefreshToken_Query } from './get-new-tokens-from-refresh-token.query';
 import {
   USER_REPOSITORY,
   type User_Repository,
@@ -11,14 +11,14 @@ import {
   Id,
   TokenPayload,
 } from '@libs/nestjs-common';
-import { GetTokensFromRefreshTokenQueryResponse } from './get-tokens-from-refresh-token.response';
+import { GetNewTokensFromRefreshTokenQueryResponse } from './get-new-tokens-from-refresh-token.response';
 import { USER_TOKEN_REPOSITORY } from '@bc/auth/domain/repositories/user-token/user-token.repository';
 import { type UserToken_Repository } from '@bc/auth/domain/repositories/user-token/user-token.repository';
 import { Token } from '@bc/auth/domain/entities/user-token/token.vo';
 
-export class GetTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
-  GetTokensFromRefreshToken_Query,
-)<GetTokensFromRefreshTokenQueryResponse>() {
+export class GetNewTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
+  GetNewTokensFromRefreshToken_Query,
+)<GetNewTokensFromRefreshTokenQueryResponse>() {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
@@ -30,8 +30,8 @@ export class GetTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
   }
 
   async handle(
-    query: GetTokensFromRefreshToken_Query,
-  ): Promise<GetTokensFromRefreshTokenQueryResponse> {
+    query: GetNewTokensFromRefreshToken_Query,
+  ): Promise<GetNewTokensFromRefreshTokenQueryResponse> {
     if (!query.refreshToken || query.refreshToken.trim().length === 0) {
       throw new UnauthorizedException();
     }
@@ -74,9 +74,9 @@ export class GetTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
     };
   }
 
-  async authorize(_query: GetTokensFromRefreshToken_Query) {
+  async authorize(_query: GetNewTokensFromRefreshToken_Query) {
     return true;
   }
 
-  async validate(_query: GetTokensFromRefreshToken_Query) {}
+  async validate(_query: GetNewTokensFromRefreshToken_Query) {}
 }

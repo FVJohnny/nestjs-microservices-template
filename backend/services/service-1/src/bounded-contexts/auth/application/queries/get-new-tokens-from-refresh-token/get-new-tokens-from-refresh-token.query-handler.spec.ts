@@ -1,5 +1,5 @@
-import { GetTokensFromRefreshToken_QueryHandler } from './get-tokens-from-refresh-token.query-handler';
-import { GetTokensFromRefreshToken_Query } from './get-tokens-from-refresh-token.query';
+import { GetNewTokensFromRefreshToken_QueryHandler } from './get-new-tokens-from-refresh-token.query-handler';
+import { GetNewTokensFromRefreshToken_Query } from './get-new-tokens-from-refresh-token.query';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { UserToken_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-token-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
@@ -10,7 +10,7 @@ import type { TokenPayload } from '@libs/nestjs-common';
 import { Id, JwtTokenService, UnauthorizedException } from '@libs/nestjs-common';
 import { JwtService } from '@nestjs/jwt';
 
-describe('GetTokensFromRefreshToken_QueryHandler', () => {
+describe('GetNewTokensFromRefreshToken_QueryHandler', () => {
   const setup = async (
     params: {
       withUser?: boolean;
@@ -24,7 +24,7 @@ describe('GetTokensFromRefreshToken_QueryHandler', () => {
     const userRepository = new User_InMemory_Repository(shouldFailRepository);
     const userTokenRepository = new UserToken_InMemory_Repository(shouldFailRepository);
     const jwtTokenService = new JwtTokenService(new JwtService());
-    const handler = new GetTokensFromRefreshToken_QueryHandler(userRepository, userTokenRepository, jwtTokenService);
+    const handler = new GetNewTokensFromRefreshToken_QueryHandler(userRepository, userTokenRepository, jwtTokenService);
 
     let user: User | null = null;
     let refreshToken: string | null = null;
@@ -67,7 +67,7 @@ describe('GetTokensFromRefreshToken_QueryHandler', () => {
       withSavedToken: true,
     });
 
-    const query = new GetTokensFromRefreshToken_Query(refreshToken!);
+    const query = new GetNewTokensFromRefreshToken_Query(refreshToken!);
 
     // Act
     const result = await handler.execute(query);
@@ -92,7 +92,7 @@ describe('GetTokensFromRefreshToken_QueryHandler', () => {
   it('should throw UnauthorizedException for empty refresh token', async () => {
     // Arrange
     const { handler } = await setup();
-    const query = new GetTokensFromRefreshToken_Query('');
+    const query = new GetNewTokensFromRefreshToken_Query('');
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);
@@ -101,7 +101,7 @@ describe('GetTokensFromRefreshToken_QueryHandler', () => {
   it('should throw UnauthorizedException for invalid refresh token', async () => {
     // Arrange
     const { handler } = await setup({});
-    const query = new GetTokensFromRefreshToken_Query('invalid-refresh-token');
+    const query = new GetNewTokensFromRefreshToken_Query('invalid-refresh-token');
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);
@@ -117,7 +117,7 @@ describe('GetTokensFromRefreshToken_QueryHandler', () => {
       role: UserRole.random().toValue(),
     };
     const refreshToken = jwtTokenService.generateRefreshToken(payload);
-    const query = new GetTokensFromRefreshToken_Query(refreshToken);
+    const query = new GetNewTokensFromRefreshToken_Query(refreshToken);
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);
@@ -131,7 +131,7 @@ describe('GetTokensFromRefreshToken_QueryHandler', () => {
       withSavedToken: true,
     });
 
-    const query = new GetTokensFromRefreshToken_Query(refreshToken!);
+    const query = new GetNewTokensFromRefreshToken_Query(refreshToken!);
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);
@@ -145,7 +145,7 @@ describe('GetTokensFromRefreshToken_QueryHandler', () => {
       withSavedToken: false,
     });
 
-    const query = new GetTokensFromRefreshToken_Query(refreshToken!);
+    const query = new GetNewTokensFromRefreshToken_Query(refreshToken!);
 
     // Act & Assert
     await expect(handler.execute(query)).rejects.toThrow(UnauthorizedException);

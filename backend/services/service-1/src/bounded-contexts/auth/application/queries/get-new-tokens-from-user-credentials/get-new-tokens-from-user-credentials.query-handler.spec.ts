@@ -1,5 +1,5 @@
-import { GetTokensFromUserCredentials_QueryHandler } from './get-tokens-from-user-credentials.query-handler';
-import { GetTokensFromUserCredentials_Query } from './get-tokens-from-user-credentials.query';
+import { GetNewTokensFromUserCredentials_QueryHandler } from './get-new-tokens-from-user-credentials.query-handler';
+import { GetNewTokensFromUserCredentials_Query } from './get-new-tokens-from-user-credentials.query';
 import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { Email, Password, UserStatus } from '@bc/auth/domain/value-objects';
@@ -11,9 +11,9 @@ import {
   JwtTokenService,
 } from '@libs/nestjs-common';
 
-describe('GetTokensFromUserCredentials_QueryHandler', () => {
-  const createQuery = (overrides: Partial<GetTokensFromUserCredentials_Query> = {}) =>
-    new GetTokensFromUserCredentials_Query({
+describe('GetNewTokensFromUserCredentials_QueryHandler', () => {
+  const createQuery = (overrides: Partial<GetNewTokensFromUserCredentials_Query> = {}) =>
+    new GetNewTokensFromUserCredentials_Query({
       email: overrides.email || Email.random().toValue(),
       password: overrides.password || Password.random().toValue(),
     });
@@ -34,7 +34,7 @@ describe('GetTokensFromUserCredentials_QueryHandler', () => {
     // Create real JWT service
     const jwtTokenService = new JwtTokenService(new JwtService());
     const repository = new User_InMemory_Repository(shouldFailRepository);
-    const handler = new GetTokensFromUserCredentials_QueryHandler(repository, jwtTokenService);
+    const handler = new GetNewTokensFromUserCredentials_QueryHandler(repository, jwtTokenService);
 
     let user: User | null = null;
     if (withUser) {

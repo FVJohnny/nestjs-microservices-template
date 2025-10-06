@@ -1,3 +1,3 @@
-export class GetTokensFromRefreshToken_Query {
+export class GetNewTokensFromRefreshToken_Query {
   constructor(public readonly refreshToken: string) {}
 }

@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
-import { GetTokensFromUserCredentials_Query } from './get-tokens-from-user-credentials.query';
-import { GetTokensFromUserCredentials_QueryResponse } from './get-tokens-from-user-credentials.response';
+import { GetNewTokensFromUserCredentials_Query } from './get-new-tokens-from-user-credentials.query';
+import { GetNewTokensFromUserCredentials_QueryResponse } from './get-new-tokens-from-user-credentials.response';
 import {
   USER_REPOSITORY,
   type User_Repository,
@@ -13,9 +13,9 @@ import {
   TokenPayload,
 } from '@libs/nestjs-common';
 
-export class GetTokensFromUserCredentials_QueryHandler extends BaseQueryHandler(
-  GetTokensFromUserCredentials_Query,
-)<GetTokensFromUserCredentials_QueryResponse>() {
+export class GetNewTokensFromUserCredentials_QueryHandler extends BaseQueryHandler(
+  GetNewTokensFromUserCredentials_Query,
+)<GetNewTokensFromUserCredentials_QueryResponse>() {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
@@ -25,8 +25,8 @@ export class GetTokensFromUserCredentials_QueryHandler extends BaseQueryHandler(
   }
 
   async handle(
-    query: GetTokensFromUserCredentials_Query,
-  ): Promise<GetTokensFromUserCredentials_QueryResponse> {
+    query: GetNewTokensFromUserCredentials_Query,
+  ): Promise<GetNewTokensFromUserCredentials_QueryResponse> {
     const email = new Email(query.email);
     const user = await this.userRepository.findByEmail(email);
 
@@ -63,12 +63,12 @@ export class GetTokensFromUserCredentials_QueryHandler extends BaseQueryHandler(
     };
   }
 
-  async authorize(_query: GetTokensFromUserCredentials_Query) {
+  async authorize(_query: GetNewTokensFromUserCredentials_Query) {
     // Login doesn't require additional authorization - authentication is done in handle()
     return true;
   }
 
-  async validate(query: GetTokensFromUserCredentials_Query) {
+  async validate(query: GetNewTokensFromUserCredentials_Query) {
     // Validate email format
     new Email(query.email);
 

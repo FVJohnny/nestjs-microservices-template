@@ -5,8 +5,8 @@ import { type ICommandBus } from '@nestjs/cqrs';
 import { QUERY_BUS, COMMAND_BUS } from '@libs/nestjs-common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import {
-  GetTokensFromRefreshToken_Query,
-  GetTokensFromRefreshTokenQueryResponse,
+  GetNewTokensFromRefreshToken_Query,
+  GetNewTokensFromRefreshTokenQueryResponse,
 } from '@bc/auth/application/queries';
 import { RefreshToken_ControllerParams } from './refresh-token.params';
 import { RefreshTokenResponseDto } from './refresh-token.response';
@@ -38,9 +38,9 @@ export class RefreshToken_Controller {
   })
   async refreshToken(
     @Body() body: RefreshToken_ControllerParams,
-  ): Promise<GetTokensFromRefreshTokenQueryResponse> {
+  ): Promise<GetNewTokensFromRefreshTokenQueryResponse> {
     // Get new tokens
-    const getTokensQuery = new GetTokensFromRefreshToken_Query(body.refreshToken);
+    const getTokensQuery = new GetNewTokensFromRefreshToken_Query(body.refreshToken);
     const { userId, accessToken, refreshToken } = await this.queryBus.execute(getTokensQuery);
 
     // Store new tokens

@@ -5,8 +5,8 @@ import { COMMAND_BUS, QUERY_BUS, StrictRateLimit } from '@libs/nestjs-common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RecordUserLogin_Command } from '@bc/auth/application/commands';
 import {
-  GetTokensFromUserCredentials_Query,
-  GetTokensFromUserCredentials_QueryResponse,
+  GetNewTokensFromUserCredentials_Query,
+  GetNewTokensFromUserCredentials_QueryResponse,
 } from '@bc/auth/application/queries';
 import { LoginUserControllerParams } from './login-user.params';
 import { LoginUserResponseDto } from './login-user.response';
@@ -35,9 +35,9 @@ export class LoginUser_Controller {
   })
   async loginUser(
     @Body() body: LoginUserControllerParams,
-  ): Promise<GetTokensFromUserCredentials_QueryResponse> {
+  ): Promise<GetNewTokensFromUserCredentials_QueryResponse> {
     // Get tokens using query
-    const tokensQuery = new GetTokensFromUserCredentials_Query({
+    const tokensQuery = new GetNewTokensFromUserCredentials_Query({
       email: body.email,
       password: body.password,
     });
