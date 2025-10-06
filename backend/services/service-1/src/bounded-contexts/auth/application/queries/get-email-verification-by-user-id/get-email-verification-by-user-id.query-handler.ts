@@ -26,7 +26,9 @@ export class GetEmailVerificationByUserId_QueryHandler extends BaseQueryHandler(
     if (query.userId) {
       emailVerification = await this.emailVerificationRepository.findByUserId(new Id(query.userId));
     } else if (query.email) {
-      emailVerification = await this.emailVerificationRepository.findByEmail(new Email(query.email));
+      emailVerification = await this.emailVerificationRepository.findByEmail(
+        new Email(query.email),
+      );
     } else {
       throw new NotFoundException();
     }
