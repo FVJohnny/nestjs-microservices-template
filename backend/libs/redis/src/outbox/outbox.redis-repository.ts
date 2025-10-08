@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { OutboxEvent, OutboxRepository, type RepositoryContext } from '@libs/nestjs-common';
 
-import { BaseRedisRepository } from '../base-redis.repository';
+import { BaseRedisRepository } from '../base.redis-repository';
 import type { RedisService } from '../redis.service';
 
 @Injectable()

@@ -1,4 +1,4 @@
-import { PasswordReset_Mongodb_Repository } from './password-reset-mongodb.repository';
+import { PasswordReset_Mongodb_Repository } from './password-reset.mongodb-repository';
 import { testPasswordResetRepositoryContract } from '@bc/auth/domain/repositories/password-reset/password-reset.repository.spec';
 import { MongodbTestService } from '@libs/nestjs-mongodb';
 import type { PasswordResetDTO } from '@bc/auth/domain/entities/password-reset/password-reset.dto';

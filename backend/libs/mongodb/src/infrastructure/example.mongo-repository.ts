@@ -1,5 +1,5 @@
-import type { IndexSpec } from '../base-mongo.repository';
-import { BaseMongoRepository } from '../base-mongo.repository';
+import type { IndexSpec } from '../base.mongo-repository';
+import { BaseMongoRepository } from '../base.mongo-repository';
 import type { EntityExampleDTO, ExampleRepository } from '@libs/nestjs-common';
 import type { MongoClient } from 'mongodb';
 import {

@@ -1,6 +1,6 @@
 import { GetPasswordResetByEmail_QueryHandler } from './get-password-reset-by-email.query-handler';
 import { GetPasswordResetByEmail_Query } from './get-password-reset-by-email.query';
-import { PasswordReset_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset-in-memory.repository';
+import { PasswordReset_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
 import { PasswordReset } from '@bc/auth/domain/entities/password-reset/password-reset.entity';
 import { NotFoundException, InfrastructureException } from '@libs/nestjs-common';
 import { Email } from '@bc/auth/domain/value-objects';

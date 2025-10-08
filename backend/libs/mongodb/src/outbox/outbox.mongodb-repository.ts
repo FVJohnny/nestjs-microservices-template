@@ -9,7 +9,7 @@ import {
   type RepositoryContext,
 } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from '../mongodb.tokens';
-import { BaseMongoRepository, IndexSpec } from '../base-mongo.repository';
+import { BaseMongoRepository, IndexSpec } from '../base.mongo-repository';
 
 @Injectable()
 export class Outbox_Mongodb_Repository

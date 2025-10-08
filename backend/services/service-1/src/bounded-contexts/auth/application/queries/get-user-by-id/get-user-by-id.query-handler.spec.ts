@@ -1,6 +1,6 @@
 import { GetUserById_QueryHandler } from './get-user-by-id.query-handler';
 import { GetUserById_Query } from './get-user-by-id.query';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { NotFoundException, InfrastructureException, Id } from '@libs/nestjs-common';
 

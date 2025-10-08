@@ -1,7 +1,7 @@
 import { ExecutePasswordReset_CommandHandler } from './execute-password-reset.command-handler';
 import { ExecutePasswordReset_Command } from './execute-password-reset.command';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
-import { PasswordReset_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset-in-memory.repository';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
+import { PasswordReset_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { PasswordReset } from '@bc/auth/domain/entities/password-reset/password-reset.entity';
 import { Email, Username, Password, Expiration, Used } from '@bc/auth/domain/value-objects';

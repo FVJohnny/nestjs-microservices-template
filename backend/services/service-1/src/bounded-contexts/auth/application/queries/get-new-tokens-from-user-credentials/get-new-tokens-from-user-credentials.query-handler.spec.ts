@@ -1,6 +1,6 @@
 import { GetNewTokensFromUserCredentials_QueryHandler } from './get-new-tokens-from-user-credentials.query-handler';
 import { GetNewTokensFromUserCredentials_Query } from './get-new-tokens-from-user-credentials.query';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { Email, Password, UserStatus } from '@bc/auth/domain/value-objects';
 import { JwtService } from '@nestjs/jwt';

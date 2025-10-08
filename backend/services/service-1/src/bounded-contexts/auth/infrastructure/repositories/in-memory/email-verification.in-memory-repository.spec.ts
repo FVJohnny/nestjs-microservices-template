@@ -1,4 +1,4 @@
-import { EmailVerification_InMemory_Repository } from './email-verification-in-memory.repository';
+import { EmailVerification_InMemory_Repository } from './email-verification.in-memory-repository';
 import { testEmailVerificationRepositoryContract } from '@bc/auth/domain/repositories/email-verification/email-verification.repository.spec';
 import type { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 

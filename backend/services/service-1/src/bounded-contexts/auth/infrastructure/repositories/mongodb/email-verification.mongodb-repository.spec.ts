@@ -1,4 +1,4 @@
-import { EmailVerification_Mongodb_Repository } from './email-verification-mongodb.repository';
+import { EmailVerification_Mongodb_Repository } from './email-verification.mongodb-repository';
 import { testEmailVerificationRepositoryContract } from '@bc/auth/domain/repositories/email-verification/email-verification.repository.spec';
 import { MongodbTestService } from '@libs/nestjs-mongodb';
 import type { EmailVerificationDTO } from '@bc/auth/domain/entities/email-verification/email-verification.dto';

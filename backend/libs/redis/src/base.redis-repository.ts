@@ -9,7 +9,7 @@ import type {
   PaginatedRepoResult,
 } from '@libs/nestjs-common';
 
-import { TransactionParticipant_Redis } from './transactions/transaction-participant-redis';
+import { TransactionParticipant_Redis } from './transactions/transaction-participant.redis';
 import type { RedisService } from './redis.service';
 
 export abstract class BaseRedisRepository<TEnt extends SharedAggregateRoot>

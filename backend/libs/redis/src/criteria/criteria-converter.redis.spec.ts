@@ -2,7 +2,7 @@ import {
   testCriteriaConverterContract,
   type TestEntityDTO,
 } from '@libs/nestjs-common/test-exports';
-import { RedisCriteriaConverter } from './redis-criteria-converter';
+import { RedisCriteriaConverter } from './criteria-converter.redis';
 import { RedisTestService } from '../testing/redis-test.service';
 
 describe('RedisCriteriaConverter', () => {

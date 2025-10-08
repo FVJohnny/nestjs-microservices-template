@@ -1,6 +1,6 @@
 import { VerifyEmail_CommandHandler } from './verify-email.command-handler';
 import { VerifyEmail_Command } from './verify-email.command';
-import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
+import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification.in-memory-repository';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { Expiration } from '@bc/auth/domain/value-objects';
 import {

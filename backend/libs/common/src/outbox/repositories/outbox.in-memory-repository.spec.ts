@@ -1,4 +1,4 @@
-import { Outbox_InMemory_Repository } from './outbox-in-memory.repository';
+import { Outbox_InMemory_Repository } from './outbox.in-memory-repository';
 import { testOutboxRepositoryContract } from '../domain/outbox.repository.contract';
 
 describe('Outbox_InMemory_Repository', () => {

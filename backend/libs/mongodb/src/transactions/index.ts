@@ -1,1 +1,1 @@
-export * from './transaction-participant-mongodb';
+export * from './transaction-participant.mongodb';

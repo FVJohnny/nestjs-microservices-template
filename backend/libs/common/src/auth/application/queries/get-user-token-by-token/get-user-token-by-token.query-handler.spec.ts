@@ -1,6 +1,6 @@
 import { GetUserTokenByToken_QueryHandler } from './get-user-token-by-token.query-handler';
 import { GetUserTokenByToken_Query } from './get-user-token-by-token.query';
-import { UserToken_InMemory_Repository } from '../../../testing/user-token-in-memory.repository';
+import { UserToken_InMemory_Repository } from '../../../testing/user-token.in-memory-repository';
 import { UserToken } from '../../../domain/entities/user-token.entity';
 import { Token } from '../../../domain/entities/token.vo';
 import { NotFoundException, InfrastructureException } from '../../../../errors/application.exceptions';

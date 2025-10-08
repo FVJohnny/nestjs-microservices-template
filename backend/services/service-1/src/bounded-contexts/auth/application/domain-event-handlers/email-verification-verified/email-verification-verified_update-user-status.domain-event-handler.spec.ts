@@ -1,7 +1,7 @@
 import { EmailVerificationVerified_UpdateUserStatus_DomainEventHandler } from './email-verification-verified_update-user-status.domain-event-handler';
 import { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
 import { Email, UserStatus } from '@bc/auth/domain/value-objects';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user-in-memory.repository';
+import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import {
   NotFoundException,

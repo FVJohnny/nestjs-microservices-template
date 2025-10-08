@@ -1,4 +1,4 @@
-import { User_InMemory_Repository } from './user-in-memory.repository';
+import { User_InMemory_Repository } from './user.in-memory-repository';
 import { testUserRepositoryContract } from '@bc/auth/domain/repositories/user/user.repository.spec';
 
 describe('UserInMemoryRepository', () => {

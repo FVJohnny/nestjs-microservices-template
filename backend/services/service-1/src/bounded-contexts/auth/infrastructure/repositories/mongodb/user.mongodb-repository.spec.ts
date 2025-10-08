@@ -1,4 +1,4 @@
-import { User_Mongodb_Repository } from './user-mongodb.repository';
+import { User_Mongodb_Repository } from './user.mongodb-repository';
 import { testUserRepositoryContract } from '@bc/auth/domain/repositories/user/user.repository.spec';
 import { MongodbTestService } from '@libs/nestjs-mongodb';
 import type { UserDTO } from '@bc/auth/domain/entities/user/user.dto';

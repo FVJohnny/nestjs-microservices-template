@@ -1,7 +1,7 @@
 import { EntityExample, ExampleInMemoryRepository } from '@libs/nestjs-common';
 import { Transaction } from '@libs/nestjs-common';
 import { RedisTestService } from '../testing/redis-test.service';
-import { ExampleRedisRepository } from '../infrastructure/example-redis.repository';
+import { ExampleRedisRepository } from '../infrastructure/example.redis-repository';
 
 describe('Redis transactions', () => {
   const redisTestService = new RedisTestService();

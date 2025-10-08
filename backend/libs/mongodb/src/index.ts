@@ -1,4 +1,4 @@
-export * from './base-mongo.repository';
+export * from './base.mongo-repository';
 export * from './criteria/criteria-converter.mongo';
 export * from './mongodb.controller';
 export * from './mongodb.module';

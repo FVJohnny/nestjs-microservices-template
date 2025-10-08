@@ -1,6 +1,6 @@
 import { GetEmailVerificationByUserId_QueryHandler } from './get-email-verification-by-user-id.query-handler';
 import { GetEmailVerificationByUserId_Query } from './get-email-verification-by-user-id.query';
-import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification-in-memory.repository';
+import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification.in-memory-repository';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { NotFoundException, InfrastructureException, Id } from '@libs/nestjs-common';
 

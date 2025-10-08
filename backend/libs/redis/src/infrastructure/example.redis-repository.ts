@@ -1,4 +1,4 @@
-import { BaseRedisRepository } from '../base-redis.repository';
+import { BaseRedisRepository } from '../base.redis-repository';
 import { EntityExample } from '@libs/nestjs-common';
 import type { RedisService } from '../redis.service';
 

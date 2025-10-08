@@ -1,4 +1,4 @@
-import { Outbox_Mongodb_Repository } from './outbox-mongodb.repository';
+import { Outbox_Mongodb_Repository } from './outbox.mongodb-repository';
 import { testOutboxRepositoryContract } from '@libs/nestjs-common/test-exports';
 import { MongodbTestService } from '../testing/mongodb-test.service';
 import type { OutboxEventDTO } from '@libs/nestjs-common';

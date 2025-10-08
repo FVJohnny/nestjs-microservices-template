@@ -1,1 +1,1 @@
-export * from './outbox-mongodb.repository';
+export * from './outbox.mongodb-repository';

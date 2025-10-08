@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { InMemoryInboxRepository } from './repositories/in-memory-inbox.repository';
+import { InMemoryInboxRepository } from './repositories/inbox.in-memory-repository';
 import { INBOX_REPOSITORY_TOKEN } from './inbox.constants';
 import { InboxService } from './inbox.service';
 
