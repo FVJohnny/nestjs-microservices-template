@@ -1,4 +1,8 @@
-import { StringValueObject, DomainValidationException, type IValueObject } from '@libs/nestjs-common';
+import {
+  StringValueObject,
+  DomainValidationException,
+  type IValueObject,
+} from '@libs/nestjs-common';
 
 let _seq = 0;
 export class Username extends StringValueObject implements IValueObject<string> {

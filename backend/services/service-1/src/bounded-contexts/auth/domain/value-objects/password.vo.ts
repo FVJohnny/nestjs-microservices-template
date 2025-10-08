@@ -1,4 +1,8 @@
-import { StringValueObject, DomainValidationException, type IValueObject } from '@libs/nestjs-common';
+import {
+  StringValueObject,
+  DomainValidationException,
+  type IValueObject,
+} from '@libs/nestjs-common';
 import * as bcrypt from 'bcrypt';
 
 let _seq = 1;

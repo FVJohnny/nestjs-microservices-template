@@ -6,6 +6,7 @@ export class OutboxMaxRetries extends ValueObject<number> implements IValueObjec
 
   constructor(value: number) {
     super(value);
+    this.validate();
   }
 
   validate(): void {

@@ -11,7 +11,11 @@ export class OutboxEventName extends StringValueObject implements IValueObject<s
   validate(): void {
     super.validate();
     if (!this.value?.trim()) {
-      throw new DomainValidationException('OutboxEventName', this.value, 'Event name cannot be empty');
+      throw new DomainValidationException(
+        'OutboxEventName',
+        this.value,
+        'Event name cannot be empty',
+      );
     }
   }
 

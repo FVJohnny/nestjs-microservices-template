@@ -1,4 +1,8 @@
-import { StringValueObject, DomainValidationException, type IValueObject } from '@libs/nestjs-common';
+import {
+  StringValueObject,
+  DomainValidationException,
+  type IValueObject,
+} from '@libs/nestjs-common';
 
 let _seq = 0;
 export class Email extends StringValueObject implements IValueObject<string> {
@@ -10,7 +14,11 @@ export class Email extends StringValueObject implements IValueObject<string> {
     super.validate();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(this.value)) {
-      throw new DomainValidationException('email', this.value, `Invalid email format: ${this.value}`);
+      throw new DomainValidationException(
+        'email',
+        this.value,
+        `Invalid email format: ${this.value}`,
+      );
     }
   }
 
