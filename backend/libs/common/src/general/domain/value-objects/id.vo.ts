@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import validate from 'uuid-validate';
 
-import { ValueObject } from './ValueObject';
+import { ValueObject } from './base.vo';
 import { DomainValidationException } from '../../../errors';
 
 export class Id extends ValueObject<string> {

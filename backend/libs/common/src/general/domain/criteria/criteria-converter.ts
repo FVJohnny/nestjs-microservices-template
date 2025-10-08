@@ -1,6 +1,6 @@
 import type { Criteria } from './criteria';
 import type { SharedAggregateRootDTO } from '../aggregate-root';
-import type { Primitives } from '../value-objects/ValueObject';
+import type { Primitives } from '../value-objects/base.vo';
 import { PaginationCursor } from './pagination/pagination-cursor';
 
 export interface CriteriaQueryResult<D extends SharedAggregateRootDTO> {

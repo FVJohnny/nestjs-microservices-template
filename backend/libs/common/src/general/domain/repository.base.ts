@@ -1,4 +1,4 @@
-import type { Id } from './value-objects/Id';
+import type { Id } from './value-objects/id.vo';
 import type { RepositoryContext } from '../../transactions';
 import type { PaginatedRepoResult } from '../infrastructure';
 import type { Criteria } from './criteria/criteria';

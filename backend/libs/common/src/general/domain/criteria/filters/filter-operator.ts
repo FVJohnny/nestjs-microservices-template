@@ -1,4 +1,4 @@
-import { EnumValueObject } from '../../value-objects/EnumValueObject';
+import { EnumValueObject } from '../../value-objects/enum.vo';
 import { DomainValidationException } from '../../../../errors';
 
 export enum Operator {

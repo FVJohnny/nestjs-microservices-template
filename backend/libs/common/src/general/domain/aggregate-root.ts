@@ -1,8 +1,8 @@
 import { isDeepStrictEqual } from 'node:util';
 
 import { AggregateRoot, type IEvent } from '@nestjs/cqrs';
-import { Id } from './value-objects/Id';
-import { Timestamps } from './value-objects/TimestampsValueObject';
+import { Id } from './value-objects/id.vo';
+import { Timestamps } from './value-objects/timestamps.vo';
 
 /**
  * Base class for aggregate roots in Domain-Driven Design

@@ -1,5 +1,5 @@
 import type { RepositoryContext } from '../../transactions';
-import type { Id } from '../../general/domain/value-objects/Id';
+import type { Id } from '../../general/domain/value-objects/id.vo';
 import { InMemoryBaseRepository } from '../../general/infrastructure/in-memory-repository';
 import type { UserToken_Repository } from '../domain/repositories/user-token.repository';
 import { UserToken } from '../domain/entities/user-token.entity';

@@ -1,4 +1,4 @@
-import { EnumValueObject } from '../../../general/domain/value-objects/EnumValueObject';
+import { EnumValueObject } from '../../../general/domain/value-objects/enum.vo';
 import type { IValueObject } from '../../../general/domain/value-objects';
 
 type TokenTypeEnum = 'access' | 'refresh';

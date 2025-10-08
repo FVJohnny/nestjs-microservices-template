@@ -1,4 +1,4 @@
-import { type IValueObject, ValueObject } from './ValueObject';
+import { type IValueObject, ValueObject } from './base.vo';
 
 export class DateVO extends ValueObject<Date> implements IValueObject<Date> {
   private static readonly SECOND_MS = 1000;

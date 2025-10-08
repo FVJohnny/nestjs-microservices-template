@@ -1,5 +1,5 @@
 import { DomainValidationException } from '../../../errors';
-import { DateVO } from './DateValueObject';
+import { DateVO } from './date.vo';
 
 interface TimestampsValue extends Record<string, unknown> {
   createdAt: Date;
