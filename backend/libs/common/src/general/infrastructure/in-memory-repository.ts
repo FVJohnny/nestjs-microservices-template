@@ -2,7 +2,7 @@ import { InfrastructureException } from '../../errors';
 import { type RepositoryContext, TransactionParticipant_InMemory } from '../../transactions';
 import type { SharedAggregateRoot, Id, SharedAggregateRootDTO, Criteria } from '../domain';
 import type { Repository } from '../domain';
-import { InMemoryCriteriaConverter } from './in-memory-criteria-converter';
+import { InMemoryCriteriaConverter } from './criteria/criteria-converter.in-memory';
 
 export abstract class InMemoryBaseRepository<
   TEnt extends SharedAggregateRoot,

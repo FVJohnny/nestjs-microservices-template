@@ -7,7 +7,7 @@ import {
 } from '../../../domain/repositories/user-token.repository';
 import { BaseCommandHandler } from '../../../../cqrs/command-handler.base';
 import { EVENT_BUS } from '../../../../cqrs/cqrs.module';
-import { Id } from '../../../../general/domain/value-object/Id';
+import { Id } from '../../../../general/domain/value-objects/Id';
 import { Transaction } from '../../../../transactions/transaction';
 import { UserToken } from '../../../domain/entities/user-token.entity';
 import { Token } from '../../../domain/entities/token.vo';

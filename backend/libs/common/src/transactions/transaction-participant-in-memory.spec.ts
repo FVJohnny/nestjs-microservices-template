@@ -1,6 +1,6 @@
 import { InMemoryBaseRepository } from '../general';
-import type { EntityExampleDTO } from '../general/domain/entities/EntityExample';
-import { EntityExample } from '../general/domain/entities/EntityExample';
+import type { EntityExampleDTO } from '../general/domain/example/example.dto';
+import { EntityExample } from '../general/domain/example/example.aggregate-root';
 import { Transaction } from './transaction';
 
 class ExampleInMemoryRepository extends InMemoryBaseRepository<EntityExample, EntityExampleDTO> {
@@ -21,7 +21,7 @@ describe('In-memory transactions', () => {
   });
 
   it('commits new saves when the transaction succeeds', async () => {
-    const aggregate = EntityExample.create('value-1');
+    const aggregate = EntityExample.create({ value: 'value-1' });
 
     await Transaction.run(async (context) => {
       await repository.save(aggregate, context);
@@ -31,7 +31,7 @@ describe('In-memory transactions', () => {
   });
 
   it('rolls back new saves when the transaction fails', async () => {
-    const aggregate = EntityExample.create('value-rollback');
+    const aggregate = EntityExample.create({ value: 'value-rollback' });
 
     await expect(
       Transaction.run(async (context) => {
@@ -44,10 +44,10 @@ describe('In-memory transactions', () => {
   });
 
   it('restores previous state of updated aggregates on rollback', async () => {
-    const original = EntityExample.create('initial');
+    const original = EntityExample.create({ value: 'initial' });
     await repository.save(original);
 
-    const updated = EntityExample.create('updated', original.id);
+    const updated = EntityExample.fromValue({ ...original.toValue(), value: 'updated' });
 
     await expect(
       Transaction.run(async (context) => {
@@ -60,7 +60,7 @@ describe('In-memory transactions', () => {
   });
 
   it('restores removed aggregates when a transaction rolls back', async () => {
-    const aggregate = EntityExample.create('to-remove');
+    const aggregate = EntityExample.create({ value: 'to-remove' });
     await repository.save(aggregate);
 
     await expect(
@@ -74,8 +74,8 @@ describe('In-memory transactions', () => {
   });
 
   it('restores cleared repositories when a transaction rolls back', async () => {
-    const first = EntityExample.create('first');
-    const second = EntityExample.create('second');
+    const first = EntityExample.create({ value: 'first' });
+    const second = EntityExample.create({ value: 'second' });
 
     await repository.save(first);
     await repository.save(second);

@@ -1,7 +1,7 @@
 import { DomainValidationException } from '../../../../errors';
-import { FilterField } from './FilterField';
-import { FilterOperator } from './FilterOperator';
-import { FilterValue } from './FilterValue';
+import { FilterField } from './filter-field';
+import { FilterOperator } from './filter-operator';
+import { FilterValue } from './filter-value';
 
 export class Filter {
   readonly field: FilterField;

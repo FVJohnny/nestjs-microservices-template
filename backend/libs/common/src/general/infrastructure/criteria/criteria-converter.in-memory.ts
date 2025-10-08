@@ -1,13 +1,12 @@
-import { Data } from '../../utils/data';
-import type { Criteria } from '../domain/criteria/Criteria';
-import type { Filter } from '../domain/criteria/filters/Filter';
-import { Operator } from '../domain/criteria/filters/FilterOperator';
-import type { Order } from '../domain/criteria/order/Order';
-import { PaginationCursor } from '../domain/criteria/pagination/PaginationCursor';
-import { PaginationOffset } from '../domain/criteria/pagination/PaginationOffset';
-import type { SharedAggregateRootDTO } from '../domain/entities/AggregateRoot';
-import type { CriteriaQueryResult } from '../domain/criteria/CriteriaConverter';
-import { CriteriaConverter } from '../domain/criteria/CriteriaConverter';
+import { Data } from '../../../utils/data';
+import type { SharedAggregateRootDTO } from '../../domain/aggregate-root';
+import type { CriteriaQueryResult, Criteria, Filter, Order } from '../../domain/criteria';
+import {
+  PaginationCursor,
+  PaginationOffset,
+  Operator,
+  CriteriaConverter,
+} from '../../domain/criteria';
 
 export interface InMemoryFilterResult<T> {
   filterFn: (items: T[]) => T[];

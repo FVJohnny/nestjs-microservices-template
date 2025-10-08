@@ -1,5 +1,5 @@
 import type { TransactionParticipant } from './transaction-participant';
-import type { InMemoryBaseRepository } from '../general/infrastructure/in-memory-base.repository';
+import type { InMemoryBaseRepository } from '../general/infrastructure/in-memory-repository';
 import type { SharedAggregateRoot, SharedAggregateRootDTO } from '../general/domain';
 
 export class TransactionParticipant_InMemory<

@@ -4,7 +4,7 @@ import { UserToken_InMemory_Repository } from '../../../testing/user-token-in-me
 import { UserToken } from '../../../domain/entities/user-token.entity';
 import { Token } from '../../../domain/entities/token.vo';
 import { NotFoundException, InfrastructureException } from '../../../../errors/application.exceptions';
-import { Id } from '../../../../general/domain/value-object/Id';
+import { Id } from '../../../../general/domain/value-objects/Id';
 
 describe('GetUserTokenByToken_QueryHandler', () => {
   const createQuery = (overrides: Partial<GetUserTokenByToken_Query> = {}) =>

@@ -1,6 +1,6 @@
 import type { IEvent } from '@nestjs/cqrs';
 
-import { Id } from '../general/domain/value-object/Id';
+import { Id } from '../general/domain/value-objects/Id';
 
 /**
  * Base class for all domain events in the system.

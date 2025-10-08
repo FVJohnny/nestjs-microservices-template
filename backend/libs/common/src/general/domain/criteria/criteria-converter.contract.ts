@@ -1,16 +1,16 @@
-import type { CriteriaConverter } from './CriteriaConverter';
-import { Criteria } from './Criteria';
-import { Filter } from './filters/Filter';
-import { FilterField } from './filters/FilterField';
-import { FilterOperator, Operator } from './filters/FilterOperator';
-import { FilterValue } from './filters/FilterValue';
-import { Filters } from './filters/Filters';
-import { Order } from './order/Order';
-import { OrderBy } from './order/OrderBy';
-import { OrderType, OrderTypes } from './order/OrderType';
+import type { CriteriaConverter } from './criteria-converter';
+import { Criteria } from './criteria';
+import { Filter } from './filters/filter';
+import { FilterField } from './filters/filter-field';
+import { FilterOperator, Operator } from './filters/filter-operator';
+import { FilterValue } from './filters/filter-value';
+import { Filters } from './filters/filters';
+import { Order } from './order/order';
+import { OrderBy } from './order/order-by';
+import { OrderType, OrderTypes } from './order/order-type';
 import { PaginationCursor } from './pagination/PaginationCursor';
 import { PaginationOffset } from './pagination/PaginationOffset';
-import type { SharedAggregateRootDTO } from '../entities/AggregateRoot';
+import type { SharedAggregateRootDTO } from '../aggregate-root';
 
 /**
  * Test entity for CriteriaConverter tests

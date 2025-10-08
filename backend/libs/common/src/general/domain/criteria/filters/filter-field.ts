@@ -1,4 +1,4 @@
-import { StringValueObject } from '../../value-object/StringValueObject';
+import { StringValueObject } from '../../value-objects/StringValueObject';
 
 export class FilterField extends StringValueObject {
   constructor(value: string) {

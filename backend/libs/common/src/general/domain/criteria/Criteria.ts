@@ -1,5 +1,5 @@
-import { Filters } from './filters/Filters';
-import { Order } from './order/Order';
+import { Filters } from './filters/filters';
+import { Order } from './order/order';
 import { PaginationOffset } from './pagination/PaginationOffset';
 import { PaginationCursor } from './pagination/PaginationCursor';
 import { DomainValidationException } from '../../../errors';

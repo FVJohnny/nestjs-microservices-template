@@ -21,8 +21,8 @@ describe('Redis transactions', () => {
   });
 
   it('persists all writes when every save succeeds', async () => {
-    const aggregate = EntityExample.create('first');
-    const aggregate2 = EntityExample.create('second');
+    const aggregate = EntityExample.create({ value: 'first' });
+    const aggregate2 = EntityExample.create({ value: 'second' });
 
     await Transaction.run(async (context) => {
       await repository.save(aggregate, context);
@@ -38,8 +38,8 @@ describe('Redis transactions', () => {
   });
 
   it('cancels writes when the second save throws exception', async () => {
-    const aggregate = EntityExample.create('first');
-    const aggregate2 = EntityExample.create('second');
+    const aggregate = EntityExample.create({ value: 'first' });
+    const aggregate2 = EntityExample.create({ value: 'second' });
 
     await expect(
       Transaction.run(async (context) => {
@@ -61,7 +61,7 @@ describe('Redis transactions', () => {
     });
 
     it('commits redis and in-memory writes when successful', async () => {
-      const aggregate = EntityExample.create('in-memory-1');
+      const aggregate = EntityExample.create({ value: 'in-memory-1' });
 
       await Transaction.run(async (context) => {
         await repository.save(aggregate, context);
@@ -73,8 +73,8 @@ describe('Redis transactions', () => {
     });
 
     it('rolls back in-memory and redis writes when an error occurs', async () => {
-      const first = EntityExample.create('in-memory-rollback');
-      const second = EntityExample.create('in-memory-rollback-2');
+      const first = EntityExample.create({ value: 'in-memory-rollback' });
+      const second = EntityExample.create({ value: 'in-memory-rollback-2' });
 
       await expect(
         Transaction.run(async (context) => {

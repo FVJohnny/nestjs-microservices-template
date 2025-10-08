@@ -15,6 +15,10 @@ export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisSer
     this.uniqueKeyPrefix = `${keyPrefix}:${Date.now()}:${Math.random().toString(36).substring(2, 11)}`;
   }
 
+  getKeyPrefix(): string {
+    return this.uniqueKeyPrefix;
+  }
+
   async setupDatabase() {
     if (!process.env.REDIS_HOST) {
       process.env.REDIS_HOST = 'localhost';

@@ -1,4 +1,4 @@
-import { StringValueObject } from '../../../general/domain/value-object/StringValueObject';
+import { StringValueObject } from '../../../general/domain/value-objects/StringValueObject';
 
 let _seq = 0;
 export class Token extends StringValueObject {

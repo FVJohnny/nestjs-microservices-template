@@ -21,7 +21,7 @@ import {
 import type { RepositoryContext, Repository } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from './mongodb.tokens';
 import { TransactionParticipant_Mongodb } from './transactions/transaction-participant-mongodb';
-import { MongoCriteriaConverter } from './criteria/mongo-criteria-converter';
+import { MongoCriteriaConverter } from './criteria/criteria-converter.mongo';
 
 export interface IndexSpec {
   fields: IndexSpecification;

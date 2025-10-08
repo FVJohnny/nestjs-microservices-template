@@ -1,6 +1,6 @@
 import type { RepositoryContext } from '../../transactions';
-import type { Id } from '../../general/domain/value-object/Id';
-import { InMemoryBaseRepository } from '../../general/infrastructure/in-memory-base.repository';
+import type { Id } from '../../general/domain/value-objects/Id';
+import { InMemoryBaseRepository } from '../../general/infrastructure/in-memory-repository';
 import type { UserToken_Repository } from '../domain/repositories/user-token.repository';
 import { UserToken } from '../domain/entities/user-token.entity';
 import type { UserTokenDTO } from '../domain/entities/user-token.dto';

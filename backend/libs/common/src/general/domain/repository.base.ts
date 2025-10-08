@@ -1,7 +1,7 @@
-import type { Id } from '../value-object/Id';
-import type { RepositoryContext } from '../../../transactions';
-import type { PaginatedRepoResult } from '../../infrastructure';
-import type { Criteria } from '../criteria/Criteria';
+import type { Id } from './value-objects/Id';
+import type { RepositoryContext } from '../../transactions';
+import type { PaginatedRepoResult } from '../infrastructure';
+import type { Criteria } from './criteria/criteria';
 
 /**
  * Base repository interface for domain entities.

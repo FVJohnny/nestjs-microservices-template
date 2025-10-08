@@ -1,7 +1,7 @@
 import type { EntityExampleDTO } from '@libs/nestjs-common';
 import { EntityExample, ExampleInMemoryRepository, Transaction } from '@libs/nestjs-common';
-import { ExampleMongoRepository } from '../infrastructure/example-mongo.repository';
 import { MongodbTestService } from '../testing/mongodb-test.service';
+import { ExampleMongoRepository } from '../infrastructure/example.mongo-repository';
 
 describe('Mongo transactions', () => {
   const mongoTestService = new MongodbTestService<EntityExampleDTO>(
@@ -28,8 +28,8 @@ describe('Mongo transactions', () => {
   });
 
   it('commits all writes when each save succeeds', async () => {
-    const firstAggregate = EntityExample.create('value-1');
-    const secondAggregate = EntityExample.create('value-2');
+    const firstAggregate = EntityExample.create({ value: 'value-1' });
+    const secondAggregate = EntityExample.create({ value: 'value-2' });
 
     await Transaction.run(async (context) => {
       await mongoRepository.save(firstAggregate, context);
@@ -45,8 +45,8 @@ describe('Mongo transactions', () => {
   });
 
   it('rolls back writes when a failure occurs', async () => {
-    const firstAggregate = EntityExample.create('value-1');
-    const secondAggregate = EntityExample.create('value-2');
+    const firstAggregate = EntityExample.create({ value: 'value-1' });
+    const secondAggregate = EntityExample.create({ value: 'value-2' });
 
     await expect(
       Transaction.run(async (context) => {
@@ -62,7 +62,7 @@ describe('Mongo transactions', () => {
 
   describe('with in-memory participant', () => {
     it('commits both mongo and in-memory writes when successful', async () => {
-      const aggregate = EntityExample.create('composed-success');
+      const aggregate = EntityExample.create({ value: 'composed-success' });
 
       await Transaction.run(async (context) => {
         await mongoRepository.save(aggregate, context);
@@ -78,7 +78,7 @@ describe('Mongo transactions', () => {
     });
 
     it('rolls back mongo and in-memory writes when an error occurs', async () => {
-      const aggregate = EntityExample.create('composed-rollback');
+      const aggregate = EntityExample.create({ value: 'composed-rollback' });
 
       await expect(
         Transaction.run(async (context) => {

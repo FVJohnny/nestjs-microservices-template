@@ -1,8 +1,8 @@
 import { isDeepStrictEqual } from 'node:util';
 
 import { AggregateRoot, type IEvent } from '@nestjs/cqrs';
-import { Id } from '../value-object/Id';
-import { Timestamps } from '../value-object/TimestampsVO';
+import { Id } from './value-objects/Id';
+import { Timestamps } from './value-objects/TimestampsValueObject';
 
 /**
  * Base class for aggregate roots in Domain-Driven Design
@@ -11,9 +11,9 @@ export abstract class SharedAggregateRoot extends AggregateRoot<IEvent> {
   id: Id;
   timestamps: Timestamps;
 
-  constructor(id: Id, timestamps?: Timestamps) {
+  constructor(id?: Id, timestamps?: Timestamps) {
     super();
-    this.id = id;
+    this.id = id || Id.random();
     this.timestamps = timestamps || Timestamps.create();
   }
 

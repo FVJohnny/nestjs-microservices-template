@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OutboxEvent, OutboxEventDTO } from '../domain/outbox-event.entity';
 import { OutboxRepository } from '../domain/outbox.repository';
-import { InMemoryBaseRepository } from '../../general/infrastructure/in-memory-base.repository';
+import { InMemoryBaseRepository } from '../../general/infrastructure/in-memory-repository';
 
 @Injectable()
 export class Outbox_InMemory_Repository

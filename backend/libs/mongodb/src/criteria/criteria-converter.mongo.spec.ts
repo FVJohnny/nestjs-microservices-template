@@ -1,4 +1,4 @@
-import { MongoCriteriaConverter } from './mongo-criteria-converter';
+import { MongoCriteriaConverter } from './criteria-converter.mongo';
 import { MongodbTestService } from '../testing/mongodb-test.service';
 import {
   testCriteriaConverterContract,

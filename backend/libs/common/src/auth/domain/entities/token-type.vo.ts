@@ -1,4 +1,4 @@
-import { EnumValueObject } from '../../../general/domain/value-object/EnumValueObject';
+import { EnumValueObject } from '../../../general/domain/value-objects/EnumValueObject';
 
 type TokenTypeEnum = 'access' | 'refresh';
 const TOKEN_TYPE_VALUES: TokenTypeEnum[] = ['access', 'refresh'];

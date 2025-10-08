@@ -1,8 +1,8 @@
-import { InMemoryCriteriaConverter } from './in-memory-criteria-converter';
+import { InMemoryCriteriaConverter } from './criteria-converter.in-memory';
 import {
   testCriteriaConverterContract,
   type TestEntityDTO,
-} from '../domain/criteria/criteria-converter.contract';
+} from '../../domain/criteria/criteria-converter.contract';
 
 describe('InMemoryCriteriaConverter', () => {
   testCriteriaConverterContract(
