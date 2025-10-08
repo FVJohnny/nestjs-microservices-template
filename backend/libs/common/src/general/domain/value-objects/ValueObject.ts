@@ -3,7 +3,7 @@ import { DomainValidationException } from '../../../errors';
 export type Primitives = string | number | boolean | Date;
 
 export abstract class ValueObject<T extends Primitives> {
-  private readonly value: T;
+  protected readonly value: T;
 
   constructor(value: T) {
     this.value = value;

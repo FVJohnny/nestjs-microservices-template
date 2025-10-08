@@ -1,11 +1,8 @@
 import { DateVO, DomainValidationException } from '@libs/nestjs-common';
 
 export class LastLogin extends DateVO {
-  private internalValue: Date;
-
   constructor(value: Date) {
     super(value);
-    this.internalValue = value;
     this.validate();
   }
 
@@ -20,24 +17,24 @@ export class LastLogin extends DateVO {
   static random(): LastLogin {
     // Generate a random date between 30 days ago and now
     const now = Date.now();
-    const thirtyDaysAgo = DateVO.dateVOAtDaysFromNow(-30).toValue().getTime();
+    const thirtyDaysAgo = DateVO.dateVOAtDaysFromNow(-30).getTime();
     const randomTime = thirtyDaysAgo + Math.random() * (now - thirtyDaysAgo);
     return new LastLogin(new Date(randomTime));
   }
 
   private validate(): void {
     const now = new Date();
-    if (this.toValue() > now) {
+    if (this.value > now) {
       throw new DomainValidationException(
         'lastLogin',
-        this.toValue(),
+        this.value,
         'Last login date cannot be in the future',
       );
     }
   }
 
   isNever(): boolean {
-    return this.internalValue.getTime() === 0;
+    return this.value.getTime() === 0;
   }
 
   wasWithinDays(withinDays: number = 7): boolean {
@@ -46,9 +43,5 @@ export class LastLogin extends DateVO {
     }
     const daysAgo = Math.abs(this.daysFromNow());
     return daysAgo <= withinDays;
-  }
-
-  toValue(): Date {
-    return this.internalValue;
   }
 }
