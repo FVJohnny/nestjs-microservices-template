@@ -3,9 +3,8 @@ import { RedisService } from '../redis.service';
 
 export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisService {
   private static instanceCounter = 0;
-  private readonly uniqueKeyPrefix: string;
 
-  constructor(keyPrefix: string = 'test') {
+  constructor(private readonly keyPrefix: string = 'test') {
     // Generate unique database number using process ID and instance counter
     // This ensures parallel test workers use different databases
     // Redis supports databases 0-15 by default
@@ -13,13 +12,6 @@ export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisSer
 
     // Pass database number to parent to avoid process.env race conditions
     super(dbNumber);
-
-    // Add timestamp and random value to keyPrefix for additional isolation
-    this.uniqueKeyPrefix = `${keyPrefix}:${Date.now()}:${Math.random().toString(36).substring(2, 11)}`;
-  }
-
-  getKeyPrefix(): string {
-    return this.uniqueKeyPrefix;
   }
 
   async setupDatabase() {
@@ -54,7 +46,7 @@ export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisSer
     const pipeline = this.getDatabaseClient()?.pipeline();
 
     for (const item of data) {
-      const key = `${this.uniqueKeyPrefix}:${item.id}`;
+      const key = `${this.keyPrefix}:${item.id}`;
       const hashData: Record<string, string> = {};
 
       // Convert entity to Redis hash format

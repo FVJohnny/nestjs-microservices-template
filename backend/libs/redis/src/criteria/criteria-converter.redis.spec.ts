@@ -28,7 +28,7 @@ describe('RedisCriteriaConverter', () => {
     await redisTestService.setInitialData(entities);
     return new RedisCriteriaConverter<TestEntityDTO>(
       redisTestService.getDatabaseClient()!,
-      redisTestService.getKeyPrefix(),
+      KEY_PREFIX,
     );
   });
 });
