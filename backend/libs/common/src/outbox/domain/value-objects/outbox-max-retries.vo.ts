@@ -11,18 +11,17 @@ export class OutboxMaxRetries extends ValueObject<number> implements IValueObjec
 
   validate(): void {
     super.validate();
-    const value = this.value;
-    if (!Number.isInteger(value) || value < 1) {
+    if (!Number.isInteger(this.value) || this.value < 1) {
       throw new DomainValidationException(
         'OutboxMaxRetries',
-        value,
+        this.value,
         'Max retries must be a positive integer',
       );
     }
-    if (value > OutboxMaxRetries.MAX_VALUE) {
+    if (this.value > OutboxMaxRetries.MAX_VALUE) {
       throw new DomainValidationException(
         'OutboxMaxRetries',
-        value,
+        this.value,
         `Max retries cannot exceed ${OutboxMaxRetries.MAX_VALUE}`,
       );
     }
