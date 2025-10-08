@@ -1,6 +1,6 @@
-import { DateVO, DomainValidationException } from '@libs/nestjs-common';
+import { DateVO, DomainValidationException, type IValueObject } from '@libs/nestjs-common';
 
-export class LastLogin extends DateVO {
+export class LastLogin extends DateVO implements IValueObject<Date> {
   constructor(value: Date) {
     super(value);
     this.validate();
@@ -22,7 +22,7 @@ export class LastLogin extends DateVO {
     return new LastLogin(new Date(randomTime));
   }
 
-  private validate(): void {
+  validate(): void {
     const now = new Date();
     if (this.value > now) {
       throw new DomainValidationException(

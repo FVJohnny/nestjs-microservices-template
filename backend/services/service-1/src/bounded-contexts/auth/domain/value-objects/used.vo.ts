@@ -1,6 +1,6 @@
-import { ValueObject } from '@libs/nestjs-common';
+import { ValueObject, type IValueObject } from '@libs/nestjs-common';
 
-export class Used extends ValueObject<boolean> {
+export class Used extends ValueObject<boolean> implements IValueObject<boolean> {
   constructor(value: boolean) {
     super(value);
   }

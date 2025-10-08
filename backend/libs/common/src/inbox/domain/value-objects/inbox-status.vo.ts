@@ -1,5 +1,5 @@
 import { DomainValidationException } from '../../../errors';
-import { EnumValueObject } from '../../../general';
+import { EnumValueObject, type IValueObject } from '../../../general';
 
 export enum InboxStatus {
   PENDING = 'pending',
@@ -9,7 +9,7 @@ export enum InboxStatus {
   DUPLICATE = 'duplicate',
 }
 
-export class InboxStatusVO extends EnumValueObject<InboxStatus> {
+export class InboxStatusVO extends EnumValueObject<InboxStatus> implements IValueObject<string> {
   constructor(value: InboxStatus) {
     super(value, Object.values(InboxStatus));
   }
@@ -62,5 +62,8 @@ export class InboxStatusVO extends EnumValueObject<InboxStatus> {
 
   throwErrorForInvalidValue(value: InboxStatus): void {
     throw new DomainValidationException(`InboxStatus`, value, `Invalid value`);
+  }
+  validate(): void {
+    super.validate();
   }
 }

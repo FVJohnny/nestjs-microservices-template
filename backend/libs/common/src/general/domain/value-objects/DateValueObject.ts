@@ -1,6 +1,6 @@
-import { ValueObject } from './ValueObject';
+import { type IValueObject, ValueObject } from './ValueObject';
 
-export class DateVO extends ValueObject<Date> {
+export class DateVO extends ValueObject<Date> implements IValueObject<Date> {
   private static readonly SECOND_MS = 1000;
   private static readonly MINUTE_MS = 60 * DateVO.SECOND_MS;
   private static readonly HOUR_MS = 60 * DateVO.MINUTE_MS;
@@ -8,6 +8,10 @@ export class DateVO extends ValueObject<Date> {
 
   constructor(value: Date | string | number) {
     super(value instanceof Date ? value : new Date(value));
+  }
+
+  validate(): void {
+    super.validate();
   }
 
   static now(): DateVO {

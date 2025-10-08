@@ -1,6 +1,11 @@
 import { DomainValidationException } from '../../../errors';
 import { DateVO } from './DateValueObject';
 
+interface TimestampsValue extends Record<string, unknown> {
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export class Timestamps {
   public readonly createdAt: DateVO;
   public readonly updatedAt: DateVO;
@@ -26,7 +31,7 @@ export class Timestamps {
     );
   }
 
-  toValue() {
+  toValue(): TimestampsValue {
     return {
       createdAt: this.createdAt.toValue(),
       updatedAt: this.updatedAt.toValue(),
@@ -34,10 +39,13 @@ export class Timestamps {
   }
 
   equals(other: Timestamps): boolean {
+    if (!(other instanceof Timestamps)) {
+      return false;
+    }
     return this.createdAt.equals(other.createdAt) && this.updatedAt.equals(other.updatedAt);
   }
 
-  private validate(): void {
+  validate(): void {
     const now = new Date();
 
     if (this.createdAt.toValue() > now) {

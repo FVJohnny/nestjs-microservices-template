@@ -1,6 +1,6 @@
-import { DateVO } from '../../../general';
+import { DateVO, type IValueObject } from '../../../general';
 
-export class InboxProcessedAt extends DateVO {
+export class InboxProcessedAt extends DateVO implements IValueObject<Date> {
   static readonly NEVER_PROCESSED = new Date('1970-01-01T00:00:00.000Z');
 
   static now(): InboxProcessedAt {

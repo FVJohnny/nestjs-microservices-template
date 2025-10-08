@@ -1,20 +1,20 @@
-import { Id, StringValueObject } from '../../../general';
+import { Id, StringValueObject, type IValueObject } from '../../../general';
 import { DomainValidationException } from '../../../errors';
 import type { TraceMetadata } from '../../../tracing';
 
-export class OutboxPayload extends StringValueObject {
+export class OutboxPayload extends StringValueObject implements IValueObject<string> {
   constructor(value: string) {
-    OutboxPayload.ensureIsValid(value);
     super(value);
   }
 
-  static ensureIsValid(value: string) {
+  validate(): void {
+    super.validate();
     try {
-      JSON.parse(value);
+      JSON.parse(this.value);
     } catch (error) {
       throw new DomainValidationException(
         'OutboxPayload',
-        value,
+        this.value,
         `Payload must be valid JSON: ${(error as Error).message}`,
       );
     }

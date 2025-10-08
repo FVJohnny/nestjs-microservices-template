@@ -1,4 +1,6 @@
-export abstract class EnumValueObject<T> {
+import type { IValueObject, Primitives } from '../..';
+
+export abstract class EnumValueObject<T extends Primitives> implements IValueObject<T> {
   private readonly value: T;
 
   constructor(
@@ -6,12 +8,12 @@ export abstract class EnumValueObject<T> {
     public readonly validValues: T[],
   ) {
     this.value = value;
-    this.checkValueIsValid(value);
+    this.validate();
   }
 
-  public checkValueIsValid(value: T): void {
-    if (!this.validValues.includes(value)) {
-      this.throwErrorForInvalidValue(value);
+  public validate(): void {
+    if (!this.validValues.includes(this.value)) {
+      this.throwErrorForInvalidValue(this.value);
     }
   }
 

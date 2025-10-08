@@ -1,8 +1,9 @@
-import { StringValueObject } from '../../../general';
+import { StringValueObject, type IValueObject } from '../../../general';
 
-export class InboxTopic extends StringValueObject {
-  protected ensureIsValid(value: string): void {
-    if (!value || value.trim().length === 0) {
+export class InboxTopic extends StringValueObject implements IValueObject<string> {
+  validate(): void {
+    super.validate();
+    if (!this.value || this.value.trim().length === 0) {
       throw new Error('InboxTopic cannot be empty');
     }
   }

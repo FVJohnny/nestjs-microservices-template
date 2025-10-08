@@ -1,6 +1,6 @@
-import { DateVO } from '@libs/nestjs-common';
+import { DateVO, type IValueObject } from '@libs/nestjs-common';
 
-export class Expiration extends DateVO {
+export class Expiration extends DateVO implements IValueObject<Date> {
   constructor(value: Date) {
     super(value);
   }

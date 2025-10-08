@@ -1,13 +1,12 @@
-import { StringValueObject, DomainValidationException } from '@libs/nestjs-common';
+import { StringValueObject, DomainValidationException, type IValueObject } from '@libs/nestjs-common';
 
 let _seq = 0;
-export class Username extends StringValueObject {
+export class Username extends StringValueObject implements IValueObject<string> {
   private static readonly MIN_LENGTH = 3;
   private static readonly MAX_LENGTH = 30;
   private static readonly USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/;
 
   constructor(value: string) {
-    Username.validate(value);
     super(value.toLowerCase());
   }
 
@@ -16,12 +15,14 @@ export class Username extends StringValueObject {
     return new Username(`user${_seq}`);
   }
 
-  static validate(username: string): void {
-    if (!username || username.trim().length === 0) {
-      throw new DomainValidationException('username', username, 'Username cannot be empty');
+  validate(): void {
+    super.validate();
+
+    if (!this.value || this.value.trim().length === 0) {
+      throw new DomainValidationException('username', this.value, 'Username cannot be empty');
     }
 
-    const trimmed = username.trim();
+    const trimmed = this.value.trim();
 
     if (trimmed.length < Username.MIN_LENGTH) {
       throw new DomainValidationException(

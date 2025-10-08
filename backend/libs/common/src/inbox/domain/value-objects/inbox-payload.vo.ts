@@ -1,13 +1,14 @@
-import { StringValueObject } from '../../../general';
+import { StringValueObject, type IValueObject } from '../../../general';
 import type { TraceMetadata } from '../../../tracing';
 
-export class InboxPayload extends StringValueObject {
-  protected ensureIsValid(value: string): void {
-    if (!value) {
+export class InboxPayload extends StringValueObject implements IValueObject<string> {
+  validate(): void {
+    super.validate();
+    if (!this.value) {
       throw new Error('InboxPayload cannot be null or undefined');
     }
     try {
-      JSON.parse(value);
+      JSON.parse(this.value);
     } catch {
       throw new Error('InboxPayload must be valid JSON');
     }

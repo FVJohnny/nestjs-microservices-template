@@ -1,6 +1,6 @@
-import { DateVO } from '../../../general';
+import { DateVO, type IValueObject } from '../../../general';
 
-export class InboxReceivedAt extends DateVO {
+export class InboxReceivedAt extends DateVO implements IValueObject<Date> {
   static now(): InboxReceivedAt {
     return new InboxReceivedAt(new Date());
   }

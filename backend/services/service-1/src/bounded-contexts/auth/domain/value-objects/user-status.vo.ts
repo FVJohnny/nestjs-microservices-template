@@ -1,4 +1,4 @@
-import { EnumValueObject, DomainValidationException } from '@libs/nestjs-common';
+import { EnumValueObject, DomainValidationException, type IValueObject } from '@libs/nestjs-common';
 
 export enum UserStatusEnum {
   EMAIL_VERIFICATION_PENDING = 'email-verification-pending',
@@ -8,7 +8,7 @@ export enum UserStatusEnum {
   DELETED = 'deleted',
 }
 
-export class UserStatus extends EnumValueObject<UserStatusEnum> {
+export class UserStatus extends EnumValueObject<UserStatusEnum> implements IValueObject<string> {
   constructor(value: UserStatusEnum) {
     super(value, Object.values(UserStatusEnum));
   }

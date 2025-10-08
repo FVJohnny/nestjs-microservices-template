@@ -1,14 +1,15 @@
-import { ValueObject } from '../../../general';
+import { ValueObject, type IValueObject } from '../../../general';
 import { DomainValidationException } from '../../../errors';
 import type { OutboxMaxRetries } from './outbox-max-retries.vo';
 
-export class OutboxRetryCount extends ValueObject<number> {
+export class OutboxRetryCount extends ValueObject<number> implements IValueObject<number> {
   constructor(value: number) {
-    OutboxRetryCount.ensureIsValid(value);
     super(value);
   }
 
-  static ensureIsValid(value: number) {
+  validate(): void {
+    super.validate();
+    const value = this.value;
     if (!Number.isInteger(value) || value < 0) {
       throw new DomainValidationException(
         'OutboxRetryCount',

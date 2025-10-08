@@ -1,13 +1,17 @@
-import { DateVO } from '../../../general';
+import { DateVO, type IValueObject } from '../../../general';
 import { DomainValidationException } from '../../../errors';
 
-export class OutboxProcessedAt extends DateVO {
+export class OutboxProcessedAt extends DateVO implements IValueObject<Date> {
   static readonly NEVER_PROCESSED = new Date(0);
   static readonly MAX_RANDOM_PAST_DAYS = 30;
 
   constructor(value: Date) {
     super(value);
-    this.ensureNotFuture(value);
+  }
+
+  validate(): void {
+    super.validate();
+    this.ensureNotFuture(this.value);
   }
 
   static never(): OutboxProcessedAt {

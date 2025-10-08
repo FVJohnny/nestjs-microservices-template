@@ -1,17 +1,17 @@
-import { StringValueObject } from '../../../general';
+import { StringValueObject, type IValueObject } from '../../../general';
 import { DomainValidationException } from '../../../errors';
 
 let eventNameSequence = 0;
 
-export class OutboxEventName extends StringValueObject {
+export class OutboxEventName extends StringValueObject implements IValueObject<string> {
   constructor(value: string) {
-    OutboxEventName.ensureIsValid(value);
     super(value);
   }
 
-  static ensureIsValid(value: string) {
-    if (!value?.trim()) {
-      throw new DomainValidationException('OutboxEventName', value, 'Event name cannot be empty');
+  validate(): void {
+    super.validate();
+    if (!this.value?.trim()) {
+      throw new DomainValidationException('OutboxEventName', this.value, 'Event name cannot be empty');
     }
   }
 
