@@ -40,10 +40,6 @@ export class LastLogin extends DateVO {
     return this.internalValue.getTime() === 0;
   }
 
-  update(): void {
-    this.internalValue = new Date();
-  }
-
   wasWithinDays(withinDays: number = 7): boolean {
     if (this.isNever()) {
       return false;

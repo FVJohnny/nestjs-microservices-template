@@ -3,7 +3,7 @@ import { DateVO } from './DateValueObject';
 
 export class Timestamps {
   public readonly createdAt: DateVO;
-  public updatedAt: DateVO;
+  public readonly updatedAt: DateVO;
 
   constructor(createdAt: DateVO, updatedAt: DateVO) {
     this.createdAt = createdAt;
@@ -24,10 +24,6 @@ export class Timestamps {
       createdAt ?? DateVO.dateVOAtDaysFromNow(Math.floor(Math.random() * -100)),
       updatedAt ?? DateVO.dateVOAtDaysFromNow(Math.floor(Math.random() * -100)),
     );
-  }
-
-  update(): void {
-    this.updatedAt = DateVO.now();
   }
 
   toValue() {

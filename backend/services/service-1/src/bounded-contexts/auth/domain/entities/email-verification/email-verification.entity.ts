@@ -75,7 +75,7 @@ export class EmailVerification extends SharedAggregateRoot {
     }
 
     this.verification = Verification.verified();
-    this.timestamps.update();
+    this.timestamps = new Timestamps(this.timestamps.createdAt, DateVO.now());
 
     this.apply(new EmailVerificationVerified_DomainEvent(this.id, this.userId, this.email));
   }

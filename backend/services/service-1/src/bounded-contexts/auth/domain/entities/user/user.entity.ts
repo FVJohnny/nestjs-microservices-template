@@ -91,7 +91,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       throw new InvalidOperationException('activate', this.status.toValue());
     }
     this.status = UserStatus.active();
-    this.timestamps.update();
+    this.timestamps = new Timestamps(this.timestamps.createdAt, DateVO.now());
   }
 
   deactivate(): void {
@@ -99,7 +99,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       throw new InvalidOperationException('deactivate', this.status.toValue());
     }
     this.status = UserStatus.inactive();
-    this.timestamps.update();
+    this.timestamps = new Timestamps(this.timestamps.createdAt, DateVO.now());
   }
 
   verifyEmail(): void {
@@ -107,7 +107,7 @@ export class User extends SharedAggregateRoot implements UserAttributes {
       throw new InvalidOperationException('verifyEmail', this.status.toValue());
     }
     this.status = UserStatus.active();
-    this.timestamps.update();
+    this.timestamps = new Timestamps(this.timestamps.createdAt, DateVO.now());
   }
 
   hasRole(role: UserRole): boolean {
@@ -117,13 +117,13 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   changeRole(role: UserRole): void {
     if (!this.hasRole(role)) {
       this.role = role;
-      this.timestamps.update();
+      this.timestamps = new Timestamps(this.timestamps.createdAt, DateVO.now());
     }
   }
 
   changePassword(newPassword: Password): void {
     this.password = newPassword;
-    this.timestamps.update();
+    this.timestamps = new Timestamps(this.timestamps.createdAt, DateVO.now());
     this.apply(new UserPasswordChanged_DomainEvent(this.id, this.email));
     this.logout();
   }
@@ -145,13 +145,13 @@ export class User extends SharedAggregateRoot implements UserAttributes {
   }
 
   recordLogin(): void {
-    this.lastLogin.update();
-    this.timestamps.update();
+    this.lastLogin = LastLogin.now();
+    this.timestamps = new Timestamps(this.timestamps.createdAt, DateVO.now());
   }
 
   delete(): void {
     this.status = UserStatus.deleted();
-    this.timestamps.update();
+    this.timestamps = new Timestamps(this.timestamps.createdAt, DateVO.now());
     this.apply(new UserDeleted_DomainEvent(this.id));
   }
 

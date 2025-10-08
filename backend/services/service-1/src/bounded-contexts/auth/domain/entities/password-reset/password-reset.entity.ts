@@ -67,7 +67,7 @@ export class PasswordReset extends SharedAggregateRoot {
     }
 
     this.used = Used.yes();
-    this.timestamps.update();
+    this.timestamps = new Timestamps(this.timestamps.createdAt, DateVO.now());
   }
 
   isUsed(): boolean {
