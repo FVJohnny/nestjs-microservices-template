@@ -8,8 +8,8 @@ import { Filters } from './filters/filters';
 import { Order } from './order/order';
 import { OrderBy } from './order/order-by';
 import { OrderType, OrderTypes } from './order/order-type';
-import { PaginationCursor } from './pagination/PaginationCursor';
-import { PaginationOffset } from './pagination/PaginationOffset';
+import { PaginationCursor } from './pagination/pagination-cursor';
+import { PaginationOffset } from './pagination/pagination-offset';
 import type { SharedAggregateRootDTO } from '../aggregate-root';
 
 /**

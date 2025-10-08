@@ -1,4 +1,4 @@
-import { Pagination, PaginationType } from './Pagination';
+import { Pagination, PaginationType } from './pagination';
 
 export class PaginationOffset extends Pagination {
   readonly limit: number;

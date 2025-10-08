@@ -8,5 +8,5 @@ export * from './filters/filter-value';
 export * from './order/order';
 export * from './order/order-by';
 export * from './order/order-type';
-export * from './pagination/PaginationCursor';
-export * from './pagination/PaginationOffset';
+export * from './pagination/pagination-cursor';
+export * from './pagination/pagination-offset';

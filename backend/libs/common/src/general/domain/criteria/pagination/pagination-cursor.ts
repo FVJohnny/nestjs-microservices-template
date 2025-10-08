@@ -1,4 +1,4 @@
-import { Pagination, PaginationType } from './Pagination';
+import { Pagination, PaginationType } from './pagination';
 
 interface PaginationCursorProps {
   limit?: number;
