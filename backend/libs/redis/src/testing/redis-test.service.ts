@@ -2,15 +2,18 @@ import type { SharedAggregateRootDTO } from '@libs/nestjs-common';
 import { RedisService } from '../redis.service';
 
 export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisService {
-  private static dbCounter = 0;
-  private readonly dbNumber: number;
+  private static instanceCounter = 0;
   private readonly uniqueKeyPrefix: string;
 
   constructor(keyPrefix: string = 'test') {
-    super();
-    // Assign unique database number for each test instance to avoid conflicts
+    // Generate unique database number using process ID and instance counter
+    // This ensures parallel test workers use different databases
     // Redis supports databases 0-15 by default
-    this.dbNumber = RedisTestService.dbCounter++ % 16;
+    const dbNumber = (process.pid + RedisTestService.instanceCounter++) % 16;
+
+    // Pass database number to parent to avoid process.env race conditions
+    super(dbNumber);
+
     // Add timestamp and random value to keyPrefix for additional isolation
     this.uniqueKeyPrefix = `${keyPrefix}:${Date.now()}:${Math.random().toString(36).substring(2, 11)}`;
   }
@@ -24,8 +27,6 @@ export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisSer
       process.env.REDIS_HOST = 'localhost';
       process.env.REDIS_PORT = '6379';
     }
-    // Use instance-specific database number to isolate tests
-    process.env.REDIS_DB = String(this.dbNumber);
 
     await this.onModuleInit();
 

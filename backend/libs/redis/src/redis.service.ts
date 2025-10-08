@@ -5,11 +5,14 @@ import { Redis } from 'ioredis';
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   protected readonly logger = new CorrelationLogger(RedisService.name);
-  private databaseClient: Redis | null = null;
-  private publisherClient: Redis | null = null;
-  private subscriberClient: Redis | null = null;
+  protected databaseClient: Redis | null = null;
+  protected publisherClient: Redis | null = null;
+  protected subscriberClient: Redis | null = null;
+  protected dbNumber?: number; // Optional database number for test isolation
 
-  constructor() {}
+  constructor(dbNumber?: number) {
+    this.dbNumber = dbNumber;
+  }
 
   async onModuleInit() {
     const redisHost = process.env.REDIS_HOST;
@@ -27,7 +30,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       tls: process.env.REDIS_TLS === 'true' ? {} : undefined,
       username: process.env.REDIS_USERNAME,
       password: process.env.REDIS_PASSWORD,
-      db: parseInt(process.env.REDIS_DB || '0', 10),
+      db: this.dbNumber ?? parseInt(process.env.REDIS_DB || '0', 10), // Use instance db number if provided
       keyPrefix: process.env.REDIS_KEY_PREFIX || '',
       connectTimeout: Number(process.env.REDIS_CONNECT_TIMEOUT) || 10000,
       lazyConnect: true,
