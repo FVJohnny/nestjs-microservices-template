@@ -1,4 +1,4 @@
-import type { Repository } from '../repository.base';
+import type { Repository } from '../base.repository';
 import type { EntityExample } from './example.aggregate-root';
 
 export interface ExampleRepository extends Repository<EntityExample> {

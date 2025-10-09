@@ -1,5 +1,5 @@
 import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
-import { createTestUsers, registerAndLogin } from './utils';
+import { createTestUsers, registerAndLogin } from './e2e.util';
 
 describe('Complete Authentication Flow (E2E)', () => {
   let testSetup: E2ETestSetup;

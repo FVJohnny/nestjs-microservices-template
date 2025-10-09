@@ -9,7 +9,7 @@ export * from './types/integration-event.types';
 export * from './listener/integration-event-handler.decorator';
 
 // Implementations
-export * from './listener/integration-event-listener.base';
+export * from './listener/base.integration-event-listener';
 
 // Controller
 export * from './controller/integration-events.controller';

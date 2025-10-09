@@ -9,7 +9,7 @@ import {
   GetNewTokensFromRefreshToken_QueryResponse,
 } from '@bc/auth/application/queries';
 import { RefreshToken_ControllerParams } from './refresh-token.params';
-import { RefreshToken_ResponseDto } from './refresh-token.response';
+import { RefreshToken_ResponseDto } from './refresh-token.controller-response';
 import { JwtAuthGuard } from '@libs/nestjs-common';
 import { UseGuards } from '@nestjs/common';
 import { StoreTokens_Command } from '@libs/nestjs-common';

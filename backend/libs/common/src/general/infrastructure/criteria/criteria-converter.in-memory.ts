@@ -1,5 +1,5 @@
-import { Data } from '../../../utils/data';
-import type { SharedAggregateRootDTO } from '../../domain/aggregate-root';
+import { Data } from '../../../utils/data.util';
+import type { SharedAggregateRootDTO } from '../../domain/base.aggregate-root';
 import type { CriteriaQueryResult, Criteria, Filter, Order } from '../../domain/criteria';
 import {
   PaginationCursor,

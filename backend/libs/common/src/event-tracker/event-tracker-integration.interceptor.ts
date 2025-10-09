@@ -4,7 +4,7 @@ import {
   IIntegrationEventHandler,
   INTEGRATION_EVENT_LISTENER,
   type IntegrationEventListener,
-} from '../integration-events/listener/integration-event-listener.base';
+} from '../integration-events/listener/base.integration-event-listener';
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
 import { InboxService } from '../inbox';
 

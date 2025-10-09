@@ -20,7 +20,7 @@ import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import TestAgent from 'supertest/lib/agent';
-import { configureApp } from '../src/app-config';
+import { configureApp } from '../src/app.config';
 import { AppModule } from '../src/app.module';
 
 @Module({})

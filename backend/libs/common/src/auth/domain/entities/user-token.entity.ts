@@ -1,7 +1,7 @@
 import { DateVO } from '../../../general/domain/value-objects/date.vo';
 import { Id } from '../../../general/domain/value-objects/id.vo';
 import { Timestamps } from '../../../general/domain/value-objects/timestamps.vo';
-import { SharedAggregateRoot } from '../../../general/domain/aggregate-root';
+import { SharedAggregateRoot } from '../../../general/domain/base.aggregate-root';
 import type { UserTokenDTO } from './user-token.dto';
 import { TokenType } from './token-type.vo';
 import { Token } from './token.vo';

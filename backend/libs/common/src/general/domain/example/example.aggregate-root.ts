@@ -1,7 +1,7 @@
 import { DateVO } from '../value-objects/date.vo';
 import { Id } from '../value-objects/id.vo';
 import { Timestamps } from '../value-objects/timestamps.vo';
-import { SharedAggregateRoot } from '../aggregate-root';
+import { SharedAggregateRoot } from '../base.aggregate-root';
 import type { EntityExampleDTO } from './example.dto';
 
 interface EntityExampleCreateProps {

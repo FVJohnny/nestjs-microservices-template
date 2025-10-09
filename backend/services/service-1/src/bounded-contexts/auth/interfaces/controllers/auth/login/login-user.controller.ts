@@ -9,7 +9,7 @@ import {
   GetNewTokensFromUserCredentials_QueryResponse,
 } from '@bc/auth/application/queries';
 import { LoginUser_ControllerParams } from './login-user.params';
-import { LoginUser_ResponseDto } from './login-user.response';
+import { LoginUser_ResponseDto } from './login-user.controller-response';
 import { StoreTokens_Command } from '@libs/nestjs-common';
 
 @ApiTags('auth')

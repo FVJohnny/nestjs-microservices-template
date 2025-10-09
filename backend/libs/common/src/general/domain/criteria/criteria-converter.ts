@@ -1,5 +1,5 @@
 import type { Criteria } from './criteria';
-import type { SharedAggregateRootDTO } from '../aggregate-root';
+import type { SharedAggregateRootDTO } from '../base.aggregate-root';
 import type { Primitives } from '../value-objects/base.vo';
 import { PaginationCursor } from './pagination/pagination-cursor';
 

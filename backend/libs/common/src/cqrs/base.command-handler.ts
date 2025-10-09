@@ -1,6 +1,6 @@
 import { CommandHandler, type ICommand, type IEventBus } from '@nestjs/cqrs';
 
-import type { SharedAggregateRoot } from '../general/domain/aggregate-root';
+import type { SharedAggregateRoot } from '../general/domain/base.aggregate-root';
 import { CorrelationLogger } from '../logger';
 import { WithSpan } from '../tracing';
 

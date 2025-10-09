@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
-import { createTestUsers, registerAndLogin } from './utils';
+import { createTestUsers, registerAndLogin } from './e2e.util';
 
 describe('DELETE /users/:userId (E2E)', () => {
   let testSetup: E2ETestSetup;

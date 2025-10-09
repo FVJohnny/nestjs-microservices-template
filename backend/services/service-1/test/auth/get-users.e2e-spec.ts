@@ -1,5 +1,5 @@
 import { createE2ETestApp, type E2ETestSetup } from '../e2e-test-setup';
-import { createTestUsers, deleteUsers, registerAndLogin } from './utils';
+import { createTestUsers, deleteUsers, registerAndLogin } from './e2e.util';
 import { v4 as uuid } from 'uuid';
 
 describe('GET /users (E2E)', () => {

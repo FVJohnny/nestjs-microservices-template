@@ -5,7 +5,7 @@ import { ParsedIntegrationMessage } from '../types/integration-event.types';
 import {
   INTEGRATION_EVENT_LISTENER,
   type BaseIntegrationEventListener,
-} from './integration-event-listener.base';
+} from './base.integration-event-listener';
 import { CorrelationLogger } from '../../logger';
 import { InboxService } from '../../inbox';
 

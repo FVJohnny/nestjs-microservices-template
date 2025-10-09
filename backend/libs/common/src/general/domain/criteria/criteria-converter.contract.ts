@@ -10,7 +10,7 @@ import { OrderBy } from './order/order-by';
 import { OrderType, OrderTypes } from './order/order-type';
 import { PaginationCursor } from './pagination/pagination-cursor';
 import { PaginationOffset } from './pagination/pagination-offset';
-import type { SharedAggregateRootDTO } from '../aggregate-root';
+import type { SharedAggregateRootDTO } from '../base.aggregate-root';
 
 /**
  * Test entity for CriteriaConverter tests

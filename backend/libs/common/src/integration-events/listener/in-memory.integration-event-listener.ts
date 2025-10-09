@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BaseIntegrationEventListener } from './integration-event-listener.base';
+import { BaseIntegrationEventListener } from './base.integration-event-listener';
 import { ParsedIntegrationMessage } from '../types/integration-event.types';
 
 @Injectable()

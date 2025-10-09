@@ -1,8 +1,8 @@
 // Aggregate Root
-export * from './aggregate-root';
+export * from './base.aggregate-root';
 
 // Base Repository
-export * from './repository.base';
+export * from './base.repository';
 
 // Value Objects
 export * from './value-objects';
