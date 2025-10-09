@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 
-import { OutboxEvent, OutboxRepository, type RepositoryContext } from '@libs/nestjs-common';
+import { OutboxEvent, Outbox_Repository, type RepositoryContext } from '@libs/nestjs-common';
 
-import { BaseRedisRepository } from '../base.redis-repository';
+import { Base_RedisRepository } from '../base.redis-repository';
 import type { RedisService } from '../redis.service';
 
 @Injectable()
-export class Outbox_Redis_Repository
-  extends BaseRedisRepository<OutboxEvent>
-  implements OutboxRepository
+export class Outbox_RedisRepository
+  extends Base_RedisRepository<OutboxEvent>
+  implements Outbox_Repository
 {
   private readonly keyPrefix = 'outbox:';
   private readonly zUnprocessed = `${this.keyPrefix}unprocessedByCreatedAt`;

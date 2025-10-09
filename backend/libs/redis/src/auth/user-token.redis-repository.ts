@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { BaseRedisRepository } from '../base.redis-repository';
+import { Base_RedisRepository } from '../base.redis-repository';
 import { RedisService } from '../redis.service';
 import type { RepositoryContext } from '@libs/nestjs-common';
 import { Id, type UserToken_Repository, UserToken, Token } from '@libs/nestjs-common';
 
 @Injectable()
 export class UserToken_Redis_Repository
-  extends BaseRedisRepository<UserToken>
+  extends Base_RedisRepository<UserToken>
   implements UserToken_Repository
 {
   private readonly keyPrefix = 'auth:token:';

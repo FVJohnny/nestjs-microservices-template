@@ -1,6 +1,6 @@
 import { DateVO, Timestamps } from '../../general';
-import { OutboxEvent } from './outbox-event.entity';
-import type { OutboxRepository } from './outbox.repository';
+import { OutboxEvent } from './outbox.entity';
+import type { Outbox_Repository } from './outbox.repository';
 import {
   OutboxMaxRetries,
   OutboxPayload,
@@ -14,7 +14,7 @@ import {
  */
 export function testOutboxRepositoryContract(
   description: string,
-  createRepository: () => Promise<OutboxRepository>,
+  createRepository: () => Promise<Outbox_Repository>,
   setupTeardown?: {
     beforeAll?: () => Promise<void>;
     afterAll?: () => Promise<void>;
@@ -23,7 +23,7 @@ export function testOutboxRepositoryContract(
   },
 ) {
   describe(`OutboxRepository Contract: ${description}`, () => {
-    let repo: OutboxRepository;
+    let repo: Outbox_Repository;
 
     if (setupTeardown?.beforeAll) {
       beforeAll(setupTeardown.beforeAll, 30000);

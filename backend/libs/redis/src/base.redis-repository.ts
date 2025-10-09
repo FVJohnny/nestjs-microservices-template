@@ -12,7 +12,7 @@ import type {
 import { TransactionParticipant_Redis } from './transactions/transaction-participant.redis';
 import type { RedisService } from './redis.service';
 
-export abstract class BaseRedisRepository<TEnt extends SharedAggregateRoot>
+export abstract class Base_RedisRepository<TEnt extends SharedAggregateRoot>
   implements Repository<TEnt, Id>
 {
   protected readonly logger: CorrelationLogger;

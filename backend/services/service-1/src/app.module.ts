@@ -11,7 +11,7 @@ import {
 } from '@libs/nestjs-common';
 import { MetricsModule, JwtAuthModule } from '@libs/nestjs-common';
 import { OutboxModule } from '@libs/nestjs-common';
-import { Outbox_Mongodb_Repository } from '@libs/nestjs-mongodb';
+import { Outbox_MongodbRepository } from '@libs/nestjs-mongodb';
 import { RedisDBModule } from '@libs/nestjs-redis';
 import { MongoDBModule } from '@libs/nestjs-mongodb';
 import { PostgresDBModule } from '@libs/nestjs-postgresql';
@@ -26,7 +26,7 @@ import { KafkaIntegrationEventsModule } from '@libs/nestjs-kafka';
 
     // INTEGRATION EVENT MODULES
     InboxModule,
-    OutboxModule.forRoot({ repository: Outbox_Mongodb_Repository }),
+    OutboxModule.forRoot({ repository: Outbox_MongodbRepository }),
     // RedisIntegrationEventsModule,
     KafkaIntegrationEventsModule,
 

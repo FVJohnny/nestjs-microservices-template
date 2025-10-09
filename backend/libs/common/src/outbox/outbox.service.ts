@@ -1,7 +1,7 @@
 import { Injectable, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { type OutboxRepository } from './domain/outbox.repository';
+import { type Outbox_Repository } from './domain/outbox.repository';
 import { INTEGRATION_EVENT_PUBLISHER, type IntegrationEventPublisher } from '../integration-events';
-import { OutboxEvent } from './domain/outbox-event.entity';
+import { OutboxEvent } from './domain/outbox.entity';
 import { CorrelationLogger } from '../logger';
 import { WithSpan, TracingService } from '../tracing';
 
@@ -15,7 +15,7 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     @Inject(OUTBOX_REPOSITORY)
-    private readonly repository: OutboxRepository,
+    private readonly repository: Outbox_Repository,
     @Inject(INTEGRATION_EVENT_PUBLISHER)
     private readonly publisher: IntegrationEventPublisher,
   ) {}

@@ -5,11 +5,11 @@ import { User_Repository } from '@bc/auth/domain/repositories/user/user.reposito
 import { Email, Username } from '@bc/auth/domain/value-objects';
 import { UserDTO } from '@bc/auth/domain/entities/user/user.dto';
 import { type RepositoryContext } from '@libs/nestjs-common';
-import { MONGO_CLIENT_TOKEN, BaseMongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
+import { MONGO_CLIENT_TOKEN, Base_MongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
 
 @Injectable()
 export class User_Mongodb_Repository
-  extends BaseMongoRepository<User, UserDTO>
+  extends Base_MongoRepository<User, UserDTO>
   implements User_Repository
 {
   static readonly CollectionName = 'users';

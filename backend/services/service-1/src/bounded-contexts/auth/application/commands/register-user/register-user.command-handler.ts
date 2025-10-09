@@ -12,7 +12,7 @@ import {
   BaseCommandHandler,
   EVENT_BUS,
   OUTBOX_REPOSITORY,
-  type OutboxRepository,
+  type Outbox_Repository,
   UserCreated_IntegrationEvent,
   type RepositoryContext,
   OutboxTopic,
@@ -27,7 +27,7 @@ export class RegisterUser_CommandHandler extends BaseCommandHandler(RegisterUser
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
     @Inject(OUTBOX_REPOSITORY)
-    private readonly outboxRepository: OutboxRepository,
+    private readonly outboxRepository: Outbox_Repository,
     @Inject(EVENT_BUS)
     eventBus: IEventBus,
   ) {

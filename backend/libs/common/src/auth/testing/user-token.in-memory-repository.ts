@@ -1,6 +1,6 @@
 import type { RepositoryContext } from '../../transactions';
 import type { Id } from '../../general/domain/value-objects/id.vo';
-import { InMemoryBaseRepository } from '../../general/infrastructure/in-memory-repository';
+import { Base_InMemory_Repository } from '../../general/infrastructure/base.in-memory-repository';
 import type { UserToken_Repository } from '../domain/repositories/user-token.repository';
 import { UserToken } from '../domain/entities/user-token.entity';
 import type { UserTokenDTO } from '../domain/entities/user-token.dto';
@@ -16,7 +16,7 @@ import {
 } from '../../general/domain';
 
 export class UserToken_InMemory_Repository
-  extends InMemoryBaseRepository<UserToken, UserTokenDTO>
+  extends Base_InMemory_Repository<UserToken, UserTokenDTO>
   implements UserToken_Repository
 {
   constructor(shouldFail: boolean = false) {

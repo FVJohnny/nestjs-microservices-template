@@ -28,7 +28,7 @@ export interface IndexSpec {
   options?: CreateIndexesOptions;
 }
 
-export abstract class BaseMongoRepository<
+export abstract class Base_MongoRepository<
   TEnt extends SharedAggregateRoot,
   TDto extends SharedAggregateRootDTO & { id: string },
 > implements Repository<TEnt, Id>

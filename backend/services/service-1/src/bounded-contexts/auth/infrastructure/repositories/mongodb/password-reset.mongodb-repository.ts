@@ -13,11 +13,11 @@ import {
   FilterValue,
   Operator,
 } from '@libs/nestjs-common';
-import { MONGO_CLIENT_TOKEN, BaseMongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
+import { MONGO_CLIENT_TOKEN, Base_MongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
 
 @Injectable()
 export class PasswordReset_Mongodb_Repository
-  extends BaseMongoRepository<PasswordReset, PasswordResetDTO>
+  extends Base_MongoRepository<PasswordReset, PasswordResetDTO>
   implements PasswordReset_Repository
 {
   static readonly CollectionName = 'password_resets';

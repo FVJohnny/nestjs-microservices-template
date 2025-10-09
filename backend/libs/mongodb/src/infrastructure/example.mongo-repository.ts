@@ -1,5 +1,5 @@
 import type { IndexSpec } from '../base.mongo-repository';
-import { BaseMongoRepository } from '../base.mongo-repository';
+import { Base_MongoRepository } from '../base.mongo-repository';
 import type { EntityExampleDTO, ExampleRepository } from '@libs/nestjs-common';
 import type { MongoClient } from 'mongodb';
 import {
@@ -12,14 +12,14 @@ import {
   FilterValue,
 } from '@libs/nestjs-common';
 
-export class ExampleMongoRepository
-  extends BaseMongoRepository<EntityExample, EntityExampleDTO>
+export class Example_MongoRepository
+  extends Base_MongoRepository<EntityExample, EntityExampleDTO>
   implements ExampleRepository
 {
   static CollectionName = 'transaction-test';
 
   constructor(mongoClient: MongoClient) {
-    super(mongoClient, ExampleMongoRepository.CollectionName);
+    super(mongoClient, Example_MongoRepository.CollectionName);
   }
 
   protected toEntity(dto: EntityExampleDTO): EntityExample {

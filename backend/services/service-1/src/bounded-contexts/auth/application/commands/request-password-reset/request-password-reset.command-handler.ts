@@ -15,7 +15,7 @@ import {
   BaseCommandHandler,
   EVENT_BUS,
   OUTBOX_REPOSITORY,
-  type OutboxRepository,
+  type Outbox_Repository,
   PasswordResetRequested_IntegrationEvent,
   type RepositoryContext,
   OutboxTopic,
@@ -34,7 +34,7 @@ export class RequestPasswordReset_CommandHandler extends BaseCommandHandler(
     @Inject(PASSWORD_RESET_REPOSITORY)
     private readonly passwordResetRepository: PasswordReset_Repository,
     @Inject(OUTBOX_REPOSITORY)
-    private readonly outboxRepository: OutboxRepository,
+    private readonly outboxRepository: Outbox_Repository,
     @Inject(EVENT_BUS)
     eventBus: IEventBus,
   ) {

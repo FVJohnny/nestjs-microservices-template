@@ -4,22 +4,22 @@ import type { MongoClient, Filter } from 'mongodb';
 import {
   OutboxEvent,
   OutboxProcessedAt,
-  OutboxRepository,
+  Outbox_Repository,
   type OutboxEventDTO,
   type RepositoryContext,
 } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN } from '../mongodb.tokens';
-import { BaseMongoRepository, IndexSpec } from '../base.mongo-repository';
+import { Base_MongoRepository, IndexSpec } from '../base.mongo-repository';
 
 @Injectable()
-export class Outbox_Mongodb_Repository
-  extends BaseMongoRepository<OutboxEvent, OutboxEventDTO>
-  implements OutboxRepository
+export class Outbox_MongodbRepository
+  extends Base_MongoRepository<OutboxEvent, OutboxEventDTO>
+  implements Outbox_Repository
 {
   static CollectionName = 'outbox_events';
 
   constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
-    super(mongoClient, Outbox_Mongodb_Repository.CollectionName);
+    super(mongoClient, Outbox_MongodbRepository.CollectionName);
   }
 
   protected toEntity(dto: OutboxEventDTO): OutboxEvent {

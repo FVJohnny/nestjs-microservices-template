@@ -1,5 +1,5 @@
 import type { TransactionParticipant } from './transaction-participant';
-import type { InMemoryBaseRepository } from '../general/infrastructure/in-memory-repository';
+import type { Base_InMemory_Repository } from '../general/infrastructure/base.in-memory-repository';
 import type { SharedAggregateRoot, SharedAggregateRootDTO } from '../general/domain';
 
 export class TransactionParticipant_InMemory<
@@ -7,9 +7,9 @@ export class TransactionParticipant_InMemory<
   TDto extends SharedAggregateRootDTO,
 > implements TransactionParticipant
 {
-  private readonly snapshots = new Map<InMemoryBaseRepository<TEnt, TDto>, Map<string, TDto>>();
+  private readonly snapshots = new Map<Base_InMemory_Repository<TEnt, TDto>, Map<string, TDto>>();
 
-  saveSnapshot(repository: InMemoryBaseRepository<TEnt, TDto>, snapshot: Map<string, TDto>) {
+  saveSnapshot(repository: Base_InMemory_Repository<TEnt, TDto>, snapshot: Map<string, TDto>) {
     if (!this.snapshots.has(repository)) {
       this.snapshots.set(repository, snapshot);
     }

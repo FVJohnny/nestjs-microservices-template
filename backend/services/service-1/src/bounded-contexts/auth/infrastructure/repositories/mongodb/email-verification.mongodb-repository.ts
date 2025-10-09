@@ -5,11 +5,11 @@ import { EmailVerificationDTO } from '@bc/auth/domain/entities/email-verificatio
 import { EmailVerification_Repository } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { Email, Expiration, Verification } from '@bc/auth/domain/value-objects';
 import { Id, type RepositoryContext } from '@libs/nestjs-common';
-import { MONGO_CLIENT_TOKEN, BaseMongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
+import { MONGO_CLIENT_TOKEN, Base_MongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
 
 @Injectable()
 export class EmailVerification_Mongodb_Repository
-  extends BaseMongoRepository<EmailVerification, EmailVerificationDTO>
+  extends Base_MongoRepository<EmailVerification, EmailVerificationDTO>
   implements EmailVerification_Repository
 {
   static readonly CollectionName = 'email_verifications';
