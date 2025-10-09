@@ -10,10 +10,10 @@ import {
 import type { ClientSession } from 'mongodb';
 import {
   CorrelationLogger,
-  SharedAggregateRootDTO,
+  SharedAggregateDTO,
   AlreadyExistsException,
   InfrastructureException,
-  SharedAggregateRoot,
+  SharedAggregate,
   Id,
   Criteria,
   PaginatedRepoResult,
@@ -29,8 +29,8 @@ export interface IndexSpec {
 }
 
 export abstract class Base_MongoRepository<
-  TEnt extends SharedAggregateRoot,
-  TDto extends SharedAggregateRootDTO & { id: string },
+  TEnt extends SharedAggregate,
+  TDto extends SharedAggregateDTO & { id: string },
 > implements Repository<TEnt, Id>
 {
   protected readonly logger: CorrelationLogger;

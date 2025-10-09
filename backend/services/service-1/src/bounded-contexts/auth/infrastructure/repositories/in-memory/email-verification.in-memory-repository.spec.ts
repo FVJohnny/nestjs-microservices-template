@@ -1,6 +1,6 @@
 import { EmailVerification_InMemoryRepository } from './email-verification.in-memory-repository';
-import { testEmailVerificationRepositoryContract } from '@bc/auth/domain/repositories/email-verification/email-verification.repository.spec';
-import type { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
+import { testEmailVerificationRepositoryContract } from '@bc/auth/domain/aggregates/email-verification/email-verification.repository.spec';
+import type { EmailVerification } from '@bc/auth/domain/aggregates/email-verification/email-verification.aggregate';
 
 // Run the shared contract tests for in-memory implementation
 testEmailVerificationRepositoryContract(

@@ -1,5 +1,5 @@
 import type { DateVO, Repository } from '../../general';
-import type { InboxEvent } from './inbox.entity';
+import type { InboxEvent } from './inbox.aggregate';
 import type { Id } from '../../general';
 import type { RepositoryContext } from '../../transactions';
 import type { InboxStatusVO } from './value-objects';

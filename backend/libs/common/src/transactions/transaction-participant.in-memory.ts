@@ -1,10 +1,10 @@
 import type { TransactionParticipant } from './transaction-participant';
 import type { Base_InMemoryRepository } from '../general/infrastructure/base.in-memory-repository';
-import type { SharedAggregateRoot, SharedAggregateRootDTO } from '../general/domain';
+import type { SharedAggregate, SharedAggregateDTO } from '../general/domain';
 
 export class TransactionParticipant_InMemory<
-  TEnt extends SharedAggregateRoot,
-  TDto extends SharedAggregateRootDTO,
+  TEnt extends SharedAggregate,
+  TDto extends SharedAggregateDTO,
 > implements TransactionParticipant
 {
   private readonly snapshots = new Map<Base_InMemoryRepository<TEnt, TDto>, Map<string, TDto>>();

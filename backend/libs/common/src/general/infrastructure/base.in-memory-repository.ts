@@ -1,12 +1,12 @@
 import { InfrastructureException } from '../../errors';
 import { type RepositoryContext, TransactionParticipant_InMemory } from '../../transactions';
-import type { SharedAggregateRoot, Id, SharedAggregateRootDTO, Criteria } from '../domain';
+import type { SharedAggregate, Id, SharedAggregateDTO, Criteria } from '../domain';
 import type { Repository } from '../domain';
 import { InMemoryCriteriaConverter } from './criteria/criteria-converter.in-memory';
 
 export abstract class Base_InMemoryRepository<
-  TEnt extends SharedAggregateRoot,
-  TDto extends SharedAggregateRootDTO,
+  TEnt extends SharedAggregate,
+  TDto extends SharedAggregateDTO,
 > implements Repository<TEnt, Id>
 {
   protected items: Map<string, TDto> = new Map();

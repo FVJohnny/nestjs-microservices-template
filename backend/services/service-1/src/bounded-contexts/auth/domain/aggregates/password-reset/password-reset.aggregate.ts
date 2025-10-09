@@ -1,7 +1,7 @@
 import { DateVO, Id, Timestamps } from '@libs/nestjs-common';
-import { SharedAggregateRoot, InvalidOperationException } from '@libs/nestjs-common';
+import { SharedAggregate, InvalidOperationException } from '@libs/nestjs-common';
 import { Email, Expiration, Used } from '@bc/auth/domain/value-objects';
-import { PasswordResetRequested_DomainEvent } from '@bc/auth/domain/events/password-reset-requested.domain-event';
+import { PasswordResetRequested_DomainEvent } from './events/password-reset-requested.domain-event';
 import type { PasswordResetDTO } from './password-reset.dto';
 
 export interface PasswordResetAttributes {
@@ -16,7 +16,7 @@ export interface CreatePasswordResetProps {
   email: Email;
 }
 
-export class PasswordReset extends SharedAggregateRoot {
+export class PasswordReset extends SharedAggregate {
   email: Email;
   expiration: Expiration;
   used: Used;

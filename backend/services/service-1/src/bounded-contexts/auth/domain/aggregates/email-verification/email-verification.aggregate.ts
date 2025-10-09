@@ -1,8 +1,8 @@
 import { DateVO, Id, Timestamps } from '@libs/nestjs-common';
-import { SharedAggregateRoot, InvalidOperationException } from '@libs/nestjs-common';
+import { SharedAggregate, InvalidOperationException } from '@libs/nestjs-common';
 import { Email, Verification, Expiration } from '@bc/auth/domain/value-objects';
-import { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
-import { EmailVerificationCreated_DomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
+import { EmailVerificationVerified_DomainEvent } from './events/email-verified.domain-event';
+import { EmailVerificationCreated_DomainEvent } from './events/email-verification-created.domain-event';
 import type { EmailVerificationDTO } from './email-verification.dto';
 
 export interface EmailVerificationAttributes {
@@ -19,7 +19,7 @@ export interface CreateEmailVerificationProps {
   email: Email;
 }
 
-export class EmailVerification extends SharedAggregateRoot {
+export class EmailVerification extends SharedAggregate {
   userId: Id;
   email: Email;
   expiration: Expiration;

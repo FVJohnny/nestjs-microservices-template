@@ -1,4 +1,4 @@
-import type { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
+import type { EmailVerification } from '@bc/auth/domain/aggregates/email-verification/email-verification.aggregate';
 import type { Email } from '@bc/auth/domain/value-objects';
 import type { Id, Repository, RepositoryContext } from '@libs/nestjs-common';
 

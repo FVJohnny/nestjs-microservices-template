@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { User_Repository } from '@bc/auth/domain/repositories/user/user.repository';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
+import { User_Repository } from '@bc/auth/domain/aggregates/user/user.repository';
 import { Email, Username } from '@bc/auth/domain/value-objects';
 import { AlreadyExistsException, type RepositoryContext } from '@libs/nestjs-common';
-import { UserDTO } from '@bc/auth/domain/entities/user/user.dto';
+import { UserDTO } from '@bc/auth/domain/aggregates/user/user.dto';
 import { Base_InMemoryRepository } from '@libs/nestjs-common';
 
 @Injectable()

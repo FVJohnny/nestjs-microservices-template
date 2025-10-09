@@ -9,7 +9,7 @@ import { Base_CommandHandler } from '../../../../cqrs/base.command-handler';
 import { EVENT_BUS } from '../../../../cqrs/cqrs.module';
 import { Id } from '../../../../general/domain/value-objects/id.vo';
 import { Transaction } from '../../../../transactions/transaction';
-import { UserToken } from '../../../domain/entities/user-token.entity';
+import { UserToken } from '../../../domain/entities/user-token.aggregate';
 import { Token } from '../../../domain/entities/token.vo';
 
 export class StoreTokens_CommandHandler extends Base_CommandHandler(StoreTokens_Command) {

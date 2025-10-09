@@ -2,8 +2,8 @@ import { ExecutePasswordReset_CommandHandler } from './execute-password-reset.co
 import { ExecutePasswordReset_Command } from './execute-password-reset.command';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import { PasswordReset_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { PasswordReset } from '@bc/auth/domain/entities/password-reset/password-reset.entity';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
+import { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
 import { Email, Username, Password, Expiration, Used } from '@bc/auth/domain/value-objects';
 import {
   ApplicationException,
@@ -14,8 +14,8 @@ import {
   InvalidOperationException,
   wait,
 } from '@libs/nestjs-common';
-import { UserPasswordChanged_DomainEvent } from '@bc/auth/domain/events/password-changed.domain-event';
-import { UserLogout_DomainEvent } from '@bc/auth/domain/events/user-logout.domain-event';
+import { UserPasswordChanged_DomainEvent } from '@bc/auth/domain/aggregates/user/events/password-changed.domain-event';
+import { UserLogout_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-logout.domain-event';
 
 describe('ExecutePasswordResetCommandHandler', () => {
   // Test data factory

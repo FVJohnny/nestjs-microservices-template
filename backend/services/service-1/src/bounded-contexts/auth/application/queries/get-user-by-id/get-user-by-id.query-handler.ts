@@ -3,7 +3,7 @@ import { GetUserById_Query } from './get-user-by-id.query';
 import {
   USER_REPOSITORY,
   type User_Repository,
-} from '@bc/auth/domain/repositories/user/user.repository';
+} from '@bc/auth/domain/aggregates/user/user.repository';
 import { Base_QueryHandler, NotFoundException, Id } from '@libs/nestjs-common';
 import { GetUserById_QueryResponse } from './get-user-by-id.query-response';
 

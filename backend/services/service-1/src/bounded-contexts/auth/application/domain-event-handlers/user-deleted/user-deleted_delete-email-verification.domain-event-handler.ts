@@ -1,5 +1,5 @@
 import { type ICommandBus } from '@nestjs/cqrs';
-import { UserDeleted_DomainEvent } from '@bc/auth/domain/events/user-deleted.domain-event';
+import { UserDeleted_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-deleted.domain-event';
 import { DeleteEmailVerificationByUserId_Command } from '@bc/auth/application/commands';
 import { COMMAND_BUS, Base_DomainEventHandler } from '@libs/nestjs-common';
 import { Inject } from '@nestjs/common';

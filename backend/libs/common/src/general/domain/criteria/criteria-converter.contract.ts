@@ -10,12 +10,12 @@ import { OrderBy } from './order/order-by.vo';
 import { OrderType, OrderTypes } from './order/order-type.vo';
 import { PaginationCursor } from './pagination/pagination-cursor';
 import { PaginationOffset } from './pagination/pagination-offset';
-import type { SharedAggregateRootDTO } from '../base.aggregate-root';
+import type { SharedAggregateDTO } from '../base.aggregate';
 
 /**
  * Test entity for CriteriaConverter tests
  */
-export interface TestEntityDTO extends SharedAggregateRootDTO {
+export interface TestEntityDTO extends SharedAggregateDTO {
   id: string;
   name: string;
   value: number;

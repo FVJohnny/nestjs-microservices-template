@@ -4,8 +4,8 @@ import { RegisterUser_Command } from './register-user.command';
 import {
   USER_REPOSITORY,
   type User_Repository,
-} from '@bc/auth/domain/repositories/user/user.repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
+} from '@bc/auth/domain/aggregates/user/user.repository';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import { Email, Username, Password } from '@bc/auth/domain/value-objects';
 import {
   AlreadyExistsException,

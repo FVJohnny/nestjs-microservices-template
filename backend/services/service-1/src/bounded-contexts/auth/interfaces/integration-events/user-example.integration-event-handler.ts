@@ -4,7 +4,7 @@ import { COMMAND_BUS } from '@libs/nestjs-common';
 import { IntegrationEventHandler, UserExample_IntegrationEvent } from '@libs/nestjs-common';
 import { RegisterUser_Command } from '@bc/auth/application/commands';
 import { CorrelationLogger } from '@libs/nestjs-common';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 
 @IntegrationEventHandler(UserExample_IntegrationEvent)
 export class UserExample_IntegrationEventHandler {

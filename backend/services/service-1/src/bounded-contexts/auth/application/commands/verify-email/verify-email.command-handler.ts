@@ -4,7 +4,7 @@ import { VerifyEmail_Command } from './verify-email.command';
 import {
   EMAIL_VERIFICATION_REPOSITORY,
   type EmailVerification_Repository,
-} from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
+} from '@bc/auth/domain/aggregates/email-verification/email-verification.repository';
 import { Base_CommandHandler, EVENT_BUS, NotFoundException } from '@libs/nestjs-common';
 import { Id } from '@libs/nestjs-common';
 

@@ -1,4 +1,4 @@
-export * from './domain/outbox.entity';
+export * from './domain/outbox.aggregate';
 export * from './domain/outbox.repository';
 export * from './domain/value-objects';
 export * from './outbox.service';

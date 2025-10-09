@@ -2,8 +2,8 @@ import { RequestPasswordReset_CommandHandler } from './request-password-reset.co
 import { RequestPasswordReset_Command } from './request-password-reset.command';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import { PasswordReset_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { PasswordReset } from '@bc/auth/domain/entities/password-reset/password-reset.entity';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
+import { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
 import { Email, Username, Password, Expiration, Used } from '@bc/auth/domain/value-objects';
 import {
   ApplicationException,
@@ -15,7 +15,7 @@ import {
   Outbox_InMemoryRepository,
   Id,
 } from '@libs/nestjs-common';
-import { PasswordResetRequested_DomainEvent } from '@bc/auth/domain/events/password-reset-requested.domain-event';
+import { PasswordResetRequested_DomainEvent } from '@bc/auth/domain/aggregates/password-reset/events/password-reset-requested.domain-event';
 
 describe('RequestPasswordResetCommandHandler', () => {
   // Test data factory

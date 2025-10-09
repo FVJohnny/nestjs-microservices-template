@@ -4,7 +4,7 @@ import type {
   RepositoryContext,
   Id,
   Repository,
-  SharedAggregateRoot,
+  SharedAggregate,
   Criteria,
   PaginatedRepoResult,
 } from '@libs/nestjs-common';
@@ -12,7 +12,7 @@ import type {
 import { TransactionParticipant_Redis } from '../transactions/transaction-participant.redis';
 import type { RedisService } from '../redis.service';
 
-export abstract class Base_RedisRepository<TEnt extends SharedAggregateRoot>
+export abstract class Base_RedisRepository<TEnt extends SharedAggregate>
   implements Repository<TEnt, Id>
 {
   protected readonly logger: CorrelationLogger;

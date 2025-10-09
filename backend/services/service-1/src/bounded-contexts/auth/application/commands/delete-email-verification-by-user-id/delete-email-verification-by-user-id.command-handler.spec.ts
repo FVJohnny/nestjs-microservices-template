@@ -1,7 +1,7 @@
 import { DeleteEmailVerificationByUserId_CommandHandler } from './delete-email-verification-by-user-id.command-handler';
 import { DeleteEmailVerificationByUserId_Command } from './delete-email-verification-by-user-id.command';
 import { EmailVerification_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification.in-memory-repository';
-import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
+import { EmailVerification } from '@bc/auth/domain/aggregates/email-verification/email-verification.aggregate';
 import { Id, MockEventBus, InfrastructureException } from '@libs/nestjs-common';
 
 describe('DeleteEmailVerificationByUserId_CommandHandler', () => {

@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy, Inject } from '@nestjs/commo
 import { CorrelationLogger } from '../logger';
 import type { InboxRepository } from './domain/inbox.repository';
 import { INBOX_REPOSITORY_TOKEN } from './inbox.constants';
-import { InboxEvent } from './domain/inbox.entity';
+import { InboxEvent } from './domain/inbox.aggregate';
 import type { IIntegrationEventHandler } from '../integration-events/listener/base.integration-event-listener';
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
 import { InboxEventName, InboxPayload, InboxTopic } from './domain/value-objects';

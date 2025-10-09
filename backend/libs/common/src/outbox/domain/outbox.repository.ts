@@ -1,5 +1,5 @@
 import type { Repository } from '../../general';
-import type { OutboxEvent } from './outbox.entity';
+import type { OutboxEvent } from './outbox.aggregate';
 import type { Id } from '../../general';
 import type { RepositoryContext } from '../../transactions';
 

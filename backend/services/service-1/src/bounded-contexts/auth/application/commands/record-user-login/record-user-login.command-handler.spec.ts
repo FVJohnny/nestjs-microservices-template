@@ -1,7 +1,7 @@
 import { RecordUserLogin_CommandHandler } from './record-user-login.command-handler';
 import { RecordUserLogin_Command } from './record-user-login.command';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import {
   ApplicationException,
   DateVO,

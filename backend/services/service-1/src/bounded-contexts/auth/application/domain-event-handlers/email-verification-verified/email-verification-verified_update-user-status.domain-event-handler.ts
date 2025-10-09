@@ -1,9 +1,9 @@
 import { Inject } from '@nestjs/common';
-import { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
+import { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/aggregates/email-verification/events/email-verified.domain-event';
 import {
   USER_REPOSITORY,
   type User_Repository,
-} from '@bc/auth/domain/repositories/user/user.repository';
+} from '@bc/auth/domain/aggregates/user/user.repository';
 import { Base_DomainEventHandler, NotFoundException } from '@libs/nestjs-common';
 
 export class EmailVerificationVerified_UpdateUserStatus_DomainEventHandler extends Base_DomainEventHandler(

@@ -1,7 +1,7 @@
 import { DateVO } from '../value-objects/date.vo';
 import { Id } from '../value-objects/id.vo';
 import { Timestamps } from '../value-objects/timestamps.vo';
-import { SharedAggregateRoot } from '../base.aggregate-root';
+import { SharedAggregate } from '../base.aggregate';
 import type { EntityExampleDTO } from './example.dto';
 
 interface EntityExampleCreateProps {
@@ -14,7 +14,7 @@ interface EntityExampleAttributes {
   value: string;
 }
 
-export class EntityExample extends SharedAggregateRoot {
+export class EntityExample extends SharedAggregate {
   value: string;
 
   private constructor(props: EntityExampleAttributes) {

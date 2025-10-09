@@ -1,5 +1,5 @@
 import type { Repository, RepositoryContext, Id } from '../../..';
-import type { UserToken } from '../entities/user-token.entity';
+import type { UserToken } from '../entities/user-token.aggregate';
 import type { Token } from '../entities/token.vo';
 
 export const USER_TOKEN_REPOSITORY = Symbol('UserTokenRepository');

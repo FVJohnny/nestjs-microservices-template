@@ -1,5 +1,5 @@
 import { UserDeleted_DeleteEmailVerification_DomainEventHandler } from './user-deleted_delete-email-verification.domain-event-handler';
-import { UserDeleted_DomainEvent } from '@bc/auth/domain/events/user-deleted.domain-event';
+import { UserDeleted_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-deleted.domain-event';
 import { Id, MockCommandBus } from '@libs/nestjs-common';
 
 describe('UserDeleted_DeleteEmailVerification_DomainEventHandler', () => {

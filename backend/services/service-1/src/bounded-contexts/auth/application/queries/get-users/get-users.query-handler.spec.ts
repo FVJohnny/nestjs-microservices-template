@@ -1,7 +1,7 @@
 import { GetUsers_QueryHandler } from './get-users.query-handler';
 import { GetUsers_Query } from './get-users.query';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import { InfrastructureException } from '@libs/nestjs-common';
 
 describe('GetUsers_QueryHandler', () => {

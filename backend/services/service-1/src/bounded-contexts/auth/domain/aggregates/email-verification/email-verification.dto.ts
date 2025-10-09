@@ -1,7 +1,7 @@
-import { Id, SharedAggregateRootDTO } from '@libs/nestjs-common';
+import { Id, SharedAggregateDTO } from '@libs/nestjs-common';
 import { Email, Expiration, Verification } from '@bc/auth/domain/value-objects';
 
-export class EmailVerificationDTO extends SharedAggregateRootDTO {
+export class EmailVerificationDTO extends SharedAggregateDTO {
   userId: string;
   email: string;
   expiration: Date;
@@ -9,7 +9,7 @@ export class EmailVerificationDTO extends SharedAggregateRootDTO {
 
   static random(): EmailVerificationDTO {
     return {
-      ...SharedAggregateRootDTO.random(),
+      ...SharedAggregateDTO.random(),
 
       userId: Id.random().toValue(),
       email: Email.random().toValue(),

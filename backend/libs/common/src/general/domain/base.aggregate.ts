@@ -7,7 +7,7 @@ import { Timestamps } from './value-objects/timestamps.vo';
 /**
  * Base class for aggregate roots in Domain-Driven Design
  */
-export abstract class SharedAggregateRoot extends AggregateRoot<IEvent> {
+export abstract class SharedAggregate extends AggregateRoot<IEvent> {
   id: Id;
   timestamps: Timestamps;
 
@@ -21,7 +21,7 @@ export abstract class SharedAggregateRoot extends AggregateRoot<IEvent> {
    * Convert the aggregate to its primitive representation
    * This is used for persistence and serialization
    */
-  public toValue(): SharedAggregateRootDTO {
+  public toValue(): SharedAggregateDTO {
     return {
       id: this.id.toValue(),
       createdAt: this.timestamps.createdAt.toValue(),
@@ -33,18 +33,18 @@ export abstract class SharedAggregateRoot extends AggregateRoot<IEvent> {
    * Compares two aggregate roots for equality based on their primitive values
    * Uses Node's built-in deep equality check
    */
-  equals(other?: SharedAggregateRoot | null): boolean {
+  equals(other?: SharedAggregate | null): boolean {
     return isDeepStrictEqual(this.toValue(), other?.toValue());
   }
 }
 
-export class SharedAggregateRootDTO implements Record<string, unknown> {
+export class SharedAggregateDTO implements Record<string, unknown> {
   [key: string]: unknown;
   id: string;
   createdAt: Date;
   updatedAt: Date;
 
-  static random(): SharedAggregateRootDTO {
+  static random(): SharedAggregateDTO {
     return {
       id: Id.random().toValue(),
       createdAt: Timestamps.random().createdAt.toValue(),

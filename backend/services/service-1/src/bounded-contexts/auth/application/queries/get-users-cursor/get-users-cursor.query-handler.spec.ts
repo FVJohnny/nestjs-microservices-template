@@ -1,7 +1,7 @@
 import { GetUsersCursor_QueryHandler } from './get-users-cursor.query-handler';
 import { GetUsersCursor_Query } from './get-users-cursor.query';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import { UserRoleEnum } from '@bc/auth/domain/value-objects';
 import { DomainValidationException, InfrastructureException } from '@libs/nestjs-common';
 

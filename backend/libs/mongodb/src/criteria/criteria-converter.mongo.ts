@@ -3,7 +3,7 @@ import type {
   CriteriaQueryResult,
   PaginationCursor,
   PaginationOffset,
-  SharedAggregateRootDTO,
+  SharedAggregateDTO,
 } from '@libs/nestjs-common';
 import { Data, type Filter, Operator } from '@libs/nestjs-common';
 import { CriteriaConverter } from '@libs/nestjs-common';
@@ -38,7 +38,7 @@ interface MongoCriteriaResult {
 /**
  * Converts DDD Criteria to MongoDB filter objects
  */
-export class MongoCriteriaConverter<D extends SharedAggregateRootDTO> extends CriteriaConverter<D> {
+export class MongoCriteriaConverter<D extends SharedAggregateDTO> extends CriteriaConverter<D> {
   constructor(private readonly collection: Collection<D>) {
     super();
   }

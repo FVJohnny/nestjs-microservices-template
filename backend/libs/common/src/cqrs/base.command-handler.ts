@@ -1,6 +1,6 @@
 import { CommandHandler, type ICommand, type IEventBus } from '@nestjs/cqrs';
 
-import type { SharedAggregateRoot } from '../general/domain/base.aggregate-root';
+import type { SharedAggregate } from '../general/domain/base.aggregate';
 import { CorrelationLogger } from '../logger';
 import { WithSpan } from '../tracing';
 
@@ -92,7 +92,7 @@ export function Base_CommandHandler<TCommand extends ICommand>(
      *
      * @param entity - The aggregate root containing domain events to publish
      */
-    async sendDomainEvents<T extends SharedAggregateRoot>(entity: T): Promise<void> {
+    async sendDomainEvents<T extends SharedAggregate>(entity: T): Promise<void> {
       const events = entity.getUncommittedEvents();
 
       // Publish each domain event through the event bus

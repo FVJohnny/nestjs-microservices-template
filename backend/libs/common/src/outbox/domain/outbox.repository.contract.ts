@@ -1,5 +1,5 @@
 import { DateVO, Timestamps } from '../../general';
-import { OutboxEvent } from './outbox.entity';
+import { OutboxEvent } from './outbox.aggregate';
 import type { Outbox_Repository } from './outbox.repository';
 import {
   OutboxMaxRetries,

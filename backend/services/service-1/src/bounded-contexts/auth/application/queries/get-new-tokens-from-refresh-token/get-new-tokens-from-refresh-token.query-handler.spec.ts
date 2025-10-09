@@ -1,7 +1,7 @@
 import { GetNewTokensFromRefreshToken_QueryHandler } from './get-new-tokens-from-refresh-token.query-handler';
 import { GetNewTokensFromRefreshToken_Query } from './get-new-tokens-from-refresh-token.query';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import {
   UserToken,
   Token,

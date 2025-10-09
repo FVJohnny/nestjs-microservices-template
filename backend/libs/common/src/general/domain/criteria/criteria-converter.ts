@@ -1,15 +1,15 @@
 import type { Criteria } from './criteria';
-import type { SharedAggregateRootDTO } from '../base.aggregate-root';
+import type { SharedAggregateDTO } from '../base.aggregate';
 import type { Primitives } from '../value-objects/base.vo';
 import { PaginationCursor } from './pagination/pagination-cursor';
 
-export interface CriteriaQueryResult<D extends SharedAggregateRootDTO> {
+export interface CriteriaQueryResult<D extends SharedAggregateDTO> {
   data: D[];
   total: number | null;
   hasNext?: boolean;
   cursor?: string;
 }
-export abstract class CriteriaConverter<D extends SharedAggregateRootDTO> {
+export abstract class CriteriaConverter<D extends SharedAggregateDTO> {
   abstract executeQuery(criteria: Criteria): Promise<CriteriaQueryResult<D>>;
   abstract count(criteria: Criteria): Promise<number>;
 

@@ -1,6 +1,6 @@
-import type { SharedAggregateRootDTO } from '../../../general/domain/base.aggregate-root';
+import type { SharedAggregateDTO } from '../../../general/domain/base.aggregate';
 
-export interface UserTokenDTO extends SharedAggregateRootDTO {
+export interface UserTokenDTO extends SharedAggregateDTO {
   userId: string;
   token: string;
   type: string;

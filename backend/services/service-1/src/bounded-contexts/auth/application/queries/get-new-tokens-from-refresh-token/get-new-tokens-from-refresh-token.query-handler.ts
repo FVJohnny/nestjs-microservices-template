@@ -3,7 +3,7 @@ import { GetNewTokensFromRefreshToken_Query } from './get-new-tokens-from-refres
 import {
   USER_REPOSITORY,
   type User_Repository,
-} from '@bc/auth/domain/repositories/user/user.repository';
+} from '@bc/auth/domain/aggregates/user/user.repository';
 import {
   Base_QueryHandler,
   UnauthorizedException,

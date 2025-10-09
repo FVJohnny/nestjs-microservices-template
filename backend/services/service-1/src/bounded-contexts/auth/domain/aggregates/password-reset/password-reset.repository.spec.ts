@@ -1,5 +1,5 @@
 import type { PasswordReset_Repository } from './password-reset.repository';
-import { PasswordReset } from '@bc/auth/domain/entities/password-reset/password-reset.entity';
+import { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
 import { Email, Expiration, Used } from '@bc/auth/domain/value-objects';
 import { Id } from '@libs/nestjs-common';
 

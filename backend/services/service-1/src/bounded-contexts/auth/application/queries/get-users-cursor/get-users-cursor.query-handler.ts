@@ -4,7 +4,7 @@ import { GetUsersCursor_QueryResponse } from './get-users-cursor.query-response'
 import {
   USER_REPOSITORY,
   type User_Repository,
-} from '@bc/auth/domain/repositories/user/user.repository';
+} from '@bc/auth/domain/aggregates/user/user.repository';
 import {
   Criteria,
   Filters,

@@ -7,12 +7,12 @@ import {
   InfrastructureException,
   MockEventBus,
 } from '@libs/nestjs-common';
-import { EmailVerificationCreated_DomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
+import { EmailVerificationCreated_DomainEvent } from '@bc/auth/domain/aggregates/email-verification/events/email-verification-created.domain-event';
 import { Id } from '@libs/nestjs-common';
 import { Email, Expiration } from '@bc/auth/domain/value-objects';
-import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
+import { EmailVerification } from '@bc/auth/domain/aggregates/email-verification/email-verification.aggregate';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 
 describe('CreateEmailVerificationCommandHandler', () => {
   // Test data factory

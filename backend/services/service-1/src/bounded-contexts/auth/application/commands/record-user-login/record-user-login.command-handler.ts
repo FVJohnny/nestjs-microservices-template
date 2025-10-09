@@ -4,8 +4,8 @@ import { RecordUserLogin_Command } from './record-user-login.command';
 import {
   USER_REPOSITORY,
   type User_Repository,
-} from '@bc/auth/domain/repositories/user/user.repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
+} from '@bc/auth/domain/aggregates/user/user.repository';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import { Base_CommandHandler, EVENT_BUS, Id, NotFoundException } from '@libs/nestjs-common';
 
 export class RecordUserLogin_CommandHandler extends Base_CommandHandler(RecordUserLogin_Command) {

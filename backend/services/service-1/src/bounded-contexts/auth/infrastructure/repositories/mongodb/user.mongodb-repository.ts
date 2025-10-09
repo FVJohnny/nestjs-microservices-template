@@ -1,9 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { MongoClient } from 'mongodb';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { User_Repository } from '@bc/auth/domain/repositories/user/user.repository';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
+import { User_Repository } from '@bc/auth/domain/aggregates/user/user.repository';
 import { Email, Username } from '@bc/auth/domain/value-objects';
-import { UserDTO } from '@bc/auth/domain/entities/user/user.dto';
+import { UserDTO } from '@bc/auth/domain/aggregates/user/user.dto';
 import { type RepositoryContext } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN, Base_MongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
 

@@ -4,12 +4,12 @@ import { RequestPasswordReset_Command } from './request-password-reset.command';
 import {
   USER_REPOSITORY,
   type User_Repository,
-} from '@bc/auth/domain/repositories/user/user.repository';
+} from '@bc/auth/domain/aggregates/user/user.repository';
 import {
   PASSWORD_RESET_REPOSITORY,
   type PasswordReset_Repository,
-} from '@bc/auth/domain/repositories/password-reset/password-reset.repository';
-import { PasswordReset } from '@bc/auth/domain/entities/password-reset/password-reset.entity';
+} from '@bc/auth/domain/aggregates/password-reset/password-reset.repository';
+import { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
 import { Email } from '@bc/auth/domain/value-objects';
 import {
   Base_CommandHandler,

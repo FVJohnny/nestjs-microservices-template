@@ -4,11 +4,11 @@ import { ExecutePasswordReset_Command } from './execute-password-reset.command';
 import {
   USER_REPOSITORY,
   type User_Repository,
-} from '@bc/auth/domain/repositories/user/user.repository';
+} from '@bc/auth/domain/aggregates/user/user.repository';
 import {
   PASSWORD_RESET_REPOSITORY,
   type PasswordReset_Repository,
-} from '@bc/auth/domain/repositories/password-reset/password-reset.repository';
+} from '@bc/auth/domain/aggregates/password-reset/password-reset.repository';
 import { Password } from '@bc/auth/domain/value-objects';
 import {
   Base_CommandHandler,

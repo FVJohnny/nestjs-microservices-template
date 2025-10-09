@@ -4,7 +4,7 @@ import { GetNewTokensFromUserCredentials_QueryResponse } from './get-new-tokens-
 import {
   USER_REPOSITORY,
   type User_Repository,
-} from '@bc/auth/domain/repositories/user/user.repository';
+} from '@bc/auth/domain/aggregates/user/user.repository';
 import { Email } from '@bc/auth/domain/value-objects';
 import {
   Base_QueryHandler,

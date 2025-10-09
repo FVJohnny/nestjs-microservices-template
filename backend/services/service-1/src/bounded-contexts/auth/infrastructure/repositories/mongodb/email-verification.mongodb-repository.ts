@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { MongoClient } from 'mongodb';
-import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
-import { EmailVerificationDTO } from '@bc/auth/domain/entities/email-verification/email-verification.dto';
-import { EmailVerification_Repository } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
+import { EmailVerification } from '@bc/auth/domain/aggregates/email-verification/email-verification.aggregate';
+import { EmailVerificationDTO } from '@bc/auth/domain/aggregates/email-verification/email-verification.dto';
+import { EmailVerification_Repository } from '@bc/auth/domain/aggregates/email-verification/email-verification.repository';
 import { Email, Expiration, Verification } from '@bc/auth/domain/value-objects';
 import { Id, type RepositoryContext } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN, Base_MongoRepository, IndexSpec } from '@libs/nestjs-mongodb';

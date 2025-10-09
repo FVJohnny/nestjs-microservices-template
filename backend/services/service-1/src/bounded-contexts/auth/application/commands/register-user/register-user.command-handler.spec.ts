@@ -13,7 +13,7 @@ import {
   Outbox_InMemoryRepository,
   Id,
 } from '@libs/nestjs-common';
-import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
+import { UserRegistered_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-registered.domain-event';
 
 describe('RegisterUserCommandHandler', () => {
   // Test data factory

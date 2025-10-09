@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PasswordReset } from '@bc/auth/domain/entities/password-reset/password-reset.entity';
-import { PasswordResetDTO } from '@bc/auth/domain/entities/password-reset/password-reset.dto';
-import { PasswordReset_Repository } from '@bc/auth/domain/repositories/password-reset/password-reset.repository';
+import { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
+import { PasswordResetDTO } from '@bc/auth/domain/aggregates/password-reset/password-reset.dto';
+import { PasswordReset_Repository } from '@bc/auth/domain/aggregates/password-reset/password-reset.repository';
 import { Email, Expiration, Used } from '@bc/auth/domain/value-objects';
 import {
   Base_InMemoryRepository,

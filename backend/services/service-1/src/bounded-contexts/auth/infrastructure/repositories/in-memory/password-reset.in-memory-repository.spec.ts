@@ -1,6 +1,6 @@
 import { PasswordReset_InMemoryRepository } from './password-reset.in-memory-repository';
-import { testPasswordResetRepositoryContract } from '@bc/auth/domain/repositories/password-reset/password-reset.repository.spec';
-import type { PasswordReset } from '@bc/auth/domain/entities/password-reset/password-reset.entity';
+import { testPasswordResetRepositoryContract } from '@bc/auth/domain/aggregates/password-reset/password-reset.repository.spec';
+import type { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
 
 // Run the shared contract tests for in-memory implementation
 testPasswordResetRepositoryContract(

@@ -3,7 +3,7 @@ import type {
   CriteriaQueryResult,
   PaginationCursor,
   PaginationOffset,
-  SharedAggregateRootDTO,
+  SharedAggregateDTO,
 } from '@libs/nestjs-common';
 import { Data, type Filter, Operator, CriteriaConverter } from '@libs/nestjs-common';
 import type { Redis } from 'ioredis';
@@ -30,7 +30,7 @@ interface RedisCriteriaResult {
  * Converts DDD Criteria to Redis scan patterns and filters
  * Works with hash-based Redis storage where entities are stored as hashes
  */
-export class RedisCriteriaConverter<D extends SharedAggregateRootDTO> extends CriteriaConverter<D> {
+export class RedisCriteriaConverter<D extends SharedAggregateDTO> extends CriteriaConverter<D> {
   constructor(
     private readonly redis: Redis,
     public readonly keyPrefix: string,

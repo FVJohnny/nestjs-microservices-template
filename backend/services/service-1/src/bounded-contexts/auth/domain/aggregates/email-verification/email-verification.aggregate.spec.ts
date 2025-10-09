@@ -1,7 +1,7 @@
-import { EmailVerification } from './email-verification.entity';
+import { EmailVerification } from './email-verification.aggregate';
 import { Email, Verification, Expiration } from '@bc/auth/domain/value-objects';
-import { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
-import { EmailVerificationCreated_DomainEvent } from '@bc/auth/domain/events/email-verification-created.domain-event';
+import { EmailVerificationVerified_DomainEvent } from './events/email-verified.domain-event';
+import { EmailVerificationCreated_DomainEvent } from './events/email-verification-created.domain-event';
 import { InvalidOperationException, Id, Timestamps, wait, DateVO } from '@libs/nestjs-common';
 import { EmailVerificationDTO } from './email-verification.dto';
 

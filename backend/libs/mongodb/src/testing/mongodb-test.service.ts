@@ -1,9 +1,9 @@
-import type { SharedAggregateRootDTO } from '@libs/nestjs-common';
+import type { SharedAggregateDTO } from '@libs/nestjs-common';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { MongoClient } from 'mongodb';
 import { MongoDBConfigService } from '../mongodb-config.service';
 
-export class MongodbTestService<T extends SharedAggregateRootDTO> {
+export class MongodbTestService<T extends SharedAggregateDTO> {
   readonly mongoClient: MongoClient;
   private readonly logger = new CorrelationLogger(MongodbTestService.name);
 

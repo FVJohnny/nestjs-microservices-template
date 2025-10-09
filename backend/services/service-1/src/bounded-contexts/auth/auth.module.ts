@@ -3,11 +3,11 @@ import { RuntimeAutoDiscovery } from '@libs/nestjs-common';
 
 // Infrastructure - Repositories
 import { User_MongodbRepository } from './infrastructure/repositories/mongodb/user.mongodb-repository';
-import { USER_REPOSITORY } from './domain/repositories/user/user.repository';
+import { USER_REPOSITORY } from './domain/aggregates/user/user.repository';
 import { EmailVerification_MongodbRepository } from './infrastructure/repositories/mongodb/email-verification.mongodb-repository';
-import { EMAIL_VERIFICATION_REPOSITORY } from './domain/repositories/email-verification/email-verification.repository';
+import { EMAIL_VERIFICATION_REPOSITORY } from './domain/aggregates/email-verification/email-verification.repository';
 import { PasswordReset_MongodbRepository } from './infrastructure/repositories/mongodb/password-reset.mongodb-repository';
-import { PASSWORD_RESET_REPOSITORY } from './domain/repositories/password-reset/password-reset.repository';
+import { PASSWORD_RESET_REPOSITORY } from './domain/aggregates/password-reset/password-reset.repository';
 import { UserToken_RedisRepository } from '@libs/nestjs-redis';
 import {
   USER_TOKEN_REPOSITORY,

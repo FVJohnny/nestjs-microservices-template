@@ -4,7 +4,7 @@ import { DeleteEmailVerificationByUserId_Command } from './delete-email-verifica
 import {
   EMAIL_VERIFICATION_REPOSITORY,
   type EmailVerification_Repository,
-} from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
+} from '@bc/auth/domain/aggregates/email-verification/email-verification.repository';
 import { Base_CommandHandler, EVENT_BUS, Id } from '@libs/nestjs-common';
 
 export class DeleteEmailVerificationByUserId_CommandHandler extends Base_CommandHandler(

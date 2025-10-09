@@ -1,5 +1,5 @@
-import { SharedAggregateRootDTO } from '../base.aggregate-root';
+import { SharedAggregateDTO } from '../base.aggregate';
 
-export class EntityExampleDTO extends SharedAggregateRootDTO {
+export class EntityExampleDTO extends SharedAggregateDTO {
   value: string;
 }

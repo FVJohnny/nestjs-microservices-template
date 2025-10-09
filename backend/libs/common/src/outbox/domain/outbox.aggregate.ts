@@ -1,4 +1,4 @@
-import { DateVO, Id, SharedAggregateRoot, SharedAggregateRootDTO, Timestamps } from '../../general';
+import { DateVO, Id, SharedAggregate, SharedAggregateDTO, Timestamps } from '../../general';
 import { DomainValidationException } from '../../errors';
 import {
   OutboxEventName,
@@ -9,7 +9,7 @@ import {
   OutboxTopic,
 } from './value-objects';
 
-export class OutboxEventDTO extends SharedAggregateRootDTO {
+export class OutboxEventDTO extends SharedAggregateDTO {
   eventName: string;
   topic: string;
   payload: string;
@@ -48,7 +48,7 @@ export interface CreateOutboxEventProps {
   payload: OutboxPayload;
 }
 
-export class OutboxEvent extends SharedAggregateRoot implements OutboxEventAttributes {
+export class OutboxEvent extends SharedAggregate implements OutboxEventAttributes {
   static readonly NEVER_PROCESSED = OutboxProcessedAt.NEVER_PROCESSED;
 
   eventName: OutboxEventName;

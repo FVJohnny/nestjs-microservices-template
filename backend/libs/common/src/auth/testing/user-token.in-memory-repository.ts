@@ -2,7 +2,7 @@ import type { RepositoryContext } from '../../transactions';
 import type { Id } from '../../general/domain/value-objects/id.vo';
 import { Base_InMemoryRepository } from '../../general/infrastructure/base.in-memory-repository';
 import type { UserToken_Repository } from '../domain/repositories/user-token.repository';
-import { UserToken } from '../domain/entities/user-token.entity';
+import { UserToken } from '../domain/entities/user-token.aggregate';
 import type { UserTokenDTO } from '../domain/entities/user-token.dto';
 import type { Token } from '../domain/entities/token.vo';
 import {

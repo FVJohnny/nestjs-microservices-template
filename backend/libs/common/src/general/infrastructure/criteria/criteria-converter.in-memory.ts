@@ -1,5 +1,5 @@
 import { Data } from '../../../utils/data.util';
-import type { SharedAggregateRootDTO } from '../../domain/base.aggregate-root';
+import type { SharedAggregateDTO } from '../../domain/base.aggregate';
 import type { CriteriaQueryResult, Criteria, Filter, Order } from '../../domain/criteria';
 import {
   PaginationCursor,
@@ -22,9 +22,7 @@ export interface InMemoryFilterResult<T> {
  * Converts DDD Criteria to in-memory filtering, sorting and pagination functions
  * Generic implementation that works with any entity that has toValue() method
  */
-export class InMemoryCriteriaConverter<
-  D extends SharedAggregateRootDTO,
-> extends CriteriaConverter<D> {
+export class InMemoryCriteriaConverter<D extends SharedAggregateDTO> extends CriteriaConverter<D> {
   constructor(private readonly allItems: D[]) {
     super();
   }

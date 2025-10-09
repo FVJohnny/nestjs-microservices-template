@@ -1,7 +1,7 @@
-import type { SharedAggregateRootDTO } from '@libs/nestjs-common';
+import type { SharedAggregateDTO } from '@libs/nestjs-common';
 import { RedisService } from '../redis.service';
 
-export class RedisTestService<T extends SharedAggregateRootDTO> extends RedisService {
+export class RedisTestService<T extends SharedAggregateDTO> extends RedisService {
   private static instanceCounter = 0;
 
   constructor(private readonly keyPrefix: string = 'test') {

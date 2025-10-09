@@ -1,4 +1,4 @@
-export * from './domain/inbox.entity';
+export * from './domain/inbox.aggregate';
 export * from './domain/inbox.repository';
 export * from './domain/value-objects';
 export * from './infrastructure/inbox.in-memory-repository';

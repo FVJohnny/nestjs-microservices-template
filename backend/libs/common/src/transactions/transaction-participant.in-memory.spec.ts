@@ -1,6 +1,6 @@
 import { Base_InMemoryRepository } from '../general';
 import type { EntityExampleDTO } from '../general/domain/example/example.dto';
-import { EntityExample } from '../general/domain/example/example.aggregate-root';
+import { EntityExample } from '../general/domain/example/example.aggregate';
 import { Transaction } from './transaction';
 
 class Example_InMemoryRepository extends Base_InMemoryRepository<EntityExample, EntityExampleDTO> {

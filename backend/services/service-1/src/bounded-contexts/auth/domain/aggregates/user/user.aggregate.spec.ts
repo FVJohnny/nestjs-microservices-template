@@ -1,4 +1,4 @@
-import { User } from './user.entity';
+import { User } from './user.aggregate';
 import {
   Email,
   Username,
@@ -9,12 +9,12 @@ import {
   Password,
   LastLogin,
 } from '@bc/auth/domain/value-objects';
-import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
-import { UserPasswordChanged_DomainEvent } from '@bc/auth/domain/events/password-changed.domain-event';
-import { UserLogout_DomainEvent } from '@bc/auth/domain/events/user-logout.domain-event';
+import { UserRegistered_DomainEvent } from './events/user-registered.domain-event';
+import { UserPasswordChanged_DomainEvent } from './events/password-changed.domain-event';
+import { UserLogout_DomainEvent } from './events/user-logout.domain-event';
 import { InvalidOperationException, Timestamps, Id, wait, DateVO } from '@libs/nestjs-common';
 import { UserDTO } from './user.dto';
-import type { UserDeleted_DomainEvent } from '../../events/user-deleted.domain-event';
+import type { UserDeleted_DomainEvent } from './events/user-deleted.domain-event';
 
 describe('User Entity', () => {
   describe('create()', () => {

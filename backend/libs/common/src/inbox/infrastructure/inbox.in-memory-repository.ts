@@ -1,7 +1,7 @@
 import { Base_InMemoryRepository } from '../../general/infrastructure';
 import type { InboxRepository } from '../domain/inbox.repository';
-import type { InboxEventDTO } from '../domain/inbox.entity';
-import { InboxEvent } from '../domain/inbox.entity';
+import type { InboxEventDTO } from '../domain/inbox.aggregate';
+import { InboxEvent } from '../domain/inbox.aggregate';
 import type { RepositoryContext } from '../../transactions';
 import type { InboxStatusVO } from '../domain/value-objects';
 import type { DateVO } from '../../general';

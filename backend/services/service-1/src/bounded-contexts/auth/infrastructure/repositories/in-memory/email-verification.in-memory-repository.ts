@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
-import { EmailVerificationDTO } from '@bc/auth/domain/entities/email-verification/email-verification.dto';
-import { EmailVerification_Repository } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
+import { EmailVerification } from '@bc/auth/domain/aggregates/email-verification/email-verification.aggregate';
+import { EmailVerificationDTO } from '@bc/auth/domain/aggregates/email-verification/email-verification.dto';
+import { EmailVerification_Repository } from '@bc/auth/domain/aggregates/email-verification/email-verification.repository';
 import { Email } from '@bc/auth/domain/value-objects';
 import { AlreadyExistsException, Id } from '@libs/nestjs-common';
 import { Base_InMemoryRepository } from '@libs/nestjs-common';

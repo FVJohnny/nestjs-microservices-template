@@ -1,9 +1,9 @@
 import { DeleteUser_CommandHandler } from './delete-user.command-handler';
 import { DeleteUser_Command } from './delete-user.command';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import { Id, InfrastructureException, MockEventBus, NotFoundException } from '@libs/nestjs-common';
-import { UserDeleted_DomainEvent } from '@bc/auth/domain/events/user-deleted.domain-event';
+import { UserDeleted_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-deleted.domain-event';
 
 describe('DeleteUser_CommandHandler', () => {
   const createCommand = ({ userId }: { userId?: string } = {}) =>

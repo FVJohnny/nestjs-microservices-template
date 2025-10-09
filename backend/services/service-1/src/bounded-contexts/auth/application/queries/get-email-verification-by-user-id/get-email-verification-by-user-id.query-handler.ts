@@ -3,7 +3,7 @@ import { GetEmailVerificationByUserId_Query } from './get-email-verification-by-
 import {
   EMAIL_VERIFICATION_REPOSITORY,
   type EmailVerification_Repository,
-} from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
+} from '@bc/auth/domain/aggregates/email-verification/email-verification.repository';
 import { Base_QueryHandler, NotFoundException, Id } from '@libs/nestjs-common';
 import { GetEmailVerificationByUserId_QueryResponse } from './get-email-verification-by-user-id.query-response';
 import { Email } from '@bc/auth/domain/value-objects';

@@ -1,4 +1,4 @@
-import { Id, SharedAggregateRoot, SharedAggregateRootDTO } from '../../general';
+import { Id, SharedAggregate, SharedAggregateDTO } from '../../general';
 import { DomainValidationException } from '../../errors';
 import type { InboxStatus } from './value-objects';
 import {
@@ -10,7 +10,7 @@ import {
   InboxStatusVO,
 } from './value-objects';
 
-export class InboxEventDTO extends SharedAggregateRootDTO {
+export class InboxEventDTO extends SharedAggregateDTO {
   messageId!: string;
   eventName!: string;
   topic!: string;
@@ -50,7 +50,7 @@ export interface CreateInboxEventProps {
   payload: InboxPayload;
 }
 
-export class InboxEvent extends SharedAggregateRoot implements InboxEventAttributes {
+export class InboxEvent extends SharedAggregate implements InboxEventAttributes {
   eventName: InboxEventName;
   topic: InboxTopic;
   payload: InboxPayload;

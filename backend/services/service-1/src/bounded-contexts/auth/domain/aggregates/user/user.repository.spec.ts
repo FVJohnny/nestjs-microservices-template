@@ -1,5 +1,5 @@
 import type { User_Repository } from './user.repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import { Email, LastLogin, Username, UserRole } from '@bc/auth/domain/value-objects';
 import {
   Criteria,

@@ -1,5 +1,5 @@
 import { UserLogout_RevokeTokens_DomainEventHandler } from './user-logout_revoke-tokens.domain-event-handler';
-import { UserLogout_DomainEvent } from '@bc/auth/domain/events/user-logout.domain-event';
+import { UserLogout_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-logout.domain-event';
 import { Id, MockCommandBus } from '@libs/nestjs-common';
 import { RevokeAllUserTokens_Command } from '@bc/auth/application/commands';
 

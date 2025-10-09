@@ -1,7 +1,7 @@
 import { DateVO } from '../../../general/domain/value-objects/date.vo';
 import { Id } from '../../../general/domain/value-objects/id.vo';
 import { Timestamps } from '../../../general/domain/value-objects/timestamps.vo';
-import { SharedAggregateRoot } from '../../../general/domain/base.aggregate-root';
+import { SharedAggregate } from '../../../general/domain/base.aggregate';
 import type { UserTokenDTO } from './user-token.dto';
 import { TokenType } from './token-type.vo';
 import { Token } from './token.vo';
@@ -20,7 +20,7 @@ export interface CreateUserTokenProps {
   type: 'access' | 'refresh';
 }
 
-export class UserToken extends SharedAggregateRoot {
+export class UserToken extends SharedAggregate {
   userId: Id;
   token: Token;
   type: TokenType;

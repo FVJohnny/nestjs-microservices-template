@@ -1,7 +1,7 @@
-import { SharedAggregateRootDTO } from '@libs/nestjs-common';
+import { SharedAggregateDTO } from '@libs/nestjs-common';
 import { Email, Username, Password, UserStatus, UserRole, LastLogin } from '../../value-objects';
 
-export class UserDTO extends SharedAggregateRootDTO {
+export class UserDTO extends SharedAggregateDTO {
   email: string;
   username: string;
   password: string;

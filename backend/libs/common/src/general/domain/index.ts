@@ -1,5 +1,5 @@
 // Aggregate Root
-export * from './base.aggregate-root';
+export * from './base.aggregate';
 
 // Base Repository
 export * from './base.repository';
@@ -8,7 +8,7 @@ export * from './base.repository';
 export * from './value-objects';
 
 // Example
-export * from './example/example.aggregate-root';
+export * from './example/example.aggregate';
 export * from './example/example.dto';
 export * from './example/example.repository';
 

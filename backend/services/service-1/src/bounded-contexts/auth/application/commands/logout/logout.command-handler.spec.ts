@@ -1,7 +1,7 @@
 import { Logout_CommandHandler } from './logout.command-handler';
 import { Logout_Command } from './logout.command';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
-import { User } from '@bc/auth/domain/entities/user/user.entity';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import {
   ApplicationException,
   DomainValidationException,
@@ -10,7 +10,7 @@ import {
   MockEventBus,
   NotFoundException,
 } from '@libs/nestjs-common';
-import { UserLogout_DomainEvent } from '@bc/auth/domain/events/user-logout.domain-event';
+import { UserLogout_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-logout.domain-event';
 
 describe('Logout_CommandHandler', () => {
   const createCommand = (overrides: { userId?: string } = {}) =>

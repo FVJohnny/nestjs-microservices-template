@@ -1,7 +1,7 @@
 import { VerifyEmail_CommandHandler } from './verify-email.command-handler';
 import { VerifyEmail_Command } from './verify-email.command';
 import { EmailVerification_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification.in-memory-repository';
-import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
+import { EmailVerification } from '@bc/auth/domain/aggregates/email-verification/email-verification.aggregate';
 import { Expiration } from '@bc/auth/domain/value-objects';
 import {
   ApplicationException,
@@ -12,7 +12,7 @@ import {
   InvalidOperationException,
   NotFoundException,
 } from '@libs/nestjs-common';
-import type { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/events/email-verified.domain-event';
+import type { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/aggregates/email-verification/events/email-verified.domain-event';
 
 describe('VerifyEmailCommandHandler', () => {
   // Test data factory
