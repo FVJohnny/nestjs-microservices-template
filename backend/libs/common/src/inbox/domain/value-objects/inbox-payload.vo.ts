@@ -1,7 +1,7 @@
-import { StringValueObject, type IValueObject } from '../../../general';
+import { StringValueObject } from '../../../general';
 import type { TraceMetadata } from '../../../tracing';
 
-export class InboxPayload extends StringValueObject implements IValueObject<string> {
+export class InboxPayload extends StringValueObject {
   validate(): void {
     super.validate();
     if (!this.value) {

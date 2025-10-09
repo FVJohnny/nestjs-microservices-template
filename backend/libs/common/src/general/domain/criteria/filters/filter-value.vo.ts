@@ -1,7 +1,7 @@
 import { StringValueObject } from '../../value-objects/string.vo';
 
 export class FilterValue extends StringValueObject {
-  constructor(value: string) {
-    super(value);
+  constructor(value: unknown) {
+    super(String(value));
   }
 }

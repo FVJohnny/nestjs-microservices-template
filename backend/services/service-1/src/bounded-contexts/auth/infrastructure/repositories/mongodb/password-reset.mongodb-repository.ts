@@ -35,7 +35,7 @@ export class PasswordReset_MongodbRepository
       filters: new Filters([
         new Filter(
           new FilterField('email'),
-          FilterOperator.fromValue(Operator.EQUAL),
+          new FilterOperator(Operator.EQUAL),
           new FilterValue(email.toValue()),
         ),
       ]),
@@ -50,18 +50,18 @@ export class PasswordReset_MongodbRepository
       filters: new Filters([
         new Filter(
           new FilterField('email'),
-          FilterOperator.fromValue(Operator.EQUAL),
+          new FilterOperator(Operator.EQUAL),
           new FilterValue(email.toValue()),
         ),
         new Filter(
           new FilterField('expiration'),
-          FilterOperator.fromValue(Operator.GT),
+          new FilterOperator(Operator.GT),
           new FilterValue(Expiration.atHoursFromNow(0).toValue().toISOString()),
         ),
         new Filter(
           new FilterField('used'),
-          FilterOperator.fromValue(Operator.EQUAL),
-          new FilterValue(String(Used.no().toValue())),
+          new FilterOperator(Operator.EQUAL),
+          new FilterValue(Used.no().toValue()),
         ),
       ]),
     });

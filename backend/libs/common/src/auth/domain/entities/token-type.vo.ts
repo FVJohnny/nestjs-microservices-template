@@ -1,10 +1,9 @@
 import { EnumValueObject } from '../../../general/domain/value-objects/enum.vo';
-import type { IValueObject } from '../../../general/domain/value-objects';
 
 type TokenTypeEnum = 'access' | 'refresh';
 const TOKEN_TYPE_VALUES: TokenTypeEnum[] = ['access', 'refresh'];
 
-export class TokenType extends EnumValueObject<TokenTypeEnum> implements IValueObject<string> {
+export class TokenType extends EnumValueObject<TokenTypeEnum> {
   constructor(value: string) {
     super(value as TokenTypeEnum, TOKEN_TYPE_VALUES);
   }

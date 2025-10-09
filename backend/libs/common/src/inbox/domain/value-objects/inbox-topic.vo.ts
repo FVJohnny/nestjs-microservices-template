@@ -1,6 +1,6 @@
-import { StringValueObject, type IValueObject } from '../../../general';
+import { StringValueObject } from '../../../general';
 
-export class InboxTopic extends StringValueObject implements IValueObject<string> {
+export class InboxTopic extends StringValueObject {
   validate(): void {
     super.validate();
     if (!this.value || this.value.trim().length === 0) {

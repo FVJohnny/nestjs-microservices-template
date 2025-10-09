@@ -1,11 +1,7 @@
-import {
-  StringValueObject,
-  DomainValidationException,
-  type IValueObject,
-} from '@libs/nestjs-common';
+import { StringValueObject, DomainValidationException } from '@libs/nestjs-common';
 
 let _seq = 0;
-export class Username extends StringValueObject implements IValueObject<string> {
+export class Username extends StringValueObject {
   private static readonly MIN_LENGTH = 3;
   private static readonly MAX_LENGTH = 30;
   private static readonly USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/;

@@ -1,5 +1,5 @@
 import { DomainValidationException } from '../../../errors';
-import { EnumValueObject, type IValueObject } from '../../../general';
+import { EnumValueObject } from '../../../general';
 
 export enum InboxStatus {
   PENDING = 'pending',
@@ -9,9 +9,19 @@ export enum InboxStatus {
   DUPLICATE = 'duplicate',
 }
 
-export class InboxStatusVO extends EnumValueObject<InboxStatus> implements IValueObject<string> {
+export class InboxStatusVO extends EnumValueObject<InboxStatus> {
   constructor(value: InboxStatus) {
     super(value, Object.values(InboxStatus));
+  }
+
+  protected throwErrorForInvalidValue(value: InboxStatus): void {
+    throw new DomainValidationException(`InboxStatus`, value, `Invalid value`);
+  }
+
+  static random(): InboxStatusVO {
+    const statuses = Object.values(InboxStatus);
+    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+    return new InboxStatusVO(randomStatus);
   }
 
   static pending(): InboxStatusVO {
@@ -34,12 +44,6 @@ export class InboxStatusVO extends EnumValueObject<InboxStatus> implements IValu
     return new InboxStatusVO(InboxStatus.DUPLICATE);
   }
 
-  static random(): InboxStatusVO {
-    const statuses = Object.values(InboxStatus);
-    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-    return new InboxStatusVO(randomStatus);
-  }
-
   isPending(): boolean {
     return this.toValue() === InboxStatus.PENDING;
   }
@@ -58,12 +62,5 @@ export class InboxStatusVO extends EnumValueObject<InboxStatus> implements IValu
 
   isDuplicate(): boolean {
     return this.toValue() === InboxStatus.DUPLICATE;
-  }
-
-  throwErrorForInvalidValue(value: InboxStatus): void {
-    throw new DomainValidationException(`InboxStatus`, value, `Invalid value`);
-  }
-  validate(): void {
-    super.validate();
   }
 }

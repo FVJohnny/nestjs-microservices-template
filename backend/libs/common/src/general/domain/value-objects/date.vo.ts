@@ -1,6 +1,6 @@
-import { type IValueObject, ValueObject } from './base.vo';
+import { ValueObject } from './base.vo';
 
-export class DateVO extends ValueObject<Date> implements IValueObject<Date> {
+export class DateVO extends ValueObject<Date> {
   private static readonly SECOND_MS = 1000;
   private static readonly MINUTE_MS = 60 * DateVO.SECOND_MS;
   private static readonly HOUR_MS = 60 * DateVO.MINUTE_MS;

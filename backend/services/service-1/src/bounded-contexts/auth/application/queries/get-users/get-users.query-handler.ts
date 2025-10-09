@@ -32,7 +32,7 @@ export class GetUsers_QueryHandler extends Base_QueryHandler(
     if (query.userId) {
       const idFilter = new Filter(
         new FilterField('id'),
-        FilterOperator.fromValue(Operator.EQUAL),
+        new FilterOperator(Operator.EQUAL),
         new FilterValue(query.userId),
       );
       filterList.push(idFilter);
@@ -41,7 +41,7 @@ export class GetUsers_QueryHandler extends Base_QueryHandler(
     if (query.status) {
       const statusFilter = new Filter(
         new FilterField('status'),
-        FilterOperator.fromValue(Operator.EQUAL),
+        new FilterOperator(Operator.EQUAL),
         new FilterValue(query.status),
       );
       filterList.push(statusFilter);
@@ -51,7 +51,7 @@ export class GetUsers_QueryHandler extends Base_QueryHandler(
     if (query.role) {
       const roleFilter = new Filter(
         new FilterField('role'),
-        FilterOperator.fromValue(Operator.EQUAL),
+        new FilterOperator(Operator.EQUAL),
         new FilterValue(query.role),
       );
       filterList.push(roleFilter);
@@ -61,7 +61,7 @@ export class GetUsers_QueryHandler extends Base_QueryHandler(
     if (query.email) {
       const emailFilter = new Filter(
         new FilterField('email'),
-        FilterOperator.fromValue(Operator.CONTAINS),
+        new FilterOperator(Operator.CONTAINS),
         new FilterValue(query.email),
       );
       filterList.push(emailFilter);
@@ -71,7 +71,7 @@ export class GetUsers_QueryHandler extends Base_QueryHandler(
     if (query.username) {
       const usernameFilter = new Filter(
         new FilterField('username'),
-        FilterOperator.fromValue(Operator.CONTAINS),
+        new FilterOperator(Operator.CONTAINS),
         new FilterValue(query.username),
       );
       filterList.push(usernameFilter);

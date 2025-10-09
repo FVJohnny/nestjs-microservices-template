@@ -31,10 +31,6 @@ export class Filter {
       throw new DomainValidationException('Filter value', '', 'The filter is invalid');
     }
 
-    return new Filter(
-      new FilterField(field),
-      FilterOperator.fromValue(operator),
-      new FilterValue(value),
-    );
+    return new Filter(new FilterField(field), new FilterOperator(operator), new FilterValue(value));
   }
 }

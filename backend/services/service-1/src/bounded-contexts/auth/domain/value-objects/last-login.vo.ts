@@ -1,6 +1,6 @@
-import { DateVO, DomainValidationException, type IValueObject } from '@libs/nestjs-common';
+import { DateVO, DomainValidationException } from '@libs/nestjs-common';
 
-export class LastLogin extends DateVO implements IValueObject<Date> {
+export class LastLogin extends DateVO {
   constructor(value: Date) {
     super(value);
     this.validate();

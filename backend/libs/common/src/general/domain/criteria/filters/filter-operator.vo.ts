@@ -15,16 +15,16 @@ export class FilterOperator extends EnumValueObject<Operator> {
     super(value, Object.values(Operator));
   }
 
+  protected throwErrorForInvalidValue(value: Operator): void {
+    throw new DomainValidationException(`FilterOperator`, value, 'Invalid filter operator');
+  }
+
   static fromValue(value: string): FilterOperator {
     return new FilterOperator(value as Operator);
   }
 
   public isPositive(): boolean {
     return this.toValue() !== Operator.NOT_EQUAL && this.toValue() !== Operator.NOT_CONTAINS;
-  }
-
-  protected throwErrorForInvalidValue(value: Operator): void {
-    throw new DomainValidationException(`FilterOperator`, value, 'Invalid filter operator');
   }
 
   static equal() {

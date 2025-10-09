@@ -1,11 +1,7 @@
-import {
-  StringValueObject,
-  DomainValidationException,
-  type IValueObject,
-} from '@libs/nestjs-common';
+import { StringValueObject, DomainValidationException } from '@libs/nestjs-common';
 
 let _seq = 0;
-export class Email extends StringValueObject implements IValueObject<string> {
+export class Email extends StringValueObject {
   constructor(value: string) {
     super(value.toLowerCase());
   }

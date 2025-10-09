@@ -1,4 +1,4 @@
-import { EnumValueObject, DomainValidationException, type IValueObject } from '@libs/nestjs-common';
+import { EnumValueObject, DomainValidationException } from '@libs/nestjs-common';
 
 export enum UserStatusEnum {
   EMAIL_VERIFICATION_PENDING = 'email-verification-pending',
@@ -8,13 +8,19 @@ export enum UserStatusEnum {
   DELETED = 'deleted',
 }
 
-export class UserStatus extends EnumValueObject<UserStatusEnum> implements IValueObject<string> {
+export class UserStatus extends EnumValueObject<UserStatusEnum> {
   constructor(value: UserStatusEnum) {
     super(value, Object.values(UserStatusEnum));
   }
 
   protected throwErrorForInvalidValue(value: UserStatusEnum): void {
     throw new DomainValidationException('userStatus', value, `Invalid user status: ${value}`);
+  }
+
+  static random(): UserStatus {
+    const values = Object.values(UserStatusEnum);
+    const randomValue = values[Math.floor(Math.random() * values.length)];
+    return new UserStatus(randomValue);
   }
 
   static active(): UserStatus {
@@ -35,11 +41,5 @@ export class UserStatus extends EnumValueObject<UserStatusEnum> implements IValu
 
   static emailVerificationPending(): UserStatus {
     return new UserStatus(UserStatusEnum.EMAIL_VERIFICATION_PENDING);
-  }
-
-  static random(): UserStatus {
-    const values = Object.values(UserStatusEnum);
-    const randomValue = values[Math.floor(Math.random() * values.length)];
-    return new UserStatus(randomValue);
   }
 }

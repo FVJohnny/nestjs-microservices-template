@@ -12,8 +12,8 @@ export class OrderType extends EnumValueObject<OrderTypes> {
     super(value, Object.values(OrderTypes));
   }
 
-  static fromValue(value: string): OrderType {
-    return new OrderType(value as OrderTypes);
+  protected throwErrorForInvalidValue(value: OrderTypes): void {
+    throw new DomainValidationException(`OrderType`, value, 'Invalid order type');
   }
 
   public isNone(): boolean {
@@ -26,9 +26,5 @@ export class OrderType extends EnumValueObject<OrderTypes> {
 
   public isDesc(): boolean {
     return this.toValue() === OrderTypes.DESC;
-  }
-
-  protected throwErrorForInvalidValue(value: OrderTypes): void {
-    throw new DomainValidationException(`OrderType`, value, 'Invalid order type');
   }
 }

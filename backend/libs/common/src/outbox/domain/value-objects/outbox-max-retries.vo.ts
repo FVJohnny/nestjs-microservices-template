@@ -1,7 +1,7 @@
-import { ValueObject, type IValueObject } from '../../../general';
+import { ValueObject } from '../../../general';
 import { DomainValidationException } from '../../../errors';
 
-export class OutboxMaxRetries extends ValueObject<number> implements IValueObject<number> {
+export class OutboxMaxRetries extends ValueObject<number> {
   static readonly MAX_VALUE = 10;
 
   constructor(value: number) {

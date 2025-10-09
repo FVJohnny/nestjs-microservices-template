@@ -32,7 +32,7 @@ export class UserToken_InMemoryRepository
       filters: new Filters([
         new Filter(
           new FilterField('token'),
-          FilterOperator.fromValue(Operator.EQUAL),
+          new FilterOperator(Operator.EQUAL),
           new FilterValue(token.toValue()),
         ),
       ]),

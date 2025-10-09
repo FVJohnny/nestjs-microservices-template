@@ -1,7 +1,7 @@
-import { DateVO, type IValueObject } from '../../../general';
+import { DateVO } from '../../../general';
 import { DomainValidationException } from '../../../errors';
 
-export class OutboxProcessedAt extends DateVO implements IValueObject<Date> {
+export class OutboxProcessedAt extends DateVO {
   static readonly NEVER_PROCESSED = new Date(0);
   static readonly MAX_RANDOM_PAST_DAYS = 30;
 

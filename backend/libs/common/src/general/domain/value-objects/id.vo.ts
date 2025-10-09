@@ -1,25 +1,25 @@
 import { v4 as uuid } from 'uuid';
-import validate from 'uuid-validate';
+import validateUuid from 'uuid-validate';
 
-import { ValueObject } from './base.vo';
 import { DomainValidationException } from '../../../errors';
+import { StringValueObject } from './string.vo';
 
-export class Id extends ValueObject<string> {
+export class Id extends StringValueObject {
   constructor(value: string) {
     super(value);
-    this.ensureIsValidUuid(value);
+    this.validate();
   }
 
   static random(): Id {
     return new Id(uuid());
   }
 
-  private ensureIsValidUuid(id: string): void {
-    if (!validate(id)) {
+  validate(): void {
+    if (!validateUuid(this.value)) {
       throw new DomainValidationException(
         `${this.constructor.name}`,
-        id,
-        `${this.constructor.name} does not allow the value ${id}`,
+        this.value,
+        `${this.constructor.name} does not allow the value ${this.value}`,
       );
     }
   }

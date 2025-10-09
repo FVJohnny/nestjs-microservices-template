@@ -1,9 +1,9 @@
-import { StringValueObject, type IValueObject } from '../../../general';
+import { StringValueObject } from '../../../general';
 import { DomainValidationException } from '../../../errors';
 
 let eventNameSequence = 0;
 
-export class OutboxEventName extends StringValueObject implements IValueObject<string> {
+export class OutboxEventName extends StringValueObject {
   constructor(value: string) {
     super(value);
   }

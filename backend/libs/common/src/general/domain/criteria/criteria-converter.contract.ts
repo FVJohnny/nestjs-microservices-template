@@ -51,11 +51,7 @@ function createTestEntities(count: number, template?: Partial<TestEntityDTO>): T
  * Helper to create a filter
  */
 function createFilter(field: string, operator: Operator, value: string | number | boolean) {
-  return new Filter(
-    new FilterField(field),
-    new FilterOperator(operator),
-    new FilterValue(String(value)),
-  );
+  return new Filter(new FilterField(field), new FilterOperator(operator), new FilterValue(value));
 }
 
 /**

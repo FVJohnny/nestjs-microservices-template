@@ -1,4 +1,4 @@
-import { EnumValueObject, DomainValidationException, type IValueObject } from '@libs/nestjs-common';
+import { EnumValueObject, DomainValidationException } from '@libs/nestjs-common';
 
 export enum UserRoleEnum {
   ADMIN = 'admin',
@@ -6,7 +6,7 @@ export enum UserRoleEnum {
   MODERATOR = 'moderator',
 }
 
-export class UserRole extends EnumValueObject<UserRoleEnum> implements IValueObject<string> {
+export class UserRole extends EnumValueObject<UserRoleEnum> {
   constructor(value: UserRoleEnum) {
     super(value, Object.values(UserRoleEnum));
   }

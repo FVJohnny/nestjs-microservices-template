@@ -1,19 +1,11 @@
-import {
-  StringValueObject,
-  DomainValidationException,
-  type IValueObject,
-} from '@libs/nestjs-common';
+import { StringValueObject, DomainValidationException } from '@libs/nestjs-common';
 import * as bcrypt from 'bcrypt';
 
 let _seq = 1;
 
-export class Password extends StringValueObject implements IValueObject<string> {
+export class Password extends StringValueObject {
   private static readonly SALT_ROUNDS = process.env.NODE_ENV === 'test' ? 1 : 12;
   private static readonly MIN_LENGTH = 8;
-
-  private constructor(value: string) {
-    super(value);
-  }
 
   static async createFromPlainText(plainText: string) {
     Password.validatePlainText(plainText);

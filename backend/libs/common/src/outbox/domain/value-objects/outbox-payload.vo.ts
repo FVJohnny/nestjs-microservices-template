@@ -1,12 +1,8 @@
-import { Id, StringValueObject, type IValueObject } from '../../../general';
+import { Id, StringValueObject } from '../../../general';
 import { DomainValidationException } from '../../../errors';
 import type { TraceMetadata } from '../../../tracing';
 
-export class OutboxPayload extends StringValueObject implements IValueObject<string> {
-  constructor(value: string) {
-    super(value);
-  }
-
+export class OutboxPayload extends StringValueObject {
   validate(): void {
     super.validate();
     try {

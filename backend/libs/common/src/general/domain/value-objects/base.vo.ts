@@ -23,7 +23,7 @@ export abstract class ValueObject<T extends Primitives> implements IValueObject<
     }
   }
 
-  equals(other: IValueObject<T>): boolean {
+  equals(other: ValueObject<T>): boolean {
     if (!(other instanceof ValueObject)) {
       return false;
     }
