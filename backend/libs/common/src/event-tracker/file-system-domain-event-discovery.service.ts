@@ -10,17 +10,37 @@ export class FileSystemDomainEventDiscoveryService {
   async discoverDomainEvents(): Promise<Set<string>> {
     const eventNames = new Set<string>();
     const serviceRoot = this.findServiceRoot();
-    const boundedContextsPathSrc = path.join(serviceRoot, 'src', 'bounded-contexts');
-    const srcExists = fs.existsSync(boundedContextsPathSrc);
-    const boundedContextsPathDist = path.join(serviceRoot, 'dist', 'bounded-contexts');
-    const distExists = fs.existsSync(boundedContextsPathDist);
 
-    if (!srcExists && !distExists) {
-      this.logger.warn(`Bounded contexts directory not found: ${boundedContextsPathSrc}`);
+    // Try multiple possible paths for bounded contexts
+    const possiblePaths = [
+      path.join(serviceRoot, 'src', 'bounded-contexts'), // Development
+      path.join(serviceRoot, 'dist', 'bounded-contexts'), // Simple build
+      path.join(
+        serviceRoot,
+        'dist',
+        'services',
+        path.basename(serviceRoot),
+        'src',
+        'bounded-contexts',
+      ), // NX monorepo build
+    ];
+
+    let boundedContextsPath: string | null = null;
+    for (const possiblePath of possiblePaths) {
+      if (fs.existsSync(possiblePath)) {
+        boundedContextsPath = possiblePath;
+        break;
+      }
+    }
+
+    if (!boundedContextsPath) {
+      this.logger.warn(
+        `Bounded contexts directory not found. Checked paths: ${possiblePaths.join(', ')} (cwd: ${process.cwd()}, serviceRoot: ${serviceRoot})`,
+      );
       return eventNames;
     }
 
-    const boundedContextsPath = srcExists ? boundedContextsPathSrc : boundedContextsPathDist;
+    this.logger.debug(`Using bounded contexts path: ${boundedContextsPath}`);
 
     for (const contextName of fs.readdirSync(boundedContextsPath)) {
       const eventsPath = path.join(boundedContextsPath, contextName, 'domain', 'events');
@@ -37,10 +57,20 @@ export class FileSystemDomainEventDiscoveryService {
   }
 
   private findServiceRoot(): string {
+    // In production (Docker), the app is typically in /app/backend/services/service-1
+    // In development, it's in the workspace root
     let dir = process.cwd();
+
+    // First, try to find package.json by going up the directory tree
     while (dir !== '/' && !fs.existsSync(path.join(dir, 'package.json'))) {
       dir = path.dirname(dir);
     }
+
+    // If we're in a build output directory (dist), go up one level
+    if (path.basename(dir) === 'dist') {
+      dir = path.dirname(dir);
+    }
+
     return dir;
   }
 
