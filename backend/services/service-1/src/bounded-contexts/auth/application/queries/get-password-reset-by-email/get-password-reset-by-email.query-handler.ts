@@ -5,12 +5,12 @@ import {
   type PasswordReset_Repository,
 } from '@bc/auth/domain/repositories/password-reset/password-reset.repository';
 import { BaseQueryHandler, NotFoundException } from '@libs/nestjs-common';
-import { GetPasswordResetByEmailQueryResponse } from './get-password-reset-by-email.response';
+import { GetPasswordResetByEmail_QueryResponse } from './get-password-reset-by-email.query-response';
 import { Email } from '@bc/auth/domain/value-objects';
 
 export class GetPasswordResetByEmail_QueryHandler extends BaseQueryHandler(
   GetPasswordResetByEmail_Query,
-)<GetPasswordResetByEmailQueryResponse>() {
+)<GetPasswordResetByEmail_QueryResponse>() {
   constructor(
     @Inject(PASSWORD_RESET_REPOSITORY)
     private readonly passwordResetRepository: PasswordReset_Repository,
@@ -20,7 +20,7 @@ export class GetPasswordResetByEmail_QueryHandler extends BaseQueryHandler(
 
   async handle(
     query: GetPasswordResetByEmail_Query,
-  ): Promise<GetPasswordResetByEmailQueryResponse> {
+  ): Promise<GetPasswordResetByEmail_QueryResponse> {
     const passwordReset = await this.passwordResetRepository.findByEmail(new Email(query.email));
 
     if (!passwordReset) {

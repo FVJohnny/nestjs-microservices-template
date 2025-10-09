@@ -11,12 +11,12 @@ import {
   Id,
   TokenPayload,
 } from '@libs/nestjs-common';
-import { GetNewTokensFromRefreshTokenQueryResponse } from './get-new-tokens-from-refresh-token.response';
+import { GetNewTokensFromRefreshToken_QueryResponse } from './get-new-tokens-from-refresh-token.query-response';
 import { USER_TOKEN_REPOSITORY, type UserToken_Repository, Token } from '@libs/nestjs-common';
 
 export class GetNewTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
   GetNewTokensFromRefreshToken_Query,
-)<GetNewTokensFromRefreshTokenQueryResponse>() {
+)<GetNewTokensFromRefreshToken_QueryResponse>() {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
@@ -29,7 +29,7 @@ export class GetNewTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
 
   async handle(
     query: GetNewTokensFromRefreshToken_Query,
-  ): Promise<GetNewTokensFromRefreshTokenQueryResponse> {
+  ): Promise<GetNewTokensFromRefreshToken_QueryResponse> {
     let userId: string;
 
     // Decode refresh token

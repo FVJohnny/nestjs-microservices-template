@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { GetUsers_Query } from './get-users.query';
-import { GetUsersQueryResponse } from './get-users.response';
+import { GetUsers_QueryResponse } from './get-users.query-response';
 import {
   USER_REPOSITORY,
   type User_Repository,
@@ -21,12 +21,12 @@ import {
 
 export class GetUsers_QueryHandler extends BaseQueryHandler(
   GetUsers_Query,
-)<GetUsersQueryResponse>() {
+)<GetUsers_QueryResponse>() {
   constructor(@Inject(USER_REPOSITORY) private readonly userRepository: User_Repository) {
     super();
   }
 
-  async handle(query: GetUsers_Query): Promise<GetUsersQueryResponse> {
+  async handle(query: GetUsers_Query): Promise<GetUsers_QueryResponse> {
     const filterList: Filter[] = [];
     // Handle specific id filter
     if (query.userId) {

@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { GetNewTokensFromUserCredentials_Query } from './get-new-tokens-from-user-credentials.query';
-import { GetNewTokensFromUserCredentials_QueryResponse } from './get-new-tokens-from-user-credentials.response';
+import { GetNewTokensFromUserCredentials_QueryResponse } from './get-new-tokens-from-user-credentials.query-response';
 import {
   USER_REPOSITORY,
   type User_Repository,

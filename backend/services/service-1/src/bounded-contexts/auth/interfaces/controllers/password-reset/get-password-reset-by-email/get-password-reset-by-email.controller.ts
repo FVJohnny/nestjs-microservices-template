@@ -4,7 +4,7 @@ import { type IQueryBus } from '@nestjs/cqrs';
 import { QUERY_BUS } from '@libs/nestjs-common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GetPasswordResetByEmail_Query } from '@bc/auth/application/queries/get-password-reset-by-email/get-password-reset-by-email.query';
-import { GetPasswordResetByEmailQueryResponse } from '@bc/auth/application/queries/get-password-reset-by-email/get-password-reset-by-email.response';
+import { GetPasswordResetByEmail_QueryResponse } from '@bc/auth/application/queries/get-password-reset-by-email/get-password-reset-by-email.query-response';
 
 @ApiTags('password-reset')
 @Controller('password-reset')
@@ -16,7 +16,7 @@ export class GetPasswordResetByEmail_Controller {
   @ApiResponse({
     status: 200,
     description: 'Password reset found',
-    type: GetPasswordResetByEmailQueryResponse,
+    type: GetPasswordResetByEmail_QueryResponse,
   })
   @ApiResponse({
     status: 404,
@@ -24,7 +24,7 @@ export class GetPasswordResetByEmail_Controller {
   })
   async getPasswordResetByEmail(
     @Query('email') email: string,
-  ): Promise<GetPasswordResetByEmailQueryResponse> {
+  ): Promise<GetPasswordResetByEmail_QueryResponse> {
     const query = new GetPasswordResetByEmail_Query({ email });
     return await this.queryBus.execute(query);
   }

@@ -5,7 +5,7 @@ import { QUERY_BUS } from '@libs/nestjs-common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import {
   GetEmailVerificationByUserId_Query,
-  GetEmailVerificationByUserIdQueryResponse,
+  GetEmailVerificationByUserId_QueryResponse,
 } from '@bc/auth/application/queries';
 
 @ApiTags('email-verification')
@@ -18,7 +18,7 @@ export class GetEmailVerificationByUserId_Controller {
   @ApiResponse({
     status: 200,
     description: 'Email verification found',
-    type: GetEmailVerificationByUserIdQueryResponse,
+    type: GetEmailVerificationByUserId_QueryResponse,
   })
   @ApiResponse({
     status: 404,
@@ -27,7 +27,7 @@ export class GetEmailVerificationByUserId_Controller {
   async getEmailVerificationByUserId(
     @Query('userId') userId?: string,
     @Query('email') email?: string,
-  ): Promise<GetEmailVerificationByUserIdQueryResponse> {
+  ): Promise<GetEmailVerificationByUserId_QueryResponse> {
     const query = new GetEmailVerificationByUserId_Query({ userId, email });
     return await this.queryBus.execute(query);
   }

@@ -1,6 +1,6 @@
 import { EventsHandler, type IEventHandler } from '@nestjs/cqrs';
 import { CorrelationLogger } from '../logger';
-import type { DomainEvent } from './domain-event.base';
+import type { DomainEvent } from './base.domain-event';
 import { WithSpan } from '../tracing';
 
 /**

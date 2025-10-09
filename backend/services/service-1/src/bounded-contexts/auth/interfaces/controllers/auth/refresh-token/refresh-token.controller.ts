@@ -6,10 +6,10 @@ import { QUERY_BUS, COMMAND_BUS } from '@libs/nestjs-common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import {
   GetNewTokensFromRefreshToken_Query,
-  GetNewTokensFromRefreshTokenQueryResponse,
+  GetNewTokensFromRefreshToken_QueryResponse,
 } from '@bc/auth/application/queries';
 import { RefreshToken_ControllerParams } from './refresh-token.params';
-import { RefreshTokenResponseDto } from './refresh-token.response';
+import { RefreshToken_ResponseDto } from './refresh-token.response';
 import { JwtAuthGuard } from '@libs/nestjs-common';
 import { UseGuards } from '@nestjs/common';
 import { StoreTokens_Command } from '@libs/nestjs-common';
@@ -30,7 +30,7 @@ export class RefreshToken_Controller {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Tokens successfully refreshed',
-    type: RefreshTokenResponseDto,
+    type: RefreshToken_ResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
@@ -38,7 +38,7 @@ export class RefreshToken_Controller {
   })
   async refreshToken(
     @Body() body: RefreshToken_ControllerParams,
-  ): Promise<GetNewTokensFromRefreshTokenQueryResponse> {
+  ): Promise<GetNewTokensFromRefreshToken_QueryResponse> {
     // Get new tokens
     const getTokensQuery = new GetNewTokensFromRefreshToken_Query(body.refreshToken);
     const { userId, accessToken, refreshToken } = await this.queryBus.execute(getTokensQuery);

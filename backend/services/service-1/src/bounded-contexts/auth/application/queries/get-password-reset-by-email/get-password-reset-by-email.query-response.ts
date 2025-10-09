@@ -1,3 +1,3 @@
 import { PasswordResetDTO } from '@bc/auth/domain/entities/password-reset/password-reset.dto';
 
-export class GetPasswordResetByEmailQueryResponse extends PasswordResetDTO {}
+export class GetPasswordResetByEmail_QueryResponse extends PasswordResetDTO {}

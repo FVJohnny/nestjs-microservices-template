@@ -4,9 +4,9 @@ import {
   USER_TOKEN_REPOSITORY,
   type UserToken_Repository,
 } from '../../../domain/repositories/user-token.repository';
-import { BaseQueryHandler } from '../../../../cqrs/query-handler.base';
+import { BaseQueryHandler } from '../../../../cqrs/base.query-handler';
 import { NotFoundException } from '../../../../errors/application.exceptions';
-import { GetUserTokenByToken_QueryResponse } from './get-user-token-by-token.response';
+import { GetUserTokenByToken_QueryResponse } from './get-user-token-by-token.query-response';
 import { Token } from '../../../domain/entities/token.vo';
 
 export class GetUserTokenByToken_QueryHandler extends BaseQueryHandler(

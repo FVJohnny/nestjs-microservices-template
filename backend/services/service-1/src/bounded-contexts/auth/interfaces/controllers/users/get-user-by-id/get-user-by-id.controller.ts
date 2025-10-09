@@ -3,7 +3,7 @@ import { Inject } from '@nestjs/common';
 import { type IQueryBus } from '@nestjs/cqrs';
 import { QUERY_BUS } from '@libs/nestjs-common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { GetUserById_Query, GetUserByIdQueryResponse } from '@bc/auth/application/queries';
+import { GetUserById_Query, GetUserById_QueryResponse } from '@bc/auth/application/queries';
 import { JwtAuthGuard } from '@libs/nestjs-common';
 import { UseGuards } from '@nestjs/common';
 
@@ -19,13 +19,13 @@ export class GetUser_Controller {
   @ApiResponse({
     status: 200,
     description: 'User found',
-    type: GetUserByIdQueryResponse,
+    type: GetUserById_QueryResponse,
   })
   @ApiResponse({
     status: 404,
     description: 'User not found',
   })
-  async getUser(@Param('userId') userId: string): Promise<GetUserByIdQueryResponse> {
+  async getUser(@Param('userId') userId: string): Promise<GetUserById_QueryResponse> {
     const query = new GetUserById_Query({ userId });
     return await this.queryBus.execute(query);
   }

@@ -3,7 +3,7 @@ import { Inject } from '@nestjs/common';
 import { type IQueryBus } from '@nestjs/cqrs';
 import { QUERY_BUS } from '@libs/nestjs-common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { GetUsers_Query, GetUsersQueryResponse } from '@bc/auth/application/queries';
+import { GetUsers_Query, GetUsers_QueryResponse } from '@bc/auth/application/queries';
 import { GetUsers_ControllerParams } from './get-users.params';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { JwtAuthGuard } from '@libs/nestjs-common';
@@ -25,7 +25,7 @@ export class GetUsers_Controller {
     description: 'User IDs retrieved successfully',
     type: Object,
   })
-  async getUsers(@Query() params: GetUsers_ControllerParams): Promise<GetUsersQueryResponse> {
+  async getUsers(@Query() params: GetUsers_ControllerParams): Promise<GetUsers_QueryResponse> {
     this.logger.debug(`Get users with params: ${params}`);
     const query = new GetUsers_Query({
       userId: params.userId,

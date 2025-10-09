@@ -5,12 +5,12 @@ import {
   type EmailVerification_Repository,
 } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { BaseQueryHandler, NotFoundException, Id } from '@libs/nestjs-common';
-import { GetEmailVerificationByUserIdQueryResponse } from './get-email-verification-by-user-id.response';
+import { GetEmailVerificationByUserId_QueryResponse } from './get-email-verification-by-user-id.query-response';
 import { Email } from '@bc/auth/domain/value-objects';
 
 export class GetEmailVerificationByUserId_QueryHandler extends BaseQueryHandler(
   GetEmailVerificationByUserId_Query,
-)<GetEmailVerificationByUserIdQueryResponse>() {
+)<GetEmailVerificationByUserId_QueryResponse>() {
   constructor(
     @Inject(EMAIL_VERIFICATION_REPOSITORY)
     private readonly emailVerificationRepository: EmailVerification_Repository,
@@ -20,7 +20,7 @@ export class GetEmailVerificationByUserId_QueryHandler extends BaseQueryHandler(
 
   async handle(
     query: GetEmailVerificationByUserId_Query,
-  ): Promise<GetEmailVerificationByUserIdQueryResponse> {
+  ): Promise<GetEmailVerificationByUserId_QueryResponse> {
     let emailVerification;
 
     if (query.userId) {

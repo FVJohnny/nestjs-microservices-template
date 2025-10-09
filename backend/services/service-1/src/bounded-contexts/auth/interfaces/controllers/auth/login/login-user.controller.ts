@@ -8,8 +8,8 @@ import {
   GetNewTokensFromUserCredentials_Query,
   GetNewTokensFromUserCredentials_QueryResponse,
 } from '@bc/auth/application/queries';
-import { LoginUserControllerParams } from './login-user.params';
-import { LoginUserResponseDto } from './login-user.response';
+import { LoginUser_ControllerParams } from './login-user.params';
+import { LoginUser_ResponseDto } from './login-user.response';
 import { StoreTokens_Command } from '@libs/nestjs-common';
 
 @ApiTags('auth')
@@ -27,14 +27,14 @@ export class LoginUser_Controller {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'User successfully logged in',
-    type: LoginUserResponseDto,
+    type: LoginUser_ResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Invalid credentials',
   })
   async loginUser(
-    @Body() body: LoginUserControllerParams,
+    @Body() body: LoginUser_ControllerParams,
   ): Promise<GetNewTokensFromUserCredentials_QueryResponse> {
     // Get tokens using query
     const tokensQuery = new GetNewTokensFromUserCredentials_Query({

@@ -5,7 +5,7 @@ import {
   USER_TOKEN_REPOSITORY,
   type UserToken_Repository,
 } from '../../../domain/repositories/user-token.repository';
-import { BaseCommandHandler } from '../../../../cqrs/command-handler.base';
+import { BaseCommandHandler } from '../../../../cqrs/base.command-handler';
 import { EVENT_BUS } from '../../../../cqrs/cqrs.module';
 import { Id } from '../../../../general/domain/value-objects/id.vo';
 import { Transaction } from '../../../../transactions/transaction';

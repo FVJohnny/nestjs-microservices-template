@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { GetUsersCursor_Query } from './get-users-cursor.query';
-import { GetUsersCursorQueryResponse } from './get-users-cursor.response';
+import { GetUsersCursor_QueryResponse } from './get-users-cursor.query-response';
 import {
   USER_REPOSITORY,
   type User_Repository,
@@ -21,7 +21,7 @@ import {
 
 export class GetUsersCursor_QueryHandler extends BaseQueryHandler(
   GetUsersCursor_Query,
-)<GetUsersCursorQueryResponse>() {
+)<GetUsersCursor_QueryResponse>() {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
@@ -29,7 +29,7 @@ export class GetUsersCursor_QueryHandler extends BaseQueryHandler(
     super();
   }
 
-  async handle(query: GetUsersCursor_Query): Promise<GetUsersCursorQueryResponse> {
+  async handle(query: GetUsersCursor_Query): Promise<GetUsersCursor_QueryResponse> {
     const filterList: Filter[] = [];
 
     // Handle specific id filter
