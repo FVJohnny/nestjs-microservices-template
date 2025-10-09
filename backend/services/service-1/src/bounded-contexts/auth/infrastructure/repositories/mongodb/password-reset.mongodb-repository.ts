@@ -16,14 +16,14 @@ import {
 import { MONGO_CLIENT_TOKEN, Base_MongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
 
 @Injectable()
-export class PasswordReset_Mongodb_Repository
+export class PasswordReset_MongodbRepository
   extends Base_MongoRepository<PasswordReset, PasswordResetDTO>
   implements PasswordReset_Repository
 {
   static readonly CollectionName = 'password_resets';
 
   constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
-    super(mongoClient, PasswordReset_Mongodb_Repository.CollectionName);
+    super(mongoClient, PasswordReset_MongodbRepository.CollectionName);
   }
 
   protected toEntity(dto: PasswordResetDTO): PasswordReset {

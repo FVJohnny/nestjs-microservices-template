@@ -15,7 +15,7 @@ import {
   Operator,
 } from '../../general/domain';
 
-export class UserToken_InMemory_Repository
+export class UserToken_InMemoryRepository
   extends Base_InMemoryRepository<UserToken, UserTokenDTO>
   implements UserToken_Repository
 {

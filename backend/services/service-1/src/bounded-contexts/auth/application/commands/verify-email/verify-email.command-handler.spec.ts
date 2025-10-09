@@ -1,6 +1,6 @@
 import { VerifyEmail_CommandHandler } from './verify-email.command-handler';
 import { VerifyEmail_Command } from './verify-email.command';
-import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification.in-memory-repository';
+import { EmailVerification_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification.in-memory-repository';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { Expiration } from '@bc/auth/domain/value-objects';
 import {
@@ -38,7 +38,7 @@ describe('VerifyEmailCommandHandler', () => {
       shouldFailEventBus = false,
     } = params;
 
-    const repository = new EmailVerification_InMemory_Repository(shouldFailRepository);
+    const repository = new EmailVerification_InMemoryRepository(shouldFailRepository);
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
     const commandHandler = new VerifyEmail_CommandHandler(repository, eventBus);
 

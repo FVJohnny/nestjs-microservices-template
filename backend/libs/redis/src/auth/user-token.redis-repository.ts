@@ -5,7 +5,7 @@ import type { RepositoryContext } from '@libs/nestjs-common';
 import { Id, type UserToken_Repository, UserToken, Token } from '@libs/nestjs-common';
 
 @Injectable()
-export class UserToken_Redis_Repository
+export class UserToken_RedisRepository
   extends Base_RedisRepository<UserToken>
   implements UserToken_Repository
 {

@@ -1,6 +1,6 @@
 import { CreateEmailVerification_CommandHandler } from './create-email-verification.command-handler';
 import { CreateEmailVerification_Command } from './create-email-verification.command';
-import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification.in-memory-repository';
+import { EmailVerification_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification.in-memory-repository';
 import {
   ApplicationException,
   AlreadyExistsException,
@@ -11,7 +11,7 @@ import { EmailVerificationCreated_DomainEvent } from '@bc/auth/domain/events/ema
 import { Id } from '@libs/nestjs-common';
 import { Email, Expiration } from '@bc/auth/domain/value-objects';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
+import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 
 describe('CreateEmailVerificationCommandHandler', () => {
@@ -38,10 +38,10 @@ describe('CreateEmailVerificationCommandHandler', () => {
       shouldFailEventBus = false,
     } = params;
 
-    const emailVerificationRepository = new EmailVerification_InMemory_Repository(
+    const emailVerificationRepository = new EmailVerification_InMemoryRepository(
       shouldFailRepository,
     );
-    const userRepository = new User_InMemory_Repository(shouldFailRepository);
+    const userRepository = new User_InMemoryRepository(shouldFailRepository);
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
     const commandHandler = new CreateEmailVerification_CommandHandler(
       emailVerificationRepository,

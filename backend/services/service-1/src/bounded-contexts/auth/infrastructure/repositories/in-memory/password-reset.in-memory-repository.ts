@@ -15,7 +15,7 @@ import {
 } from '@libs/nestjs-common';
 
 @Injectable()
-export class PasswordReset_InMemory_Repository
+export class PasswordReset_InMemoryRepository
   extends Base_InMemoryRepository<PasswordReset, PasswordResetDTO>
   implements PasswordReset_Repository
 {
@@ -25,10 +25,6 @@ export class PasswordReset_InMemory_Repository
 
   protected toEntity(dto: PasswordResetDTO): PasswordReset {
     return PasswordReset.fromValue(dto);
-  }
-
-  protected toValue(entity: PasswordReset): PasswordResetDTO {
-    return entity.toValue();
   }
 
   async findByEmail(email: Email) {

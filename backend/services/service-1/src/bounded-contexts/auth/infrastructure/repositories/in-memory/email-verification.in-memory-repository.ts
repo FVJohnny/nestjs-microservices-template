@@ -7,7 +7,7 @@ import { AlreadyExistsException, Id } from '@libs/nestjs-common';
 import { Base_InMemoryRepository } from '@libs/nestjs-common';
 
 @Injectable()
-export class EmailVerification_InMemory_Repository
+export class EmailVerification_InMemoryRepository
   extends Base_InMemoryRepository<EmailVerification, EmailVerificationDTO>
   implements EmailVerification_Repository
 {
@@ -17,10 +17,6 @@ export class EmailVerification_InMemory_Repository
 
   protected toEntity(dto: EmailVerificationDTO): EmailVerification {
     return EmailVerification.fromValue(dto);
-  }
-
-  protected toValue(entity: EmailVerification): EmailVerificationDTO {
-    return entity.toValue();
   }
 
   async save(emailVerification: EmailVerification) {

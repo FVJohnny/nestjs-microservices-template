@@ -8,14 +8,14 @@ import { type RepositoryContext } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN, Base_MongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
 
 @Injectable()
-export class User_Mongodb_Repository
+export class User_MongodbRepository
   extends Base_MongoRepository<User, UserDTO>
   implements User_Repository
 {
   static readonly CollectionName = 'users';
 
   constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
-    super(mongoClient, User_Mongodb_Repository.CollectionName);
+    super(mongoClient, User_MongodbRepository.CollectionName);
   }
 
   protected toEntity(dto: UserDTO): User {

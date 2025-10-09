@@ -7,7 +7,7 @@ import { UserDTO } from '@bc/auth/domain/entities/user/user.dto';
 import { Base_InMemoryRepository } from '@libs/nestjs-common';
 
 @Injectable()
-export class User_InMemory_Repository
+export class User_InMemoryRepository
   extends Base_InMemoryRepository<User, UserDTO>
   implements User_Repository
 {
@@ -17,10 +17,6 @@ export class User_InMemory_Repository
 
   protected toEntity(dto: UserDTO): User {
     return User.fromValue(dto);
-  }
-
-  protected toValue(entity: User): UserDTO {
-    return entity.toValue();
   }
 
   async findByEmail(email: Email) {

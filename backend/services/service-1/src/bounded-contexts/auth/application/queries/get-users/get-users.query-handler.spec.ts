@@ -1,6 +1,6 @@
 import { GetUsers_QueryHandler } from './get-users.query-handler';
 import { GetUsers_Query } from './get-users.query';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
+import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { InfrastructureException } from '@libs/nestjs-common';
 
@@ -8,7 +8,7 @@ describe('GetUsers_QueryHandler', () => {
   const setup = async (params: { shouldFailRepository?: boolean; withUsers?: number } = {}) => {
     const { shouldFailRepository = false, withUsers = 0 } = params;
 
-    const repository = new User_InMemory_Repository(shouldFailRepository);
+    const repository = new User_InMemoryRepository(shouldFailRepository);
     const handler = new GetUsers_QueryHandler(repository);
 
     const users = Array.from({ length: withUsers }).map(() => User.random());

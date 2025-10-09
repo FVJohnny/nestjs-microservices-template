@@ -1,6 +1,6 @@
 import { StoreTokens_CommandHandler } from './store-tokens.command-handler';
 import { StoreTokens_Command } from './store-tokens.command';
-import { UserToken_InMemory_Repository } from '../../../testing/user-token.in-memory-repository';
+import { UserToken_InMemoryRepository } from '../../../testing/user-token.in-memory-repository';
 import { Id } from '../../../../general/domain/value-objects/id.vo';
 import { MockEventBus } from '../../../../testing/mock-event-bus';
 import { InfrastructureException } from '../../../../errors/application.exceptions';
@@ -14,7 +14,7 @@ describe('StoreTokens_CommandHandler', () => {
     });
 
   const setup = (params: { shouldFailRepository?: boolean } = {}) => {
-    const tokenRepository = new UserToken_InMemory_Repository(params.shouldFailRepository);
+    const tokenRepository = new UserToken_InMemoryRepository(params.shouldFailRepository);
     const eventBus = new MockEventBus({ shouldFail: false });
     const commandHandler = new StoreTokens_CommandHandler(tokenRepository, eventBus);
 

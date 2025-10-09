@@ -1,7 +1,7 @@
 import { RequestPasswordReset_CommandHandler } from './request-password-reset.command-handler';
 import { RequestPasswordReset_Command } from './request-password-reset.command';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
-import { PasswordReset_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
+import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
+import { PasswordReset_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { PasswordReset } from '@bc/auth/domain/entities/password-reset/password-reset.entity';
 import { Email, Username, Password, Expiration, Used } from '@bc/auth/domain/value-objects';
@@ -12,7 +12,7 @@ import {
   MockEventBus,
   PasswordResetRequested_IntegrationEvent,
   wait,
-  Outbox_InMemory_Repository,
+  Outbox_InMemoryRepository,
   Id,
 } from '@libs/nestjs-common';
 import { PasswordResetRequested_DomainEvent } from '@bc/auth/domain/events/password-reset-requested.domain-event';
@@ -24,7 +24,7 @@ describe('RequestPasswordResetCommandHandler', () => {
       email: props?.email || Email.random().toValue(),
     });
 
-  const createUser = async (userRepository: User_InMemory_Repository, email?: Email) => {
+  const createUser = async (userRepository: User_InMemoryRepository, email?: Email) => {
     const user = User.create({
       email: email || Email.random(),
       username: Username.random(),
@@ -50,9 +50,9 @@ describe('RequestPasswordResetCommandHandler', () => {
       shouldFailOutbox = false,
     } = params;
 
-    const outboxRepository = new Outbox_InMemory_Repository(shouldFailOutbox);
-    const userRepository = new User_InMemory_Repository(shouldFailUserRepository);
-    const passwordResetRepository = new PasswordReset_InMemory_Repository(
+    const outboxRepository = new Outbox_InMemoryRepository(shouldFailOutbox);
+    const userRepository = new User_InMemoryRepository(shouldFailUserRepository);
+    const passwordResetRepository = new PasswordReset_InMemoryRepository(
       shouldFailPasswordResetRepository,
     );
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });

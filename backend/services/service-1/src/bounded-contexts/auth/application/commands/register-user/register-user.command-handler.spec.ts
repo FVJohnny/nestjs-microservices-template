@@ -1,6 +1,6 @@
 import { RegisterUser_CommandHandler } from './register-user.command-handler';
 import { RegisterUser_Command } from './register-user.command';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
+import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import { Email, Username, Password, UserRoleEnum } from '@bc/auth/domain/value-objects';
 import {
   AlreadyExistsException,
@@ -10,7 +10,7 @@ import {
   MockEventBus,
   UserCreated_IntegrationEvent,
   wait,
-  Outbox_InMemory_Repository,
+  Outbox_InMemoryRepository,
   Id,
 } from '@libs/nestjs-common';
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/events/user-registered.domain-event';
@@ -38,9 +38,9 @@ describe('RegisterUserCommandHandler', () => {
       shouldFailOutbox = false,
     } = params;
 
-    const outboxRepository = new Outbox_InMemory_Repository(shouldFailOutbox);
+    const outboxRepository = new Outbox_InMemoryRepository(shouldFailOutbox);
 
-    const userRepository = new User_InMemory_Repository(shouldFailRepository);
+    const userRepository = new User_InMemoryRepository(shouldFailRepository);
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
     const commandHandler = new RegisterUser_CommandHandler(
       userRepository,

@@ -1,6 +1,6 @@
 import { GetEmailVerificationByUserId_QueryHandler } from './get-email-verification-by-user-id.query-handler';
 import { GetEmailVerificationByUserId_Query } from './get-email-verification-by-user-id.query';
-import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification.in-memory-repository';
+import { EmailVerification_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification.in-memory-repository';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { NotFoundException, InfrastructureException, Id } from '@libs/nestjs-common';
 
@@ -14,7 +14,7 @@ describe('GetEmailVerificationByUserId_QueryHandler', () => {
   const setup = (params: { shouldFailRepository?: boolean } = {}) => {
     const { shouldFailRepository = false } = params;
 
-    const repository = new EmailVerification_InMemory_Repository(shouldFailRepository);
+    const repository = new EmailVerification_InMemoryRepository(shouldFailRepository);
     const handler = new GetEmailVerificationByUserId_QueryHandler(repository);
 
     return { repository, handler };

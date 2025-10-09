@@ -1,11 +1,11 @@
 import { GetNewTokensFromRefreshToken_QueryHandler } from './get-new-tokens-from-refresh-token.query-handler';
 import { GetNewTokensFromRefreshToken_Query } from './get-new-tokens-from-refresh-token.query';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
+import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import {
   UserToken,
   Token,
-  UserToken_InMemory_Repository,
+  UserToken_InMemoryRepository,
   Id,
   JwtTokenService,
   UnauthorizedException,
@@ -25,8 +25,8 @@ describe('GetNewTokensFromRefreshToken_QueryHandler', () => {
   ) => {
     const { withUser = false, userStatus = 'active', shouldFailRepository = false, withSavedToken = false } = params;
 
-    const userRepository = new User_InMemory_Repository(shouldFailRepository);
-    const userTokenRepository = new UserToken_InMemory_Repository(shouldFailRepository);
+    const userRepository = new User_InMemoryRepository(shouldFailRepository);
+    const userTokenRepository = new UserToken_InMemoryRepository(shouldFailRepository);
     const jwtTokenService = new JwtTokenService(new JwtService());
     const handler = new GetNewTokensFromRefreshToken_QueryHandler(userRepository, userTokenRepository, jwtTokenService);
 

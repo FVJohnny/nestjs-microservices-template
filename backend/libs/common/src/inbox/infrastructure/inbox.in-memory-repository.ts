@@ -6,7 +6,7 @@ import type { RepositoryContext } from '../../transactions';
 import type { InboxStatusVO } from '../domain/value-objects';
 import type { DateVO } from '../../general';
 
-export class Inbox_InMemory_Repository
+export class Inbox_InMemoryRepository
   extends Base_InMemoryRepository<InboxEvent, InboxEventDTO>
   implements InboxRepository
 {

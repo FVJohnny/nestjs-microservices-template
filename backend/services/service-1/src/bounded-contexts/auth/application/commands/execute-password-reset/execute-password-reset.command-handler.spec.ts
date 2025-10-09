@@ -1,7 +1,7 @@
 import { ExecutePasswordReset_CommandHandler } from './execute-password-reset.command-handler';
 import { ExecutePasswordReset_Command } from './execute-password-reset.command';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
-import { PasswordReset_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
+import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
+import { PasswordReset_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { PasswordReset } from '@bc/auth/domain/entities/password-reset/password-reset.entity';
 import { Email, Username, Password, Expiration, Used } from '@bc/auth/domain/value-objects';
@@ -25,7 +25,7 @@ describe('ExecutePasswordResetCommandHandler', () => {
       props?.newPassword || 'NewSecurePassword123!',
     );
 
-  const createUser = async (userRepository: User_InMemory_Repository, email?: Email) => {
+  const createUser = async (userRepository: User_InMemoryRepository, email?: Email) => {
     const user = User.create({
       email: email || Email.random(),
       username: Username.random(),
@@ -36,7 +36,7 @@ describe('ExecutePasswordResetCommandHandler', () => {
   };
 
   const createPasswordReset = async (
-    passwordResetRepository: PasswordReset_InMemory_Repository,
+    passwordResetRepository: PasswordReset_InMemoryRepository,
     email: Email,
     isValid: boolean = true,
   ) => {
@@ -62,8 +62,8 @@ describe('ExecutePasswordResetCommandHandler', () => {
       shouldFailEventBus = false,
     } = params;
 
-    const userRepository = new User_InMemory_Repository(shouldFailUserRepository);
-    const passwordResetRepository = new PasswordReset_InMemory_Repository(
+    const userRepository = new User_InMemoryRepository(shouldFailUserRepository);
+    const passwordResetRepository = new PasswordReset_InMemoryRepository(
       shouldFailPasswordResetRepository,
     );
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });

@@ -1,4 +1,4 @@
-import { EmailVerification_InMemory_Repository } from './email-verification.in-memory-repository';
+import { EmailVerification_InMemoryRepository } from './email-verification.in-memory-repository';
 import { testEmailVerificationRepositoryContract } from '@bc/auth/domain/repositories/email-verification/email-verification.repository.spec';
 import type { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 
@@ -6,7 +6,7 @@ import type { EmailVerification } from '@bc/auth/domain/entities/email-verificat
 testEmailVerificationRepositoryContract(
   'In-Memory Implementation',
   async (verifications?: EmailVerification[]) => {
-    const repository = new EmailVerification_InMemory_Repository();
+    const repository = new EmailVerification_InMemoryRepository();
     verifications?.forEach((verification) => repository.save(verification));
     return repository;
   },

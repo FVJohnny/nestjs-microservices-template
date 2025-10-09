@@ -8,14 +8,14 @@ import { Id, type RepositoryContext } from '@libs/nestjs-common';
 import { MONGO_CLIENT_TOKEN, Base_MongoRepository, IndexSpec } from '@libs/nestjs-mongodb';
 
 @Injectable()
-export class EmailVerification_Mongodb_Repository
+export class EmailVerification_MongodbRepository
   extends Base_MongoRepository<EmailVerification, EmailVerificationDTO>
   implements EmailVerification_Repository
 {
   static readonly CollectionName = 'email_verifications';
 
   constructor(@Inject(MONGO_CLIENT_TOKEN) mongoClient: MongoClient) {
-    super(mongoClient, EmailVerification_Mongodb_Repository.CollectionName);
+    super(mongoClient, EmailVerification_MongodbRepository.CollectionName);
   }
 
   protected toEntity(dto: EmailVerificationDTO): EmailVerification {

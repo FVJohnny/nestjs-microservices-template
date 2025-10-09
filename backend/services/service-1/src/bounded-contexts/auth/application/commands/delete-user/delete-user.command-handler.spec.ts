@@ -1,6 +1,6 @@
 import { DeleteUser_CommandHandler } from './delete-user.command-handler';
 import { DeleteUser_Command } from './delete-user.command';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
+import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { Id, InfrastructureException, MockEventBus, NotFoundException } from '@libs/nestjs-common';
 import { UserDeleted_DomainEvent } from '@bc/auth/domain/events/user-deleted.domain-event';
@@ -18,7 +18,7 @@ describe('DeleteUser_CommandHandler', () => {
   ) => {
     const { withUser = false, shouldFailRepository = false, shouldFailEventBus = false } = params;
 
-    const repository = new User_InMemory_Repository(shouldFailRepository);
+    const repository = new User_InMemoryRepository(shouldFailRepository);
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
     const handler = new DeleteUser_CommandHandler(repository, eventBus);
 

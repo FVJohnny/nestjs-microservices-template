@@ -1,6 +1,6 @@
 import { GetUserTokenByToken_QueryHandler } from './get-user-token-by-token.query-handler';
 import { GetUserTokenByToken_Query } from './get-user-token-by-token.query';
-import { UserToken_InMemory_Repository } from '../../../testing/user-token.in-memory-repository';
+import { UserToken_InMemoryRepository } from '../../../testing/user-token.in-memory-repository';
 import { UserToken } from '../../../domain/entities/user-token.entity';
 import { Token } from '../../../domain/entities/token.vo';
 import { NotFoundException, InfrastructureException } from '../../../../errors/application.exceptions';
@@ -13,7 +13,7 @@ describe('GetUserTokenByToken_QueryHandler', () => {
   const setup = (params: { shouldFailRepository?: boolean } = {}) => {
     const { shouldFailRepository = false } = params;
 
-    const repository = new UserToken_InMemory_Repository(shouldFailRepository);
+    const repository = new UserToken_InMemoryRepository(shouldFailRepository);
     const handler = new GetUserTokenByToken_QueryHandler(repository);
 
     return { repository, handler };

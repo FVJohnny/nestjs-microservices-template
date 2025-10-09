@@ -1,14 +1,14 @@
 import { EMAIL_VERIFICATION_REPOSITORY } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { PASSWORD_RESET_REPOSITORY } from '@bc/auth/domain/repositories/password-reset/password-reset.repository';
 import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
-import { EmailVerification_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification.in-memory-repository';
-import { PasswordReset_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
-import { User_InMemory_Repository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
+import { EmailVerification_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/email-verification.in-memory-repository';
+import { PasswordReset_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
+import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import {
   USER_TOKEN_REPOSITORY,
-  UserToken_InMemory_Repository,
+  UserToken_InMemoryRepository,
   InMemoryIntegrationEventsModule,
-  Outbox_InMemory_Repository,
+  Outbox_InMemoryRepository,
   OUTBOX_REPOSITORY,
 } from '@libs/nestjs-common';
 import { KafkaIntegrationEventsModule } from '@libs/nestjs-kafka';
@@ -44,15 +44,15 @@ export async function createE2ETestApp(
     .overrideModule(RedisDBModule)
     .useModule(DummyModule)
     .overrideProvider(USER_REPOSITORY)
-    .useValue(new User_InMemory_Repository(false))
+    .useValue(new User_InMemoryRepository(false))
     .overrideProvider(EMAIL_VERIFICATION_REPOSITORY)
-    .useValue(new EmailVerification_InMemory_Repository(false))
+    .useValue(new EmailVerification_InMemoryRepository(false))
     .overrideProvider(PASSWORD_RESET_REPOSITORY)
-    .useValue(new PasswordReset_InMemory_Repository(false))
+    .useValue(new PasswordReset_InMemoryRepository(false))
     .overrideProvider(USER_TOKEN_REPOSITORY)
-    .useValue(new UserToken_InMemory_Repository(false))
+    .useValue(new UserToken_InMemoryRepository(false))
     .overrideProvider(OUTBOX_REPOSITORY)
-    .useValue(new Outbox_InMemory_Repository())
+    .useValue(new Outbox_InMemoryRepository())
     .compile();
 
   const app = moduleFixture.createNestApplication();

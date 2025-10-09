@@ -4,7 +4,7 @@ import { Outbox_Repository } from '../domain/outbox.repository';
 import { Base_InMemoryRepository } from '../../general/infrastructure/base.in-memory-repository';
 
 @Injectable()
-export class Outbox_InMemory_Repository
+export class Outbox_InMemoryRepository
   extends Base_InMemoryRepository<OutboxEvent, OutboxEventDTO>
   implements Outbox_Repository
 {
@@ -14,10 +14,6 @@ export class Outbox_InMemory_Repository
 
   protected toEntity(dto: OutboxEventDTO): OutboxEvent {
     return OutboxEvent.fromValue(dto);
-  }
-
-  protected toValue(entity: OutboxEvent): OutboxEventDTO {
-    return entity.toValue();
   }
 
   async findUnprocessed(limit = 10) {
