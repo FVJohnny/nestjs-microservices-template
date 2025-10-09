@@ -1,5 +1,5 @@
-import { OrderBy } from './order-by';
-import { OrderType, OrderTypes } from './order-type';
+import { OrderBy } from './order-by.vo';
+import { OrderType, OrderTypes } from './order-type.vo';
 
 export class Order {
   readonly orderBy: OrderBy;

@@ -1,6 +1,6 @@
 import { DomainValidationException } from '../../../errors';
 
-export type Primitives = string | number | boolean | Date;
+export type Primitives = string | number | boolean | Date | Record<string, unknown>;
 
 export interface IValueObject<T extends Primitives> {
   validate(): void;

@@ -1,12 +1,13 @@
 import { DomainValidationException } from '../../../errors';
 import { DateVO } from './date.vo';
+import type { IValueObject } from './base.vo';
 
 interface TimestampsValue extends Record<string, unknown> {
   createdAt: Date;
   updatedAt: Date;
 }
 
-export class Timestamps {
+export class Timestamps implements IValueObject<TimestampsValue> {
   public readonly createdAt: DateVO;
   public readonly updatedAt: DateVO;
 

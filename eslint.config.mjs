@@ -7,6 +7,7 @@ import importPlugin from 'eslint-plugin-import';
 import noDirectEntityMutationRule from './eslint/rules/no-direct-entity-mutation.mjs';
 import { hexagonalArchitectureConfigs } from './eslint/rules/hexagonal-architecture.mjs';
 import cqrsHandlerCollocationRule from './eslint/rules/cqrs-handler-collocation.mjs';
+import valueObjectNamingRule from './eslint/rules/value-object-naming.mjs';
 
 export default [
   {
@@ -53,6 +54,11 @@ export default [
           'handler-collocation': cqrsHandlerCollocationRule,
         },
       },
+      'value-object': {
+        rules: {
+          'naming': valueObjectNamingRule,
+        },
+      },
       import: importPlugin,
     },
     rules: {
@@ -62,6 +68,7 @@ export default [
       eqeqeq: 'error',
       'entity-domain/no-direct-entity-mutation': 'error',
       'cqrs/handler-collocation': 'error',
+      'value-object/naming': 'error',
     },
   },
 

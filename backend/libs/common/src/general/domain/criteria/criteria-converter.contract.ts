@@ -1,13 +1,13 @@
 import type { CriteriaConverter } from './criteria-converter';
 import { Criteria } from './criteria';
 import { Filter } from './filters/filter';
-import { FilterField } from './filters/filter-field';
-import { FilterOperator, Operator } from './filters/filter-operator';
-import { FilterValue } from './filters/filter-value';
+import { FilterField } from './filters/filter-field.vo';
+import { FilterOperator, Operator } from './filters/filter-operator.vo';
+import { FilterValue } from './filters/filter-value.vo';
 import { Filters } from './filters/filters';
 import { Order } from './order/order';
-import { OrderBy } from './order/order-by';
-import { OrderType, OrderTypes } from './order/order-type';
+import { OrderBy } from './order/order-by.vo';
+import { OrderType, OrderTypes } from './order/order-type.vo';
 import { PaginationCursor } from './pagination/pagination-cursor';
 import { PaginationOffset } from './pagination/pagination-offset';
 import type { SharedAggregateRootDTO } from '../base.aggregate-root';

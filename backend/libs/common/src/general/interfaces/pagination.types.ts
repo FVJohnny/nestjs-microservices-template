@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { OrderTypes } from '../domain/criteria/order/order-type';
+import { OrderTypes } from '../domain/criteria/order/order-type.vo';
 
 export class ControllerPaginationParams {
   @ApiProperty({ required: false, description: 'Sort by field' })
