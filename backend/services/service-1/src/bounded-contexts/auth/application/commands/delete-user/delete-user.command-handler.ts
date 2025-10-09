@@ -6,9 +6,9 @@ import {
   type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { BaseCommandHandler, EVENT_BUS, Id, NotFoundException } from '@libs/nestjs-common';
+import { Base_CommandHandler, EVENT_BUS, Id, NotFoundException } from '@libs/nestjs-common';
 
-export class DeleteUser_CommandHandler extends BaseCommandHandler(DeleteUser_Command) {
+export class DeleteUser_CommandHandler extends Base_CommandHandler(DeleteUser_Command) {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,

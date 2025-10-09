@@ -15,11 +15,11 @@ import {
   Operator,
   OrderTypes,
   Order,
-  BaseQueryHandler,
+  Base_QueryHandler,
   PaginationOffset,
 } from '@libs/nestjs-common';
 
-export class GetUsers_QueryHandler extends BaseQueryHandler(
+export class GetUsers_QueryHandler extends Base_QueryHandler(
   GetUsers_Query,
 )<GetUsers_QueryResponse>() {
   constructor(@Inject(USER_REPOSITORY) private readonly userRepository: User_Repository) {

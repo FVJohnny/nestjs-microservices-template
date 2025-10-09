@@ -9,7 +9,7 @@ import { User } from '@bc/auth/domain/entities/user/user.entity';
 import { Email, Username, Password } from '@bc/auth/domain/value-objects';
 import {
   AlreadyExistsException,
-  BaseCommandHandler,
+  Base_CommandHandler,
   EVENT_BUS,
   OUTBOX_REPOSITORY,
   type Outbox_Repository,
@@ -22,7 +22,7 @@ import {
   Transaction,
 } from '@libs/nestjs-common';
 
-export class RegisterUser_CommandHandler extends BaseCommandHandler(RegisterUser_Command) {
+export class RegisterUser_CommandHandler extends Base_CommandHandler(RegisterUser_Command) {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,

@@ -12,7 +12,7 @@ import {
 import { PasswordReset } from '@bc/auth/domain/entities/password-reset/password-reset.entity';
 import { Email } from '@bc/auth/domain/value-objects';
 import {
-  BaseCommandHandler,
+  Base_CommandHandler,
   EVENT_BUS,
   OUTBOX_REPOSITORY,
   type Outbox_Repository,
@@ -25,7 +25,7 @@ import {
   Transaction,
 } from '@libs/nestjs-common';
 
-export class RequestPasswordReset_CommandHandler extends BaseCommandHandler(
+export class RequestPasswordReset_CommandHandler extends Base_CommandHandler(
   RequestPasswordReset_Command,
 ) {
   constructor(

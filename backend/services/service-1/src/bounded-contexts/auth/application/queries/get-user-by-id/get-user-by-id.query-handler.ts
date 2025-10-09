@@ -4,10 +4,10 @@ import {
   USER_REPOSITORY,
   type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
-import { BaseQueryHandler, NotFoundException, Id } from '@libs/nestjs-common';
+import { Base_QueryHandler, NotFoundException, Id } from '@libs/nestjs-common';
 import { GetUserById_QueryResponse } from './get-user-by-id.query-response';
 
-export class GetUserById_QueryHandler extends BaseQueryHandler(
+export class GetUserById_QueryHandler extends Base_QueryHandler(
   GetUserById_Query,
 )<GetUserById_QueryResponse>() {
   constructor(

@@ -6,9 +6,9 @@ import {
   type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
 import { User } from '@bc/auth/domain/entities/user/user.entity';
-import { BaseCommandHandler, EVENT_BUS, Id, NotFoundException } from '@libs/nestjs-common';
+import { Base_CommandHandler, EVENT_BUS, Id, NotFoundException } from '@libs/nestjs-common';
 
-export class RecordUserLogin_CommandHandler extends BaseCommandHandler(RecordUserLogin_Command) {
+export class RecordUserLogin_CommandHandler extends Base_CommandHandler(RecordUserLogin_Command) {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,

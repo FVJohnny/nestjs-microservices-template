@@ -1,8 +1,8 @@
 import type { IQuery } from '@nestjs/cqrs';
 import type { PaginationCursorParams } from '@libs/nestjs-common';
-import { BaseQuery } from '@libs/nestjs-common';
+import { Base_Query } from '@libs/nestjs-common';
 
-export class GetUsersCursor_Query extends BaseQuery implements IQuery {
+export class GetUsersCursor_Query extends Base_Query implements IQuery {
   public readonly userId?: string;
   public readonly status?: string;
   public readonly role?: string;

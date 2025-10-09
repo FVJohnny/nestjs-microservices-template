@@ -1,7 +1,7 @@
 import type { IQuery } from '@nestjs/cqrs';
-import { BaseQuery } from '@libs/nestjs-common';
+import { Base_Query } from '@libs/nestjs-common';
 
-export class GetPasswordResetByEmail_Query extends BaseQuery implements IQuery {
+export class GetPasswordResetByEmail_Query extends Base_Query implements IQuery {
   public readonly email: string;
 
   constructor(props: GetPasswordResetByEmail_Query) {

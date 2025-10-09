@@ -1,7 +1,7 @@
 import type { IQuery } from '@nestjs/cqrs';
-import { BaseQuery } from '@libs/nestjs-common';
+import { Base_Query } from '@libs/nestjs-common';
 
-export class GetUserById_Query extends BaseQuery implements IQuery {
+export class GetUserById_Query extends Base_Query implements IQuery {
   public readonly userId: string;
 
   constructor(props: GetUserById_Query) {

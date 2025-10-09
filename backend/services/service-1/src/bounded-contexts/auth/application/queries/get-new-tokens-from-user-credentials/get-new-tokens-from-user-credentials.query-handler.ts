@@ -7,13 +7,13 @@ import {
 } from '@bc/auth/domain/repositories/user/user.repository';
 import { Email } from '@bc/auth/domain/value-objects';
 import {
-  BaseQueryHandler,
+  Base_QueryHandler,
   UnauthorizedException,
   JwtTokenService,
   TokenPayload,
 } from '@libs/nestjs-common';
 
-export class GetNewTokensFromUserCredentials_QueryHandler extends BaseQueryHandler(
+export class GetNewTokensFromUserCredentials_QueryHandler extends Base_QueryHandler(
   GetNewTokensFromUserCredentials_Query,
 )<GetNewTokensFromUserCredentials_QueryResponse>() {
   constructor(

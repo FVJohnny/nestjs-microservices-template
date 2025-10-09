@@ -1,7 +1,7 @@
 import type { ICommand } from '@nestjs/cqrs';
-import { BaseCommand } from '@libs/nestjs-common';
+import { Base_Command } from '@libs/nestjs-common';
 
-export class Logout_Command extends BaseCommand implements ICommand {
+export class Logout_Command extends Base_Command implements ICommand {
   public readonly userId: string;
 
   constructor(userId: string) {

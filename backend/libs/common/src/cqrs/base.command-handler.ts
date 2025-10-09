@@ -11,10 +11,10 @@ import { WithSpan } from '../tracing';
  * ```typescript
  * // Instead of:
  * // @CommandHandler(DeleteUser_Command)
- * // export class DeleteUser_CommandHandler extends BaseCommandHandler<DeleteUser_Command> { ... }
+ * // export class DeleteUser_CommandHandler extends Base_CommandHandler<DeleteUser_Command> { ... }
  *
  * // Just use:
- * export class DeleteUser_CommandHandler extends BaseCommandHandler(DeleteUser_Command) {
+ * export class DeleteUser_CommandHandler extends Base_CommandHandler(DeleteUser_Command) {
  *   constructor(
  *     @Inject(USER_REPOSITORY) private readonly userRepository: User_Repository,
  *     @Inject(EVENT_BUS) eventBus: IEventBus,
@@ -28,12 +28,12 @@ import { WithSpan } from '../tracing';
  * }
  * ```
  */
-export function BaseCommandHandler<TCommand extends ICommand>(
+export function Base_CommandHandler<TCommand extends ICommand>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   command: new (...args: any[]) => TCommand,
 ) {
   @CommandHandler(command)
-  abstract class BaseCommandHandlerClass {
+  abstract class Base_CommandHandlerClass {
     readonly logger: CorrelationLogger;
 
     constructor(readonly eventBus: IEventBus) {
@@ -103,5 +103,5 @@ export function BaseCommandHandler<TCommand extends ICommand>(
     }
   }
 
-  return BaseCommandHandlerClass;
+  return Base_CommandHandlerClass;
 }

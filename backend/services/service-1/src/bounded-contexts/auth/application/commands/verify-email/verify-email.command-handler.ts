@@ -5,10 +5,10 @@ import {
   EMAIL_VERIFICATION_REPOSITORY,
   type EmailVerification_Repository,
 } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
-import { BaseCommandHandler, EVENT_BUS, NotFoundException } from '@libs/nestjs-common';
+import { Base_CommandHandler, EVENT_BUS, NotFoundException } from '@libs/nestjs-common';
 import { Id } from '@libs/nestjs-common';
 
-export class VerifyEmail_CommandHandler extends BaseCommandHandler(VerifyEmail_Command) {
+export class VerifyEmail_CommandHandler extends Base_CommandHandler(VerifyEmail_Command) {
   constructor(
     @Inject(EMAIL_VERIFICATION_REPOSITORY)
     private readonly emailVerificationRepository: EmailVerification_Repository,

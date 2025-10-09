@@ -1,1 +1,1 @@
-export abstract class BaseCommand {}
+export abstract class Base_Command {}

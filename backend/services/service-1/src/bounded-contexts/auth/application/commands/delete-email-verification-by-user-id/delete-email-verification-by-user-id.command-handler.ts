@@ -5,9 +5,9 @@ import {
   EMAIL_VERIFICATION_REPOSITORY,
   type EmailVerification_Repository,
 } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
-import { BaseCommandHandler, EVENT_BUS, Id } from '@libs/nestjs-common';
+import { Base_CommandHandler, EVENT_BUS, Id } from '@libs/nestjs-common';
 
-export class DeleteEmailVerificationByUserId_CommandHandler extends BaseCommandHandler(
+export class DeleteEmailVerificationByUserId_CommandHandler extends Base_CommandHandler(
   DeleteEmailVerificationByUserId_Command,
 ) {
   constructor(

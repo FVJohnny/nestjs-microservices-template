@@ -1,7 +1,7 @@
 import { type IEventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { CreateEmailVerification_Command } from './create-email-verification.command';
-import { AlreadyExistsException, BaseCommandHandler, EVENT_BUS, Id } from '@libs/nestjs-common';
+import { AlreadyExistsException, Base_CommandHandler, EVENT_BUS, Id } from '@libs/nestjs-common';
 import { EmailVerification } from '@bc/auth/domain/entities/email-verification/email-verification.entity';
 import { Email } from '@bc/auth/domain/value-objects';
 import {
@@ -11,7 +11,7 @@ import {
 import { USER_REPOSITORY } from '@bc/auth/domain/repositories/user/user.repository';
 import type { User_Repository } from '@bc/auth/domain/repositories/user/user.repository';
 
-export class CreateEmailVerification_CommandHandler extends BaseCommandHandler(
+export class CreateEmailVerification_CommandHandler extends Base_CommandHandler(
   CreateEmailVerification_Command,
 ) {
   constructor(

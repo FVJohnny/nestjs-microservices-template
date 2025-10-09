@@ -11,7 +11,7 @@ import {
 } from '@bc/auth/domain/repositories/password-reset/password-reset.repository';
 import { Password } from '@bc/auth/domain/value-objects';
 import {
-  BaseCommandHandler,
+  Base_CommandHandler,
   EVENT_BUS,
   Id,
   NotFoundException,
@@ -19,7 +19,7 @@ import {
   Transaction,
 } from '@libs/nestjs-common';
 
-export class ExecutePasswordReset_CommandHandler extends BaseCommandHandler(
+export class ExecutePasswordReset_CommandHandler extends Base_CommandHandler(
   ExecutePasswordReset_Command,
 ) {
   constructor(

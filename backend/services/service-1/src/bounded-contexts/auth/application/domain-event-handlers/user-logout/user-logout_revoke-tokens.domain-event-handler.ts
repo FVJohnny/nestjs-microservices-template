@@ -1,10 +1,10 @@
 import { Inject } from '@nestjs/common';
 import type { ICommandBus } from '@nestjs/cqrs';
 import { UserLogout_DomainEvent } from '@bc/auth/domain/events/user-logout.domain-event';
-import { BaseDomainEventHandler, COMMAND_BUS } from '@libs/nestjs-common';
+import { Base_DomainEventHandler, COMMAND_BUS } from '@libs/nestjs-common';
 import { RevokeAllUserTokens_Command } from '@bc/auth/application/commands';
 
-export class UserLogout_RevokeTokens_DomainEventHandler extends BaseDomainEventHandler(
+export class UserLogout_RevokeTokens_DomainEventHandler extends Base_DomainEventHandler(
   UserLogout_DomainEvent,
 ) {
   constructor(@Inject(COMMAND_BUS) private readonly commandBus: ICommandBus) {

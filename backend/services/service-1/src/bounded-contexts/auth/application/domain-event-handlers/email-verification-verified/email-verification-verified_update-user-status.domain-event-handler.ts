@@ -4,9 +4,9 @@ import {
   USER_REPOSITORY,
   type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
-import { BaseDomainEventHandler, NotFoundException } from '@libs/nestjs-common';
+import { Base_DomainEventHandler, NotFoundException } from '@libs/nestjs-common';
 
-export class EmailVerificationVerified_UpdateUserStatus_DomainEventHandler extends BaseDomainEventHandler(
+export class EmailVerificationVerified_UpdateUserStatus_DomainEventHandler extends Base_DomainEventHandler(
   EmailVerificationVerified_DomainEvent,
 ) {
   constructor(@Inject(USER_REPOSITORY) private readonly userRepository: User_Repository) {

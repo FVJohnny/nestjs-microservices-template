@@ -4,11 +4,11 @@ import {
   PASSWORD_RESET_REPOSITORY,
   type PasswordReset_Repository,
 } from '@bc/auth/domain/repositories/password-reset/password-reset.repository';
-import { BaseQueryHandler, NotFoundException } from '@libs/nestjs-common';
+import { Base_QueryHandler, NotFoundException } from '@libs/nestjs-common';
 import { GetPasswordResetByEmail_QueryResponse } from './get-password-reset-by-email.query-response';
 import { Email } from '@bc/auth/domain/value-objects';
 
-export class GetPasswordResetByEmail_QueryHandler extends BaseQueryHandler(
+export class GetPasswordResetByEmail_QueryHandler extends Base_QueryHandler(
   GetPasswordResetByEmail_Query,
 )<GetPasswordResetByEmail_QueryResponse>() {
   constructor(

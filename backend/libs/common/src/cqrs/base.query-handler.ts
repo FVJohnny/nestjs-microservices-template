@@ -9,10 +9,10 @@ import { CorrelationLogger } from '../logger';
  * ```typescript
  * // Instead of:
  * // @QueryHandler(GetUserById_Query)
- * // export class GetUserById_QueryHandler extends BaseQueryHandler<GetUserById_Query, GetUserByIdResponse> { ... }
+ * // export class GetUserById_QueryHandler extends Base_QueryHandler<GetUserById_Query, GetUserByIdResponse> { ... }
  *
  * // Just use:
- * export class GetUserById_QueryHandler extends BaseQueryHandler(GetUserById_Query)<GetUserByIdResponse> {
+ * export class GetUserById_QueryHandler extends Base_QueryHandler(GetUserById_Query)<GetUserByIdResponse> {
  *   constructor(
  *     @Inject(USER_REPOSITORY) private readonly userRepository: User_Repository,
  *   ) {
@@ -25,13 +25,13 @@ import { CorrelationLogger } from '../logger';
  * }
  * ```
  */
-export function BaseQueryHandler<TQuery extends IQuery>(
+export function Base_QueryHandler<TQuery extends IQuery>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   query: new (...args: any[]) => TQuery,
 ) {
   return function <TResult extends object>() {
     @QueryHandler(query)
-    abstract class BaseQueryHandlerClass {
+    abstract class Base_QueryHandlerClass {
       readonly logger: CorrelationLogger;
 
       constructor() {
@@ -60,6 +60,6 @@ export function BaseQueryHandler<TQuery extends IQuery>(
       abstract validate(query: TQuery): Promise<void>;
     }
 
-    return BaseQueryHandlerClass;
+    return Base_QueryHandlerClass;
   };
 }

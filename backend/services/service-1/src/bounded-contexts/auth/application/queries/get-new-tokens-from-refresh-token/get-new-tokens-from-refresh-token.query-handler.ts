@@ -5,7 +5,7 @@ import {
   type User_Repository,
 } from '@bc/auth/domain/repositories/user/user.repository';
 import {
-  BaseQueryHandler,
+  Base_QueryHandler,
   UnauthorizedException,
   JwtTokenService,
   Id,
@@ -14,7 +14,7 @@ import {
 import { GetNewTokensFromRefreshToken_QueryResponse } from './get-new-tokens-from-refresh-token.query-response';
 import { USER_TOKEN_REPOSITORY, type UserToken_Repository, Token } from '@libs/nestjs-common';
 
-export class GetNewTokensFromRefreshToken_QueryHandler extends BaseQueryHandler(
+export class GetNewTokensFromRefreshToken_QueryHandler extends Base_QueryHandler(
   GetNewTokensFromRefreshToken_Query,
 )<GetNewTokensFromRefreshToken_QueryResponse>() {
   constructor(

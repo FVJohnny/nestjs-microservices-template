@@ -1,7 +1,7 @@
 import type { IQuery } from '@nestjs/cqrs';
-import { BaseQuery } from '@libs/nestjs-common';
+import { Base_Query } from '@libs/nestjs-common';
 
-export class GetNewTokensFromUserCredentials_Query extends BaseQuery implements IQuery {
+export class GetNewTokensFromUserCredentials_Query extends Base_Query implements IQuery {
   public readonly email: string;
   public readonly password: string;
 

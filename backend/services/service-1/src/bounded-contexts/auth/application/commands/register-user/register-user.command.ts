@@ -1,5 +1,5 @@
 import type { ICommand } from '@nestjs/cqrs';
-import { BaseCommand } from '@libs/nestjs-common';
+import { Base_Command } from '@libs/nestjs-common';
 
 export interface RegisterUserCommandProps {
   email: string;
@@ -7,7 +7,7 @@ export interface RegisterUserCommandProps {
   password: string;
 }
 
-export class RegisterUser_Command extends BaseCommand implements ICommand {
+export class RegisterUser_Command extends Base_Command implements ICommand {
   public readonly email: string;
   public readonly username: string;
   public readonly password: string;

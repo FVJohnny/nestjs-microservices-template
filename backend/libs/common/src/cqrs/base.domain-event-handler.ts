@@ -10,10 +10,10 @@ import { WithSpan } from '../tracing';
  * ```typescript
  * // Instead of:
  * // @EventsHandler(UserDeleted_DomainEvent)
- * // export class UserDeleted_Handler extends BaseDomainEventHandler<UserDeleted_DomainEvent> { ... }
+ * // export class UserDeleted_Handler extends Base_DomainEventHandler<UserDeleted_DomainEvent> { ... }
  *
  * // Just use:
- * export class UserDeleted_Handler extends BaseDomainEventHandler(UserDeleted_DomainEvent) {
+ * export class UserDeleted_Handler extends Base_DomainEventHandler(UserDeleted_DomainEvent) {
  *   constructor(@Inject(COMMAND_BUS) private readonly commandBus: ICommandBus) {
  *     super();
  *   }
@@ -22,12 +22,12 @@ import { WithSpan } from '../tracing';
  * }
  * ```
  */
-export function BaseDomainEventHandler<T extends DomainEvent>(
+export function Base_DomainEventHandler<T extends DomainEvent>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   event: new (...args: any[]) => T,
 ) {
   @EventsHandler(event)
-  abstract class BaseDomainEventHandlerClass implements IEventHandler<T> {
+  abstract class Base_DomainEventHandlerClass implements IEventHandler<T> {
     readonly logger: CorrelationLogger;
 
     constructor() {
@@ -43,10 +43,10 @@ export function BaseDomainEventHandler<T extends DomainEvent>(
     abstract handleEvent(event: T): Promise<void>;
   }
 
-  return BaseDomainEventHandlerClass;
+  return Base_DomainEventHandlerClass;
 }
 
 /**
- * @deprecated Use BaseDomainEventHandler instead
+ * @deprecated Use Base_DomainEventHandler instead
  */
-export const DomainEventHandlerBase = BaseDomainEventHandler;
+export const DomainEventHandlerBase = Base_DomainEventHandler;

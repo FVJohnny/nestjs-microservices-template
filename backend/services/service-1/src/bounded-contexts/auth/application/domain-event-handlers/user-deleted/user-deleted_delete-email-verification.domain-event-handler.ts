@@ -1,10 +1,10 @@
 import { type ICommandBus } from '@nestjs/cqrs';
 import { UserDeleted_DomainEvent } from '@bc/auth/domain/events/user-deleted.domain-event';
 import { DeleteEmailVerificationByUserId_Command } from '@bc/auth/application/commands';
-import { COMMAND_BUS, BaseDomainEventHandler } from '@libs/nestjs-common';
+import { COMMAND_BUS, Base_DomainEventHandler } from '@libs/nestjs-common';
 import { Inject } from '@nestjs/common';
 
-export class UserDeleted_DeleteEmailVerification_DomainEventHandler extends BaseDomainEventHandler(
+export class UserDeleted_DeleteEmailVerification_DomainEventHandler extends Base_DomainEventHandler(
   UserDeleted_DomainEvent,
 ) {
   constructor(@Inject(COMMAND_BUS) private readonly commandBus: ICommandBus) {
