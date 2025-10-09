@@ -4,11 +4,11 @@ import { EmailVerificationDTO } from '@bc/auth/domain/entities/email-verificatio
 import { EmailVerification_Repository } from '@bc/auth/domain/repositories/email-verification/email-verification.repository';
 import { Email } from '@bc/auth/domain/value-objects';
 import { AlreadyExistsException, Id } from '@libs/nestjs-common';
-import { InMemoryBaseRepository } from '@libs/nestjs-common';
+import { Base_InMemoryRepository } from '@libs/nestjs-common';
 
 @Injectable()
 export class EmailVerification_InMemory_Repository
-  extends InMemoryBaseRepository<EmailVerification, EmailVerificationDTO>
+  extends Base_InMemoryRepository<EmailVerification, EmailVerificationDTO>
   implements EmailVerification_Repository
 {
   constructor(shouldFail: boolean = false) {

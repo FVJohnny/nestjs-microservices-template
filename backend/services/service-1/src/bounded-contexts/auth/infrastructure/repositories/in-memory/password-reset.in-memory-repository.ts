@@ -4,7 +4,7 @@ import { PasswordResetDTO } from '@bc/auth/domain/entities/password-reset/passwo
 import { PasswordReset_Repository } from '@bc/auth/domain/repositories/password-reset/password-reset.repository';
 import { Email, Expiration, Used } from '@bc/auth/domain/value-objects';
 import {
-  InMemoryBaseRepository,
+  Base_InMemoryRepository,
   Criteria,
   Filters,
   Filter,
@@ -16,7 +16,7 @@ import {
 
 @Injectable()
 export class PasswordReset_InMemory_Repository
-  extends InMemoryBaseRepository<PasswordReset, PasswordResetDTO>
+  extends Base_InMemoryRepository<PasswordReset, PasswordResetDTO>
   implements PasswordReset_Repository
 {
   constructor(shouldFail: boolean = false) {

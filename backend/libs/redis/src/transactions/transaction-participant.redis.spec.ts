@@ -1,4 +1,4 @@
-import { EntityExample, ExampleInMemoryRepository } from '@libs/nestjs-common';
+import { EntityExample, Example_InMemoryRepository } from '@libs/nestjs-common';
 import { Transaction } from '@libs/nestjs-common';
 import { RedisTestService } from '../testing/redis-test.service';
 import { ExampleRedisRepository } from '../infrastructure/example.redis-repository';
@@ -54,10 +54,10 @@ describe('Redis transactions', () => {
   });
 
   describe('with in-memory participant', () => {
-    let inMemoryRepository: ExampleInMemoryRepository;
+    let inMemoryRepository: Example_InMemoryRepository;
 
     beforeEach(() => {
-      inMemoryRepository = new ExampleInMemoryRepository();
+      inMemoryRepository = new Example_InMemoryRepository();
     });
 
     it('commits redis and in-memory writes when successful', async () => {

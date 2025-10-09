@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { OutboxEvent, OutboxEventDTO } from '../domain/outbox.entity';
 import { Outbox_Repository } from '../domain/outbox.repository';
-import { Base_InMemory_Repository } from '../../general/infrastructure/base.in-memory-repository';
+import { Base_InMemoryRepository } from '../../general/infrastructure/base.in-memory-repository';
 
 @Injectable()
 export class Outbox_InMemory_Repository
-  extends Base_InMemory_Repository<OutboxEvent, OutboxEventDTO>
+  extends Base_InMemoryRepository<OutboxEvent, OutboxEventDTO>
   implements Outbox_Repository
 {
   constructor(shouldThrowError = false) {

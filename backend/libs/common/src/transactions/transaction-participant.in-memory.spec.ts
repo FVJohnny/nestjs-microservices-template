@@ -1,9 +1,9 @@
-import { InMemoryBaseRepository } from '../general';
+import { Base_InMemoryRepository } from '../general';
 import type { EntityExampleDTO } from '../general/domain/example/example.dto';
 import { EntityExample } from '../general/domain/example/example.aggregate-root';
 import { Transaction } from './transaction';
 
-class ExampleInMemoryRepository extends InMemoryBaseRepository<EntityExample, EntityExampleDTO> {
+class Example_InMemoryRepository extends Base_InMemoryRepository<EntityExample, EntityExampleDTO> {
   constructor(shouldFail = false) {
     super(shouldFail);
   }
@@ -14,10 +14,10 @@ class ExampleInMemoryRepository extends InMemoryBaseRepository<EntityExample, En
 }
 
 describe('In-memory transactions', () => {
-  let repository: ExampleInMemoryRepository;
+  let repository: Example_InMemoryRepository;
 
   beforeEach(() => {
-    repository = new ExampleInMemoryRepository();
+    repository = new Example_InMemoryRepository();
   });
 
   it('commits new saves when the transaction succeeds', async () => {

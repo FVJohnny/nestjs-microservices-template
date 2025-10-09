@@ -1,14 +1,14 @@
 import type { EntityExampleDTO } from '@libs/nestjs-common';
-import { EntityExample, ExampleInMemoryRepository, Transaction } from '@libs/nestjs-common';
+import { EntityExample, Example_InMemoryRepository, Transaction } from '@libs/nestjs-common';
 import { MongodbTestService } from '../testing/mongodb-test.service';
-import { ExampleMongoRepository } from '../infrastructure/example.mongo-repository';
+import { Example_MongoRepository } from '../infrastructure/example.mongo-repository';
 
 describe('Mongo transactions', () => {
   const mongoTestService = new MongodbTestService<EntityExampleDTO>(
-    ExampleMongoRepository.CollectionName,
+    Example_MongoRepository.CollectionName,
   );
-  const mongoRepository = new ExampleMongoRepository(mongoTestService.mongoClient);
-  const inMemoryRepository = new ExampleInMemoryRepository();
+  const mongoRepository = new Example_MongoRepository(mongoTestService.mongoClient);
+  const inMemoryRepository = new Example_InMemoryRepository();
 
   beforeAll(async () => {
     await mongoTestService.setupDatabase();

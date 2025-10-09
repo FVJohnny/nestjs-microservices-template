@@ -4,7 +4,7 @@ import type { SharedAggregateRoot, Id, SharedAggregateRootDTO, Criteria } from '
 import type { Repository } from '../domain';
 import { InMemoryCriteriaConverter } from './criteria/criteria-converter.in-memory';
 
-export abstract class Base_InMemory_Repository<
+export abstract class Base_InMemoryRepository<
   TEnt extends SharedAggregateRoot,
   TDto extends SharedAggregateRootDTO,
 > implements Repository<TEnt, Id>

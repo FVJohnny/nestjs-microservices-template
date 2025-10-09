@@ -1,4 +1,4 @@
-import { Base_InMemory_Repository } from '../../general/infrastructure';
+import { Base_InMemoryRepository } from '../../general/infrastructure';
 import type { InboxRepository } from '../domain/inbox.repository';
 import type { InboxEventDTO } from '../domain/inbox.entity';
 import { InboxEvent } from '../domain/inbox.entity';
@@ -7,7 +7,7 @@ import type { InboxStatusVO } from '../domain/value-objects';
 import type { DateVO } from '../../general';
 
 export class Inbox_InMemory_Repository
-  extends Base_InMemory_Repository<InboxEvent, InboxEventDTO>
+  extends Base_InMemoryRepository<InboxEvent, InboxEventDTO>
   implements InboxRepository
 {
   protected toEntity(dto: InboxEventDTO): InboxEvent {

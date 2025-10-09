@@ -4,11 +4,11 @@ import { User_Repository } from '@bc/auth/domain/repositories/user/user.reposito
 import { Email, Username } from '@bc/auth/domain/value-objects';
 import { AlreadyExistsException, type RepositoryContext } from '@libs/nestjs-common';
 import { UserDTO } from '@bc/auth/domain/entities/user/user.dto';
-import { InMemoryBaseRepository } from '@libs/nestjs-common';
+import { Base_InMemoryRepository } from '@libs/nestjs-common';
 
 @Injectable()
 export class User_InMemory_Repository
-  extends InMemoryBaseRepository<User, UserDTO>
+  extends Base_InMemoryRepository<User, UserDTO>
   implements User_Repository
 {
   constructor(shouldFail: boolean = false) {
