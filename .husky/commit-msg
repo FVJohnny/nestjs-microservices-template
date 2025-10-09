@@ -1,1 +1,4 @@
+echo "Checking commit message..."
 npx --no -- commitlint --edit "$1"
+
+echo "✓ All commit message checks passed."

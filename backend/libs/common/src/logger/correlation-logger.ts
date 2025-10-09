@@ -23,7 +23,7 @@ export class CorrelationLogger implements LoggerService {
   }
 
   log = (message: LogMessage) => {
-    if (!this.shouldLog('log')) return;
+    if (!this.shouldLog('info')) return;
 
     console.log(this.toJsonLog('info', message));
   };
@@ -49,7 +49,7 @@ export class CorrelationLogger implements LoggerService {
   };
 
   private shouldLog(level: string): boolean {
-    const levels = ['error', 'warn', 'log', 'debug'];
+    const levels = ['error', 'warn', 'info', 'debug'];
     const currentLevelIndex = levels.indexOf(this.logLevel);
     const requestedLevelIndex = levels.indexOf(level);
     return requestedLevelIndex <= currentLevelIndex;
