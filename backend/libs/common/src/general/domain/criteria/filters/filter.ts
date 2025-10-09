@@ -1,6 +1,6 @@
 import { DomainValidationException } from '../../../../errors';
 import { FilterField } from './filter-field.vo';
-import { FilterOperator } from './filter-operator.vo';
+import { FilterOperator, type Operator } from './filter-operator.vo';
 import { FilterValue } from './filter-value.vo';
 
 export class Filter {
@@ -31,6 +31,10 @@ export class Filter {
       throw new DomainValidationException('Filter value', '', 'The filter is invalid');
     }
 
-    return new Filter(new FilterField(field), new FilterOperator(operator), new FilterValue(value));
+    return new Filter(
+      new FilterField(field),
+      new FilterOperator(operator as Operator),
+      new FilterValue(value),
+    );
   }
 }
