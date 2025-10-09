@@ -8,11 +8,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   protected databaseClient: Redis | null = null;
   protected publisherClient: Redis | null = null;
   protected subscriberClient: Redis | null = null;
-  protected dbNumber?: number; // Optional database number for test isolation
 
-  constructor(@Optional() dbNumber?: number) {
-    this.dbNumber = dbNumber;
-  }
+  constructor(@Optional() private readonly dbNumber?: number) {}
 
   async onModuleInit() {
     const redisHost = process.env.REDIS_HOST;
