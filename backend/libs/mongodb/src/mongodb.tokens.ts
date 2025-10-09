@@ -1,1 +1,0 @@
-export const MONGO_CLIENT_TOKEN = 'MONGODB_CLIENT';

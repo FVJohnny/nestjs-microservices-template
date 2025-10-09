@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 
-import { RedisService } from './redis.service';
+import { RedisService } from '../redis.service';
 import {
   INTEGRATION_EVENT_PUBLISHER,
   INTEGRATION_EVENT_LISTENER,

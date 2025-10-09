@@ -2,7 +2,7 @@ import { IntegrationEventPublisher } from '@libs/nestjs-common';
 import { Injectable } from '@nestjs/common';
 import { CorrelationLogger } from '@libs/nestjs-common';
 
-import { RedisService } from './redis.service';
+import { RedisService } from '../redis.service';
 
 @Injectable()
 export class RedisIntegrationEventPublisher implements IntegrationEventPublisher {

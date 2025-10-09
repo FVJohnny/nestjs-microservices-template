@@ -19,9 +19,9 @@ import {
   PaginatedRepoResult,
 } from '@libs/nestjs-common';
 import type { RepositoryContext, Repository } from '@libs/nestjs-common';
-import { MONGO_CLIENT_TOKEN } from './mongodb.tokens';
-import { TransactionParticipant_Mongodb } from './transactions/transaction-participant.mongodb';
-import { MongoCriteriaConverter } from './criteria/criteria-converter.mongo';
+import { TransactionParticipant_Mongodb } from '../transactions/transaction-participant.mongodb';
+import { MongoCriteriaConverter } from '../criteria/criteria-converter.mongo';
+import { MONGO_CLIENT_TOKEN } from '../mongodb.module';
 
 export interface IndexSpec {
   fields: IndexSpecification;

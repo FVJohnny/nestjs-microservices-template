@@ -1,15 +1,15 @@
 import { EntityExample, Example_InMemoryRepository } from '@libs/nestjs-common';
 import { Transaction } from '@libs/nestjs-common';
 import { RedisTestService } from '../testing/redis-test.service';
-import { ExampleRedisRepository } from '../infrastructure/example.redis-repository';
+import { Example_RedisRepository } from '../example/example.redis-repository';
 
 describe('Redis transactions', () => {
   const redisTestService = new RedisTestService();
-  let repository: ExampleRedisRepository;
+  let repository: Example_RedisRepository;
 
   beforeAll(async () => {
     await redisTestService.setupDatabase();
-    repository = new ExampleRedisRepository(redisTestService);
+    repository = new Example_RedisRepository(redisTestService);
   });
 
   afterEach(async () => {

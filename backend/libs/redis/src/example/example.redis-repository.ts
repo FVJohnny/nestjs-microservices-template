@@ -1,8 +1,8 @@
-import { Base_RedisRepository } from '../base.redis-repository';
+import { Base_RedisRepository } from '../infrastructure/base.redis-repository';
 import { EntityExample } from '@libs/nestjs-common';
 import type { RedisService } from '../redis.service';
 
-export class ExampleRedisRepository extends Base_RedisRepository<EntityExample> {
+export class Example_RedisRepository extends Base_RedisRepository<EntityExample> {
   private readonly keyPrefix = 'transaction-test:';
 
   constructor(redisService: RedisService) {

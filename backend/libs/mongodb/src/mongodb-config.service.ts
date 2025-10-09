@@ -42,6 +42,11 @@ export class MongoDBConfigService {
     return {
       uri: this.getConnectionString(),
       dbName: this.getDatabaseName(),
+      retryWrites: true,
+      maxPoolSize: Number(process.env.MONGO_MAX_POOL_SIZE) || 20,
+      serverSelectionTimeoutMS: Number(process.env.MONGO_SERVER_SELECTION_TIMEOUT_MS) || 5000,
+      socketTimeoutMS: Number(process.env.MONGO_SOCKET_TIMEOUT_MS) || 5000,
+      connectTimeoutMS: Number(process.env.MONGO_CONNECT_TIMEOUT_MS) || 5000,
     };
   }
 }

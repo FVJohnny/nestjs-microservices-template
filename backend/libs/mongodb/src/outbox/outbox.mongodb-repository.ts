@@ -8,8 +8,8 @@ import {
   type OutboxEventDTO,
   type RepositoryContext,
 } from '@libs/nestjs-common';
-import { MONGO_CLIENT_TOKEN } from '../mongodb.tokens';
-import { Base_MongoRepository, IndexSpec } from '../base.mongo-repository';
+import { Base_MongoRepository, IndexSpec } from '../infrastructure/base.mongo-repository';
+import { MONGO_CLIENT_TOKEN } from '../mongodb.module';
 
 @Injectable()
 export class Outbox_MongodbRepository
