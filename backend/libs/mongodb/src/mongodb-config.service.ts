@@ -40,7 +40,6 @@ export class MongoDBConfigService {
 
   getMongoConfig(): MongooseModuleOptions {
     return {
-      uri: this.getConnectionString(),
       dbName: this.getDatabaseName(),
       retryWrites: true,
       maxPoolSize: Number(process.env.MONGO_MAX_POOL_SIZE) || 20,

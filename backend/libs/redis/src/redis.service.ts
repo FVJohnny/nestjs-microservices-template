@@ -1,4 +1,4 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit, Optional } from '@nestjs/common';
 import { CorrelationLogger } from '@libs/nestjs-common';
 import { Redis } from 'ioredis';
 
@@ -10,7 +10,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   protected subscriberClient: Redis | null = null;
   protected dbNumber?: number; // Optional database number for test isolation
 
-  constructor(dbNumber?: number) {
+  constructor(@Optional() dbNumber?: number) {
     this.dbNumber = dbNumber;
   }
 
