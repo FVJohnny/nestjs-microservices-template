@@ -42,13 +42,8 @@ export class FileSystemDomainEventDiscoveryService {
 
     this.logger.debug(`Using bounded contexts path: ${boundedContextsPath}`);
 
-    for (const contextName of fs.readdirSync(boundedContextsPath)) {
-      const eventsPath = path.join(boundedContextsPath, contextName, 'domain', 'events');
-
-      if (fs.existsSync(eventsPath)) {
-        this.scanEventsDirectory(eventsPath, eventNames);
-      }
-    }
+    // Recursively scan for domain event files
+    this.scanDirectoryRecursively(boundedContextsPath, eventNames);
 
     this.logger.log(
       `✅ Discovered ${eventNames.size} domain events: ${Array.from(eventNames).join(', ')}`,
@@ -74,20 +69,30 @@ export class FileSystemDomainEventDiscoveryService {
     return dir;
   }
 
-  private scanEventsDirectory(eventsPath: string, eventNames: Set<string>): void {
+  private scanDirectoryRecursively(directory: string, eventNames: Set<string>): void {
     try {
-      const files = fs
-        .readdirSync(eventsPath)
-        .filter((file) => file.endsWith('.domain-event.ts') || file.endsWith('.domain-event.js'))
-        .map((file) =>
-          this.toPascalCase(file.replace('.domain-event.ts', '').replace('.domain-event.js', '')),
-        )
-        .filter(Boolean)
-        .map((name) => `${name}_DomainEvent`);
+      const entries = fs.readdirSync(directory, { withFileTypes: true });
 
-      files.forEach((eventName) => eventNames.add(eventName));
+      for (const entry of entries) {
+        const fullPath = path.join(directory, entry.name);
+
+        if (entry.isDirectory()) {
+          // Recursively scan subdirectories
+          this.scanDirectoryRecursively(fullPath, eventNames);
+        } else if (entry.isFile()) {
+          // Check if it's a domain event file
+          if (entry.name.endsWith('.domain-event.ts') || entry.name.endsWith('.domain-event.js')) {
+            const eventName = this.toPascalCase(
+              entry.name.replace('.domain-event.ts', '').replace('.domain-event.js', ''),
+            );
+            if (eventName) {
+              eventNames.add(`${eventName}_DomainEvent`);
+            }
+          }
+        }
+      }
     } catch (error) {
-      this.logger.error(`Could not scan ${eventsPath}:`, error as Error);
+      this.logger.error(`Could not scan ${directory}:`, error as Error);
     }
   }
 

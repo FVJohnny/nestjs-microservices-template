@@ -1,18 +1,20 @@
-import { Injectable, Inject, Optional } from '@nestjs/common';
-import { EventTrackerService } from './event-tracker.service';
+import { Inject, Injectable, Optional } from '@nestjs/common';
+import { InboxService } from '../inbox';
 import {
   IIntegrationEventHandler,
   INTEGRATION_EVENT_LISTENER,
   type IntegrationEventListener,
 } from '../integration-events/listener/base.integration-event-listener';
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
-import { InboxService } from '../inbox';
+import { CorrelationLogger } from '../logger';
+import { EventTrackerService } from './event-tracker.service';
 
 /**
  * Universal Integration Event Tracker that intercepts Integration Event Listener
  */
 @Injectable()
 export class EventTrackerIntegrationInterceptor {
+  private readonly logger = new CorrelationLogger(EventTrackerIntegrationInterceptor.name);
   constructor(
     private readonly eventTracker: EventTrackerService,
     @Inject(INTEGRATION_EVENT_LISTENER)
@@ -44,6 +46,9 @@ export class EventTrackerIntegrationInterceptor {
       eventName: string,
       handler: IIntegrationEventHandler,
     ) => {
+      this.logger.log(
+        `Registering event handler '${handler.constructor.name}' for topic '${topicName}' and event name '${eventName}'`,
+      );
       await originalRegisterEventHandler(topicName, eventName, handler);
 
       // Extract event name for tracking initialization
