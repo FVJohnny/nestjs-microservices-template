@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { BaseIntegrationEventListener } from './base.integration-event-listener';
+import { Base_IntegrationEventListener } from './base.integration-event-listener';
 import { ParsedIntegrationMessage } from '../types/integration-event.types';
 
 @Injectable()
-export class InMemoryIntegrationEventListener extends BaseIntegrationEventListener {
+export class InMemoryIntegrationEventListener extends Base_IntegrationEventListener {
   private topics: string[] = [];
   protected async subscribeToTopic(topicName: string): Promise<void> {
     this.topics.push(topicName);

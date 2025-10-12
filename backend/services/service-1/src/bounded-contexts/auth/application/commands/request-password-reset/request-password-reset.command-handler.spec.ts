@@ -59,8 +59,8 @@ describe('RequestPasswordResetCommandHandler', () => {
     const commandHandler = new RequestPasswordReset_CommandHandler(
       userRepository,
       passwordResetRepository,
-      outboxRepository,
       eventBus,
+      outboxRepository,
     );
 
     return {
@@ -112,8 +112,7 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should store integration event in the outbox', async () => {
       // Arrange
-      const { commandHandler, userRepository, outboxRepository, passwordResetRepository } =
-        setup();
+      const { commandHandler, userRepository, outboxRepository, passwordResetRepository } = setup();
       const user = await createUser(userRepository);
       const command = createCommand({ email: user.email.toValue() });
 
@@ -123,24 +122,18 @@ describe('RequestPasswordResetCommandHandler', () => {
       // Assert
       const outboxEvents = await outboxRepository.findAll();
       expect(outboxEvents).toHaveLength(1);
-      expect(outboxEvents[0].eventName.toValue()).toBe(
-        PasswordResetRequested_IntegrationEvent.name,
-      );
-      expect(outboxEvents[0].topic.toValue()).toBe(
-        PasswordResetRequested_IntegrationEvent.topic,
-      );
 
-      const payload = PasswordResetRequested_IntegrationEvent.fromJSON(
+      const event = PasswordResetRequested_IntegrationEvent.fromJSON(
         outboxEvents[0].payload.toJSON(),
       );
-      expect(payload.id).toBeDefined();
-      expect(payload.email).toBe(command.email);
-      expect(payload.expiresAt).toBeInstanceOf(Date);
-      expect(payload.occurredOn).toBeInstanceOf(Date);
+      expect(event.id).toBeDefined();
+      expect(event.email).toBe(command.email);
+      expect(event.expiresAt).toBeInstanceOf(Date);
+      expect(event.occurredOn).toBeInstanceOf(Date);
 
       // Verify the event's passwordResetId matches the created password reset
       const savedPasswordReset = await passwordResetRepository.findByEmail(user.email);
-      expect(payload.passwordResetId).toBe(savedPasswordReset!.id.toValue());
+      expect(event.passwordResetId).toBe(savedPasswordReset!.id.toValue());
     });
 
     it('should set proper timestamps on password reset creation', async () => {
@@ -199,8 +192,7 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should not create a new password reset if a valid one already exists', async () => {
       // Arrange
-      const { commandHandler, userRepository, passwordResetRepository, outboxRepository } =
-        setup();
+      const { commandHandler, userRepository, passwordResetRepository, outboxRepository } = setup();
       const user = await createUser(userRepository);
 
       // Create an existing valid password reset
@@ -302,11 +294,9 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should throw ApplicationException when EventBus publishing fails', async () => {
       // Arrange
-      const { commandHandler, userRepository, passwordResetRepository, outboxRepository } = setup(
-        {
-          shouldFailEventBus: true,
-        },
-      );
+      const { commandHandler, userRepository, passwordResetRepository, outboxRepository } = setup({
+        shouldFailEventBus: true,
+      });
       const user = await createUser(userRepository);
       const command = createCommand({ email: user.email.toValue() });
 

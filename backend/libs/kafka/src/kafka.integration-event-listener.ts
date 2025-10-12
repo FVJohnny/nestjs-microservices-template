@@ -1,5 +1,5 @@
 import {
-  BaseIntegrationEventListener,
+  Base_IntegrationEventListener,
   InboxService,
   type ParsedIntegrationMessage,
 } from '@libs/nestjs-common';
@@ -9,7 +9,7 @@ import { type KafkaMessage } from 'kafkajs';
 import { KafkaService } from './kafka-service';
 
 @Injectable()
-export class KafkaIntegrationEventListener extends BaseIntegrationEventListener {
+export class KafkaIntegrationEventListener extends Base_IntegrationEventListener {
   constructor(
     @Inject() private readonly kafkaService: KafkaService,
     @Inject() @Optional() inboxService?: InboxService,

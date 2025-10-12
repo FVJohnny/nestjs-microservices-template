@@ -14,24 +14,20 @@ import {
   OUTBOX_REPOSITORY,
   type Outbox_Repository,
   UserCreated_IntegrationEvent,
-  type RepositoryContext,
-  OutboxTopic,
-  OutboxEvent,
-  OutboxEventName,
-  OutboxPayload,
   Transaction,
+  Id,
 } from '@libs/nestjs-common';
 
 export class RegisterUser_CommandHandler extends Base_CommandHandler(RegisterUser_Command) {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
-    @Inject(OUTBOX_REPOSITORY)
-    private readonly outboxRepository: Outbox_Repository,
     @Inject(EVENT_BUS)
     eventBus: IEventBus,
+    @Inject(OUTBOX_REPOSITORY)
+    outboxRepository: Outbox_Repository,
   ) {
-    super(eventBus);
+    super(eventBus, outboxRepository);
   }
 
   async handle(command: RegisterUser_Command) {
@@ -41,10 +37,19 @@ export class RegisterUser_CommandHandler extends Base_CommandHandler(RegisterUse
       password: await Password.createFromPlainText(command.password),
     });
 
+    const integrationEvent = new UserCreated_IntegrationEvent({
+      id: Id.random().toValue(),
+      occurredOn: new Date(),
+      userId: user.id.toValue(),
+      email: user.email.toValue(),
+      username: user.username.toValue(),
+      role: user.role.toValue(),
+    });
+
     await Transaction.run(async (context) => {
       await this.userRepository.save(user, context);
-      await this.sendIntegrationEvent(user, context);
       await this.sendDomainEvents<User>(user);
+      await this.sendIntegrationEvent(integrationEvent, context);
     });
   }
 
@@ -65,21 +70,5 @@ export class RegisterUser_CommandHandler extends Base_CommandHandler(RegisterUse
     if (usernameExists) {
       throw new AlreadyExistsException('username', command.username);
     }
-  }
-
-  private async sendIntegrationEvent(user: User, context: RepositoryContext) {
-    const integrationEvent = new UserCreated_IntegrationEvent({
-      userId: user.id.toValue(),
-      email: user.email.toValue(),
-      username: user.username.toValue(),
-      role: user.role.toValue(),
-    });
-
-    const event = OutboxEvent.create({
-      eventName: new OutboxEventName(UserCreated_IntegrationEvent.name),
-      topic: new OutboxTopic(UserCreated_IntegrationEvent.topic),
-      payload: new OutboxPayload(integrationEvent.toJSONString()),
-    });
-    await this.outboxRepository.save(event, context);
   }
 }

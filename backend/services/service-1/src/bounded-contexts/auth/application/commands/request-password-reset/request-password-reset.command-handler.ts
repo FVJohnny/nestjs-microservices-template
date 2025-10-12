@@ -17,12 +17,8 @@ import {
   OUTBOX_REPOSITORY,
   type Outbox_Repository,
   PasswordResetRequested_IntegrationEvent,
-  type RepositoryContext,
-  OutboxTopic,
-  OutboxEvent,
-  OutboxEventName,
-  OutboxPayload,
   Transaction,
+  Id,
 } from '@libs/nestjs-common';
 
 export class RequestPasswordReset_CommandHandler extends Base_CommandHandler(
@@ -33,12 +29,12 @@ export class RequestPasswordReset_CommandHandler extends Base_CommandHandler(
     private readonly userRepository: User_Repository,
     @Inject(PASSWORD_RESET_REPOSITORY)
     private readonly passwordResetRepository: PasswordReset_Repository,
-    @Inject(OUTBOX_REPOSITORY)
-    private readonly outboxRepository: Outbox_Repository,
     @Inject(EVENT_BUS)
     eventBus: IEventBus,
+    @Inject(OUTBOX_REPOSITORY)
+    outboxRepository: Outbox_Repository,
   ) {
-    super(eventBus);
+    super(eventBus, outboxRepository);
   }
 
   async handle(command: RequestPasswordReset_Command) {
@@ -64,26 +60,20 @@ export class RequestPasswordReset_CommandHandler extends Base_CommandHandler(
       email: user.email,
     });
 
-    await Transaction.run(async (context) => {
-      await this.passwordResetRepository.save(passwordReset, context);
-      await this.sendIntegrationEvent(passwordReset, context);
-      await this.sendDomainEvents<PasswordReset>(passwordReset);
-    });
-  }
-
-  private async sendIntegrationEvent(passwordReset: PasswordReset, context: RepositoryContext) {
+    // Create integration event to be sent
     const integrationEvent = new PasswordResetRequested_IntegrationEvent({
+      id: Id.random().toValue(),
+      occurredOn: new Date(),
       email: passwordReset.email.toValue(),
       passwordResetId: passwordReset.id.toValue(),
       expiresAt: passwordReset.expiration.toValue(),
     });
 
-    const event = OutboxEvent.create({
-      eventName: new OutboxEventName(PasswordResetRequested_IntegrationEvent.name),
-      topic: new OutboxTopic(PasswordResetRequested_IntegrationEvent.topic),
-      payload: new OutboxPayload(integrationEvent.toJSONString()),
+    await Transaction.run(async (context) => {
+      await this.passwordResetRepository.save(passwordReset, context);
+      await this.sendDomainEvents<PasswordReset>(passwordReset);
+      await this.sendIntegrationEvent(integrationEvent, context);
     });
-    await this.outboxRepository.save(event, context);
   }
 
   async authorize(_command: RequestPasswordReset_Command) {

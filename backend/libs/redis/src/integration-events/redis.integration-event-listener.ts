@@ -1,5 +1,5 @@
 import {
-  BaseIntegrationEventListener,
+  Base_IntegrationEventListener,
   InboxService,
   type ParsedIntegrationMessage,
 } from '@libs/nestjs-common';
@@ -12,7 +12,7 @@ import { RedisService } from '../redis.service';
  * Provides event listening through Redis pub/sub
  */
 @Injectable()
-export class RedisIntegrationEventListener extends BaseIntegrationEventListener {
+export class RedisIntegrationEventListener extends Base_IntegrationEventListener {
   constructor(
     @Inject() private readonly redisService: RedisService,
     @Inject() @Optional() inboxService?: InboxService,

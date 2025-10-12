@@ -3,6 +3,10 @@ import { CommandHandler, type ICommand, type IEventBus } from '@nestjs/cqrs';
 import type { SharedAggregate } from '../general/domain/base.aggregate';
 import { CorrelationLogger } from '../logger';
 import { WithSpan } from '../tracing';
+import { Base_IntegrationEvent } from '../integration-events/events/base.integration-event';
+import { OutboxEvent } from '../outbox/domain/outbox.aggregate';
+import { RepositoryContext } from '../transactions';
+import type { Outbox_Repository } from '../outbox';
 
 /**
  * Base class for command handlers with built-in @CommandHandler decorator.
@@ -36,7 +40,10 @@ export function Base_CommandHandler<TCommand extends ICommand>(
   abstract class Base_CommandHandlerClass {
     readonly logger: CorrelationLogger;
 
-    constructor(readonly eventBus?: IEventBus) {
+    constructor(
+      readonly eventBus?: IEventBus,
+      readonly outboxRepository?: Outbox_Repository,
+    ) {
       this.logger = new CorrelationLogger(this.constructor.name);
     }
 
@@ -102,6 +109,16 @@ export function Base_CommandHandler<TCommand extends ICommand>(
 
       // Mark events as committed by clearing uncommitted events
       entity.commit();
+    }
+
+    async sendIntegrationEvent<T extends Base_IntegrationEvent>(
+      event: T,
+      context: RepositoryContext,
+    ): Promise<void> {
+      if (!this.outboxRepository) throw new Error('Outbox repository is not set');
+
+      const outboxEvent = OutboxEvent.create(event);
+      await this.outboxRepository.save(outboxEvent, context);
     }
   }
 

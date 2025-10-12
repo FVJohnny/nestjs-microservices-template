@@ -1,26 +1,23 @@
 import { ApplicationException } from '../../errors';
-import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './base.integration-event';
+import { Id } from '../../general';
+import { Base_IntegrationEvent, type Base_IntegrationEventProps } from './base.integration-event';
 import { Topics } from './topics';
 
-interface UserCreated_IntegrationEventProps extends BaseIntegrationEventProps {
+interface UserCreated_IntegrationEventProps extends Base_IntegrationEventProps {
   userId: string;
   email: string;
   username: string;
   role: string;
 }
 
-export class UserCreated_IntegrationEvent extends BaseIntegrationEvent {
-  static readonly version = '1.0';
-  static readonly name = Topics.USERS.events.USER_CREATED;
-  static readonly topic = Topics.USERS.topic;
-
+export class UserCreated_IntegrationEvent extends Base_IntegrationEvent {
   public readonly userId: string;
   public readonly email: string;
   public readonly username: string;
   public readonly role: string;
 
   constructor(props: UserCreated_IntegrationEventProps) {
-    super(props);
+    super(props, Topics.USERS.topic, Topics.USERS.events.USER_CREATED, '1.0');
 
     this.userId = props.userId;
     this.email = props.email;
@@ -29,13 +26,19 @@ export class UserCreated_IntegrationEvent extends BaseIntegrationEvent {
 
     this.validate();
   }
+  static random(): UserCreated_IntegrationEvent {
+    return new UserCreated_IntegrationEvent({
+      id: Id.random().toValue(),
+      occurredOn: new Date(),
+      userId: Id.random().toValue(),
+      email: 'random-email@random-domain.com',
+      username: 'random-username',
+      role: 'random-role',
+    });
+  }
 
   protected toEventJSON(): Record<string, unknown> {
     return {
-      topic: UserCreated_IntegrationEvent.topic,
-      name: UserCreated_IntegrationEvent.name,
-      version: UserCreated_IntegrationEvent.version,
-
       userId: this.userId,
       email: this.email,
       username: this.username,
@@ -44,9 +47,11 @@ export class UserCreated_IntegrationEvent extends BaseIntegrationEvent {
   }
 
   static fromJSON(json: Record<string, unknown>): UserCreated_IntegrationEvent {
+    Base_IntegrationEvent.validateJson(json);
+
     const event = new UserCreated_IntegrationEvent({
       id: json.id as string,
-      occurredOn: json.occurredOn ? new Date(json.occurredOn as string) : undefined,
+      occurredOn: new Date(json.occurredOn as string),
 
       userId: json.userId as string,
       email: json.email as string,

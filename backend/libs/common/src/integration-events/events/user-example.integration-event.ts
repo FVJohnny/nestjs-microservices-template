@@ -1,39 +1,46 @@
 import { ApplicationException } from '../../errors';
-import { BaseIntegrationEvent, type BaseIntegrationEventProps } from './base.integration-event';
+import { Id } from '../../general';
+import { Base_IntegrationEvent, type Base_IntegrationEventProps } from './base.integration-event';
 import { Topics } from './topics';
 
-export interface UserExample_IntegrationEventProps extends BaseIntegrationEventProps {
+export interface UserExample_IntegrationEventProps extends Base_IntegrationEventProps {
   example: string;
 }
 
-export class UserExample_IntegrationEvent extends BaseIntegrationEvent {
-  static readonly version = '1.0';
-  static readonly name = Topics.USERS.events.USER_EXAMPLE;
-  static readonly topic = Topics.USERS.topic;
-
+export class UserExample_IntegrationEvent extends Base_IntegrationEvent {
   public readonly example: string;
 
   constructor(props: UserExample_IntegrationEventProps) {
-    super(props);
+    super(props, Topics.USERS.topic, Topics.USERS.events.USER_EXAMPLE, '1.0');
     this.example = props.example;
+
+    this.validate();
+  }
+
+  static random(): UserExample_IntegrationEvent {
+    return new UserExample_IntegrationEvent({
+      id: Id.random().toValue(),
+      occurredOn: new Date(),
+      example: 'random-example',
+    });
   }
 
   protected toEventJSON(): Record<string, unknown> {
     return {
-      topic: UserExample_IntegrationEvent.topic,
-      name: UserExample_IntegrationEvent.name,
-      version: UserExample_IntegrationEvent.version,
+      example: this.example,
     };
   }
 
   static fromJSON(json: Record<string, unknown>): UserExample_IntegrationEvent {
+    Base_IntegrationEvent.validateJson(json);
+
     const event = new UserExample_IntegrationEvent({
       id: json.id as string,
-      occurredOn: json.occurredOn ? new Date(json.occurredOn as string) : undefined,
+      occurredOn: new Date(json.occurredOn as string),
 
       example: json.example as string,
     });
-    event.validate();
+
     return event;
   }
 

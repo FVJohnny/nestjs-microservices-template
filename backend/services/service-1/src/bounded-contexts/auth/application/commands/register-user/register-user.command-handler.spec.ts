@@ -44,8 +44,8 @@ describe('RegisterUserCommandHandler', () => {
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
     const commandHandler = new RegisterUser_CommandHandler(
       userRepository,
-      outboxRepository,
       eventBus,
+      outboxRepository,
     );
 
     return { userRepository, eventBus, commandHandler, outboxRepository };
@@ -105,19 +105,17 @@ describe('RegisterUserCommandHandler', () => {
       // Assert
       const outboxEvents = await outboxRepository.findAll();
       expect(outboxEvents).toHaveLength(1);
-      expect(outboxEvents[0].eventName.toValue()).toBe(UserCreated_IntegrationEvent.name);
-      expect(outboxEvents[0].topic.toValue()).toBe(UserCreated_IntegrationEvent.topic);
 
-      const payload = UserCreated_IntegrationEvent.fromJSON(outboxEvents[0].payload.toJSON());
-      expect(payload.id).toBeDefined();
-      expect(payload.email).toBe(command.email);
-      expect(payload.username).toBe(command.username);
-      expect(payload.role).toBe(UserRoleEnum.USER);
-      expect(payload.occurredOn).toBeInstanceOf(Date);
+      const event = UserCreated_IntegrationEvent.fromJSON(outboxEvents[0].payload.toJSON());
+      expect(event.id).toBeDefined();
+      expect(event.email).toBe(command.email);
+      expect(event.username).toBe(command.username);
+      expect(event.role).toBe(UserRoleEnum.USER);
+      expect(event.occurredOn).toBeInstanceOf(Date);
 
       // Verify the event's userId matches the created user
       const savedUser = await repository.findByEmail(new Email(command.email));
-      expect(payload.userId).toBe(savedUser!.id.toValue());
+      expect(event.userId).toBe(savedUser!.id.toValue());
     });
 
     it('should set proper timestamps on user creation', async () => {

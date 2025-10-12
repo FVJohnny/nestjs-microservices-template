@@ -29,7 +29,7 @@ export interface IntegrationEventListener {
  * Provides common functionality for managing event handlers and listening state
  */
 @Injectable()
-export abstract class BaseIntegrationEventListener implements IntegrationEventListener {
+export abstract class Base_IntegrationEventListener implements IntegrationEventListener {
   protected readonly logger = new CorrelationLogger(this.constructor.name);
   protected readonly eventHandlers = new Map<string, HandlerInfo[]>(); // topic -> array of handlers
 

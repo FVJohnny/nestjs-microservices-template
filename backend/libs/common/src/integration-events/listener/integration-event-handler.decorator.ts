@@ -1,27 +1,27 @@
 import { Inject, Injectable, OnModuleInit, Optional, Type } from '@nestjs/common';
 
-import { BaseIntegrationEvent } from '../events';
+import { Base_IntegrationEvent } from '../events';
 import { ParsedIntegrationMessage } from '../types/integration-event.types';
 import {
   INTEGRATION_EVENT_LISTENER,
-  type BaseIntegrationEventListener,
+  type Base_IntegrationEventListener,
 } from './base.integration-event-listener';
 import { CorrelationLogger } from '../../logger';
 import { InboxService } from '../../inbox';
 
 // Contract the decorated class must implement
-type HandlesIntegrationEvent<TEvent extends BaseIntegrationEvent> = {
+type HandlesIntegrationEvent<TEvent extends Base_IntegrationEvent> = {
   handleEvent(event: TEvent): Promise<void>;
 };
 
-// Constructor type that includes static side of BaseIntegrationEvent (e.g., fromJSON)
-export type IntegrationEventCtor<TEvent extends BaseIntegrationEvent> = Type<TEvent> &
-  typeof BaseIntegrationEvent;
+// Constructor type that includes static side of Base_IntegrationEvent (e.g., fromJSON)
+export type IntegrationEventCtor<TEvent extends Base_IntegrationEvent> = Type<TEvent> &
+  typeof Base_IntegrationEvent;
 
 /**
  * Decorator.
  */
-export function IntegrationEventHandler<TEvent extends BaseIntegrationEvent>(
+export function IntegrationEventHandler<TEvent extends Base_IntegrationEvent>(
   eventCtor: IntegrationEventCtor<TEvent>,
 ) {
   return function <TTarget extends Type<HandlesIntegrationEvent<TEvent>>>(Target: TTarget) {
@@ -31,25 +31,22 @@ export function IntegrationEventHandler<TEvent extends BaseIntegrationEvent>(
       public readonly eventClass = eventCtor;
 
       @Inject(INTEGRATION_EVENT_LISTENER)
-      public readonly integrationEventListener: BaseIntegrationEventListener;
+      public readonly integrationEventListener: Base_IntegrationEventListener;
 
       @Inject()
       @Optional()
       public readonly inboxService?: InboxService;
 
       async onModuleInit() {
-        await this.integrationEventListener.registerEventHandler(
-          this.eventClass.topic,
-          this.eventClass.name,
-          this,
-        );
+        // Create a temporary instance to access topic and name (instance properties)
+        // We use fromJSON with minimal data to get an instance without needing to know
+        // the specific constructor signature of each event subclass
+        const event = this.eventClass.random();
+
+        await this.integrationEventListener.registerEventHandler(event.topic, event.name, this);
 
         if (this.inboxService) {
-          await this.inboxService.registerEventHandler(
-            this.eventClass.topic,
-            this.eventClass.name,
-            this,
-          );
+          await this.inboxService.registerEventHandler(event.topic, event.name, this);
         }
       }
 

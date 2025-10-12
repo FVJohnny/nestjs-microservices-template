@@ -1,47 +1,47 @@
 import { ApplicationException } from '../../errors';
-import { Id } from '../../general';
 import { TracingService } from '../../tracing';
 
 /**
  * Base interface for all integration event props.
  * All integration events should extend this for their constructor props.
  */
-export interface BaseIntegrationEventProps {
-  id?: string;
-  occurredOn?: Date;
+export interface Base_IntegrationEventProps {
+  id: string;
+  occurredOn: Date;
 }
 
 /**
  * Base class for all integration events.
  * Enforces common properties and provides standard serialization/deserialization.
  */
-export abstract class BaseIntegrationEvent {
-  static readonly version: string;
-  static readonly name: string;
-  static readonly topic: string;
-
+export abstract class Base_IntegrationEvent {
   readonly id: string;
   readonly occurredOn: Date;
 
-  constructor(props: BaseIntegrationEventProps) {
-    this.id = props.id || Id.random().toValue();
-    this.occurredOn = props.occurredOn || new Date();
+  constructor(
+    props: Base_IntegrationEventProps,
+    readonly topic: string,
+    readonly name: string,
+    readonly version: string,
+  ) {
+    this.id = props.id;
+    this.occurredOn = props.occurredOn;
   }
 
   /**
    * Converts the event to a JSON message payload.
    *
-   * Note: Includes trace metadata for transports that don't support trace propagation
-   * via headers (e.g., Redis pub/sub). For transports with header support (e.g., Kafka),
-   * OpenTelemetry automatically propagates trace context via headers.
    */
   toJSON(): Record<string, unknown> {
     const metadata = TracingService.getTraceMetadata();
 
     return {
+      topic: this.topic,
+      name: this.name,
+      version: this.version,
+
       id: this.id,
       occurredOn: this.occurredOn.toISOString(),
-      // Include trace metadata for Redis/transports without header support
       metadata: metadata || {},
       ...this.toEventJSON(),
     };
@@ -51,14 +51,23 @@ export abstract class BaseIntegrationEvent {
     return JSON.stringify(this.toJSON());
   }
 
+  static random(): Base_IntegrationEvent {
+    throw new Error('Base_IntegrationEvent.random() must be implemented by subclass');
+  }
+
   /**
    * Base implementation for creating events from JSON messages.
    * Subclasses should override this method.
    */
-  static fromJSON(json: Record<string, unknown>): BaseIntegrationEvent {
+  static fromJSON(json: Record<string, unknown>): Base_IntegrationEvent {
     throw new Error(
       `${this.name}.fromJSON() must be implemented by subclass. Received: ${Object.keys(json).join(', ')}`,
     );
+  }
+
+  static validateJson(json: Record<string, unknown>): void {
+    if (!json.id) throw new ApplicationException('id is required');
+    if (!json.occurredOn) throw new ApplicationException('occurredOn is required');
   }
 
   /**

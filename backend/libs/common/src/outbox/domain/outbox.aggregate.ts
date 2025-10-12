@@ -8,6 +8,7 @@ import {
   OutboxRetryCount,
   OutboxTopic,
 } from './value-objects';
+import { type Base_IntegrationEvent } from '../../integration-events/events/base.integration-event';
 
 export class OutboxEventDTO extends SharedAggregateDTO {
   eventName: string;
@@ -69,12 +70,12 @@ export class OutboxEvent extends SharedAggregate implements OutboxEventAttribute
     this.ensureRetryNotExceeded();
   }
 
-  static create(props: CreateOutboxEventProps): OutboxEvent {
+  static create<T extends Base_IntegrationEvent>(integrationEvent: T): OutboxEvent {
     return new OutboxEvent({
       id: Id.random(),
-      eventName: props.eventName,
-      topic: props.topic,
-      payload: props.payload,
+      eventName: new OutboxEventName(integrationEvent.name),
+      topic: new OutboxTopic(integrationEvent.topic),
+      payload: new OutboxPayload(integrationEvent.toJSONString()),
       processedAt: OutboxProcessedAt.never(),
       retryCount: OutboxRetryCount.zero(),
       maxRetries: OutboxMaxRetries.default(),
