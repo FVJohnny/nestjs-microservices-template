@@ -1,7 +1,7 @@
-import { DomainEvent } from '@libs/nestjs-common';
+import { Base_DomainEvent } from '@libs/nestjs-common';
 import type { Id } from '@libs/nestjs-common';
 
-export class UserDeleted_DomainEvent extends DomainEvent {
+export class UserDeleted_DomainEvent extends Base_DomainEvent {
   constructor(userId: Id) {
     super(userId);
   }

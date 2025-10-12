@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CorrelationLogger } from '../logger';
 
 import type { ParsedIntegrationMessage } from '../integration-events/types/integration-event.types';
-import { DomainEvent } from '../cqrs';
+import { Base_DomainEvent } from '../cqrs';
 import { TracingService } from '../tracing';
 
 // Integration event stats
@@ -45,7 +45,7 @@ export class EventTrackerService {
     existing.lastProcessed = new Date();
   }
 
-  trackDomainEvent(event: DomainEvent, success: boolean): void {
+  trackDomainEvent(event: Base_DomainEvent, success: boolean): void {
     const eventName = event.constructor.name || 'Unknown';
     this.trackEvent(
       EventTrackerService.DomainEventTopic,

@@ -6,7 +6,7 @@ import { Id } from '../general/domain/value-objects/id.vo';
  * Base class for all domain events in the system.
  * Provides common properties and behavior for domain events.
  */
-export abstract class DomainEvent implements IEvent {
+export abstract class Base_DomainEvent implements IEvent {
   public readonly occurredOn: Date;
   public readonly id: string;
 

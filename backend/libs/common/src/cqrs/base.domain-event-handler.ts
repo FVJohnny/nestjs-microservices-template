@@ -1,6 +1,6 @@
 import { EventsHandler, type IEventHandler } from '@nestjs/cqrs';
 import { CorrelationLogger } from '../logger';
-import type { DomainEvent } from './base.domain-event';
+import type { Base_DomainEvent } from './base.domain-event';
 import { WithSpan } from '../tracing';
 
 /**
@@ -22,7 +22,7 @@ import { WithSpan } from '../tracing';
  * }
  * ```
  */
-export function Base_DomainEventHandler<T extends DomainEvent>(
+export function Base_DomainEventHandler<T extends Base_DomainEvent>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   event: new (...args: any[]) => T,
 ) {

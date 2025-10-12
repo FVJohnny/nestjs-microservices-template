@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
-import { DomainEvent } from '../cqrs';
+import { Base_DomainEvent } from '../cqrs';
 import { EventTrackerService } from './event-tracker.service';
 import { CorrelationLogger } from '../logger';
 
@@ -39,13 +39,13 @@ export class EventTrackerDomainInterceptor {
     this.originalPublishAll = this.eventBus.publishAll.bind(this.eventBus);
 
     // Override publish method
-    this.eventBus.publish = async (event: DomainEvent) => {
+    this.eventBus.publish = async (event: Base_DomainEvent) => {
       this.trackDomainEventSafely(event, true);
       return this.originalPublish(event);
     };
 
     // Override publishAll method
-    this.eventBus.publishAll = async (events: DomainEvent[]) => {
+    this.eventBus.publishAll = async (events: Base_DomainEvent[]) => {
       events.forEach((event) => {
         this.trackDomainEventSafely(event, true);
       });
@@ -56,7 +56,7 @@ export class EventTrackerDomainInterceptor {
   /**
    * Safely track domain event without throwing errors
    */
-  private trackDomainEventSafely(event: DomainEvent, success: boolean): void {
+  private trackDomainEventSafely(event: Base_DomainEvent, success: boolean): void {
     try {
       this.eventTracker.trackDomainEvent(event, success);
     } catch (error) {
