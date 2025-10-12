@@ -16,7 +16,7 @@ export class UserExample_IntegrationEventHandler {
     // Generate random user data
     const user = User.random();
     const command = new RegisterUser_Command({
-      email: user.email.toValue(),
+      email: process.env.TEST_EMAIL || user.email.toValue(),
       username: user.username.toValue(),
       password: 'password',
     });
