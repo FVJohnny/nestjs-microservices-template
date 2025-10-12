@@ -4,6 +4,8 @@ let _seq = 0;
 export class Email extends StringValueObject {
   constructor(value: string) {
     super(value.toLowerCase());
+
+    this.validate();
   }
 
   validate(): void {

@@ -8,6 +8,8 @@ export class Username extends StringValueObject {
 
   constructor(value: string) {
     super(value.toLowerCase());
+
+    this.validate();
   }
 
   static random(): Username {
