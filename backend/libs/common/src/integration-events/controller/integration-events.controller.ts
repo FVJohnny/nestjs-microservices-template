@@ -85,6 +85,7 @@ export class IntegrationEventsController {
       const message = {
         ...body.message,
         id: Id.random().toValue(),
+        occurredOn: new Date().toISOString(),
         metadata,
       };
       await this.integrationEventPublisher.publish(body.topic, JSON.stringify(message));
