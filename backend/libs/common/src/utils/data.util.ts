@@ -10,9 +10,17 @@ export class Data {
     if (value.toLowerCase() === 'true') return true;
     if (value.toLowerCase() === 'false') return false;
 
-    // Try to parse as Date
-    const date = new Date(value);
-    if (!isNaN(date.getTime())) return date;
+    // Try to parse as Date - only for specific patterns that are unambiguous
+    // 1. ISO 8601: YYYY-MM-DDTHH:mm:ss or YYYY-MM-DD HH:mm:ss (with optional ms and timezone)
+    // 2. Date.toString() format: "Day Mon DD YYYY HH:mm:ss GMT..."
+    const isoDatePattern = /^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}/;
+    const toStringPattern =
+      /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s+\d{4}\s+\d{2}:\d{2}:\d{2}/;
+
+    if (isoDatePattern.test(value) || toStringPattern.test(value)) {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) return date;
+    }
 
     // Return as string
     return value;

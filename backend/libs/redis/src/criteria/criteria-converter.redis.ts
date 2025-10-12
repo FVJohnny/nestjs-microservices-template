@@ -173,14 +173,6 @@ export class RedisCriteriaConverter<D extends SharedAggregateDTO> extends Criter
           } catch {
             parsed[field] = value;
           }
-        } else if (
-          field === 'id' ||
-          field === 'name' ||
-          field === 'category' ||
-          field === 'status'
-        ) {
-          // Keep certain fields as strings to match expectations
-          parsed[field] = value;
         } else {
           parsed[field] = Data.parseFromString(value);
         }
