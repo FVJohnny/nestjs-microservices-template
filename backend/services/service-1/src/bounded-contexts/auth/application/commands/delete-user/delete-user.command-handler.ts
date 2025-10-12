@@ -6,7 +6,16 @@ import {
   type User_Repository,
 } from '@bc/auth/domain/aggregates/user/user.repository';
 import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
-import { Base_CommandHandler, EVENT_BUS, Id, NotFoundException } from '@libs/nestjs-common';
+import {
+  Base_CommandHandler,
+  EVENT_BUS,
+  Id,
+  NotFoundException,
+  OUTBOX_REPOSITORY,
+  type Outbox_Repository,
+  UserDeleted_IntegrationEvent,
+  Transaction,
+} from '@libs/nestjs-common';
 
 export class DeleteUser_CommandHandler extends Base_CommandHandler(DeleteUser_Command) {
   constructor(
@@ -14,8 +23,10 @@ export class DeleteUser_CommandHandler extends Base_CommandHandler(DeleteUser_Co
     private readonly userRepository: User_Repository,
     @Inject(EVENT_BUS)
     eventBus: IEventBus,
+    @Inject(OUTBOX_REPOSITORY)
+    outboxRepository: Outbox_Repository,
   ) {
-    super(eventBus);
+    super(eventBus, outboxRepository);
   }
 
   async handle(command: DeleteUser_Command) {
@@ -27,8 +38,20 @@ export class DeleteUser_CommandHandler extends Base_CommandHandler(DeleteUser_Co
     }
 
     user.delete();
-    await this.userRepository.remove(userId);
-    await this.sendDomainEvents<User>(user);
+
+    const integrationEvent = new UserDeleted_IntegrationEvent({
+      id: Id.random().toValue(),
+      occurredOn: new Date(),
+      userId: user.id.toValue(),
+      email: user.email.toValue(),
+      username: user.username.toValue(),
+    });
+
+    await Transaction.run(async (context) => {
+      await this.userRepository.remove(userId, context);
+      await this.sendDomainEvents<User>(user);
+      await this.sendIntegrationEvent(integrationEvent, context);
+    });
   }
 
   async authorize(_command: DeleteUser_Command) {

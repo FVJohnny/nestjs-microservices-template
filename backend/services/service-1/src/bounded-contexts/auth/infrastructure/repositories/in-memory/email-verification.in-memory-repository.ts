@@ -3,8 +3,12 @@ import { EmailVerification } from '@bc/auth/domain/aggregates/email-verification
 import { EmailVerificationDTO } from '@bc/auth/domain/aggregates/email-verification/email-verification.dto';
 import { EmailVerification_Repository } from '@bc/auth/domain/aggregates/email-verification/email-verification.repository';
 import { Email } from '@bc/auth/domain/value-objects';
-import { AlreadyExistsException, Id } from '@libs/nestjs-common';
-import { Base_InMemoryRepository } from '@libs/nestjs-common';
+import {
+  AlreadyExistsException,
+  Id,
+  Base_InMemoryRepository,
+  type RepositoryContext,
+} from '@libs/nestjs-common';
 
 @Injectable()
 export class EmailVerification_InMemoryRepository
@@ -19,7 +23,7 @@ export class EmailVerification_InMemoryRepository
     return EmailVerification.fromValue(dto);
   }
 
-  async save(emailVerification: EmailVerification) {
+  async save(emailVerification: EmailVerification, context?: RepositoryContext) {
     // Check if user already has an email verification
     const existingByUserID = await this.findByUserId(emailVerification.userId);
     if (existingByUserID && !existingByUserID.id.equals(emailVerification.id)) {
@@ -32,7 +36,7 @@ export class EmailVerification_InMemoryRepository
       throw new AlreadyExistsException('email', emailVerification.email.toValue());
     }
 
-    super.save(emailVerification);
+    super.save(emailVerification, context);
   }
 
   async findByUserId(userId: Id) {

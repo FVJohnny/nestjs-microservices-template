@@ -17,6 +17,9 @@ import {
   NotFoundException,
   InvalidOperationException,
   Transaction,
+  OUTBOX_REPOSITORY,
+  type Outbox_Repository,
+  PasswordResetCompleted_IntegrationEvent,
 } from '@libs/nestjs-common';
 
 export class ExecutePasswordReset_CommandHandler extends Base_CommandHandler(
@@ -29,8 +32,10 @@ export class ExecutePasswordReset_CommandHandler extends Base_CommandHandler(
     private readonly passwordResetRepository: PasswordReset_Repository,
     @Inject(EVENT_BUS)
     eventBus: IEventBus,
+    @Inject(OUTBOX_REPOSITORY)
+    outboxRepository: Outbox_Repository,
   ) {
-    super(eventBus);
+    super(eventBus, outboxRepository);
   }
 
   async handle(command: ExecutePasswordReset_Command) {
@@ -60,6 +65,13 @@ export class ExecutePasswordReset_CommandHandler extends Base_CommandHandler(
     const newPassword = await Password.createFromPlainText(command.newPassword);
     user.changePassword(newPassword);
 
+    const integrationEvent = new PasswordResetCompleted_IntegrationEvent({
+      id: Id.random().toValue(),
+      occurredOn: new Date(),
+      userId: user.id.toValue(),
+      email: user.email.toValue(),
+    });
+
     // Update user password and mark password reset as used in a transaction
     await Transaction.run(async (context) => {
       passwordReset.markAsUsed();
@@ -67,6 +79,7 @@ export class ExecutePasswordReset_CommandHandler extends Base_CommandHandler(
       await this.userRepository.save(user, context);
       await this.passwordResetRepository.save(passwordReset, context);
       await this.sendDomainEvents(user);
+      await this.sendIntegrationEvent(integrationEvent, context);
     });
   }
 

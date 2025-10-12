@@ -11,6 +11,8 @@ import {
   InfrastructureException,
   InvalidOperationException,
   NotFoundException,
+  Outbox_InMemoryRepository,
+  EmailVerified_IntegrationEvent,
 } from '@libs/nestjs-common';
 import type { EmailVerificationVerified_DomainEvent } from '@bc/auth/domain/aggregates/email-verification/events/email-verified.domain-event';
 
@@ -29,6 +31,7 @@ describe('VerifyEmailCommandHandler', () => {
       type?: 'pending' | 'expired' | 'verified';
       shouldFailRepository?: boolean;
       shouldFailEventBus?: boolean;
+      shouldFailOutbox?: boolean;
     } = {},
   ) => {
     const {
@@ -36,11 +39,13 @@ describe('VerifyEmailCommandHandler', () => {
       type = 'pending',
       shouldFailRepository = false,
       shouldFailEventBus = false,
+      shouldFailOutbox = false,
     } = params;
 
     const repository = new EmailVerification_InMemoryRepository(shouldFailRepository);
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
-    const commandHandler = new VerifyEmail_CommandHandler(repository, eventBus);
+    const outboxRepository = new Outbox_InMemoryRepository(shouldFailOutbox);
+    const commandHandler = new VerifyEmail_CommandHandler(repository, eventBus, outboxRepository);
 
     let emailVerification: EmailVerification | null = null;
     if (withEmailVerification) {
@@ -55,7 +60,7 @@ describe('VerifyEmailCommandHandler', () => {
       await repository.save(emailVerification);
     }
 
-    return { repository, eventBus, commandHandler, emailVerification };
+    return { repository, eventBus, outboxRepository, commandHandler, emailVerification };
   };
 
   describe('Happy Path', () => {
@@ -102,6 +107,54 @@ describe('VerifyEmailCommandHandler', () => {
       expect(event.userId.toValue()).toBe(emailVerification!.userId.toValue());
       expect(event.email.toValue()).toBe(emailVerification!.email.toValue());
       expect(event.occurredOn).toBeInstanceOf(Date);
+    });
+  });
+
+  describe('Integration Events', () => {
+    it('should store integration event in the outbox', async () => {
+      // Arrange
+      const { commandHandler, outboxRepository, emailVerification } = await setup({
+        withEmailVerification: true,
+        type: 'pending',
+      });
+      const command = createCommand({
+        emailVerificationId: emailVerification!.id.toValue(),
+      });
+
+      // Act
+      await commandHandler.execute(command);
+
+      // Assert
+      const outboxEvents = await outboxRepository.findAll();
+      expect(outboxEvents).toHaveLength(1);
+
+      const event = EmailVerified_IntegrationEvent.fromJSON(outboxEvents[0].payload.toJSON());
+      expect(event.id).toBeDefined();
+      expect(event.email).toBe(emailVerification!.email.toValue());
+      expect(event.userId).toBe(emailVerification!.userId.toValue());
+      expect(event.emailVerificationId).toBe(emailVerification!.id.toValue());
+      expect(event.occurredOn).toBeInstanceOf(Date);
+    });
+
+    it('should propagate failures when storing the integration event in the Outbox fails', async () => {
+      // Arrange
+      const { commandHandler, repository, emailVerification } = await setup({
+        withEmailVerification: true,
+        type: 'pending',
+        shouldFailOutbox: true,
+      });
+      const command = createCommand({
+        emailVerificationId: emailVerification!.id.toValue(),
+      });
+
+      // Act & Assert
+      await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
+
+      // Verify transaction rollback: the verification should still be pending
+      const verification = await repository.findById(emailVerification!.id);
+      expect(verification).not.toBeNull();
+      expect(verification!.isVerified()).toBe(false);
+      expect(verification!.isPending()).toBe(true);
     });
   });
 
@@ -165,7 +218,7 @@ describe('VerifyEmailCommandHandler', () => {
 
     it('should propagate event bus exceptions', async () => {
       // Arrange
-      const { commandHandler, emailVerification } = await setup({
+      const { commandHandler, repository, outboxRepository, emailVerification } = await setup({
         withEmailVerification: true,
         shouldFailEventBus: true,
       });
@@ -175,6 +228,15 @@ describe('VerifyEmailCommandHandler', () => {
 
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(ApplicationException);
+
+      // Verify transaction rollback: the verification should still be pending
+      const verification = await repository.findById(emailVerification!.id);
+      expect(verification!.isVerified()).toBe(false);
+      expect(verification!.isPending()).toBe(true);
+
+      // Verify that the integration event was not stored in the Outbox
+      const outboxEvents = await outboxRepository.findAll();
+      expect(outboxEvents).toHaveLength(0);
     });
   });
 });

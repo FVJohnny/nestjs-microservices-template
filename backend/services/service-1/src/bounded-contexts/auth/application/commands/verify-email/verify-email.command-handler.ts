@@ -5,8 +5,16 @@ import {
   EMAIL_VERIFICATION_REPOSITORY,
   type EmailVerification_Repository,
 } from '@bc/auth/domain/aggregates/email-verification/email-verification.repository';
-import { Base_CommandHandler, EVENT_BUS, NotFoundException } from '@libs/nestjs-common';
-import { Id } from '@libs/nestjs-common';
+import {
+  Base_CommandHandler,
+  EVENT_BUS,
+  NotFoundException,
+  Id,
+  OUTBOX_REPOSITORY,
+  type Outbox_Repository,
+  EmailVerified_IntegrationEvent,
+  Transaction,
+} from '@libs/nestjs-common';
 
 export class VerifyEmail_CommandHandler extends Base_CommandHandler(VerifyEmail_Command) {
   constructor(
@@ -14,8 +22,10 @@ export class VerifyEmail_CommandHandler extends Base_CommandHandler(VerifyEmail_
     private readonly emailVerificationRepository: EmailVerification_Repository,
     @Inject(EVENT_BUS)
     eventBus: IEventBus,
+    @Inject(OUTBOX_REPOSITORY)
+    outboxRepository: Outbox_Repository,
   ) {
-    super(eventBus);
+    super(eventBus, outboxRepository);
   }
 
   async handle(command: VerifyEmail_Command) {
@@ -29,9 +39,19 @@ export class VerifyEmail_CommandHandler extends Base_CommandHandler(VerifyEmail_
 
     emailVerification.verify();
 
-    await this.emailVerificationRepository.save(emailVerification);
+    const integrationEvent = new EmailVerified_IntegrationEvent({
+      id: Id.random().toValue(),
+      occurredOn: new Date(),
+      userId: emailVerification.userId.toValue(),
+      email: emailVerification.email.toValue(),
+      emailVerificationId: emailVerification.id.toValue(),
+    });
 
-    await this.sendDomainEvents(emailVerification);
+    await Transaction.run(async (context) => {
+      await this.emailVerificationRepository.save(emailVerification, context);
+      await this.sendDomainEvents(emailVerification);
+      await this.sendIntegrationEvent(integrationEvent, context);
+    });
   }
 
   async authorize(_command: VerifyEmail_Command) {

@@ -1,7 +1,16 @@
 import { type IEventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { CreateEmailVerification_Command } from './create-email-verification.command';
-import { AlreadyExistsException, Base_CommandHandler, EVENT_BUS, Id } from '@libs/nestjs-common';
+import {
+  AlreadyExistsException,
+  Base_CommandHandler,
+  EVENT_BUS,
+  Id,
+  OUTBOX_REPOSITORY,
+  type Outbox_Repository,
+  EmailVerificationCreated_IntegrationEvent,
+  Transaction,
+} from '@libs/nestjs-common';
 import { EmailVerification } from '@bc/auth/domain/aggregates/email-verification/email-verification.aggregate';
 import { Email } from '@bc/auth/domain/value-objects';
 import {
@@ -21,8 +30,10 @@ export class CreateEmailVerification_CommandHandler extends Base_CommandHandler(
     private readonly userRepository: User_Repository,
     @Inject(EVENT_BUS)
     eventBus: IEventBus,
+    @Inject(OUTBOX_REPOSITORY)
+    outboxRepository: Outbox_Repository,
   ) {
-    super(eventBus);
+    super(eventBus, outboxRepository);
   }
 
   async handle(command: CreateEmailVerification_Command) {
@@ -34,9 +45,20 @@ export class CreateEmailVerification_CommandHandler extends Base_CommandHandler(
       email,
     });
 
-    await this.emailVerificationRepository.save(emailVerification);
+    const integrationEvent = new EmailVerificationCreated_IntegrationEvent({
+      id: Id.random().toValue(),
+      occurredOn: new Date(),
+      userId: emailVerification.userId.toValue(),
+      email: emailVerification.email.toValue(),
+      emailVerificationId: emailVerification.id.toValue(),
+      expiresAt: emailVerification.expiration.toValue(),
+    });
 
-    await this.sendDomainEvents<EmailVerification>(emailVerification);
+    await Transaction.run(async (context) => {
+      await this.emailVerificationRepository.save(emailVerification, context);
+      await this.sendDomainEvents<EmailVerification>(emailVerification);
+      await this.sendIntegrationEvent(integrationEvent, context);
+    });
   }
 
   async authorize(_command: CreateEmailVerification_Command) {

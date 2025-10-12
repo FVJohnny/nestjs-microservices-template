@@ -52,7 +52,7 @@ export abstract class Base_IntegrationEvent {
   }
 
   static random(): Base_IntegrationEvent {
-    throw new Error('Base_IntegrationEvent.random() must be implemented by subclass');
+    throw new Error(`${this.name}.random() must be implemented by subclass`);
   }
 
   /**

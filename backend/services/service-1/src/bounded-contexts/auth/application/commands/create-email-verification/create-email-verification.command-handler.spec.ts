@@ -6,6 +6,8 @@ import {
   AlreadyExistsException,
   InfrastructureException,
   MockEventBus,
+  Outbox_InMemoryRepository,
+  EmailVerificationCreated_IntegrationEvent,
 } from '@libs/nestjs-common';
 import { EmailVerificationCreated_DomainEvent } from '@bc/auth/domain/aggregates/email-verification/events/email-verification-created.domain-event';
 import { Id } from '@libs/nestjs-common';
@@ -29,6 +31,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
       withExistingUser?: boolean;
       shouldFailRepository?: boolean;
       shouldFailEventBus?: boolean;
+      shouldFailOutbox?: boolean;
     } = {},
   ) => {
     const {
@@ -36,6 +39,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
       withExistingUser = false,
       shouldFailRepository = false,
       shouldFailEventBus = false,
+      shouldFailOutbox = false,
     } = params;
 
     const emailVerificationRepository = new EmailVerification_InMemoryRepository(
@@ -43,10 +47,12 @@ describe('CreateEmailVerificationCommandHandler', () => {
     );
     const userRepository = new User_InMemoryRepository(shouldFailRepository);
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
+    const outboxRepository = new Outbox_InMemoryRepository(shouldFailOutbox);
     const commandHandler = new CreateEmailVerification_CommandHandler(
       emailVerificationRepository,
       userRepository,
       eventBus,
+      outboxRepository,
     );
 
     let user: User | null = null;
@@ -68,6 +74,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
       repository: emailVerificationRepository,
       userRepository,
       eventBus,
+      outboxRepository,
       commandHandler,
       emailVerification,
       user,
@@ -133,6 +140,51 @@ describe('CreateEmailVerificationCommandHandler', () => {
     });
   });
 
+  describe('Integration Events', () => {
+    it('should store integration event in the outbox', async () => {
+      // Arrange
+      const { commandHandler, outboxRepository, repository, user } = await setup({
+        withExistingUser: true,
+      });
+      const command = createCommand({ userId: user!.id.toValue(), email: user!.email.toValue() });
+
+      // Act
+      await commandHandler.execute(command);
+
+      // Assert
+      const outboxEvents = await outboxRepository.findAll();
+      expect(outboxEvents).toHaveLength(1);
+
+      const event = EmailVerificationCreated_IntegrationEvent.fromJSON(
+        outboxEvents[0].payload.toJSON(),
+      );
+      expect(event.id).toBeDefined();
+      expect(event.email).toBe(command.email);
+      expect(event.userId).toBe(command.userId);
+      expect(event.occurredOn).toBeInstanceOf(Date);
+      expect(event.expiresAt).toBeInstanceOf(Date);
+
+      // Verify the event's emailVerificationId matches the created verification
+      const savedVerification = await repository.findByUserId(new Id(command.userId));
+      expect(event.emailVerificationId).toBe(savedVerification!.id.toValue());
+    });
+
+    it('should propagate failures when storing the integration event in the Outbox fails', async () => {
+      // Arrange
+      const { commandHandler, repository, user } = await setup({
+        withExistingUser: true,
+        shouldFailOutbox: true,
+      });
+      const command = createCommand({ userId: user!.id.toValue(), email: user!.email.toValue() });
+
+      // Act & Assert
+      await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
+      // Verify that the verification was not created (Transaction)
+      const verification = await repository.findByUserId(new Id(command.userId));
+      expect(verification).toBeNull();
+    });
+  });
+
   describe('Error Cases', () => {
     it('should throw AlreadyExistsException when EmailVerification already exists with the same email', async () => {
       // Arrange
@@ -178,7 +230,7 @@ describe('CreateEmailVerificationCommandHandler', () => {
 
     it('should propagate event bus exceptions', async () => {
       // Arrange
-      const { commandHandler, user } = await setup({
+      const { commandHandler, repository, outboxRepository, user } = await setup({
         withExistingUser: true,
         shouldFailEventBus: true,
       });
@@ -187,6 +239,12 @@ describe('CreateEmailVerificationCommandHandler', () => {
       // Act & Assert
       // Since domain events are sent during command execution, this should fail
       await expect(commandHandler.execute(command)).rejects.toThrow(ApplicationException);
+      // Verify that the verification was not created (Transaction)
+      const verification = await repository.findByUserId(new Id(command.userId));
+      expect(verification).toBeNull();
+      // Verify that the integration event was not stored in the Outbox
+      const outboxEvents = await outboxRepository.findAll();
+      expect(outboxEvents).toHaveLength(0);
     });
   });
 });

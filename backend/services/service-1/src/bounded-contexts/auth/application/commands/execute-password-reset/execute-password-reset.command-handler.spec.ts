@@ -13,6 +13,8 @@ import {
   NotFoundException,
   InvalidOperationException,
   wait,
+  Outbox_InMemoryRepository,
+  PasswordResetCompleted_IntegrationEvent,
 } from '@libs/nestjs-common';
 import { UserPasswordChanged_DomainEvent } from '@bc/auth/domain/aggregates/user/events/password-changed.domain-event';
 import { UserLogout_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-logout.domain-event';
@@ -54,12 +56,14 @@ describe('ExecutePasswordResetCommandHandler', () => {
       shouldFailPasswordResetRepository?: boolean;
       shouldFailUserRepository?: boolean;
       shouldFailEventBus?: boolean;
+      shouldFailOutbox?: boolean;
     } = {},
   ) => {
     const {
       shouldFailPasswordResetRepository = false,
       shouldFailUserRepository = false,
       shouldFailEventBus = false,
+      shouldFailOutbox = false,
     } = params;
 
     const userRepository = new User_InMemoryRepository(shouldFailUserRepository);
@@ -67,16 +71,19 @@ describe('ExecutePasswordResetCommandHandler', () => {
       shouldFailPasswordResetRepository,
     );
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
+    const outboxRepository = new Outbox_InMemoryRepository(shouldFailOutbox);
     const commandHandler = new ExecutePasswordReset_CommandHandler(
       userRepository,
       passwordResetRepository,
       eventBus,
+      outboxRepository,
     );
 
     return {
       userRepository,
       passwordResetRepository,
       eventBus,
+      outboxRepository,
       commandHandler,
     };
   };
@@ -185,6 +192,59 @@ describe('ExecutePasswordResetCommandHandler', () => {
     });
   });
 
+  describe('Integration Events', () => {
+    it('should store integration event in the outbox', async () => {
+      // Arrange
+      const { commandHandler, userRepository, passwordResetRepository, outboxRepository } = setup();
+      const user = await createUser(userRepository);
+      const passwordReset = await createPasswordReset(passwordResetRepository, user.email);
+      const command = createCommand({
+        passwordResetId: passwordReset.id.toValue(),
+        newPassword: 'NewSecurePassword123!',
+      });
+
+      // Act
+      await commandHandler.execute(command);
+
+      // Assert
+      const outboxEvents = await outboxRepository.findAll();
+      expect(outboxEvents).toHaveLength(1);
+
+      const event = PasswordResetCompleted_IntegrationEvent.fromJSON(
+        outboxEvents[0].payload.toJSON(),
+      );
+      expect(event.id).toBeDefined();
+      expect(event.userId).toBe(user.id.toValue());
+      expect(event.email).toBe(user.email.toValue());
+      expect(event.occurredOn).toBeInstanceOf(Date);
+    });
+
+    it('should propagate failures when storing the integration event in the Outbox fails', async () => {
+      // Arrange
+      const { commandHandler, userRepository, passwordResetRepository } = setup({
+        shouldFailOutbox: true,
+      });
+      const user = await createUser(userRepository);
+      const passwordReset = await createPasswordReset(passwordResetRepository, user.email);
+      const oldPasswordHash = user.password.toValue();
+      const command = createCommand({
+        passwordResetId: passwordReset.id.toValue(),
+        newPassword: 'NewSecurePassword123!',
+      });
+
+      // Act & Assert
+      await expect(commandHandler.execute(command)).rejects.toThrow(InfrastructureException);
+
+      // Verify transaction rollback: password should not have changed
+      const updatedUser = await userRepository.findById(user.id);
+      expect(updatedUser!.password.toValue()).toBe(oldPasswordHash);
+
+      // Verify transaction rollback: password reset should not be marked as used
+      const updatedPasswordReset = await passwordResetRepository.findById(passwordReset.id);
+      expect(updatedPasswordReset!.isUsed()).toBe(false);
+    });
+  });
+
   describe('Validation & Error Cases', () => {
     it('should throw NotFoundException when password reset does not exist', async () => {
       // Arrange
@@ -273,7 +333,7 @@ describe('ExecutePasswordResetCommandHandler', () => {
 
     it('should throw ApplicationException when EventBus publishing fails', async () => {
       // Arrange
-      const { commandHandler, userRepository, passwordResetRepository } = setup({
+      const { commandHandler, userRepository, passwordResetRepository, outboxRepository } = setup({
         shouldFailEventBus: true,
       });
       const user = await createUser(userRepository);
@@ -286,42 +346,17 @@ describe('ExecutePasswordResetCommandHandler', () => {
       // Act & Assert
       await expect(commandHandler.execute(command)).rejects.toThrow(ApplicationException);
 
-      // Verify that changes were rolled back (Transaction)
+      // Verify transaction rollback: password should not have changed
       const updatedUser = await userRepository.findById(user.id);
       expect(updatedUser!.password.toValue()).toBe(oldPasswordHash);
 
+      // Verify transaction rollback: password reset should not be marked as used
       const updatedPasswordReset = await passwordResetRepository.findById(passwordReset.id);
       expect(updatedPasswordReset!.isUsed()).toBe(false);
-    });
-  });
 
-  describe('Transaction Behavior', () => {
-    it('should rollback all changes when transaction fails', async () => {
-      // Arrange
-      const { commandHandler, userRepository, passwordResetRepository } = setup({
-        shouldFailEventBus: true,
-      });
-      const user = await createUser(userRepository);
-      const passwordReset = await createPasswordReset(passwordResetRepository, user.email);
-      const oldPasswordHash = user.password.toValue();
-      const command = createCommand({
-        passwordResetId: passwordReset.id.toValue(),
-      });
-
-      // Act
-      try {
-        await commandHandler.execute(command);
-      } catch (error) {
-        // Expected to fail
-      }
-
-      // Assert - Verify rollback
-      const updatedUser = await userRepository.findById(user.id);
-      const updatedPasswordReset = await passwordResetRepository.findById(passwordReset.id);
-
-      expect(updatedUser!.password.toValue()).toBe(oldPasswordHash);
-      expect(updatedPasswordReset!.isUsed()).toBe(false);
-      expect(updatedPasswordReset!.isValid()).toBe(true);
+      // Verify that the integration event was not stored in the Outbox
+      const outboxEvents = await outboxRepository.findAll();
+      expect(outboxEvents).toHaveLength(0);
     });
   });
 });

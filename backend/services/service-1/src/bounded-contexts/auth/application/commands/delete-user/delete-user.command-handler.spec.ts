@@ -2,7 +2,15 @@ import { DeleteUser_CommandHandler } from './delete-user.command-handler';
 import { DeleteUser_Command } from './delete-user.command';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
-import { Id, InfrastructureException, MockEventBus, NotFoundException } from '@libs/nestjs-common';
+import {
+  Id,
+  InfrastructureException,
+  MockEventBus,
+  NotFoundException,
+  Outbox_InMemoryRepository,
+  UserDeleted_IntegrationEvent,
+  ApplicationException,
+} from '@libs/nestjs-common';
 import { UserDeleted_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-deleted.domain-event';
 
 describe('DeleteUser_CommandHandler', () => {
@@ -14,13 +22,20 @@ describe('DeleteUser_CommandHandler', () => {
       withUser?: boolean;
       shouldFailRepository?: boolean;
       shouldFailEventBus?: boolean;
+      shouldFailOutbox?: boolean;
     } = {},
   ) => {
-    const { withUser = false, shouldFailRepository = false, shouldFailEventBus = false } = params;
+    const {
+      withUser = false,
+      shouldFailRepository = false,
+      shouldFailEventBus = false,
+      shouldFailOutbox = false,
+    } = params;
 
     const repository = new User_InMemoryRepository(shouldFailRepository);
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
-    const handler = new DeleteUser_CommandHandler(repository, eventBus);
+    const outboxRepository = new Outbox_InMemoryRepository(shouldFailOutbox);
+    const handler = new DeleteUser_CommandHandler(repository, eventBus, outboxRepository);
 
     let user: User | null = null;
     if (withUser) {
@@ -28,7 +43,7 @@ describe('DeleteUser_CommandHandler', () => {
       await repository.save(user);
     }
 
-    return { repository, eventBus, handler, user };
+    return { repository, eventBus, outboxRepository, handler, user };
   };
 
   describe('Happy Path', () => {
@@ -50,6 +65,44 @@ describe('DeleteUser_CommandHandler', () => {
     });
   });
 
+  describe('Integration Events', () => {
+    it('should store integration event in the outbox', async () => {
+      // Arrange
+      const { handler, outboxRepository, user } = await setup({ withUser: true });
+      const command = createCommand({ userId: user!.id.toValue() });
+
+      // Act
+      await handler.execute(command);
+
+      // Assert
+      const outboxEvents = await outboxRepository.findAll();
+      expect(outboxEvents).toHaveLength(1);
+
+      const event = UserDeleted_IntegrationEvent.fromJSON(outboxEvents[0].payload.toJSON());
+      expect(event.id).toBeDefined();
+      expect(event.userId).toBe(user!.id.toValue());
+      expect(event.email).toBe(user!.email.toValue());
+      expect(event.username).toBe(user!.username.toValue());
+      expect(event.occurredOn).toBeInstanceOf(Date);
+    });
+
+    it('should propagate failures when storing the integration event in the Outbox fails', async () => {
+      // Arrange
+      const { handler, repository, user } = await setup({
+        withUser: true,
+        shouldFailOutbox: true,
+      });
+      const command = createCommand({ userId: user!.id.toValue() });
+
+      // Act & Assert
+      await expect(handler.execute(command)).rejects.toThrow(InfrastructureException);
+
+      // Verify transaction rollback: the user should still exist
+      const stillExists = await repository.exists(user!.id);
+      expect(stillExists).toBe(true);
+    });
+  });
+
   describe('Error Cases', () => {
     it('should throw NotFoundException when user does not exist', async () => {
       // Arrange
@@ -67,6 +120,26 @@ describe('DeleteUser_CommandHandler', () => {
 
       // Act & Assert
       await expect(handler.execute(command)).rejects.toThrow(InfrastructureException);
+    });
+
+    it('should propagate event bus exceptions', async () => {
+      // Arrange
+      const { handler, repository, outboxRepository, user } = await setup({
+        withUser: true,
+        shouldFailEventBus: true,
+      });
+      const command = createCommand({ userId: user!.id.toValue() });
+
+      // Act & Assert
+      await expect(handler.execute(command)).rejects.toThrow(ApplicationException);
+
+      // Verify transaction rollback: the user should still exist
+      const stillExists = await repository.exists(user!.id);
+      expect(stillExists).toBe(true);
+
+      // Verify that the integration event was not stored in the Outbox
+      const outboxEvents = await outboxRepository.findAll();
+      expect(outboxEvents).toHaveLength(0);
     });
   });
 });
