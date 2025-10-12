@@ -15,7 +15,6 @@ import { OutboxModule } from '@libs/nestjs-common';
 import { Outbox_MongodbRepository } from '@libs/nestjs-mongodb';
 import { RedisDBModule } from '@libs/nestjs-redis';
 import { MongoDBModule } from '@libs/nestjs-mongodb';
-import { PostgresDBModule } from '@libs/nestjs-postgresql';
 import { KafkaIntegrationEventsModule } from '@libs/nestjs-kafka';
 
 @Module({
@@ -23,7 +22,6 @@ import { KafkaIntegrationEventsModule } from '@libs/nestjs-kafka';
     // DATABASE MODULES
     RedisDBModule,
     MongoDBModule,
-    PostgresDBModule,
 
     // INTEGRATION EVENT MODULES
     InboxModule,

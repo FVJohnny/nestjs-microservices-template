@@ -7,7 +7,6 @@
       "@libs/nestjs-kafka": ["backend/libs/kafka/dist"],
       "@libs/nestjs-mongodb": ["backend/libs/mongodb/dist"],
       "@libs/nestjs-redis": ["backend/libs/redis/dist"],
-      "@libs/nestjs-postgresql": ["backend/libs/postgresql/dist"],
       "@bc/*": ["backend/services/service-1/src/bounded-contexts/*"]
     }
   }
