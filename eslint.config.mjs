@@ -8,6 +8,7 @@ import noDirectEntityMutationRule from './eslint/rules/no-direct-entity-mutation
 import { hexagonalArchitectureConfigs } from './eslint/rules/hexagonal-architecture.mjs';
 import cqrsHandlerCollocationRule from './eslint/rules/cqrs-handler-collocation.mjs';
 import valueObjectNamingRule from './eslint/rules/value-object-naming.mjs';
+import noDirectCqrsDecoratorsRule from './eslint/rules/no-direct-cqrs-decorators.mjs';
 
 export default [
   {
@@ -52,6 +53,7 @@ export default [
       cqrs: {
         rules: {
           'handler-collocation': cqrsHandlerCollocationRule,
+          'no-direct-decorators': noDirectCqrsDecoratorsRule,
         },
       },
       'value-object': {
@@ -68,6 +70,7 @@ export default [
       eqeqeq: 'error',
       'entity-domain/no-direct-entity-mutation': 'error',
       'cqrs/handler-collocation': 'error',
+      'cqrs/no-direct-decorators': 'error',
       'value-object/naming': 'error',
     },
   },
@@ -124,6 +127,14 @@ export default [
           ],
         },
       ],
+    },
+  },
+
+  // Disable CQRS decorator rule for framework base classes
+  {
+    files: ['**/libs/common/src/cqrs/**/*.ts'],
+    rules: {
+      'cqrs/no-direct-decorators': 'off',
     },
   },
 ];
