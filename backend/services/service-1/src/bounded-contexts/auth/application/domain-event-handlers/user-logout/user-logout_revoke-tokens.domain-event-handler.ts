@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import type { ICommandBus } from '@nestjs/cqrs';
+import { type ICommandBus } from '@nestjs/cqrs';
 import { UserLogout_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-logout.domain-event';
 import { Base_DomainEventHandler, COMMAND_BUS } from '@libs/nestjs-common';
 import { RevokeAllUserTokens_Command } from '@bc/auth/application/commands';
