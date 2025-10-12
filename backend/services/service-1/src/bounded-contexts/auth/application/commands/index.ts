@@ -4,6 +4,8 @@ export * from './record-user-login/record-user-login.command';
 export * from './record-user-login/record-user-login.command-handler';
 export * from './verify-email/verify-email.command';
 export * from './verify-email/verify-email.command-handler';
+export * from './verify-user-email/verify-user-email.command';
+export * from './verify-user-email/verify-user-email.command-handler';
 export * from './create-email-verification/create-email-verification.command';
 export * from './create-email-verification/create-email-verification.command-handler';
 export * from './delete-user/delete-user.command';
