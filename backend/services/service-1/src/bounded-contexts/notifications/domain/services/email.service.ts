@@ -1,0 +1,27 @@
+/**
+ * Email Service Port (Interface)
+ *
+ * This is a port in hexagonal architecture - it defines WHAT we need,
+ * not HOW it's implemented. The infrastructure layer will provide
+ * the adapter (concrete implementation).
+ */
+
+import { EmailBody, EmailSubject } from '@bc/notifications/domain/value-objects';
+import { Email } from '@bc/shared/domain/value-objects';
+
+export interface EmailOptions {
+  to: Email;
+  subject: EmailSubject;
+  body: EmailBody;
+}
+
+export const EMAIL_SERVICE = Symbol('EmailService');
+
+export interface Email_Service {
+  /**
+   * Send an email
+   * @param options - Email options including recipient, subject, and body
+   * @returns Promise that resolves when email is sent
+   */
+  send(options: EmailOptions): Promise<void>;
+}

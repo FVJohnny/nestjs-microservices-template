@@ -36,7 +36,7 @@ export function Base_CommandHandler<TCommand extends ICommand>(
   abstract class Base_CommandHandlerClass {
     readonly logger: CorrelationLogger;
 
-    constructor(readonly eventBus: IEventBus) {
+    constructor(readonly eventBus?: IEventBus) {
       this.logger = new CorrelationLogger(this.constructor.name);
     }
 
@@ -93,6 +93,8 @@ export function Base_CommandHandler<TCommand extends ICommand>(
      * @param entity - The aggregate root containing domain events to publish
      */
     async sendDomainEvents<T extends SharedAggregate>(entity: T): Promise<void> {
+      if (!this.eventBus) throw new Error('Event bus is not set');
+
       const events = entity.getUncommittedEvents();
 
       // Publish each domain event through the event bus

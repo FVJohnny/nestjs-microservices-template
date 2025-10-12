@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthBoundedContextModule } from './bounded-contexts/auth/auth.module';
+import { NotificationsBoundedContextModule } from './bounded-contexts/notifications/notifications.module';
 import {
   HeartbeatModule,
   TracingModule,
@@ -42,6 +43,7 @@ import { KafkaIntegrationEventsModule } from '@libs/nestjs-kafka';
 
     // BOUNDED CONTEXTS
     AuthBoundedContextModule,
+    NotificationsBoundedContextModule,
   ],
 })
 export class AppModule {}
