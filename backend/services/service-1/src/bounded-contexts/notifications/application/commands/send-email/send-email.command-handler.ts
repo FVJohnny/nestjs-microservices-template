@@ -1,7 +1,4 @@
-import {
-  EMAIL_SERVICE,
-  type Email_Service,
-} from '@bc/notifications/domain/services/email.service';
+import { EMAIL_SERVICE, type Email_Service } from '@bc/notifications/domain/services/email.service';
 import { EmailBody, EmailSubject } from '@bc/notifications/domain/value-objects';
 import { Email } from '@bc/shared/domain/value-objects';
 import { Base_CommandHandler } from '@libs/nestjs-common';

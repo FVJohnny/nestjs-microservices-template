@@ -49,9 +49,7 @@ export class Email_SmtpService implements Email_Service {
 
   async send(options: EmailOptions): Promise<void> {
     try {
-
-      if (!this.transporter)
-        throw new Error('SMTP transporter not configured');
+      if (!this.transporter) throw new Error('SMTP transporter not configured');
 
       const from = process.env.SMTP_FROM || 'noreply@example.com';
 

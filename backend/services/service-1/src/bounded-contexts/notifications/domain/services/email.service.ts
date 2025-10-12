@@ -6,8 +6,8 @@
  * the adapter (concrete implementation).
  */
 
-import { EmailBody, EmailSubject } from '@bc/notifications/domain/value-objects';
-import { Email } from '@bc/shared/domain/value-objects';
+import type { EmailBody, EmailSubject } from '@bc/notifications/domain/value-objects';
+import type { Email } from '@bc/shared/domain/value-objects';
 
 export interface EmailOptions {
   to: Email;

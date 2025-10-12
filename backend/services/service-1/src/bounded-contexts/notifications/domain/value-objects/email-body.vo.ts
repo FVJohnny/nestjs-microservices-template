@@ -12,11 +12,7 @@ export class EmailBody extends StringValueObject {
     super.validate();
 
     if (this.value.length < EmailBody.MIN_LENGTH) {
-      throw new DomainValidationException(
-        'emailBody',
-        this.value,
-        'Email body cannot be empty',
-      );
+      throw new DomainValidationException('emailBody', this.value, 'Email body cannot be empty');
     }
 
     if (this.value.length > EmailBody.MAX_LENGTH) {

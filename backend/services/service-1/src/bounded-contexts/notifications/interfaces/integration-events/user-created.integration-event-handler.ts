@@ -16,7 +16,7 @@ export class UserCreated_IntegrationEventHandler {
       `📧 New user registered - sending welcome notification to ${event.email} (User ID: ${event.userId}, Username: ${event.username}, Role: ${event.role})`,
     );
 
-    const subject = "Welcome to our platform!";
+    const subject = 'Welcome to our platform!';
     const message = `Welcome to our platform, ${event.username}! We're excited to have you on board.`;
 
     const command = new SendEmail_Command({
