@@ -112,7 +112,6 @@ describe('ExecutePasswordResetCommandHandler', () => {
       const updatedPasswordReset = await passwordResetRepository.findById(passwordReset.id);
       expect(updatedPasswordReset).not.toBeNull();
       expect(updatedPasswordReset!.isUsed()).toBe(true);
-      expect(updatedPasswordReset!.isValid()).toBe(false);
     });
 
     it('should publish PasswordChangedEvent after password reset', async () => {

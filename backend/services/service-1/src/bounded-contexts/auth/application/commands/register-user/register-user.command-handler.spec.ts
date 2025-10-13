@@ -1,20 +1,20 @@
-import { RegisterUser_CommandHandler } from './register-user.command-handler';
-import { RegisterUser_Command } from './register-user.command';
+import { UserRegistered_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-registered.domain-event';
+import { UserUniquenessChecker } from '@bc/auth/domain/services/user-uniqueness-checker/user-uniqueness-checker.service';
+import { Email, Password, Username, UserRoleEnum } from '@bc/auth/domain/value-objects';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
-import { Email, Username, Password, UserRoleEnum } from '@bc/auth/domain/value-objects';
 import {
   AlreadyExistsException,
   ApplicationException,
   DateVO,
+  Id,
   InfrastructureException,
   MockEventBus,
+  Outbox_InMemoryRepository,
   UserCreated_IntegrationEvent,
   wait,
-  Outbox_InMemoryRepository,
-  Id,
 } from '@libs/nestjs-common';
-import { UserRegistered_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-registered.domain-event';
-import { UserUniquenessChecker } from '@bc/auth/domain/services/user-uniqueness-checker.service';
+import { RegisterUser_Command } from './register-user.command';
+import { RegisterUser_CommandHandler } from './register-user.command-handler';
 
 describe('RegisterUserCommandHandler', () => {
   // Test data factory

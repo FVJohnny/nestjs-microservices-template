@@ -1,25 +1,25 @@
-import { type IEventBus } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
-import { RegisterUser_Command } from './register-user.command';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import {
   USER_REPOSITORY,
   type User_Repository,
 } from '@bc/auth/domain/aggregates/user/user.repository';
-import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
-import { Email, Username, Password } from '@bc/auth/domain/value-objects';
-import {
-  Base_CommandHandler,
-  EVENT_BUS,
-  OUTBOX_REPOSITORY,
-  type Outbox_Repository,
-  UserCreated_IntegrationEvent,
-  Transaction,
-  Id,
-} from '@libs/nestjs-common';
 import {
   USER_UNIQUENESS_CHECKER,
   type IUserUniquenessChecker,
-} from '@bc/auth/domain/services/user-uniqueness-checker.interface';
+} from '@bc/auth/domain/services/user-uniqueness-checker/user-uniqueness-checker.interface';
+import { Email, Password, Username } from '@bc/auth/domain/value-objects';
+import {
+  Base_CommandHandler,
+  EVENT_BUS,
+  Id,
+  OUTBOX_REPOSITORY,
+  Transaction,
+  UserCreated_IntegrationEvent,
+  type Outbox_Repository,
+} from '@libs/nestjs-common';
+import { Inject } from '@nestjs/common';
+import { type IEventBus } from '@nestjs/cqrs';
+import { RegisterUser_Command } from './register-user.command';
 
 export class RegisterUser_CommandHandler extends Base_CommandHandler(RegisterUser_Command) {
   constructor(

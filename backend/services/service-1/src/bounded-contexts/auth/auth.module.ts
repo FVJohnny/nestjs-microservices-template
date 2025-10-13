@@ -1,23 +1,23 @@
-import { Module } from '@nestjs/common';
 import { RuntimeAutoDiscovery } from '@libs/nestjs-common';
+import { Module } from '@nestjs/common';
 
 // Infrastructure - Repositories
-import { User_MongodbRepository } from './infrastructure/repositories/mongodb/user.mongodb-repository';
+import {
+  GetUserTokenByToken_QueryHandler,
+  StoreTokens_CommandHandler,
+  USER_TOKEN_REPOSITORY,
+} from '@libs/nestjs-common';
+import { UserToken_RedisRepository } from '@libs/nestjs-redis';
+import { EMAIL_VERIFICATION_REPOSITORY } from './domain/aggregates/email-verification/email-verification.repository';
+import { PASSWORD_RESET_REPOSITORY } from './domain/aggregates/password-reset/password-reset.repository';
 import { USER_REPOSITORY } from './domain/aggregates/user/user.repository';
 import { EmailVerification_MongodbRepository } from './infrastructure/repositories/mongodb/email-verification.mongodb-repository';
-import { EMAIL_VERIFICATION_REPOSITORY } from './domain/aggregates/email-verification/email-verification.repository';
 import { PasswordReset_MongodbRepository } from './infrastructure/repositories/mongodb/password-reset.mongodb-repository';
-import { PASSWORD_RESET_REPOSITORY } from './domain/aggregates/password-reset/password-reset.repository';
-import { UserToken_RedisRepository } from '@libs/nestjs-redis';
-import {
-  USER_TOKEN_REPOSITORY,
-  StoreTokens_CommandHandler,
-  GetUserTokenByToken_QueryHandler,
-} from '@libs/nestjs-common';
+import { User_MongodbRepository } from './infrastructure/repositories/mongodb/user.mongodb-repository';
 
 // Domain Services
-import { UserUniquenessChecker } from './domain/services/user-uniqueness-checker.service';
-import { USER_UNIQUENESS_CHECKER } from './domain/services/user-uniqueness-checker.interface';
+import { USER_UNIQUENESS_CHECKER } from './domain/services/user-uniqueness-checker/user-uniqueness-checker.interface';
+import { UserUniquenessChecker } from './domain/services/user-uniqueness-checker/user-uniqueness-checker.service';
 
 // 🚀 RUNTIME AUTO-DISCOVERY
 const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__dirname);

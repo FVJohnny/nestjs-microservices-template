@@ -1,7 +1,7 @@
 import { PasswordResetRequested_DomainEvent } from '@bc/auth/domain/aggregates/password-reset/events/password-reset-requested.domain-event';
 import { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
 import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
-import { UserUniquenessChecker } from '@bc/auth/domain/services/user-uniqueness-checker.service';
+import { UserUniquenessChecker } from '@bc/auth/domain/services/user-uniqueness-checker/user-uniqueness-checker.service';
 import { Email, Expiration, Password, Used, Username } from '@bc/auth/domain/value-objects';
 import { PasswordReset_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
@@ -92,7 +92,8 @@ describe('RequestPasswordResetCommandHandler', () => {
       const savedPasswordReset = await passwordResetRepository.findByEmail(user.email);
       expect(savedPasswordReset).not.toBeNull();
       expect(savedPasswordReset!.email.toValue()).toBe(command.email);
-      expect(savedPasswordReset!.isValid()).toBe(true);
+      expect(savedPasswordReset!.isUsed()).toBe(false);
+      expect(savedPasswordReset!.isExpired()).toBe(false);
       expect(savedPasswordReset!.id).toBeInstanceOf(Id);
     });
 

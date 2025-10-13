@@ -1,6 +1,11 @@
-import { DateVO, Id, Timestamps } from '@libs/nestjs-common';
-import { SharedAggregate, InvalidOperationException } from '@libs/nestjs-common';
 import { Email, Expiration, Used } from '@bc/auth/domain/value-objects';
+import {
+  DateVO,
+  Id,
+  InvalidOperationException,
+  SharedAggregate,
+  Timestamps,
+} from '@libs/nestjs-common';
 import { PasswordResetRequested_DomainEvent } from './events/password-reset-requested.domain-event';
 import type { PasswordResetDTO } from './password-reset.dto';
 
@@ -58,18 +63,6 @@ export class PasswordReset extends SharedAggregate {
     });
   }
 
-  markAsUsed(): void {
-    if (this.isExpired()) {
-      throw new InvalidOperationException('markAsUsed', 'expired');
-    }
-    if (this.isUsed()) {
-      throw new InvalidOperationException('markAsUsed', 'already used');
-    }
-
-    this.used = Used.yes();
-    this.timestamps = new Timestamps(this.timestamps.createdAt, DateVO.now());
-  }
-
   isUsed(): boolean {
     return this.used.isUsed();
   }
@@ -78,8 +71,16 @@ export class PasswordReset extends SharedAggregate {
     return this.expiration.isExpired();
   }
 
-  isValid(): boolean {
-    return !this.isUsed() && !this.isExpired();
+  use(): void {
+    if (this.isExpired()) {
+      throw new InvalidOperationException('use', 'expired');
+    }
+    if (this.isUsed()) {
+      throw new InvalidOperationException('use', 'already used');
+    }
+
+    this.used = Used.yes();
+    this.timestamps = new Timestamps(this.timestamps.createdAt, DateVO.now());
   }
 
   static fromValue(value: PasswordResetDTO): PasswordReset {

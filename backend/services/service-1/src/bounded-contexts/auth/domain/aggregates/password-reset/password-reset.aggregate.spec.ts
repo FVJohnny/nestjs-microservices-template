@@ -1,7 +1,7 @@
-import { PasswordReset } from './password-reset.aggregate';
 import { Email, Expiration, Used } from '@bc/auth/domain/value-objects';
+import { DateVO, Id, InvalidOperationException, Timestamps, wait } from '@libs/nestjs-common';
 import { PasswordResetRequested_DomainEvent } from './events/password-reset-requested.domain-event';
-import { InvalidOperationException, Id, Timestamps, wait, DateVO } from '@libs/nestjs-common';
+import { PasswordReset } from './password-reset.aggregate';
 import { PasswordResetDTO } from './password-reset.dto';
 
 describe('PasswordReset Entity', () => {
@@ -71,7 +71,7 @@ describe('PasswordReset Entity', () => {
 
       expect(passwordReset.isUsed()).toBe(false);
 
-      passwordReset.markAsUsed();
+      passwordReset.use();
 
       expect(passwordReset.isUsed()).toBe(true);
     });
@@ -79,14 +79,14 @@ describe('PasswordReset Entity', () => {
     it('should prevent marking expired password reset as used', () => {
       const expiredPasswordReset = createTestPasswordReset('expired');
 
-      expect(() => expiredPasswordReset.markAsUsed()).toThrow(InvalidOperationException);
+      expect(() => expiredPasswordReset.use()).toThrow(InvalidOperationException);
     });
 
     it('should prevent marking already used password reset as used again', () => {
       const passwordReset = createTestPasswordReset();
-      passwordReset.markAsUsed();
+      passwordReset.use();
 
-      expect(() => passwordReset.markAsUsed()).toThrow(InvalidOperationException);
+      expect(() => passwordReset.use()).toThrow(InvalidOperationException);
     });
 
     it('should update timestamps when marked as used', async () => {
@@ -94,7 +94,7 @@ describe('PasswordReset Entity', () => {
       const originalUpdatedAt = new DateVO(passwordReset.timestamps.updatedAt.toValue());
 
       await wait(10);
-      passwordReset.markAsUsed();
+      passwordReset.use();
 
       expect(passwordReset.timestamps.updatedAt.isAfter(originalUpdatedAt)).toBe(true);
     });
@@ -106,7 +106,6 @@ describe('PasswordReset Entity', () => {
 
       expect(passwordReset.isUsed()).toBe(false);
       expect(passwordReset.isExpired()).toBe(true);
-      expect(passwordReset.isValid()).toBe(false);
     });
 
     it('should identify used password reset', () => {
@@ -114,7 +113,6 @@ describe('PasswordReset Entity', () => {
 
       expect(passwordReset.isUsed()).toBe(true);
       expect(passwordReset.isExpired()).toBe(false);
-      expect(passwordReset.isValid()).toBe(false);
     });
 
     it('should identify valid password reset', () => {
@@ -122,7 +120,6 @@ describe('PasswordReset Entity', () => {
 
       expect(passwordReset.isExpired()).toBe(false);
       expect(passwordReset.isUsed()).toBe(false);
-      expect(passwordReset.isValid()).toBe(true);
     });
 
     it('should identify expired and used password reset as invalid', () => {
@@ -131,7 +128,6 @@ describe('PasswordReset Entity', () => {
 
       expect(passwordReset.isExpired()).toBe(true);
       expect(passwordReset.isUsed()).toBe(true);
-      expect(passwordReset.isValid()).toBe(false);
     });
   });
 

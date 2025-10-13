@@ -1,26 +1,25 @@
-import { type IEventBus } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
-import { ExecutePasswordReset_Command } from './execute-password-reset.command';
-import {
-  USER_REPOSITORY,
-  type User_Repository,
-} from '@bc/auth/domain/aggregates/user/user.repository';
 import {
   PASSWORD_RESET_REPOSITORY,
   type PasswordReset_Repository,
 } from '@bc/auth/domain/aggregates/password-reset/password-reset.repository';
+import {
+  USER_REPOSITORY,
+  type User_Repository,
+} from '@bc/auth/domain/aggregates/user/user.repository';
 import { Password } from '@bc/auth/domain/value-objects';
 import {
   Base_CommandHandler,
   EVENT_BUS,
   Id,
   NotFoundException,
-  InvalidOperationException,
-  Transaction,
   OUTBOX_REPOSITORY,
   type Outbox_Repository,
   PasswordResetCompleted_IntegrationEvent,
+  Transaction,
 } from '@libs/nestjs-common';
+import { Inject } from '@nestjs/common';
+import { type IEventBus } from '@nestjs/cqrs';
+import { ExecutePasswordReset_Command } from './execute-password-reset.command';
 
 export class ExecutePasswordReset_CommandHandler extends Base_CommandHandler(
   ExecutePasswordReset_Command,
@@ -39,20 +38,12 @@ export class ExecutePasswordReset_CommandHandler extends Base_CommandHandler(
   }
 
   async handle(command: ExecutePasswordReset_Command) {
-    const passwordResetId = new Id(command.passwordResetId);
-
     // Find the password reset
-    const passwordReset = await this.passwordResetRepository.findById(passwordResetId);
+    const passwordReset = await this.passwordResetRepository.findById(
+      new Id(command.passwordResetId),
+    );
     if (!passwordReset) {
       throw new NotFoundException('PasswordReset', command.passwordResetId);
-    }
-
-    // Validate the password reset is still valid
-    if (!passwordReset.isValid()) {
-      throw new InvalidOperationException(
-        'execute password reset',
-        passwordReset.isExpired() ? 'expired' : 'already used',
-      );
     }
 
     // Find the user by email
@@ -65,6 +56,9 @@ export class ExecutePasswordReset_CommandHandler extends Base_CommandHandler(
     const newPassword = await Password.createFromPlainText(command.newPassword);
     user.changePassword(newPassword);
 
+    // Mark password reset as used
+    passwordReset.use();
+
     const integrationEvent = new PasswordResetCompleted_IntegrationEvent({
       id: Id.random().toValue(),
       occurredOn: new Date(),
@@ -74,12 +68,10 @@ export class ExecutePasswordReset_CommandHandler extends Base_CommandHandler(
 
     // Update user password and mark password reset as used in a transaction
     await Transaction.run(async (context) => {
-      passwordReset.markAsUsed();
-
       await this.userRepository.save(user, context);
       await this.passwordResetRepository.save(passwordReset, context);
-      await this.sendDomainEvents(user);
       await this.sendIntegrationEvent(integrationEvent, context);
+      await this.sendDomainEvents(user);
     });
   }
 

@@ -1,4 +1,4 @@
-import { UserUniquenessChecker_Mock } from '@bc/auth/domain/services/user-uniqueness-checker.mock';
+import { UserUniquenessChecker_Mock } from '@bc/auth/domain/services/user-uniqueness-checker/user-uniqueness-checker.mock';
 import {
   Email,
   LastLogin,

@@ -1,7 +1,7 @@
-import type { PasswordReset_Repository } from './password-reset.repository';
 import { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
 import { Email, Expiration, Used } from '@bc/auth/domain/value-objects';
 import { Id } from '@libs/nestjs-common';
+import type { PasswordReset_Repository } from './password-reset.repository';
 
 /**
  * Basic validation test to prevent Jest "no tests found" error
@@ -68,7 +68,7 @@ export function testPasswordResetRepositoryContract(
           await repository.save(passwordReset);
 
           // Modify password reset
-          passwordReset.markAsUsed();
+          passwordReset.use();
 
           // Act
           await repository.save(passwordReset);
@@ -134,7 +134,8 @@ export function testPasswordResetRepositoryContract(
           // Assert
           expect(found).not.toBeNull();
           expect(found?.email.toValue()).toBe(passwordReset.email.toValue());
-          expect(found?.isValid()).toBe(true);
+          expect(found?.isUsed()).toBe(false);
+          expect(found?.isExpired()).toBe(false);
         });
 
         it('should return null for expired password resets', async () => {
@@ -266,16 +267,17 @@ export function testPasswordResetRepositoryContract(
         let found = await repository.findById(passwordReset.id);
 
         expect(found).not.toBeNull();
-        expect(found?.isValid()).toBe(true);
+        expect(found?.isUsed()).toBe(false);
+        expect(found?.isExpired()).toBe(false);
 
         // Act & Assert - After marking as used
-        passwordReset.markAsUsed();
+        passwordReset.use();
         await repository.save(passwordReset);
         found = await repository.findById(passwordReset.id);
 
         expect(found).not.toBeNull();
         expect(found?.isUsed()).toBe(true);
-        expect(found?.isValid()).toBe(false);
+        expect(found?.isExpired()).toBe(false);
 
         // Valid search should return null after marking as used
         const valid = await repository.findValidByEmail(passwordReset.email);

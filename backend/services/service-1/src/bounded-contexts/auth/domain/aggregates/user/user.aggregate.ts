@@ -1,27 +1,27 @@
-import { UserRegistered_DomainEvent } from './events/user-registered.domain-event';
-import { UserDeleted_DomainEvent } from './events/user-deleted.domain-event';
-import { UserPasswordChanged_DomainEvent } from './events/password-changed.domain-event';
-import { UserLogout_DomainEvent } from './events/user-logout.domain-event';
+import type { IUserUniquenessChecker } from '@bc/auth/domain/services/user-uniqueness-checker/user-uniqueness-checker.interface';
 import type { UserRoleEnum } from '@bc/auth/domain/value-objects';
 import {
+  Email,
+  LastLogin,
+  Password,
+  Username,
+  UserRole,
   UserStatus,
   UserStatusEnum,
-  UserRole,
-  Email,
-  Username,
-  Password,
-  LastLogin,
 } from '@bc/auth/domain/value-objects';
-import type { UserDTO } from './user.dto';
 import {
+  AlreadyExistsException,
+  DateVO,
+  Id,
   InvalidOperationException,
   SharedAggregate,
-  Id,
   Timestamps,
-  DateVO,
-  AlreadyExistsException,
 } from '@libs/nestjs-common';
-import type { IUserUniquenessChecker } from '@bc/auth/domain/services/user-uniqueness-checker.interface';
+import { UserPasswordChanged_DomainEvent } from './events/password-changed.domain-event';
+import { UserDeleted_DomainEvent } from './events/user-deleted.domain-event';
+import { UserLogout_DomainEvent } from './events/user-logout.domain-event';
+import { UserRegistered_DomainEvent } from './events/user-registered.domain-event';
+import type { UserDTO } from './user.dto';
 
 export interface CreateUserProps {
   email: Email;
