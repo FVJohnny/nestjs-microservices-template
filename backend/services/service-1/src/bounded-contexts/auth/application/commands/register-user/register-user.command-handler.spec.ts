@@ -14,6 +14,7 @@ import {
   Id,
 } from '@libs/nestjs-common';
 import { UserRegistered_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-registered.domain-event';
+import { UserUniquenessChecker } from '@bc/auth/domain/services/user-uniqueness-checker.service';
 
 describe('RegisterUserCommandHandler', () => {
   // Test data factory
@@ -41,9 +42,11 @@ describe('RegisterUserCommandHandler', () => {
     const outboxRepository = new Outbox_InMemoryRepository(shouldFailOutbox);
 
     const userRepository = new User_InMemoryRepository(shouldFailRepository);
+    const uniquenessChecker = new UserUniquenessChecker(userRepository);
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
     const commandHandler = new RegisterUser_CommandHandler(
       userRepository,
+      uniquenessChecker,
       eventBus,
       outboxRepository,
     );

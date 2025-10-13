@@ -1,32 +1,47 @@
-import { User } from './user.aggregate';
+import { UserUniquenessChecker_Mock } from '@bc/auth/domain/services/user-uniqueness-checker.mock';
 import {
   Email,
+  LastLogin,
+  Password,
   Username,
   UserRole,
   UserRoleEnum,
   UserStatus,
   UserStatusEnum,
-  Password,
-  LastLogin,
 } from '@bc/auth/domain/value-objects';
-import { UserRegistered_DomainEvent } from './events/user-registered.domain-event';
+import {
+  AlreadyExistsException,
+  DateVO,
+  Id,
+  InvalidOperationException,
+  Timestamps,
+  wait,
+} from '@libs/nestjs-common';
 import { UserPasswordChanged_DomainEvent } from './events/password-changed.domain-event';
-import { UserLogout_DomainEvent } from './events/user-logout.domain-event';
-import { InvalidOperationException, Timestamps, Id, wait, DateVO } from '@libs/nestjs-common';
-import { UserDTO } from './user.dto';
 import type { UserDeleted_DomainEvent } from './events/user-deleted.domain-event';
+import { UserLogout_DomainEvent } from './events/user-logout.domain-event';
+import { UserRegistered_DomainEvent } from './events/user-registered.domain-event';
+import { User } from './user.aggregate';
+import { UserDTO } from './user.dto';
 
 describe('User Entity', () => {
+
+  const setup = ({emailIsUnique = true, usernameIsUnique = true}: {emailIsUnique?: boolean, usernameIsUnique?: boolean} = {}) => {
+    const uniquenessChecker = new UserUniquenessChecker_Mock(emailIsUnique, usernameIsUnique);
+    return { uniquenessChecker };
+  };
+
   describe('create()', () => {
     it('should create a new user with email verification pending status', async () => {
       // Arrange
+      const { uniquenessChecker } = setup();
       const email = new Email('test@example.com');
       const username = new Username('testuser');
       const password = await Password.createFromPlainText('Password123!');
       const role = new UserRole(UserRoleEnum.USER);
 
       // Act
-      const user = User.create({ email, username, password, role });
+      const user = await User.create({ email, username, password, role }, uniquenessChecker);
 
       // Assert
       expect(user).toBeInstanceOf(User);
@@ -43,18 +58,22 @@ describe('User Entity', () => {
 
     it('should emit UserRegisteredDomainEvent when created', async () => {
       // Arrange
+      const { uniquenessChecker } = setup();
       const email = new Email('test@example.com');
       const username = new Username('testuser');
       const password = await Password.createFromPlainText('Password123!');
       const role = new UserRole(UserRoleEnum.ADMIN);
 
       // Act
-      const user = User.create({
-        email,
-        username,
-        password,
-        role,
-      });
+      const user = await User.create(
+        {
+          email,
+          username,
+          password,
+          role,
+        },
+        uniquenessChecker,
+      );
 
       // Assert
       const events = user.getUncommittedEvents();
@@ -69,19 +88,78 @@ describe('User Entity', () => {
     });
 
     it('should default role to user when not provided', async () => {
+      // Arrange
+      const { uniquenessChecker } = setup();
       const email = new Email('default-role@example.com');
       const username = new Username('defaultrole');
       const password = await Password.createFromPlainText('Password123!');
 
-      const user = User.create({ email, username, password });
+      // Act
+      const user = await User.create({ email, username, password }, uniquenessChecker);
 
+      // Assert
       expect(user.role.equals(UserRole.user())).toBe(true);
       const events = user.getUncommittedEvents();
       expect(events).toHaveLength(1);
       const event = events[0] as UserRegistered_DomainEvent;
       expect(event.role.equals(UserRole.user())).toBe(true);
     });
-  });
+
+    describe('Uniqueness Validation', () => {
+      it('should throw AlreadyExistsException when email already exists', async () => {
+        // Arrange
+        const { uniquenessChecker } = setup({emailIsUnique: false});
+        const email = new Email('duplicate@example.com');
+        const username = new Username('testuser');
+        const password = await Password.createFromPlainText('Password123!');
+
+        // Act & Assert
+        await expect(
+          User.create({ email, username, password }, uniquenessChecker),
+        ).rejects.toThrow(AlreadyExistsException);
+      });
+
+      it('should throw AlreadyExistsException when username already exists', async () => {
+        // Arrange
+        const { uniquenessChecker } = setup({usernameIsUnique: false});
+        const email = new Email('test@example.com');
+        const username = new Username('duplicateuser');
+        const password = await Password.createFromPlainText('Password123!');
+
+        // Act & Assert
+        await expect(
+          User.create({ email, username, password }, uniquenessChecker),
+        ).rejects.toThrow(AlreadyExistsException);
+      });
+
+      it('should throw AlreadyExistsException with correct field when email is duplicate', async () => {
+        // Arrange
+        const { uniquenessChecker } = setup({emailIsUnique: false});
+        const duplicateEmail = 'duplicate@example.com';
+        const email = new Email(duplicateEmail);
+        const username = new Username('testuser');
+        const password = await Password.createFromPlainText('Password123!');
+
+        // Act & Assert
+        await expect(
+          User.create({ email, username, password }, uniquenessChecker),
+        ).rejects.toThrow(new AlreadyExistsException('email', duplicateEmail));
+      });
+
+      it('should throw AlreadyExistsException with correct field when username is duplicate', async () => {
+        // Arrange
+        const { uniquenessChecker } = setup({usernameIsUnique: false});
+        const duplicateUsername = 'duplicateuser';
+        const email = new Email('test@example.com');
+        const username = new Username(duplicateUsername);
+        const password = await Password.createFromPlainText('Password123!');
+
+        // Act & Assert
+        await expect(
+          User.create({ email, username, password }, uniquenessChecker),
+        ).rejects.toThrow(new AlreadyExistsException('username', duplicateUsername));
+      });
+    });
 
   describe('random()', () => {
     it('should create a user with random values', () => {
@@ -513,13 +591,19 @@ describe('User Entity', () => {
 
   describe('Integration scenarios', () => {
     it('should handle complete user lifecycle', async () => {
+      // Arrange
+      const { uniquenessChecker } = setup();
+
       // Create user
-      const user = User.create({
-        email: new Email('lifecycle@example.com'),
-        username: new Username('lifecycleuser'),
-        password: await Password.createFromPlainText('Password123!'),
-        role: new UserRole(UserRoleEnum.USER),
-      });
+      const user = await User.create(
+        {
+          email: new Email('lifecycle@example.com'),
+          username: new Username('lifecycleuser'),
+          password: await Password.createFromPlainText('Password123!'),
+          role: new UserRole(UserRoleEnum.USER),
+        },
+        uniquenessChecker,
+      );
 
       // Verify initial state
       expect(user.isEmailVerificationPending()).toBe(true);
@@ -580,18 +664,25 @@ describe('User Entity', () => {
     });
 
     it('should maintain domain events on creation', async () => {
-      // Arrange & Act
-      const user = User.create({
-        email: new Email('events@example.com'),
-        username: new Username('eventsuser'),
-        password: await Password.createFromPlainText('Password123!'),
-        role: new UserRole(UserRoleEnum.USER),
-      });
+      // Arrange
+      const { uniquenessChecker } = setup();
+
+      // Act
+      const user = await User.create(
+        {
+          email: new Email('events@example.com'),
+          username: new Username('eventsuser'),
+          password: await Password.createFromPlainText('Password123!'),
+          role: new UserRole(UserRoleEnum.USER),
+        },
+        uniquenessChecker,
+      );
 
       // Assert - UserRegisteredDomainEvent should be emitted
       const events = user.getUncommittedEvents();
       expect(events).toHaveLength(1);
       expect(events[0]).toBeInstanceOf(UserRegistered_DomainEvent);
     });
+  });
   });
 });

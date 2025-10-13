@@ -15,6 +15,10 @@ import {
   GetUserTokenByToken_QueryHandler,
 } from '@libs/nestjs-common';
 
+// Domain Services
+import { UserUniquenessChecker } from './domain/services/user-uniqueness-checker.service';
+import { USER_UNIQUENESS_CHECKER } from './domain/services/user-uniqueness-checker.interface';
+
 // 🚀 RUNTIME AUTO-DISCOVERY
 const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__dirname);
 
@@ -24,6 +28,7 @@ const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__d
     ...handlers,
     StoreTokens_CommandHandler,
     GetUserTokenByToken_QueryHandler,
+    // Repositories (Secondary Ports)
     {
       provide: USER_REPOSITORY,
       useClass: User_MongodbRepository,
@@ -39,6 +44,11 @@ const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__d
     {
       provide: USER_TOKEN_REPOSITORY,
       useClass: UserToken_RedisRepository,
+    },
+    // Domain Services
+    {
+      provide: USER_UNIQUENESS_CHECKER,
+      useClass: UserUniquenessChecker,
     },
   ],
 })

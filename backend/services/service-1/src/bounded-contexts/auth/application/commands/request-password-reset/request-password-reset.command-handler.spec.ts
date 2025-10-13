@@ -1,21 +1,22 @@
-import { RequestPasswordReset_CommandHandler } from './request-password-reset.command-handler';
-import { RequestPasswordReset_Command } from './request-password-reset.command';
-import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
-import { PasswordReset_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
-import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
+import { PasswordResetRequested_DomainEvent } from '@bc/auth/domain/aggregates/password-reset/events/password-reset-requested.domain-event';
 import { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
-import { Email, Username, Password, Expiration, Used } from '@bc/auth/domain/value-objects';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
+import { UserUniquenessChecker } from '@bc/auth/domain/services/user-uniqueness-checker.service';
+import { Email, Expiration, Password, Used, Username } from '@bc/auth/domain/value-objects';
+import { PasswordReset_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
+import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
 import {
   ApplicationException,
   DateVO,
+  Id,
   InfrastructureException,
   MockEventBus,
+  Outbox_InMemoryRepository,
   PasswordResetRequested_IntegrationEvent,
   wait,
-  Outbox_InMemoryRepository,
-  Id,
 } from '@libs/nestjs-common';
-import { PasswordResetRequested_DomainEvent } from '@bc/auth/domain/aggregates/password-reset/events/password-reset-requested.domain-event';
+import { RequestPasswordReset_Command } from './request-password-reset.command';
+import { RequestPasswordReset_CommandHandler } from './request-password-reset.command-handler';
 
 describe('RequestPasswordResetCommandHandler', () => {
   // Test data factory
@@ -23,16 +24,6 @@ describe('RequestPasswordResetCommandHandler', () => {
     new RequestPasswordReset_Command({
       email: props?.email || Email.random().toValue(),
     });
-
-  const createUser = async (userRepository: User_InMemoryRepository, email?: Email) => {
-    const user = User.create({
-      email: email || Email.random(),
-      username: Username.random(),
-      password: await Password.createFromPlainText('password123'),
-    });
-    await userRepository.save(user);
-    return user;
-  };
 
   // Setup factory
   const setup = (
@@ -52,6 +43,7 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     const outboxRepository = new Outbox_InMemoryRepository(shouldFailOutbox);
     const userRepository = new User_InMemoryRepository(shouldFailUserRepository);
+    const uniquenessChecker = new UserUniquenessChecker(userRepository);
     const passwordResetRepository = new PasswordReset_InMemoryRepository(
       shouldFailPasswordResetRepository,
     );
@@ -63,20 +55,34 @@ describe('RequestPasswordResetCommandHandler', () => {
       outboxRepository,
     );
 
+    const createUser = async (email?: Email) => {
+      const user = await User.create(
+        {
+          email: email || Email.random(),
+          username: Username.random(),
+          password: await Password.createFromPlainText('password123'),
+        },
+        uniquenessChecker,
+      );
+      await userRepository.save(user);
+      return user;
+    };
+
     return {
       userRepository,
       passwordResetRepository,
       eventBus,
       commandHandler,
       outboxRepository,
+      createUser,
     };
   };
 
   describe('Happy Path', () => {
     it('should successfully create a password reset for an existing user', async () => {
       // Arrange
-      const { commandHandler, userRepository, passwordResetRepository } = setup();
-      const user = await createUser(userRepository);
+      const { commandHandler, passwordResetRepository, createUser } = setup();
+      const user = await createUser();
       const command = createCommand({ email: user.email.toValue() });
 
       // Act
@@ -92,8 +98,8 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should publish PasswordResetRequestedEvent after password reset creation', async () => {
       // Arrange
-      const { commandHandler, userRepository, eventBus } = setup();
-      const user = await createUser(userRepository);
+      const { commandHandler, eventBus, createUser } = setup();
+      const user = await createUser();
       const command = createCommand({ email: user.email.toValue() });
 
       // Act
@@ -112,8 +118,8 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should store integration event in the outbox', async () => {
       // Arrange
-      const { commandHandler, userRepository, outboxRepository, passwordResetRepository } = setup();
-      const user = await createUser(userRepository);
+      const { commandHandler, outboxRepository, passwordResetRepository, createUser } = setup();
+      const user = await createUser();
       const command = createCommand({ email: user.email.toValue() });
 
       // Act
@@ -138,8 +144,8 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should set proper timestamps on password reset creation', async () => {
       // Arrange
-      const { commandHandler, userRepository, passwordResetRepository } = setup();
-      const user = await createUser(userRepository);
+      const { commandHandler, passwordResetRepository, createUser } = setup();
+      const user = await createUser();
       const command = createCommand({ email: user.email.toValue() });
       const beforeCreation = DateVO.now();
       await wait(10);
@@ -159,9 +165,9 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should create unique password reset IDs for different requests', async () => {
       // Arrange
-      const { commandHandler, userRepository, passwordResetRepository } = setup();
-      const user1 = await createUser(userRepository);
-      const user2 = await createUser(userRepository);
+      const { commandHandler, passwordResetRepository, createUser } = setup();
+      const user1 = await createUser();
+      const user2 = await createUser();
       const command1 = createCommand({ email: user1.email.toValue() });
       const command2 = createCommand({ email: user2.email.toValue() });
 
@@ -192,8 +198,8 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should not create a new password reset if a valid one already exists', async () => {
       // Arrange
-      const { commandHandler, userRepository, passwordResetRepository, outboxRepository } = setup();
-      const user = await createUser(userRepository);
+      const { commandHandler, passwordResetRepository, outboxRepository, createUser } = setup();
+      const user = await createUser();
 
       // Create an existing valid password reset
       const existingPasswordReset = PasswordReset.create({
@@ -218,8 +224,8 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should create a new password reset if the existing one is expired', async () => {
       // Arrange
-      const { commandHandler, userRepository, passwordResetRepository } = setup();
-      const user = await createUser(userRepository);
+      const { commandHandler, passwordResetRepository, createUser } = setup();
+      const user = await createUser();
 
       // Create an expired password reset
       const expiredPasswordReset = PasswordReset.create({
@@ -241,8 +247,8 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should create a new password reset if the existing one is already used', async () => {
       // Arrange
-      const { commandHandler, userRepository, passwordResetRepository } = setup();
-      const user = await createUser(userRepository);
+      const { commandHandler, passwordResetRepository, createUser } = setup();
+      const user = await createUser();
 
       // Create a used password reset
       const usedPasswordReset = PasswordReset.create({
@@ -266,10 +272,10 @@ describe('RequestPasswordResetCommandHandler', () => {
   describe('Error Cases', () => {
     it('should throw InfrastructureException when password reset repository fails', async () => {
       // Arrange
-      const { commandHandler, userRepository } = setup({
+      const { commandHandler, createUser } = setup({
         shouldFailPasswordResetRepository: true,
       });
-      const user = await createUser(userRepository);
+      const user = await createUser();
       const command = createCommand({ email: user.email.toValue() });
 
       // Act & Assert
@@ -278,10 +284,10 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should propagate failures when storing the integration event in the Outbox fails', async () => {
       // Arrange
-      const { commandHandler, userRepository, passwordResetRepository } = setup({
+      const { commandHandler, passwordResetRepository, createUser } = setup({
         shouldFailOutbox: true,
       });
-      const user = await createUser(userRepository);
+      const user = await createUser();
       const command = createCommand({ email: user.email.toValue() });
 
       // Act & Assert
@@ -294,10 +300,10 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should throw ApplicationException when EventBus publishing fails', async () => {
       // Arrange
-      const { commandHandler, userRepository, passwordResetRepository, outboxRepository } = setup({
+      const { commandHandler, passwordResetRepository, outboxRepository, createUser } = setup({
         shouldFailEventBus: true,
       });
-      const user = await createUser(userRepository);
+      const user = await createUser();
       const command = createCommand({ email: user.email.toValue() });
 
       // Act & Assert

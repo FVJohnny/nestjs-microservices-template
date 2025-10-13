@@ -19,7 +19,9 @@ import {
   Id,
   Timestamps,
   DateVO,
+  AlreadyExistsException,
 } from '@libs/nestjs-common';
+import type { IUserUniquenessChecker } from '@bc/auth/domain/services/user-uniqueness-checker.interface';
 
 export interface CreateUserProps {
   email: Email;
@@ -55,7 +57,22 @@ export class User extends SharedAggregate implements UserAttributes {
     this.lastLogin = props.lastLogin;
   }
 
-  static create(props: CreateUserProps): User {
+  static async create(
+    props: CreateUserProps,
+    uniquenessChecker: IUserUniquenessChecker,
+  ): Promise<User> {
+    // Enforce business rule: email must be unique
+    const isEmailUnique = await uniquenessChecker.isEmailUnique(props.email);
+    if (!isEmailUnique) {
+      throw new AlreadyExistsException('email', props.email.toValue());
+    }
+
+    // Enforce business rule: username must be unique
+    const isUsernameUnique = await uniquenessChecker.isUsernameUnique(props.username);
+    if (!isUsernameUnique) {
+      throw new AlreadyExistsException('username', props.username.toValue());
+    }
+
     const role = props.role ?? UserRole.user();
     const user = new User({
       id: Id.random(),

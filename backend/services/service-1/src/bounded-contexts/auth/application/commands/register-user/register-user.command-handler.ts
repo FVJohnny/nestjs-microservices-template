@@ -8,7 +8,6 @@ import {
 import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import { Email, Username, Password } from '@bc/auth/domain/value-objects';
 import {
-  AlreadyExistsException,
   Base_CommandHandler,
   EVENT_BUS,
   OUTBOX_REPOSITORY,
@@ -17,11 +16,17 @@ import {
   Transaction,
   Id,
 } from '@libs/nestjs-common';
+import {
+  USER_UNIQUENESS_CHECKER,
+  type IUserUniquenessChecker,
+} from '@bc/auth/domain/services/user-uniqueness-checker.interface';
 
 export class RegisterUser_CommandHandler extends Base_CommandHandler(RegisterUser_Command) {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: User_Repository,
+    @Inject(USER_UNIQUENESS_CHECKER)
+    private readonly uniquenessChecker: IUserUniquenessChecker,
     @Inject(EVENT_BUS)
     eventBus: IEventBus,
     @Inject(OUTBOX_REPOSITORY)
@@ -31,11 +36,14 @@ export class RegisterUser_CommandHandler extends Base_CommandHandler(RegisterUse
   }
 
   async handle(command: RegisterUser_Command) {
-    const user = User.create({
-      email: new Email(command.email),
-      username: new Username(command.username),
-      password: await Password.createFromPlainText(command.password),
-    });
+    const user = await User.create(
+      {
+        email: new Email(command.email),
+        username: new Username(command.username),
+        password: await Password.createFromPlainText(command.password),
+      },
+      this.uniquenessChecker,
+    );
 
     const integrationEvent = new UserCreated_IntegrationEvent({
       id: Id.random().toValue(),
@@ -57,18 +65,6 @@ export class RegisterUser_CommandHandler extends Base_CommandHandler(RegisterUse
     return true;
   }
 
-  async validate(command: RegisterUser_Command) {
-    const email = new Email(command.email);
-    const username = new Username(command.username);
-
-    const emailExists = await this.userRepository.existsByEmail(email);
-    if (emailExists) {
-      throw new AlreadyExistsException('email', command.email);
-    }
-
-    const usernameExists = await this.userRepository.existsByUsername(username);
-    if (usernameExists) {
-      throw new AlreadyExistsException('username', command.username);
-    }
+  async validate(_command: RegisterUser_Command) {
   }
 }
