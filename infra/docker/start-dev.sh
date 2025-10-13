@@ -8,6 +8,13 @@ echo "🚀 Starting development environment..."
 # Go to project root
 cd "$(dirname "$0")/../.."
 
+# Use the correct Node version if nvm is available
+if [ -s "$HOME/.nvm/nvm.sh" ]; then
+    echo "📦 Loading nvm and setting Node version..."
+    source "$HOME/.nvm/nvm.sh"
+    nvm use
+fi
+
 # Create .env files for each service if they don't exist
 echo "📋 Setting up service environment files..."
 for service_dir in backend/services/*; do
@@ -31,4 +38,3 @@ echo "🐳 Starting Docker containers..."
 docker compose -f infra/docker/docker-compose.dev.yml up --build -d
 
 echo "✅ Development environment started!"
-echo "📝 View logs with: npm run dev-logs"
