@@ -49,8 +49,8 @@ export class VerifyEmail_CommandHandler extends Base_CommandHandler(VerifyEmail_
 
     await Transaction.run(async (context) => {
       await this.emailVerificationRepository.save(emailVerification, context);
-      await this.sendDomainEvents(emailVerification);
       await this.sendIntegrationEvent(integrationEvent, context);
+      await this.sendDomainEvents(emailVerification);
     });
   }
 

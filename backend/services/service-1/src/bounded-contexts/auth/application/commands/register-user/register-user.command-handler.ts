@@ -56,8 +56,8 @@ export class RegisterUser_CommandHandler extends Base_CommandHandler(RegisterUse
 
     await Transaction.run(async (context) => {
       await this.userRepository.save(user, context);
-      await this.sendDomainEvents<User>(user);
       await this.sendIntegrationEvent(integrationEvent, context);
+      await this.sendDomainEvents<User>(user);
     });
   }
 

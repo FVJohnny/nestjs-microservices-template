@@ -1,12 +1,12 @@
-import { type IEventBus } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
-import { RecordUserLogin_Command } from './record-user-login.command';
+import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import {
   USER_REPOSITORY,
   type User_Repository,
 } from '@bc/auth/domain/aggregates/user/user.repository';
-import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
-import { Base_CommandHandler, EVENT_BUS, Id, NotFoundException } from '@libs/nestjs-common';
+import { Base_CommandHandler, EVENT_BUS, Id, NotFoundException, Transaction } from '@libs/nestjs-common';
+import { Inject } from '@nestjs/common';
+import { type IEventBus } from '@nestjs/cqrs';
+import { RecordUserLogin_Command } from './record-user-login.command';
 
 export class RecordUserLogin_CommandHandler extends Base_CommandHandler(RecordUserLogin_Command) {
   constructor(
@@ -25,12 +25,12 @@ export class RecordUserLogin_CommandHandler extends Base_CommandHandler(RecordUs
       throw new NotFoundException();
     }
 
-    // Record login
     user.recordLogin();
-    await this.userRepository.save(user);
 
-    // Send domain events if any
-    await this.sendDomainEvents<User>(user);
+    await Transaction.run(async (context) => {
+      await this.userRepository.save(user, context);
+      await this.sendDomainEvents<User>(user);
+    });
   }
 
   async authorize(_command: RecordUserLogin_Command) {

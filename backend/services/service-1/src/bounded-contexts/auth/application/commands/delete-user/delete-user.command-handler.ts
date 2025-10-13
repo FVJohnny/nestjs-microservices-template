@@ -49,8 +49,8 @@ export class DeleteUser_CommandHandler extends Base_CommandHandler(DeleteUser_Co
 
     await Transaction.run(async (context) => {
       await this.userRepository.remove(userId, context);
-      await this.sendDomainEvents<User>(user);
       await this.sendIntegrationEvent(integrationEvent, context);
+      await this.sendDomainEvents<User>(user);
     });
   }
 

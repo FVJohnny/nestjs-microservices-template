@@ -1,25 +1,25 @@
-import { type IEventBus } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
-import { RequestPasswordReset_Command } from './request-password-reset.command';
-import {
-  USER_REPOSITORY,
-  type User_Repository,
-} from '@bc/auth/domain/aggregates/user/user.repository';
+import { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
 import {
   PASSWORD_RESET_REPOSITORY,
   type PasswordReset_Repository,
 } from '@bc/auth/domain/aggregates/password-reset/password-reset.repository';
-import { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
+import {
+  USER_REPOSITORY,
+  type User_Repository,
+} from '@bc/auth/domain/aggregates/user/user.repository';
 import { Email } from '@bc/auth/domain/value-objects';
 import {
   Base_CommandHandler,
   EVENT_BUS,
+  Id,
   OUTBOX_REPOSITORY,
   type Outbox_Repository,
   PasswordResetRequested_IntegrationEvent,
   Transaction,
-  Id,
 } from '@libs/nestjs-common';
+import { Inject } from '@nestjs/common';
+import { type IEventBus } from '@nestjs/cqrs';
+import { RequestPasswordReset_Command } from './request-password-reset.command';
 
 export class RequestPasswordReset_CommandHandler extends Base_CommandHandler(
   RequestPasswordReset_Command,
@@ -71,8 +71,8 @@ export class RequestPasswordReset_CommandHandler extends Base_CommandHandler(
 
     await Transaction.run(async (context) => {
       await this.passwordResetRepository.save(passwordReset, context);
-      await this.sendDomainEvents<PasswordReset>(passwordReset);
       await this.sendIntegrationEvent(integrationEvent, context);
+      await this.sendDomainEvents<PasswordReset>(passwordReset);
     });
   }
 
