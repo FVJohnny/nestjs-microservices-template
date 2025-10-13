@@ -65,6 +65,5 @@ export class RegisterUser_CommandHandler extends Base_CommandHandler(RegisterUse
     return true;
   }
 
-  async validate(_command: RegisterUser_Command) {
-  }
+  async validate(_command: RegisterUser_Command) {}
 }
