@@ -64,7 +64,7 @@ export class RequestPasswordReset_CommandHandler extends Base_CommandHandler(
       if (error instanceof AlreadyExistsException) return;
       throw error;
     }
-    
+
     const integrationEvent = new PasswordResetRequested_IntegrationEvent({
       id: Id.random().toValue(),
       occurredOn: new Date(),
