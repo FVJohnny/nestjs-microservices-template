@@ -9,6 +9,13 @@ import { hexagonalArchitectureConfigs } from './eslint/rules/hexagonal-architect
 import cqrsHandlerCollocationRule from './eslint/rules/cqrs-handler-collocation.mjs';
 import valueObjectNamingRule from './eslint/rules/value-object-naming.mjs';
 import noDirectCqrsDecoratorsRule from './eslint/rules/no-direct-cqrs-decorators.mjs';
+import domainEventHandlerBaseRule from './eslint/rules/domain-event-handler-base.mjs';
+import commandHandlerBaseRule from './eslint/rules/command-handler-base.mjs';
+import queryHandlerBaseRule from './eslint/rules/query-handler-base.mjs';
+import aggregateBaseRule from './eslint/rules/aggregate-base.mjs';
+import aggregateDtoBaseRule from './eslint/rules/aggregate-dto-base.mjs';
+import repositoryBaseRule from './eslint/rules/repository-base.mjs';
+import domainEventBaseRule from './eslint/rules/domain-event-base.mjs';
 
 export default [
   {
@@ -56,9 +63,44 @@ export default [
           'no-direct-decorators': noDirectCqrsDecoratorsRule,
         },
       },
+      'command-handler': {
+        rules: {
+          'must-extend-base': commandHandlerBaseRule,
+        },
+      },
+      'query-handler': {
+        rules: {
+          'must-extend-base': queryHandlerBaseRule,
+        },
+      },
       'value-object': {
         rules: {
-          'naming': valueObjectNamingRule,
+          naming: valueObjectNamingRule,
+        },
+      },
+      'domain-event-handler': {
+        rules: {
+          'must-extend-base': domainEventHandlerBaseRule,
+        },
+      },
+      aggregate: {
+        rules: {
+          'must-extend-base': aggregateBaseRule,
+        },
+      },
+      'aggregate-dto': {
+        rules: {
+          'must-extend-base': aggregateDtoBaseRule,
+        },
+      },
+      repository: {
+        rules: {
+          'must-extend-base': repositoryBaseRule,
+        },
+      },
+      'domain-event': {
+        rules: {
+          'must-extend-base': domainEventBaseRule,
         },
       },
       import: importPlugin,
@@ -72,63 +114,18 @@ export default [
       'cqrs/handler-collocation': 'error',
       'cqrs/no-direct-decorators': 'error',
       'value-object/naming': 'error',
+      'domain-event-handler/must-extend-base': 'error',
+      'command-handler/must-extend-base': 'error',
+      'query-handler/must-extend-base': 'error',
+      'aggregate/must-extend-base': 'error',
+      'aggregate-dto/must-extend-base': 'error',
+      'repository/must-extend-base': 'error',
+      'domain-event/must-extend-base': 'error',
     },
   },
 
-  // Hexagonal Architecture rules for Domain layer
-  {
-    files: ['**/domain/**/*.ts'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['**/application/**', '**/infrastructure/**'],
-              message: 'Domain layer should only import from domain layer',
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  // Hexagonal Architecture rules for Application layer
-  {
-    files: ['**/application/**/*.ts'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['**/infrastructure/**'],
-              message: 'Application layer should only import from domain and application layers',
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  // Hexagonal Architecture rules for Infrastructure layer
-  {
-    files: ['**/infrastructure/**/*.ts'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['**/application/**'],
-              message:
-                'Infrastructure layer should only import from domain and infrastructure layers',
-            },
-          ],
-        },
-      ],
-    },
-  },
+  // Hexagonal Architecture rules
+  ...hexagonalArchitectureConfigs,
 
   // Disable CQRS decorator rule for framework base classes
   {
