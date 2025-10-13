@@ -1,5 +1,4 @@
-import { v4 as uuid } from 'uuid';
-import validateUuid from 'uuid-validate';
+import { v4 as uuid, validate as validateUuid } from 'uuid';
 
 import { DomainValidationException } from '../../../errors';
 import { StringValueObject } from './string.vo';

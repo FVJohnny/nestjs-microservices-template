@@ -9,23 +9,14 @@
     "build:watch": "tsc --watch"
   },
   "peerDependencies": {
+    "@libs/nestjs-common": "^1.0.0",
     "@nestjs/common": "^11.0.1",
-    "@nestjs/core": "^11.0.1",
-    "@nestjs/swagger": "^11.2.0",
-    "ioredis": "^5.3.2",
-    "reflect-metadata": "^0.2.2"
-  },
-  "dependencies": {
-    "@libs/nestjs-common": "file:../common"
+    "ioredis": "^5.3.2"
   },
   "devDependencies": {
+    "@libs/nestjs-common": "file:../common",
+    "@nestjs/common": "^11.0.1",
     "@types/node": "^22.10.7",
-    "@typescript-eslint/eslint-plugin": "^8.42.0",
-    "@typescript-eslint/parser": "^8.42.0",
-    "eslint": "^9.34.0",
-    "eslint-plugin-import-x": "^4.16.1",
-    "eslint-plugin-simple-import-sort": "^12.1.1",
-    "eslint-plugin-unused-imports": "^4.2.0",
     "ioredis": "^5.3.2",
     "typescript": "^5.7.3"
   },

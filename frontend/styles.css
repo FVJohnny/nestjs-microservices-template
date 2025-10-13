@@ -1203,7 +1203,7 @@ main {
 .evt-name-wrapper {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
+  max-width: none;
 }
 
 .topic-events .evt .name {
@@ -1211,9 +1211,8 @@ main {
   color: var(--text-primary);
   font-weight: 600;
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-word;
+  line-height: 1.4;
   display: block;
 }
 

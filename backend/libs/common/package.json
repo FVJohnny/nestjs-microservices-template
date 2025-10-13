@@ -22,12 +22,9 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@types/uuid": "^10.0.0",
-    "@types/uuid-validate": "^0.0.3",
     "opossum": "^8.1.4",
     "prom-client": "^14.2.0",
-    "uuid": "^11.1.0",
-    "uuid-validate": "^0.0.3"
+    "uuid": "^11.1.0"
   },
   "peerDependencies": {
     "@nestjs/common": "^11.0.1",
@@ -35,13 +32,11 @@
     "@nestjs/cqrs": "^11.0.3",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/swagger": "^11.2.0",
-    "@nestjs/testing": "^11.0.1",
     "@nestjs/throttler": "^6.4.0",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "^0.64.6",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.205.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.205.0",
-    "@opentelemetry/resources": "^2.1.0",
     "@opentelemetry/sdk-node": "^0.205.0",
     "@opentelemetry/semantic-conventions": "^1.37.0",
     "@types/express": "^5.0.3",
@@ -49,14 +44,24 @@
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/cqrs": "^11.0.3",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/throttler": "^6.4.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.64.6",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.205.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.205.0",
+    "@opentelemetry/sdk-node": "^0.205.0",
+    "@opentelemetry/semantic-conventions": "^1.37.0",
+    "@types/express": "^5.0.3",
     "@types/node": "^22.10.7",
     "@types/opossum": "^8.1.9",
-    "@typescript-eslint/eslint-plugin": "^8.42.0",
-    "@typescript-eslint/parser": "^8.42.0",
-    "eslint": "^9.34.0",
-    "eslint-plugin-import-x": "^4.16.1",
-    "eslint-plugin-simple-import-sort": "^12.1.1",
-    "eslint-plugin-unused-imports": "^4.2.0",
+    "@types/uuid": "^10.0.0",
+    "class-validator": "^0.14.0",
+    "reflect-metadata": "^0.2.2",
     "typescript": "^5.7.3"
   },
   "keywords": [

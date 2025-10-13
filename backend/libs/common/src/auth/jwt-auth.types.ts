@@ -1,5 +1,3 @@
-import type { Request } from 'express';
-
 export class TokenPayload {
   userId: string;
   email: string;
@@ -15,6 +13,14 @@ class JwtPayload {
 
 export type JwtTokenPayload = JwtPayload & TokenPayload;
 
-export interface AuthenticatedRequest extends Request {
+/**
+ * Authenticated request with token data
+ * Use as intersection type with your framework's request type
+ * Example: context.switchToHttp().getRequest<Request & AuthenticatedRequest>()
+ */
+export interface AuthenticatedRequest {
   tokenData: JwtTokenPayload;
+  headers: {
+    authorization?: string;
+  };
 }
