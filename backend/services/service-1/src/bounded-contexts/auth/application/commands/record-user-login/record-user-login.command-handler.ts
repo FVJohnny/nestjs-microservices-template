@@ -3,7 +3,13 @@ import {
   USER_REPOSITORY,
   type User_Repository,
 } from '@bc/auth/domain/aggregates/user/user.repository';
-import { Base_CommandHandler, EVENT_BUS, Id, NotFoundException, Transaction } from '@libs/nestjs-common';
+import {
+  Base_CommandHandler,
+  EVENT_BUS,
+  Id,
+  NotFoundException,
+  Transaction,
+} from '@libs/nestjs-common';
 import { Inject } from '@nestjs/common';
 import { type IEventBus } from '@nestjs/cqrs';
 import { RecordUserLogin_Command } from './record-user-login.command';
