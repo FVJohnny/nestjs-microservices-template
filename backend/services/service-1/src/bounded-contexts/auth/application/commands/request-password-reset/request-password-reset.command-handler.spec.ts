@@ -2,6 +2,7 @@ import { PasswordResetRequested_DomainEvent } from '@bc/auth/domain/aggregates/p
 import { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
 import { User } from '@bc/auth/domain/aggregates/user/user.aggregate';
 import { UserUniquenessChecker } from '@bc/auth/domain/services/user-uniqueness-checker/user-uniqueness-checker.service';
+import { PasswordResetUniquenessChecker } from '@bc/auth/domain/services/password-reset-uniqueness-checker.service';
 import { Email, Expiration, Password, Used, Username } from '@bc/auth/domain/value-objects';
 import { PasswordReset_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/password-reset.in-memory-repository';
 import { User_InMemoryRepository } from '@bc/auth/infrastructure/repositories/in-memory/user.in-memory-repository';
@@ -47,10 +48,14 @@ describe('RequestPasswordResetCommandHandler', () => {
     const passwordResetRepository = new PasswordReset_InMemoryRepository(
       shouldFailPasswordResetRepository,
     );
+    const passwordResetUniquenessChecker = new PasswordResetUniquenessChecker(
+      passwordResetRepository,
+    );
     const eventBus = new MockEventBus({ shouldFail: shouldFailEventBus });
     const commandHandler = new RequestPasswordReset_CommandHandler(
       userRepository,
       passwordResetRepository,
+      passwordResetUniquenessChecker,
       eventBus,
       outboxRepository,
     );
@@ -71,6 +76,7 @@ describe('RequestPasswordResetCommandHandler', () => {
     return {
       userRepository,
       passwordResetRepository,
+      passwordResetUniquenessChecker,
       eventBus,
       commandHandler,
       outboxRepository,
@@ -199,13 +205,22 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should not create a new password reset if a valid one already exists', async () => {
       // Arrange
-      const { commandHandler, passwordResetRepository, outboxRepository, createUser } = setup();
+      const {
+        commandHandler,
+        passwordResetRepository,
+        passwordResetUniquenessChecker,
+        outboxRepository,
+        createUser,
+      } = setup();
       const user = await createUser();
 
       // Create an existing valid password reset
-      const existingPasswordReset = PasswordReset.create({
-        email: user.email,
-      });
+      const existingPasswordReset = await PasswordReset.create(
+        {
+          email: user.email,
+        },
+        passwordResetUniquenessChecker,
+      );
       await passwordResetRepository.save(existingPasswordReset);
 
       const command = createCommand({ email: user.email.toValue() });
@@ -225,13 +240,17 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should create a new password reset if the existing one is expired', async () => {
       // Arrange
-      const { commandHandler, passwordResetRepository, createUser } = setup();
+      const { commandHandler, passwordResetRepository, passwordResetUniquenessChecker, createUser } =
+        setup();
       const user = await createUser();
 
       // Create an expired password reset
-      const expiredPasswordReset = PasswordReset.create({
-        email: user.email,
-      });
+      const expiredPasswordReset = await PasswordReset.create(
+        {
+          email: user.email,
+        },
+        passwordResetUniquenessChecker,
+      );
       expiredPasswordReset.expiration = Expiration.atHoursFromNow(-1);
       await passwordResetRepository.save(expiredPasswordReset);
 
@@ -248,13 +267,17 @@ describe('RequestPasswordResetCommandHandler', () => {
 
     it('should create a new password reset if the existing one is already used', async () => {
       // Arrange
-      const { commandHandler, passwordResetRepository, createUser } = setup();
+      const { commandHandler, passwordResetRepository, passwordResetUniquenessChecker, createUser } =
+        setup();
       const user = await createUser();
 
       // Create a used password reset
-      const usedPasswordReset = PasswordReset.create({
-        email: user.email,
-      });
+      const usedPasswordReset = await PasswordReset.create(
+        {
+          email: user.email,
+        },
+        passwordResetUniquenessChecker,
+      );
       usedPasswordReset.used = Used.yes();
       await passwordResetRepository.save(usedPasswordReset);
 

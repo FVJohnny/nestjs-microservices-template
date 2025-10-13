@@ -1,6 +1,3 @@
-import { Inject } from '@nestjs/common';
-import { GetNewTokensFromUserCredentials_Query } from './get-new-tokens-from-user-credentials.query';
-import { GetNewTokensFromUserCredentials_QueryResponse } from './get-new-tokens-from-user-credentials.query-response';
 import {
   USER_REPOSITORY,
   type User_Repository,
@@ -8,10 +5,13 @@ import {
 import { Email } from '@bc/auth/domain/value-objects';
 import {
   Base_QueryHandler,
-  UnauthorizedException,
   JwtTokenService,
   TokenPayload,
+  UnauthorizedException,
 } from '@libs/nestjs-common';
+import { Inject } from '@nestjs/common';
+import { GetNewTokensFromUserCredentials_Query } from './get-new-tokens-from-user-credentials.query';
+import { GetNewTokensFromUserCredentials_QueryResponse } from './get-new-tokens-from-user-credentials.query-response';
 
 export class GetNewTokensFromUserCredentials_QueryHandler extends Base_QueryHandler(
   GetNewTokensFromUserCredentials_Query,
@@ -30,15 +30,16 @@ export class GetNewTokensFromUserCredentials_QueryHandler extends Base_QueryHand
     const email = new Email(query.email);
     const user = await this.userRepository.findByEmail(email);
 
-    if (!user || !user.isActive()) {
-      throw new UnauthorizedException();
-    }
+    if (!user) throw new UnauthorizedException();
 
     // Verify password
     const isPasswordValid = await user.password.verify(query.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException();
     }
+
+    // Domain enforces business rule: only active users can authenticate
+    user.canAuthenticate();
 
     // Generate JWT tokens
     const payload: TokenPayload = {

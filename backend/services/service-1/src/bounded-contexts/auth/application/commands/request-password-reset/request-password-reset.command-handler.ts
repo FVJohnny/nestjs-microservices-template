@@ -16,10 +16,15 @@ import {
   type Outbox_Repository,
   PasswordResetRequested_IntegrationEvent,
   Transaction,
+  AlreadyExistsException,
 } from '@libs/nestjs-common';
 import { Inject } from '@nestjs/common';
 import { type IEventBus } from '@nestjs/cqrs';
 import { RequestPasswordReset_Command } from './request-password-reset.command';
+import {
+  PASSWORD_RESET_UNIQUENESS_CHECKER,
+  type IPasswordResetUniquenessChecker,
+} from '@bc/auth/domain/services/password-reset-uniqueness-checker.interface';
 
 export class RequestPasswordReset_CommandHandler extends Base_CommandHandler(
   RequestPasswordReset_Command,
@@ -29,6 +34,8 @@ export class RequestPasswordReset_CommandHandler extends Base_CommandHandler(
     private readonly userRepository: User_Repository,
     @Inject(PASSWORD_RESET_REPOSITORY)
     private readonly passwordResetRepository: PasswordReset_Repository,
+    @Inject(PASSWORD_RESET_UNIQUENESS_CHECKER)
+    private readonly uniquenessChecker: IPasswordResetUniquenessChecker,
     @Inject(EVENT_BUS)
     eventBus: IEventBus,
     @Inject(OUTBOX_REPOSITORY)
@@ -43,24 +50,21 @@ export class RequestPasswordReset_CommandHandler extends Base_CommandHandler(
     // Check if user exists
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
-      // Don't reveal if user exists or not for security reasons
-      // Just return silently
+      // Just return silently if user does not exist
       return;
     }
 
-    // Check if a valid password reset already exists for this email
-    const existingPasswordReset = await this.passwordResetRepository.findValidByEmail(email);
-    if (existingPasswordReset) {
-      // A valid password reset already exists, do nothing
-      return;
+    let passwordReset: PasswordReset;
+    try {
+      // Domain enforces business rule: don't create duplicate usable password resets
+      passwordReset = await PasswordReset.create({ email: user.email }, this.uniquenessChecker);
+    } catch (error) {
+      // Security: If a valid password reset already exists (AlreadyExistsException),
+      // silently succeed to avoid revealing information
+      if (error instanceof AlreadyExistsException) return;
+      throw error;
     }
-
-    // Create new password reset
-    const passwordReset = PasswordReset.create({
-      email: user.email,
-    });
-
-    // Create integration event to be sent
+    
     const integrationEvent = new PasswordResetRequested_IntegrationEvent({
       id: Id.random().toValue(),
       occurredOn: new Date(),

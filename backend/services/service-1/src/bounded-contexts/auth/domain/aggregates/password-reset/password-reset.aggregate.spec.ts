@@ -1,5 +1,13 @@
 import { Email, Expiration, Used } from '@bc/auth/domain/value-objects';
-import { DateVO, Id, InvalidOperationException, Timestamps, wait } from '@libs/nestjs-common';
+import {
+  AlreadyExistsException,
+  DateVO,
+  Id,
+  InvalidOperationException,
+  Timestamps,
+  wait,
+} from '@libs/nestjs-common';
+import { PasswordResetUniquenessChecker_Mock } from '../../services/password-reset-uniqueness-checker.mock';
 import { PasswordResetRequested_DomainEvent } from './events/password-reset-requested.domain-event';
 import { PasswordReset } from './password-reset.aggregate';
 import { PasswordResetDTO } from './password-reset.dto';
@@ -17,10 +25,10 @@ describe('PasswordReset Entity', () => {
     });
 
   describe('Creation', () => {
-    it('should create with default values', () => {
+    it('should create with default values', async () => {
       const email = Email.random();
-
-      const passwordReset = PasswordReset.create({ email });
+      const passwordResetUniquenessChecker = new PasswordResetUniquenessChecker_Mock();
+      const passwordReset = await PasswordReset.create({ email }, passwordResetUniquenessChecker);
 
       expect(passwordReset.id).toBeDefined();
       expect(passwordReset.email).toBe(email);
@@ -31,30 +39,28 @@ describe('PasswordReset Entity', () => {
       expect(passwordReset.timestamps.updatedAt.toValue()).toBeInstanceOf(Date);
     });
 
-    it('should generate unique identifiers', () => {
-      const passwordReset1 = PasswordReset.create({
-        email: Email.random(),
-      });
-      const passwordReset2 = PasswordReset.create({
-        email: Email.random(),
-      });
+    it('should generate unique identifiers', async () => {
+      const passwordResetUniquenessChecker = new PasswordResetUniquenessChecker_Mock();
+
+      const passwordReset1 = await PasswordReset.create({ email: Email.random() }, passwordResetUniquenessChecker);
+      const passwordReset2 = await PasswordReset.create({ email: Email.random() }, passwordResetUniquenessChecker);
 
       expect(passwordReset1.id).not.toBe(passwordReset2.id);
     });
 
-    it('should set default expiration to 1 hour', () => {
-      const passwordReset = PasswordReset.create({
-        email: Email.random(),
-      });
+    it('should set default expiration to 1 hour', async () => {
+      const passwordResetUniquenessChecker = new PasswordResetUniquenessChecker_Mock();
+
+      const passwordReset = await PasswordReset.create({ email: Email.random() }, passwordResetUniquenessChecker);
       const expectedExpiration = Expiration.atHoursFromNow(1).toValue();
 
       expect(passwordReset.expiration.isWithinTolerance(expectedExpiration, 5000)).toBe(true);
     });
 
-    it('should emit PasswordResetRequestedDomainEvent', () => {
-      const passwordReset = PasswordReset.create({
-        email: Email.random(),
-      });
+    it('should emit PasswordResetRequestedDomainEvent', async () => {
+      const passwordResetUniquenessChecker = new PasswordResetUniquenessChecker_Mock();
+      const passwordReset = await PasswordReset.create({ email: Email.random() }, passwordResetUniquenessChecker);
+
       const events = passwordReset.getUncommittedEvents();
 
       expect(events).toHaveLength(1);
@@ -62,6 +68,27 @@ describe('PasswordReset Entity', () => {
       expect(event).toBeInstanceOf(PasswordResetRequested_DomainEvent);
       expect(event.email).toBe(passwordReset.email);
       expect(event.expiration).toBe(passwordReset.expiration);
+    });
+
+    describe('Uniqueness Validation', () => {
+      it('should throw AlreadyExistsException when a valid password reset already exists', async () => {
+        const email = Email.random();
+        const passwordResetUniquenessChecker = new PasswordResetUniquenessChecker_Mock(false);
+
+        await expect(
+          PasswordReset.create({ email }, passwordResetUniquenessChecker),
+        ).rejects.toThrow(AlreadyExistsException);
+      });
+
+      it('should allow creation when no valid password reset exists', async () => {
+        const email = Email.random();
+        const passwordResetUniquenessChecker = new PasswordResetUniquenessChecker_Mock(true);
+
+        const passwordReset = await PasswordReset.create({ email }, passwordResetUniquenessChecker);
+
+        expect(passwordReset).toBeDefined();
+        expect(passwordReset.email).toBe(email);
+      });
     });
   });
 

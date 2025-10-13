@@ -18,6 +18,7 @@ import {
 } from '@libs/nestjs-common';
 import { UserPasswordChanged_DomainEvent } from '@bc/auth/domain/aggregates/user/events/password-changed.domain-event';
 import { UserLogout_DomainEvent } from '@bc/auth/domain/aggregates/user/events/user-logout.domain-event';
+import { PasswordResetUniquenessChecker_Mock } from '@bc/auth/domain/services/password-reset-uniqueness-checker.mock';
 
 describe('ExecutePasswordResetCommandHandler', () => {
   // Test data factory
@@ -32,7 +33,8 @@ describe('ExecutePasswordResetCommandHandler', () => {
     email: Email,
     isValid: boolean = true,
   ) => {
-    const passwordReset = PasswordReset.create({ email });
+    const passwordResetUniquenessChecker = new PasswordResetUniquenessChecker_Mock();
+    const passwordReset = await PasswordReset.create({ email }, passwordResetUniquenessChecker);
     if (!isValid) {
       passwordReset.expiration = Expiration.atHoursFromNow(-1); // Expired
     }

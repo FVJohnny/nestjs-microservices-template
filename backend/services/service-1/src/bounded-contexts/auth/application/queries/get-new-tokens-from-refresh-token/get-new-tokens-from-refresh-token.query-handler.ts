@@ -40,11 +40,14 @@ export class GetNewTokensFromRefreshToken_QueryHandler extends Base_QueryHandler
       throw new UnauthorizedException();
     }
 
-    // Check if user exists and is active
+    // Check if user exists
     const user = await this.userRepository.findById(new Id(userId));
-    if (!user || !user.isActive()) {
+    if (!user) {
       throw new UnauthorizedException();
     }
+
+    // Check user can authenticate
+    user.canAuthenticate();
 
     // Check the token exists in repository
     const userToken = await this.userTokenRepository.findByToken(new Token(query.refreshToken));

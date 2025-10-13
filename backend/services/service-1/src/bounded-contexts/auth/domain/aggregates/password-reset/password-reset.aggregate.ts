@@ -1,5 +1,7 @@
+import type { IPasswordResetUniquenessChecker } from '@bc/auth/domain/services/password-reset-uniqueness-checker.interface';
 import { Email, Expiration, Used } from '@bc/auth/domain/value-objects';
 import {
+  AlreadyExistsException,
   DateVO,
   Id,
   InvalidOperationException,
@@ -33,7 +35,19 @@ export class PasswordReset extends SharedAggregate {
     this.used = props.used;
   }
 
-  static create(props: CreatePasswordResetProps): PasswordReset {
+  static async create(
+    props: CreatePasswordResetProps,
+    uniquenessChecker: IPasswordResetUniquenessChecker,
+  ): Promise<PasswordReset> {
+    // Enforce business rule: Don't create duplicate usable password resets
+    const canCreate = await uniquenessChecker.canCreateNew(props.email);
+    if (!canCreate) {
+      throw new AlreadyExistsException(
+        'password reset',
+        `An active password reset already exists for ${props.email.toValue()}`,
+      );
+    }
+
     const passwordReset = new PasswordReset({
       id: Id.random(),
       email: props.email,
@@ -71,12 +85,13 @@ export class PasswordReset extends SharedAggregate {
     return this.expiration.isExpired();
   }
 
+  canBeUsed(): boolean {
+    return !this.isExpired() && !this.isUsed();
+  }
+
   use(): void {
-    if (this.isExpired()) {
-      throw new InvalidOperationException('use', 'expired');
-    }
-    if (this.isUsed()) {
-      throw new InvalidOperationException('use', 'already used');
+    if (!this.canBeUsed()) {
+      throw new InvalidOperationException('use', 'already used or expired');
     }
 
     this.used = Used.yes();

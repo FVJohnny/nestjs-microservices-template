@@ -18,6 +18,8 @@ import { User_MongodbRepository } from './infrastructure/repositories/mongodb/us
 // Domain Services
 import { USER_UNIQUENESS_CHECKER } from './domain/services/user-uniqueness-checker/user-uniqueness-checker.interface';
 import { UserUniquenessChecker } from './domain/services/user-uniqueness-checker/user-uniqueness-checker.service';
+import { PASSWORD_RESET_UNIQUENESS_CHECKER } from './domain/services/password-reset-uniqueness-checker.interface';
+import { PasswordResetUniquenessChecker } from './domain/services/password-reset-uniqueness-checker.service';
 
 // 🚀 RUNTIME AUTO-DISCOVERY
 const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__dirname);
@@ -49,6 +51,10 @@ const { controllers, handlers } = RuntimeAutoDiscovery.discoverAllComponents(__d
     {
       provide: USER_UNIQUENESS_CHECKER,
       useClass: UserUniquenessChecker,
+    },
+    {
+      provide: PASSWORD_RESET_UNIQUENESS_CHECKER,
+      useClass: PasswordResetUniquenessChecker,
     },
   ],
 })

@@ -16,6 +16,7 @@ import {
   InvalidOperationException,
   SharedAggregate,
   Timestamps,
+  UnauthorizedException,
 } from '@libs/nestjs-common';
 import { UserPasswordChanged_DomainEvent } from './events/password-changed.domain-event';
 import { UserDeleted_DomainEvent } from './events/user-deleted.domain-event';
@@ -147,6 +148,12 @@ export class User extends SharedAggregate implements UserAttributes {
 
   logout(): void {
     this.apply(new UserLogout_DomainEvent(this.id));
+  }
+
+  canAuthenticate(): void {
+    if (!this.isActive()) {
+      throw new UnauthorizedException();
+    }
   }
 
   isActive(): boolean {

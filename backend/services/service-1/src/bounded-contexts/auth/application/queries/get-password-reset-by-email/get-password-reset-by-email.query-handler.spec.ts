@@ -4,6 +4,7 @@ import { PasswordReset_InMemoryRepository } from '@bc/auth/infrastructure/reposi
 import { PasswordReset } from '@bc/auth/domain/aggregates/password-reset/password-reset.aggregate';
 import { NotFoundException, InfrastructureException } from '@libs/nestjs-common';
 import { Email } from '@bc/auth/domain/value-objects';
+import { PasswordResetUniquenessChecker_Mock } from '@bc/auth/domain/services/password-reset-uniqueness-checker.mock';
 
 describe('GetPasswordResetByEmail_QueryHandler', () => {
   const createQuery = (overrides: Partial<GetPasswordResetByEmail_Query> = {}) =>
@@ -15,16 +16,17 @@ describe('GetPasswordResetByEmail_QueryHandler', () => {
   const setup = (params: { shouldFailRepository?: boolean } = {}) => {
     const { shouldFailRepository = false } = params;
 
+    const passwordResetUniquenessChecker = new PasswordResetUniquenessChecker_Mock();
     const repository = new PasswordReset_InMemoryRepository(shouldFailRepository);
     const handler = new GetPasswordResetByEmail_QueryHandler(repository);
 
-    return { repository, handler };
+    return { passwordResetUniquenessChecker, repository, handler };
   };
 
   it('should return the password reset DTO when password reset exists', async () => {
     // Arrange
-    const { handler, repository } = setup();
-    const passwordReset = PasswordReset.create({ email: Email.random() });
+    const { handler, repository, passwordResetUniquenessChecker } = setup();
+    const passwordReset = await PasswordReset.create({ email: Email.random() }, passwordResetUniquenessChecker);
     await repository.save(passwordReset);
 
     const query = createQuery({ email: passwordReset.email.toValue() });
@@ -57,12 +59,12 @@ describe('GetPasswordResetByEmail_QueryHandler', () => {
 
   it('should return the correct password reset for a specific email', async () => {
     // Arrange
-    const { handler, repository } = setup();
+    const { handler, repository, passwordResetUniquenessChecker } = setup();
 
     // Create multiple password resets
-    const passwordReset1 = PasswordReset.create({ email: Email.random() });
-    const passwordReset2 = PasswordReset.create({ email: Email.random() });
-    const passwordReset3 = PasswordReset.create({ email: Email.random() });
+    const passwordReset1 = await PasswordReset.create({ email: Email.random() }, passwordResetUniquenessChecker);
+    const passwordReset2 = await PasswordReset.create({ email: Email.random() }, passwordResetUniquenessChecker);
+    const passwordReset3 = await PasswordReset.create({ email: Email.random() }, passwordResetUniquenessChecker);
 
     await repository.save(passwordReset1);
     await repository.save(passwordReset2);
